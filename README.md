@@ -1,23 +1,12 @@
 # docker-setup
 
-Simple scripts for install Docker Engine and tools on Linux and Windows
+```plaintext
+     _            _                           _
+  __| | ___   ___| | _____ _ __      ___  ___| |_ _   _ _ __
+ / _` |/ _ \ / __| |/ / _ \ '__|____/ __|/ _ \ __| | | | '_ \
+| (_| | (_) | (__|   <  __/ | |_____\__ \  __/ |_| |_| | |_) |
+ \__,_|\___/ \___|_|\_\___|_|       |___/\___|\__|\__,_| .__/
+                                                       |_|
+```
 
-## Status
-
-`docker-setup.sh` is used regularly
-
-`docker-setup.ps1` is work in progress
-
-## Usage
-
-The scripts accept a list of environment variables:
-
-TARGET /usr
-CGROUP_VERSION v2
-
-DOCKER_ADDRESS_BASE
-DOCKER_ADDRESS_SIZE
-
-DOCKER_REGISTRY_MIRROR
-
-DOCKER_COMPOSE v2
+The container tools installer and updater
