@@ -1,31 +1,23 @@
 # docker-setup
 
-XXX
+Simple scripts for install Docker Engine and tools on Linux and Windows
 
-## cgroup v2
+## Status
 
-XXX
+`docker-setup.sh` is used regularly
 
-```bash
-sed -i 's/GRUB_CMDLINE_LINUX=""/GRUB_CMDLINE_LINUX="systemd.unified_cgroup_hierarchy=1"/' /etc/default/grub
-update-grub
-reboot
-```
+`docker-setup.ps1` is work in progress
 
-## iptables-legacy
+## Usage
 
-XXX
+The scripts accept a list of environment variables:
 
-```
-apt-get update
-apt-get -y install iptables
-```
+TARGET /usr
+CGROUP_VERSION v2
 
-## uidmap
+DOCKER_ADDRESS_BASE
+DOCKER_ADDRESS_SIZE
 
-XXX
+DOCKER_REGISTRY_MIRROR
 
-```bash
-apt-get update
-apt-get -y install uidmap
-```
+DOCKER_COMPOSE v2
