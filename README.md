@@ -14,6 +14,6 @@ The container tools installer and updater
 ## Install
 
 ```bash
-curl -sLo https://github.com/nicholasdille/docker-setup/raw/main/docker-setup.sh
+curl -sLO https://github.com/nicholasdille/docker-setup/raw/main/docker-setup.sh
 bash docker-setup.sh
 ```
