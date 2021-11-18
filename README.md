@@ -13,7 +13,37 @@ The container tools installer and updater
 
 ## Install
 
+Install prerequisites on Ubuntu:
+
+```bash
+apt-get update
+apt-get -y install --no-install-recommends \
+    curl \
+    ca-certificates \
+    bash \
+    git \
+    iptables
+```
+
+Download and run `docker-setup.sh`:
+
 ```bash
 curl -sLO https://github.com/nicholasdille/docker-setup/raw/main/docker-setup.sh
 bash docker-setup.sh
+```
+
+## cloud-init
+
+If using `cloud-init` you can use the included [`cloud-init.yaml`](contrib/cloud-init.yaml).
+
+How to use this on Hetzner Cloud:
+
+```bash
+hcloud server create \
+   --name foo \
+   --location fsn1 \
+   --type cx21 \
+   --image ubuntu-20.04 \
+   --ssh-key 4662975 \
+   --user-data-from-file contrib/cloud-init.yaml
 ```
