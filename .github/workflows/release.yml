@@ -31,7 +31,7 @@ jobs:
         id: github_release
         uses: mikepenz/release-changelog-builder-action@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
 
       - name: Create release
         id: create_release
