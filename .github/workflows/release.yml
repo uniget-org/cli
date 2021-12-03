@@ -40,7 +40,7 @@ jobs:
           token: ${{ secrets.BOT_GITHUB_TOKEN }}
           allowUpdates: true
           name: "Version ${{ steps.get_version.outputs.version }}"
-          tag: v${{ steps.get_version.outputs.version }}
+          tag: ${{ steps.get_version.outputs.version }}
           draft: false
           body: "${{steps.github_release.outputs.changelog}}"
           prerelease: false
