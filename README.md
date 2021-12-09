@@ -28,7 +28,7 @@ apt-get -y install --no-install-recommends \
 Download and run `docker-setup.sh`:
 
 ```bash
-curl -sLO https://github.com/nicholasdille/docker-setup/raw/main/docker-setup.sh
+curl -sLO https://github.com/nicholasdille/docker-setup/releases/latest/download/docker-setup.sh
 bash docker-setup.sh
 ```
 
