@@ -24,6 +24,15 @@ See [below](#usage) for more options.
 
 `docker-setup` will warn you if some prerequisites are missing.
 
+Releases are tested on the following distributions:
+- Alpine 3.15
+- Debian 11
+- Fedora 35
+- Ubuntu 20.04
+- Ubuntu 21.04
+
+`docker-setup` cannot be supported on CentOS because it does not offer `iptables-legacy`. As long as Docker does not support `nftables`, the daemon can only run with [`--iptables=false` which breaks container networking](https://docs.docker.com/network/iptables/#prevent-docker-from-manipulating-iptables).
+
 ## Tools
 
 The following tools are included in `docker-setup`. The exact versions are pinned inside `docker-setup`.

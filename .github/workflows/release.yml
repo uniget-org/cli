@@ -23,6 +23,7 @@ jobs:
           #- opensuse-tumbleweed
           #- rockylinux-8
           - ubuntu-20.04
+          - ubuntu-21.04
     steps:
 
       - name: Checkout code
