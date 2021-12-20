@@ -36,7 +36,7 @@ jobs:
           TERM: xterm
         run: |
           docker build --tag test --file test/Dockerfile.${{ matrix.distro }} test/; \
-          docker run --interactive --rm --privileged test bash test.sh
+          docker run --interactive --rm --privileged --env TERM test bash test.sh
 
   release:
     name: Release
