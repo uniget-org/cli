@@ -16,10 +16,10 @@ jobs:
           - alpine-3.15
           #- amazonlinux-2
           #- archlinux
-          # - centos-8
+          #- centos-8
           #- clearlinux
-          #- debian-11
-          #- fedora-35
+          - debian-11
+          - fedora-35
           #- opensuse-leap-15
           #- opensuse-tumbleweed
           #- rockylinux-8
