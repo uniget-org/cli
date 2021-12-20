@@ -18,8 +18,8 @@ jobs:
           #- archlinux
           # - centos-8
           #- clearlinux
-          - debian-11
-          - fedora-35
+          #- debian-11
+          #- fedora-35
           #- opensuse-leap-15
           #- opensuse-tumbleweed
           #- rockylinux-8
