@@ -42,7 +42,7 @@ jobs:
         uses: actions/upload-artifact@v2
         if: always()
         with:
-          name: logs-${{ matrix.distro }}
+          name: logs-${{ matrix.distro }}.zip
           path: log/**
 
   release:
