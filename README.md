@@ -61,6 +61,7 @@ You can tweak the behaviour of `docker-setup` by passing parameters or environme
 | `--reinstall`     | `REINSTALL`              | Install all tools again |
 | `--simple-output` | `SIMPLE_OUTPUT`          | Do not display  |
 | `--no-spinner`    | `NO_SPINNER`             | Do not display spinner in simple output |
+| `--no-color`      | `NO_COLOR`               | Do not display colored output |
 |                   | `TARGET`                 | Specifies the target directory for binaries. Defaults to /usr |
 |                   | `CGROUP_VERSION`         | Specifies which version of cgroup to use. Defaults to v2 |
 |                   | `DOCKER_ADDRESS_BASE`    | Specifies the address pool for networks, e.g. 192.168.0.0/16 |
