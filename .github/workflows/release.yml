@@ -34,7 +34,7 @@ jobs:
         env:
           DOCKER_BUILDKIT: 1
         run: |
-          docker build --tag test --file Dockerfile.${{ matrix.distro }} test/; \
+          docker build --tag test --file test/Dockerfile.${{ matrix.distro }} test/; \
           docker run --interactive --rm --privileged test bash test.sh
 
   release:
