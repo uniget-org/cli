@@ -7,6 +7,36 @@ on:
 
 jobs:
 
+  test:
+    name: Tests
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        distro:
+          - alpine-3.15
+          #- amazonlinux-2
+          #- archlinux
+          # - centos-8
+          #- clearlinux
+          - debian-11
+          - fedora-35
+          #- opensuse-leap-15
+          #- opensuse-tumbleweed
+          #- rockylinux-8
+          - ubuntu-20.04
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Test
+        continue-on-error: true
+        env:
+          DOCKER_BUILDKIT: 1
+        run: |
+          docker build --tag test --file Dockerfile.${{ matrix.distro }} test/; \
+          docker run --interactive --rm --privileged test bash test.sh
+
   release:
     name: Release
     runs-on: ubuntu-20.04
