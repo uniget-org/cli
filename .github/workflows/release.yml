@@ -34,7 +34,7 @@ jobs:
           DOCKER_BUILDKIT: 1
           TERM: xterm
         run: |
-          docker build --tag test --file test/Dockerfile.${{ matrix.distro }} test/; \
+          docker build --tag test --file test/Dockerfile.${{ matrix.distro }} .; \
           mkdir -p "${PWD}/log"; \
           docker run --interactive --rm --privileged --env TERM --volume "${PWD}/log:/var/log" test bash test.sh
 
