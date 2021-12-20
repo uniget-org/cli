@@ -30,7 +30,6 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Test
-        continue-on-error: true
         env:
           DOCKER_BUILDKIT: 1
           TERM: xterm
@@ -40,6 +39,8 @@ jobs:
 
   release:
     name: Release
+    needs:
+      - test
     runs-on: ubuntu-20.04
     steps:
 
