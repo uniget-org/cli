@@ -61,22 +61,23 @@ curl -sL https://github.com/nicholasdille/docker-setup/releases/latest/download/
 
 You can tweak the behaviour of `docker-setup` by passing parameters or environment variables:
 
-| Parameter         | Variable                 | Meaning |
-| ----------------- | ------------------------ | ------- |
-| `--help`          | n/a                      | Display help for parameters and environment variables |
-| `--version`       | n/a                      | Display version and exit |
-| `--check-only`    | `CHECK_ONLY`             | Only check if tools need to be installed or updated |
-| `--no-wait`       | `NO_WAIT`                | Do not wait before installing |
-| `--reinstall`     | `REINSTALL`              | Install all tools again |
-| `--simple-output` | `SIMPLE_OUTPUT`          | Do not display  |
-| `--no-spinner`    | `NO_SPINNER`             | Do not display spinner in simple output |
-| `--no-color`      | `NO_COLOR`               | Do not display colored output |
-|                   | `TARGET`                 | Specifies the target directory for binaries. Defaults to /usr |
-|                   | `CGROUP_VERSION`         | Specifies which version of cgroup to use. Defaults to v2 |
-|                   | `DOCKER_ADDRESS_BASE`    | Specifies the address pool for networks, e.g. 192.168.0.0/16 |
-|                   | `DOCKER_ADDRESS_SIZE`    | Specifies the size of each network, e.g. 24 |
-|                   | `DOCKER_REGISTRY_MIRROR` | Specifies a host to be used as registry mirror, e.g. https://proxy.my-domain.tld |
-|                   | `DOCKER_COMPOSE`         | Specifies which major version of docker-compose to use. Defaults to v2 |
+| Parameter          | Variable                 | Meaning |
+| ------------------ | ------------------------ | ------- |
+| `--help`           | n/a                      | Display help for parameters and environment variables |
+| `--version`        | n/a                      | Display version and exit |
+| `--check-only`     | `CHECK_ONLY`             | Only check if tools need to be installed or updated |
+| `--no-wait`        | `NO_WAIT`                | Do not wait before installing |
+| `--reinstall`      | `REINSTALL`              | Install all tools again |
+| `--simple-output`  | `SIMPLE_OUTPUT`          | Do not display  |
+| `--no-spinner`     | `NO_SPINNER`             | Do not display spinner in simple output |
+| `--no-progressbar` | `NO_PROGRESSBAR`         | Do not display progress bar |
+| `--no-color`       | `NO_COLOR`               | Do not display colored output |
+|                    | `TARGET`                 | Specifies the target directory for binaries. Defaults to /usr |
+|                    | `CGROUP_VERSION`         | Specifies which version of cgroup to use. Defaults to v2 |
+|                    | `DOCKER_ADDRESS_BASE`    | Specifies the address pool for networks, e.g. 192.168.0.0/16 |
+|                    | `DOCKER_ADDRESS_SIZE`    | Specifies the size of each network, e.g. 24 |
+|                    | `DOCKER_REGISTRY_MIRROR` | Specifies a host to be used as registry mirror, e.g. https://proxy.my-domain.tld |
+|                    | `DOCKER_COMPOSE`         | Specifies which major version of docker-compose to use. Defaults to v2 |
 
 When one or more tool names are supplied as parameters, they will be re-installed:
 
