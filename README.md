@@ -45,13 +45,9 @@ arkade buildah buildkit buildx clusterawsadm clusterctl cni cni-isolation conmon
 
 All tools will be installed in parallel. Many tools only require a simple download so that most tools will be installed really quickly.
 
-Progress is displayed in a fullscreen status page where each line shows the status of one tool:
+`docker-setup` displays a progress bar unless suppressed by the command line switch:
 
-[![asciicast](https://asciinema.org/a/457481.svg)](https://asciinema.org/a/457481?autoplay=1)
-
-If the terminal window has fewer lines than the number of tools, the output automatically switches to simple output. The progress is only shown by the spinner:
-
-[![asciicast](https://asciinema.org/a/457484.svg)](https://asciinema.org/a/457484)
+[![Default installation]()]()
 
 Download and run `docker-setup` as a one-liner:
 
@@ -68,8 +64,6 @@ You can tweak the behaviour of `docker-setup` by passing parameters or environme
 | `--check-only`     | `CHECK_ONLY`             | Only check if tools need to be installed or updated |
 | `--no-wait`        | `NO_WAIT`                | Do not wait before installing |
 | `--reinstall`      | `REINSTALL`              | Install all tools again |
-| `--simple-output`  | `SIMPLE_OUTPUT`          | Do not display  |
-| `--no-spinner`     | `NO_SPINNER`             | Do not display spinner in simple output |
 | `--no-progressbar` | `NO_PROGRESSBAR`         | Do not display progress bar |
 | `--no-color`       | `NO_COLOR`               | Do not display colored output |
 |                    | `TARGET`                 | Specifies the target directory for binaries. Defaults to /usr |
@@ -85,7 +79,7 @@ When one or more tool names are supplied as parameters, they will be re-installe
 bash docker-setup.sh docker trivy
 ```
 
-[![asciicast](https://asciinema.org/a/457486.svg)](https://asciinema.org/a/457486)
+[![Install specific tools only](https://asciinema.org/a/457486.svg)](https://asciinema.org/a/457486)
 
 ## Internals
 
