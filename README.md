@@ -47,7 +47,7 @@ All tools will be installed in parallel. Many tools only require a simple downlo
 
 `docker-setup` displays a progress bar unless suppressed by the command line switch:
 
-[![Default installation]()]()
+[![Using docker-setup](https://asciinema.org/a/6rptGICcjvJZR4F5OjMmRqG7L.svg)](https://asciinema.org/a/6rptGICcjvJZR4F5OjMmRqG7L)
 
 Download and run `docker-setup` as a one-liner:
 
@@ -76,7 +76,7 @@ You can tweak the behaviour of `docker-setup` by passing parameters or environme
 When one or more tool names are supplied as parameters, they will be re-installed:
 
 ```bash
-bash docker-setup.sh docker trivy
+bash docker-setup.sh trivy dive
 ```
 
 [![Install specific tools only](https://asciinema.org/a/457486.svg)](https://asciinema.org/a/457486)
