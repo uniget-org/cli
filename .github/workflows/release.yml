@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - "v*"
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - labeled
+      - reopened
 
 jobs:
 
@@ -49,6 +55,7 @@ jobs:
     name: Release
     needs:
       - test
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-20.04
     steps:
 
