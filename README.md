@@ -38,7 +38,7 @@ Releases are tested on the following distributions:
 The following tools are included in `docker-setup`. The exact versions are pinned inside `docker-setup`.
 
 ```plaintext
-arkade buildah buildkit buildx clusterawsadm clusterctl cni cni-isolation conmon containerd cosign crictl crun dive docker docker-compose docker-machine docker-scan fuse-overlayfs fuse-overlayfs-shapshotter helm hub-tool img imgcrypt jq k3d k3s kapp kind kompose krew kubectl kubeswitch kustomize manifest-tool minikube nerdctl oras portainer porter podman regclient rootlesskit runc skopeo slirp4netns stargz-snapshotter trivy yq ytt
+arkade buildah buildkit buildx clusterawsadm clusterctl cni cni-isolation conmon containerd cosign crictl crun dive docker docker-compose docker-machine docker-scan fuse-overlayfs fuse-overlayfs-snapshotter gvisor helm hub-tool img imgcrypt jq jwt k3d k3s kapp kind kompose krew kubectl kubeswitch kustomize manifest-tool minikube nerdctl oras portainer porter podman regclient rootlesskit runc skopeo slirp4netns sops stargz-snapshotter trivy yq ytt
 ```
 
 ## Usage
@@ -72,14 +72,6 @@ You can tweak the behaviour of `docker-setup` by passing parameters or environme
 |                    | `DOCKER_ADDRESS_SIZE`    | Specifies the size of each network, e.g. 24 |
 |                    | `DOCKER_REGISTRY_MIRROR` | Specifies a host to be used as registry mirror, e.g. https://proxy.my-domain.tld |
 |                    | `DOCKER_COMPOSE`         | Specifies which major version of docker-compose to use. Defaults to v2 |
-
-When one or more tool names are supplied as parameters, they will be re-installed:
-
-```bash
-bash docker-setup.sh trivy dive
-```
-
-[![Install specific tools only](https://asciinema.org/a/457486.svg)](https://asciinema.org/a/457486)
 
 ## Internals
 
