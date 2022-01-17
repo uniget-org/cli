@@ -38,7 +38,7 @@ Releases are tested on the following distributions:
 The following tools are included in `docker-setup`. The exact versions are pinned inside `docker-setup`.
 
 ```plaintext
-arkade buildah buildkit buildx clusterawsadm clusterctl cni cni-isolation conmon containerd cosign crictl crun dive docker docker-compose docker-machine docker-scan docuum fuse-overlayfs fuse-overlayfs-snapshotter gvisor helm hub-tool img imgcrypt ipfs jq jwt k3d k3s kapp kind kompose krew kubectl kubectl-build kubectl-free kubectl-resources kubeswitch kustomize manifest-tool minikube nerdctl oras portainer porter podman regclient rootlesskit runc skopeo slirp4netns sops stargz-snapshotter trivy yq ytt
+arkade buildah buildkit buildx clusterawsadm clusterctl cni cni-isolation conmon containerd cosign crictl crun dive docker docker-compose docker-machine docker-scan docuum firecracker firectl footloose fuse-overlayfs fuse-overlayfs-snapshotter gvisor helm hub-tool ignite img imgcrypt ipfs jq jwt k3d k3s kapp kind kompose krew kubectl kubectl-build kubectl-free kubectl-resources kubefire kubeswitch kustomize manifest-tool minikube nerdctl oras portainer porter podman regclient rootlesskit runc skopeo slirp4netns sops stargz-snapshotter trivy yq ytt
 ```
 
 ## Usage
