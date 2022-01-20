@@ -82,13 +82,6 @@ jobs:
         run: |
           sha256sum docker-setup.sh >docker-setup.sh.sha256
 
-      - name: Build Changelog
-        id: github_release
-        uses: mikepenz/release-changelog-builder-action@v1
-        with:
-          commitMode: true
-          token: ${{ secrets.BOT_GITHUB_TOKEN }}
-
       - name: Create release
         id: create_release
         uses: ncipollo/release-action@v1
@@ -98,7 +91,7 @@ jobs:
           name: "Version ${{ steps.get_version.outputs.version }}"
           tag: v${{ steps.get_version.outputs.version }}
           draft: false
-          body: "${{steps.github_release.outputs.changelog}}"
+          body: ""
           prerelease: false
           replacesArtifacts: true
           artifacts: "docker-setup.sh,docker-setup.sh.sha256"
