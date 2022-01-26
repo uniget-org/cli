@@ -81,6 +81,17 @@ jobs:
       - name: Create checksum
         run: |
           sha256sum docker-setup.sh >docker-setup.sh.sha256
+      
+      - name: Create changelog
+        run: |
+          docker run -it --rm -v "$(pwd)":/usr/local/src/your-app githubchangeloggenerator/github-changelog-generator \
+              --user nicholasdille \
+              --project docker-setup \
+              --token ${{ secrets.BOT_GITHUB_TOKEN }}
+          docker run -v $PWD:/opt -it sean0x42/markdown-extract:v2 \
+              v${{ steps.get_version.outputs.version }} \
+              /opt/CHANGELOG.md \
+              >v${{ steps.get_version.outputs.version }}.md
 
       - name: Create release
         id: create_release
@@ -91,7 +102,7 @@ jobs:
           name: "Version ${{ steps.get_version.outputs.version }}"
           tag: v${{ steps.get_version.outputs.version }}
           draft: false
-          body: ""
+          bodyFile: v${{ steps.get_version.outputs.version }}.md
           prerelease: false
           replacesArtifacts: true
           artifacts: "docker-setup.sh,docker-setup.sh.sha256"
