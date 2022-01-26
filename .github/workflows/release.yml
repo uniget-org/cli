@@ -88,7 +88,7 @@ jobs:
               githubchangeloggenerator/github-changelog-generator \
               --user nicholasdille \
               --project docker-setup \
-              --token ${{ secrets.BOT_GITHUB_TOKEN }}
+              --token ${{ secrets.BOT_GITHUB_TOKEN }} && \
           docker run --volume "${PWD}:/opt" \
               sean0x42/markdown-extract:v2 \
               v${{ steps.get_version.outputs.version }} \
