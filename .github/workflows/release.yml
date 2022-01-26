@@ -84,7 +84,7 @@ jobs:
       
       - name: Create changelog
         run: |
-          docker run --volume "${PWD}:/usr/local/src/your-app" } \
+          docker run --volume "${PWD}:/usr/local/src/your-app" \
               githubchangeloggenerator/github-changelog-generator \
               --user nicholasdille \
               --project docker-setup \
