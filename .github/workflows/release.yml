@@ -84,11 +84,13 @@ jobs:
       
       - name: Create changelog
         run: |
-          docker run -it --rm -v "$(pwd)":/usr/local/src/your-app githubchangeloggenerator/github-changelog-generator \
+          docker run --volume "${PWD}:/usr/local/src/your-app" } \
+              githubchangeloggenerator/github-changelog-generator \
               --user nicholasdille \
               --project docker-setup \
               --token ${{ secrets.BOT_GITHUB_TOKEN }}
-          docker run -v $PWD:/opt -it sean0x42/markdown-extract:v2 \
+          docker run --volume "${PWD}:/opt" \
+              sean0x42/markdown-extract:v2 \
               v${{ steps.get_version.outputs.version }} \
               /opt/CHANGELOG.md \
               >v${{ steps.get_version.outputs.version }}.md
