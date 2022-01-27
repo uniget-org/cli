@@ -86,6 +86,10 @@ Depending on the tool additional files are placed outside of `${TARGET}`:
 - Systemd units in `/etc/systemd/system/`
 - Init scripts in `/etc/init.d/` with defaults in `/etc/default/`
 
+### Docker
+
+The Docker daemon will use the executables installed to `${TARGET}/libexec/docker/bin/` which are installed from the [official binary package](https://download.docker.com/linux/static/stable/x86_64/). The systemd unit as well as the init script have been modified to ensure this.
+
 ## cloud-init
 
 When used together with `cloud-init` you can apply the included [`cloud-init.yaml`](contrib/cloud-init.yaml). It automatically prepares your VM for `docker-setup`:
