@@ -61,9 +61,10 @@ You can tweak the behaviour of `docker-setup` by passing parameters or environme
 | ------------------ | ------------------------ | ------- |
 | `--help`           | n/a                      | Display help for parameters and environment variables |
 | `--version`        | n/a                      | Display version and exit |
-| `--check-only`     | `CHECK_ONLY`             | Only check if tools need to be installed or updated |
+| `--check`          | `CHECK`                  | Only check if tools need to be installed or updated |
 | `--no-wait`        | `NO_WAIT`                | Do not wait before installing |
 | `--reinstall`      | `REINSTALL`              | Install all tools again |
+| `--only`           | `ONLY`                   | Only install specified tools |
 | `--no-progressbar` | `NO_PROGRESSBAR`         | Do not display progress bar |
 | `--no-color`       | `NO_COLOR`               | Do not display colored output |
 |                    | `TARGET`                 | Specifies the target directory for binaries. Defaults to /usr |
