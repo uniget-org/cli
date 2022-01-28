@@ -67,6 +67,8 @@ You can tweak the behaviour of `docker-setup` by passing parameters or environme
 | `--only`           | `ONLY`                   | Only install specified tools |
 | `--no-progressbar` | `NO_PROGRESSBAR`         | Do not display progress bar |
 | `--no-color`       | `NO_COLOR`               | Do not display colored output |
+| `--plan`           | `PLAN`                   | Show planned installations |
+| `--skip-docs`      | `SKIP_DOCS`              | Do not install documentation for faster installation |
 |                    | `TARGET`                 | Specifies the target directory for binaries. Defaults to /usr |
 |                    | `CGROUP_VERSION`         | Specifies which version of cgroup to use. Defaults to v2 |
 |                    | `DOCKER_ADDRESS_BASE`    | Specifies the address pool for networks, e.g. 192.168.0.0/16 |
