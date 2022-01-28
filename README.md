@@ -26,12 +26,14 @@ See [below](#usage) for more options.
 
 Releases are tested on the following distributions:
 - Alpine 3.15
+- CentOS 7 (see note below)
+- CentOS 8 (see note below)
 - Debian 11
 - Fedora 35
 - Ubuntu 20.04
 - Ubuntu 21.04
 
-`docker-setup` cannot be supported on CentOS because it does not offer `iptables-legacy`. As long as Docker does not support `nftables`, the daemon can only run with [`--iptables=false` which breaks container networking](https://docs.docker.com/network/iptables/#prevent-docker-from-manipulating-iptables).
+`docker-setup` implements a workaround for CentOS because it does not offer `iptables-legacy`. Therefore, `docker-setup` installs a binary package for `iptables-legacy` from [nicholasdille/centos-iptables-legacy](https://github.com/nicholasdille/centos-iptables-legacy). As long as Docker does not support `nftables`, the daemon requires `iptables-legacy` or can only run with [`--iptables=false` which breaks container networking](https://docs.docker.com/network/iptables/#prevent-docker-from-manipulating-iptables).
 
 ## Tools
 
