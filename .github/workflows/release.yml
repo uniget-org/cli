@@ -84,12 +84,12 @@ jobs:
       - name: Create checksum
         run: |
           sha256sum docker-setup.sh >docker-setup.sh.sha256
-      
+
       - name: Prepare contrib tarball
         run: |
           tar -czf contrib.tar.gz contrib && \
           sha256sum contrib.tar.gz >contrib.tar.gz.sha256
-      
+
       - name: Create changelog
         run: |
           docker run --volume "${PWD}:/usr/local/src/your-app" \
@@ -135,7 +135,6 @@ jobs:
       with:
         images: ${{ env.IMAGE_NAME }}
         tags: |
-          type=sha
           type=ref,event=branch
           type=ref,event=tag
           type=ref,event=pr
