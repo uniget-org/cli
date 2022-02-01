@@ -23,7 +23,7 @@ jobs:
           #- amazonlinux-2
           #- archlinux
           #- clearlinux
-          - centos-7
+          #- centos-7
           #- centos-8
           - debian-11
           - fedora-35
