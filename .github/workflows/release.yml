@@ -165,6 +165,8 @@ jobs:
 
     - name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         image-ref: ${{ env.IMAGE_NAME }}:${{ steps.docker_meta.outputs.version }}
         ignore-unfixed: true
