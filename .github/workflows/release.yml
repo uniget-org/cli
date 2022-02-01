@@ -41,7 +41,7 @@ jobs:
         env:
           DOCKER_BUILDKIT: 1
           TERM: xterm
-          IS_PR: ${{ github.event_name == 'pull_request }}
+          IS_PR: ${{ github.event_name == 'pull_request' }}
         run: |
           docker build --tag test --file test/Dockerfile.${{ matrix.distro }} .; \
           mkdir -p "${PWD}/log"; \
