@@ -85,6 +85,11 @@ jobs:
         run: |
           sha256sum docker-setup.sh >docker-setup.sh.sha256
       
+      - name: Prepare contrib tarball
+        run: |
+          tar -czf contrib.tar.gz contrib && \
+          sha256sum contrib.tar.gz >contrib.tar.gz.sha256
+      
       - name: Create changelog
         run: |
           docker run --volume "${PWD}:/usr/local/src/your-app" \
@@ -110,7 +115,7 @@ jobs:
           bodyFile: v${{ steps.get_version.outputs.version }}.md
           prerelease: false
           replacesArtifacts: true
-          artifacts: "docker-setup.sh,docker-setup.sh.sha256"
+          artifacts: "docker-setup.sh,docker-setup.sh.sha256,contrib.tar.gz,contrib.tar.gz.sha256"
 
   image:
     name: docker-build
