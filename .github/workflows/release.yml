@@ -136,7 +136,6 @@ jobs:
         images: ${{ env.IMAGE_NAME }}
         tags: |
           type=ref,event=branch
-          type=ref,event=tag
           type=ref,event=pr
           type=edge
           type=semver,pattern={{version}}
