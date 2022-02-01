@@ -156,7 +156,7 @@ jobs:
       uses: docker/build-push-action@v2
       with:
         cache-from: ${{ env.IMAGE_NAME }}:${{ steps.docker_meta.outputs.version }}
-        push: ${{ github.event_name != 'pull_request' }}
+        push: true # ${{ github.event_name != 'pull_request' }}
         tags: ${{ steps.docker_meta.outputs.tags }}
         labels: ${{ steps.docker_meta.outputs.labels }}
 
