@@ -115,7 +115,7 @@ jobs:
   image:
     name: docker-build
     needs:
-      - release
+      - test
     runs-on: ubuntu-latest
     env:
       IMAGE_NAME: ${{ secrets.docker_hub_username }}/docker-setup
