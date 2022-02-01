@@ -12,5 +12,7 @@ RUN apt-get update \
 
 FROM base AS docker-setup
 COPY docker/entrypoint.sh /
-COPY docker-setup.sh /
+COPY docker-setup.sh /usr/local/bin/
+COPY contrib /var/cache/docker-setup/contrib
+RUN chmod +x /usr/local/bin/docker-setup.sh
 ENTRYPOINT [ "bash", "/entrypoint.sh" ]
