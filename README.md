@@ -27,13 +27,12 @@ See [below](#usage) for more options.
 Releases are tested on the following distributions:
 - Alpine 3.15
 - CentOS 7 (see note below)
-- CentOS 8 (see note below)
 - Debian 11
 - Fedora 35
 - Ubuntu 20.04
 - Ubuntu 21.04
 
-`docker-setup` implements a workaround for CentOS because it does not offer `iptables-legacy`. Therefore, `docker-setup` installs a binary package for `iptables-legacy` from [nicholasdille/centos-iptables-legacy](https://github.com/nicholasdille/centos-iptables-legacy). As long as Docker does not support `nftables`, the daemon requires `iptables-legacy` or can only run with [`--iptables=false` which breaks container networking](https://docs.docker.com/network/iptables/#prevent-docker-from-manipulating-iptables).
+`docker-setup` implements a workaround for CentOS 7 because it does not offer `iptables-legacy`. Therefore, `docker-setup` installs a binary package for `iptables-legacy` from [nicholasdille/centos-iptables-legacy](https://github.com/nicholasdille/centos-iptables-legacy). As long as Docker does not support `nftables`, the daemon requires `iptables-legacy` or can only run with [`--iptables=false` which breaks container networking](https://docs.docker.com/network/iptables/#prevent-docker-from-manipulating-iptables). The test for CentOS 7 is currently hanging (tracked in [#262](https://github.com/nicholasdille/docker-setup/issues/262)) and therefore disabled. CentOS 8 fails to update repository metadata for `appstream` (tracked in [#263](https://github.com/nicholasdille/docker-setup/issues/263)) and is therefore disabled.
 
 ## Tools
 
@@ -71,6 +70,7 @@ You can tweak the behaviour of `docker-setup` by passing parameters or environme
 | `--no-color`       | `NO_COLOR`               | Do not display colored output |
 | `--plan`           | `PLAN`                   | Show planned installations |
 | `--skip-docs`      | `SKIP_DOCS`              | Do not install documentation for faster installation |
+|                    | `PREFIX`                 | Install into a subdirectory (see notes below) |
 |                    | `TARGET`                 | Specifies the target directory for binaries. Defaults to /usr |
 |                    | `CGROUP_VERSION`         | Specifies which version of cgroup to use. Defaults to v2 |
 |                    | `DOCKER_ADDRESS_BASE`    | Specifies the address pool for networks, e.g. 192.168.0.0/16 |
@@ -91,7 +91,27 @@ Depending on the tool additional files are placed outside of `${TARGET}`:
 - Systemd units in `/etc/systemd/system/`
 - Init scripts in `/etc/init.d/` with defaults in `/etc/default/`
 
-### Docker
+When `PREFIX` is specified, these files will also be placed in a subdirectory. But `docker-setup` will not handle daemon starts and restarts because it is assumed that the installation directory contains a different root file system.
+
+## Air-gapped installation
+
+`docker-setup` downloads several file during the installation. Some of them are coming from this repository. These files can now be placed in `/var/lib/docker-setup/contrib` to reduce the dependency on an internet connection. A tarball is published in the release (`contrib.tar.gz`) and included in the container image.
+
+Air-gapped installations are not possible because not all files are included in the contrib tarball.
+
+## Container Image
+
+The [`docker-setup` container image](https://hub.docker.com/r/nicholasdille/docker-setup) helps installing all tools without otherweise touching the system:
+
+```bash
+docker container run --interactive --tty --rm \
+    --mount type=bind,src=/,dst=/opt/docker-setup \
+    --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
+    --env PREFIX=/opt/docker-setup \
+    nicholasdille/docker-setup
+```
+
+## Docker
 
 The Docker daemon will use the executables installed to `${TARGET}/libexec/docker/bin/` which are installed from the [official binary package](https://download.docker.com/linux/static/stable/x86_64/). The systemd unit as well as the init script have been modified to ensure this.
 
