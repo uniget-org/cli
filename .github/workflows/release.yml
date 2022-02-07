@@ -119,6 +119,7 @@ jobs:
 
   image:
     name: docker-build
+    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'ci/build-container-image')
     needs:
       - test
     runs-on: ubuntu-latest
