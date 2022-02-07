@@ -9,3 +9,6 @@ check:
 
 $(DISTROS):
 	distro=$@ docker buildx bake
+
+test-%: %
+	@docker run -it --rm --privileged --env NO_WAIT=true --env SKIP_DOCS=true nicholasdille/docker-setup:$*
