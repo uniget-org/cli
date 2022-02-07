@@ -78,6 +78,8 @@ You can tweak the behaviour of `docker-setup` by passing parameters or environme
 |                    | `DOCKER_REGISTRY_MIRROR` | Specifies a host to be used as registry mirror, e.g. https://proxy.my-domain.tld |
 |                    | `DOCKER_COMPOSE`         | Specifies which major version of docker-compose to use. Defaults to v2 |
 
+Combining `--check`/`CHECK` and `--only`/`ONLY` will limit the test for outdated tools to those specified on the command line.
+
 ## Internals
 
 `docker-setup` contains a list of all tools with pinned versions. These versions are automatically updated using [RenovateBot](https://www.whitesourcesoftware.com/free-developer-tools/renovate/).
