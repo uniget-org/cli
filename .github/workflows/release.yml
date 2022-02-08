@@ -10,6 +10,11 @@ on:
       - synchronize
       - labeled
       - reopened
+    paths:
+      - docker-setup.sh
+      - test/*
+      - Dockerfile
+      - docker/*
 
 jobs:
 
