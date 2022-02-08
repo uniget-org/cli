@@ -56,25 +56,27 @@ All tools will be installed in parallel. Many tools only require a simple downlo
 
 You can tweak the behaviour of `docker-setup` by passing parameters or environment variables:
 
-| Parameter          | Variable                 | Meaning |
-| ------------------ | ------------------------ | ------- |
-| `--help`           | n/a                      | Display help for parameters and environment variables |
-| `--version`        | n/a                      | Display version and exit |
-| `--check`          | `CHECK`                  | Only check if tools need to be installed or updated |
-| `--no-wait`        | `NO_WAIT`                | Do not wait before installing |
-| `--reinstall`      | `REINSTALL`              | Install all tools again |
-| `--only`           | `ONLY`                   | Only install specified tools |
-| `--no-progressbar` | `NO_PROGRESSBAR`         | Do not display progress bar |
-| `--no-color`       | `NO_COLOR`               | Do not display colored output |
-| `--plan`           | `PLAN`                   | Show planned installations |
-| `--skip-docs`      | `SKIP_DOCS`              | Do not install documentation for faster installation |
-|                    | `PREFIX`                 | Install into a subdirectory (see notes below) |
-|                    | `TARGET`                 | Specifies the target directory for binaries. Defaults to /usr |
-|                    | `CGROUP_VERSION`         | Specifies which version of cgroup to use. Defaults to v2 |
-|                    | `DOCKER_ADDRESS_BASE`    | Specifies the address pool for networks, e.g. 192.168.0.0/16 |
-|                    | `DOCKER_ADDRESS_SIZE`    | Specifies the size of each network, e.g. 24 |
-|                    | `DOCKER_REGISTRY_MIRROR` | Specifies a host to be used as registry mirror, e.g. https://proxy.my-domain.tld |
-|                    | `DOCKER_COMPOSE`         | Specifies which major version of docker-compose to use. Defaults to v2 |
+| Parameter           | Variable                 | Meaning |
+| ------------------- | ------------------------ | ------- |
+| `--help`            | n/a                      | Display help for parameters and environment variables |
+| `--version`         | n/a                      | Display version and exit |
+| `--bash-completion` | n/a                      | Output completion script for bash |
+| `--check`           | `CHECK`                  | Only check if tools need to be installed or updated |
+| `--no-wait`         | `NO_WAIT`                | Do not wait before installing |
+| `--reinstall`       | `REINSTALL`              | Install all tools again |
+| `--only`            | `ONLY`                   | Only install specified tools |
+| `--only-installed`  | `ONLY_INSTALLED`         | Only process installed tools |
+| `--no-progressbar`  | `NO_PROGRESSBAR`         | Do not display progress bar |
+| `--no-color`        | `NO_COLOR`               | Do not display colored output |
+| `--plan`            | `PLAN`                   | Show planned installations |
+| `--skip-docs`       | `SKIP_DOCS`              | Do not install documentation for faster installation |
+|                     | `PREFIX`                 | Install into a subdirectory (see notes below) |
+|                     | `TARGET`                 | Specifies the target directory for binaries. Defaults to /usr |
+|                     | `CGROUP_VERSION`         | Specifies which version of cgroup to use. Defaults to v2 |
+|                     | `DOCKER_ADDRESS_BASE`    | Specifies the address pool for networks, e.g. 192.168.0.0/16 |
+|                     | `DOCKER_ADDRESS_SIZE`    | Specifies the size of each network, e.g. 24 |
+|                     | `DOCKER_REGISTRY_MIRROR` | Specifies a host to be used as registry mirror, e.g. https://proxy.my-domain.tld |
+|                     | `DOCKER_COMPOSE`         | Specifies which major version of docker-compose to use. Defaults to v2 |
 
 Before installing any tools, `docker-setup` displays a list of all supported tools to visualize the current status and what will happen. All tools show the following indicators:
 
@@ -127,7 +129,17 @@ The same applies when combining `--reinstall` with `--only`:
 bash docker-setup.sh --only docker --reinstall
 ```
 
-## Scenario 4: You don't want to wait
+## Scenario 4: You only want to process installed tools
+
+If you have previously installed tools using `docker-setup`, you can choose to update only installed tools:
+
+```bash
+bash docker-setup.sh --only-installed
+```
+
+You cannot combine this with `--only`/`ONLY`.
+
+## Scenario 5: You don't want to wait
 
 If you are used to running `docker-setup` with `--check` before installing or updating, you can also skip the delay by adding `--no-wait`:
 
@@ -141,7 +153,7 @@ This can also be used when installing or updating some tools:
 bash docker-setup.sh --only docker --no-wait
 ```
 
-## Scenario 5: Plan installation of all or some tools
+## Scenario 6: Plan installation of all or some tools
 
 Specifying `--check` will display outdated tools and return with exit code 1 if any tools are outdated. `--plan` will do neither and stop execution before any installation takes place:
 
@@ -149,7 +161,7 @@ Specifying `--check` will display outdated tools and return with exit code 1 if 
 bash docker-setup.sh --only docker --plan
 ```
 
-## Scenario 6: Provide parameters using the onliner
+## Scenario 7: Provide parameters using the onliner
 
 All parameters are mapped to environment variables internally. Therefore you can supply environment variables instead of parameters. For a reference, see [usage](#usage) above.
 
@@ -163,7 +175,7 @@ If you prefer parameters, `bash` requires the parameter `-s` before any paramete
 curl -sL https://github.com/nicholasdille/docker-setup/releases/latest/download/docker-setup.sh | bash -s --no-wait
 ```
 
-## Scenario 7: Container Image
+## Scenario 8: Container Image
 
 The [`docker-setup` container image](https://hub.docker.com/r/nicholasdille/docker-setup) helps installing all tools without otherweise touching the system:
 
