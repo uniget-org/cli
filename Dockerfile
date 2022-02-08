@@ -8,6 +8,7 @@ RUN apt-get update \
         git \
         tzdata \
         unzip \
+        ncurses-bin \
  && update-alternatives --set iptables /usr/sbin/iptables-legacy
 
 FROM base AS docker-setup
