@@ -11,7 +11,7 @@
 
 The container tools installer and updater
 
-## Install
+## Quickstart
 
 Download and run `docker-setup`:
 
@@ -20,9 +20,25 @@ curl -sLO https://github.com/nicholasdille/docker-setup/releases/latest/download
 bash docker-setup.sh
 ```
 
+Download and run `docker-setup` as a one-liner:
+
+```bash
+curl -sL https://github.com/nicholasdille/docker-setup/releases/latest/download/docker-setup.sh | bash
+```
+
 See [below](#usage) for more options.
 
 `docker-setup` will warn you if some prerequisites are missing.
+
+## Included tools
+
+The following tools are included in `docker-setup`. The exact versions are pinned inside `docker-setup`.
+
+```plaintext
+arkade buildah buildkit buildx clusterawsadm clusterctl cni cni-isolation conmon containerd cosign crane crictl crun ctop dasel dive docker docker-compose docker-machine docker-scan docuum dry duffle firecracker firectl footloose fuse-overlayfs fuse-overlayfs-snapshotter glow gvisor helm helmfile hub-tool ignite img imgcrypt ipfs jp jq jwt k3d k3s k9s kapp kind kompose krew kubectl kubectl-build kubectl-free kubectl-resources kubefire kubeletctl kubeswitch kustomize lazydocker lazygit manifest-tool minikube nerdctl oras patat portainer porter podman qemu regclient rootlesskit runc skopeo slirp4netns sops stargz-snapshotter trivy umoci yq ytt
+```
+
+## Supported distributons
 
 Releases are tested on the following distributions:
 - Alpine 3.15
@@ -34,27 +50,9 @@ Releases are tested on the following distributions:
 
 `docker-setup` implements a workaround for CentOS 7 because it does not offer `iptables-legacy`. Therefore, `docker-setup` installs a binary package for `iptables-legacy` from [nicholasdille/centos-iptables-legacy](https://github.com/nicholasdille/centos-iptables-legacy). As long as Docker does not support `nftables`, the daemon requires `iptables-legacy` or can only run with [`--iptables=false` which breaks container networking](https://docs.docker.com/network/iptables/#prevent-docker-from-manipulating-iptables). The test for CentOS 7 is currently hanging (tracked in [#262](https://github.com/nicholasdille/docker-setup/issues/262)) and therefore disabled. CentOS 8 fails to update repository metadata for `appstream` (tracked in [#263](https://github.com/nicholasdille/docker-setup/issues/263)) and is therefore disabled.
 
-## Tools
-
-The following tools are included in `docker-setup`. The exact versions are pinned inside `docker-setup`.
-
-```plaintext
-arkade buildah buildkit buildx clusterawsadm clusterctl cni cni-isolation conmon containerd cosign crane crictl crun ctop dasel dive docker docker-compose docker-machine docker-scan docuum dry duffle firecracker firectl footloose fuse-overlayfs fuse-overlayfs-snapshotter glow gvisor helm helmfile hub-tool ignite img imgcrypt ipfs jp jq jwt k3d k3s k9s kapp kind kompose krew kubectl kubectl-build kubectl-free kubectl-resources kubefire kubeletctl kubeswitch kustomize lazydocker lazygit manifest-tool minikube nerdctl oras patat portainer porter podman qemu regclient rootlesskit runc skopeo slirp4netns sops stargz-snapshotter trivy umoci yq ytt
-```
-
 ## Usage
 
 All tools will be installed in parallel. Many tools only require a simple download so that most tools will be installed really quickly.
-
-`docker-setup` displays a progress bar unless suppressed by the command line switch:
-
-[![Using docker-setup](https://asciinema.org/a/6rptGICcjvJZR4F5OjMmRqG7L.svg)](https://asciinema.org/a/6rptGICcjvJZR4F5OjMmRqG7L)
-
-Download and run `docker-setup` as a one-liner:
-
-```bash
-curl -sL https://github.com/nicholasdille/docker-setup/releases/latest/download/docker-setup.sh | bash
-```
 
 You can tweak the behaviour of `docker-setup` by passing parameters or environment variables:
 
@@ -78,7 +76,106 @@ You can tweak the behaviour of `docker-setup` by passing parameters or environme
 |                    | `DOCKER_REGISTRY_MIRROR` | Specifies a host to be used as registry mirror, e.g. https://proxy.my-domain.tld |
 |                    | `DOCKER_COMPOSE`         | Specifies which major version of docker-compose to use. Defaults to v2 |
 
-Combining `--check`/`CHECK` and `--only`/`ONLY` will limit the test for outdated tools to those specified on the command line.
+Before installing any tools, `docker-setup` displays a list of all supported tools to visualize the current status and what will happen. All tools show the following indicators:
+
+- Suffix with either a green check mark or a red cross mark to indicate whether it is up-to-date or outdated
+- Colored in green to indicate that the tool is already installed and will not be re-installed
+- Colored in yellow to indicate that the tool will be installed or updated
+- Colored in grey to indicate that the tool will be skipped because you specified `--only`/`ONLY`
+
+## Scenario 1: You want all tools
+
+Install tools for the first time:
+
+```bash
+bash docker-setup.sh
+```
+
+The same command updates outdated tools.
+
+Check if tools are outdated. `docker-setup` will return with exit code 1 if one or more tools are outdated:
+
+```bash
+bash docker-setup.sh --check
+```
+
+## Scenario 2: You want some tools
+
+Install or update selected tools, e.g. `docker`:
+
+```bash
+bash docker-setup.sh --only docker
+```
+
+Check if tools are outdated:
+
+```bash
+bash docker-setup.sh --only docker --check
+```
+
+## Scenario 3: Reinstall all or some tools
+
+By adding the `--reinstall` parameter, all tools can be reinstalled regardless if they are outdated:
+
+```bash
+bash docker-setup.sh --reinstall
+```
+
+The same applies when combining `--reinstall` with `--only`:
+
+```bash
+bash docker-setup.sh --only docker --reinstall
+```
+
+## Scenario 4: You don't want to wait
+
+If you are used to running `docker-setup` with `--check` before installing or updating, you can also skip the delay by adding `--no-wait`:
+
+```bash
+bash docker-setup.sh --no-wait
+```
+
+This can also be used when installing or updating some tools:
+
+```bash
+bash docker-setup.sh --only docker --no-wait
+```
+
+## Scenario 5: Plan installation of all or some tools
+
+Specifying `--check` will display outdated tools and return with exit code 1 if any tools are outdated. `--plan` will do neither and stop execution before any installation takes place:
+
+```bash
+bash docker-setup.sh --only docker --plan
+```
+
+## Scenario 6: Provide parameters using the onliner
+
+All parameters are mapped to environment variables internally. Therefore you can supply environment variables instead of parameters. For a reference, see [usage](#usage) above.
+
+```bash
+curl -sL https://github.com/nicholasdille/docker-setup/releases/latest/download/docker-setup.sh | NO_WAIT=true bash
+```
+
+If you prefer parameters, `bash` requires the parameter `-s` before any parameters for `docker-setup` can be supplied:
+
+```bash
+curl -sL https://github.com/nicholasdille/docker-setup/releases/latest/download/docker-setup.sh | bash -s --no-wait
+```
+
+## Scenario 7: Container Image
+
+The [`docker-setup` container image](https://hub.docker.com/r/nicholasdille/docker-setup) helps installing all tools without otherweise touching the system:
+
+```bash
+docker container run --interactive --tty --rm \
+    --mount type=bind,src=/,dst=/opt/docker-setup \
+    --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
+    --env PREFIX=/opt/docker-setup \
+    nicholasdille/docker-setup
+```
+
+The Docker socket is necessary to install some tools or complete the installation of some tools.
 
 ## Internals
 
@@ -95,27 +192,15 @@ Depending on the tool additional files are placed outside of `${TARGET}`:
 
 When `PREFIX` is specified, these files will also be placed in a subdirectory. But `docker-setup` will not handle daemon starts and restarts because it is assumed that the installation directory contains a different root file system.
 
+## Docker
+
+The Docker daemon will use the executables installed to `${TARGET}/libexec/docker/bin/` which are installed from the [official binary package](https://download.docker.com/linux/static/stable/x86_64/). The systemd unit as well as the init script have been modified to ensure this.
+
 ## Air-gapped installation
 
 `docker-setup` downloads several file during the installation. Some of them are coming from this repository. These files can now be placed in `/var/lib/docker-setup/contrib` to reduce the dependency on an internet connection. A tarball is published in the release (`contrib.tar.gz`) and included in the container image.
 
 Air-gapped installations are not possible because not all files are included in the contrib tarball.
-
-## Container Image
-
-The [`docker-setup` container image](https://hub.docker.com/r/nicholasdille/docker-setup) helps installing all tools without otherweise touching the system:
-
-```bash
-docker container run --interactive --tty --rm \
-    --mount type=bind,src=/,dst=/opt/docker-setup \
-    --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
-    --env PREFIX=/opt/docker-setup \
-    nicholasdille/docker-setup
-```
-
-## Docker
-
-The Docker daemon will use the executables installed to `${TARGET}/libexec/docker/bin/` which are installed from the [official binary package](https://download.docker.com/linux/static/stable/x86_64/). The systemd unit as well as the init script have been modified to ensure this.
 
 ## cloud-init
 
