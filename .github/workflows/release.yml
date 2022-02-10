@@ -18,7 +18,7 @@ jobs:
       - name: Get version
         id: get_version
         run: |
-          echo ::set-output name=version::$(jq '.workflow_run.head_branch' "${GITHUB_EVENT_PATH}")
+          echo ::set-output name=version::$(jq --raw-output '.workflow_run.head_branch' "${GITHUB_EVENT_PATH}")
 
       - name: Checkout code
         uses: actions/checkout@v2
