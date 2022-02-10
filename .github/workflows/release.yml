@@ -15,8 +15,15 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
 
+      - name: Get version
+        id: get_version
+        run: |
+          echo ::set-output name=version::$(jq '.workflow_run.head_branch' "${GITHUB_EVENT_PATH}")
+
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          ref: ${{ steps.get_version.outputs.version }}
 
       - name: Shellcheck
         env:
@@ -25,13 +32,6 @@ jobs:
           curl -sL https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VERSION}/shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz \
           | tar -xJ --strip-components=1 shellcheck-v${SHELLCHECK_VERSION}/shellcheck && \
           ./shellcheck docker-setup.sh
-
-      - name: Get version
-        id: get_version
-        run: |
-          printenv | sort; \
-          cat "${GITHUB_EVENT_PATH}"; \
-          echo ::set-output name=version::${GITHUB_REF/refs\/tags\/v/}
 
       - name: Set version
         run: |
