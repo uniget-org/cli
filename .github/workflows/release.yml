@@ -29,7 +29,8 @@ jobs:
       - name: Get version
         id: get_version
         run: |
-          printenv | sort
+          printenv | sort; \
+          cat "${GITHUB_EVENT_PATH}"; \
           echo ::set-output name=version::${GITHUB_REF/refs\/tags\/v/}
 
       - name: Set version
