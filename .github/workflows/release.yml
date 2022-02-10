@@ -28,7 +28,9 @@ jobs:
 
       - name: Get version
         id: get_version
-        run: echo ::set-output name=version::${GITHUB_REF/refs\/tags\/v/}
+        run: |
+          printenv | sort
+          echo ::set-output name=version::${GITHUB_REF/refs\/tags\/v/}
 
       - name: Set version
         run: |
