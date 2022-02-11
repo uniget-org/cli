@@ -1,4 +1,4 @@
-DISTROS = $(shell ls test/Dockerfile.* | sed 's|test/Dockerfile.||')
+DISTROS = $(shell ls env/*/Dockerfile | sed -E 's|env/([^/]+)/Dockerfile|\1|')
 
 .PHONY: all check
 
