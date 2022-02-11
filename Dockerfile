@@ -1,4 +1,4 @@
-FROM ubuntu:21.04 AS base
+FROM ubuntu:21.04@sha256:ba394fabd516b39ccf8597ec656a9ddd7d0a2688ed8cb373ca7ac9b6fe67848f AS base
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
  && apt-get -y install --no-install-recommends \
