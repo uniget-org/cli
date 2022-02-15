@@ -30,6 +30,12 @@ See [below](#usage) for more options.
 
 `docker-setup` will warn you if some prerequisites are missing.
 
+## Purpose
+
+`docker-setup` is meant to bootstrap a new box with Docker as well as install useful tools from the container ecosystem.It aims to be distribution-agnostic and provide reasonable defaults. Personally, I am using it to prepare virtual machines for my own experiments as well as training environments.
+
+`docker-setup` is not meant to be a competitor to Docker Desktop. It is lacking important features required for developing using Docker.
+
 ## Included tools
 
 The following tools are included in `docker-setup`. The exact versions are pinned inside `docker-setup`.
