@@ -11,7 +11,7 @@ jobs:
 
   check:
     name: Check
-    if: ${{ github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'v') }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-20.04
     steps:
 
@@ -21,8 +21,7 @@ jobs:
 
   release:
     name: Release
-    needs:
-    - check
+    if: ${{ github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'v') }}
     runs-on: ubuntu-20.04
     steps:
 
@@ -87,8 +86,6 @@ jobs:
   image:
     name: docker-build
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    needs:
-    - check
     runs-on: ubuntu-latest
     env:
       IMAGE_NAME: ${{ secrets.docker_hub_username }}/docker-setup
