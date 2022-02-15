@@ -4,7 +4,7 @@ variable "distro" {
 
 target "default" {
     context = "."
-    dockerfile = "env/Dockerfile.${distro}"
+    dockerfile = "env/${distro}/Dockerfile"
     tags = [
         "nicholasdille/docker-setup:${distro}"
     ]
