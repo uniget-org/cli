@@ -9,15 +9,15 @@ on:
 
 jobs:
 
-  check:
-    name: Check
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    runs-on: ubuntu-20.04
-    steps:
-
-      - name: Check
-        run: |
-          jq . "${GITHUB_EVENT_PATH}"
+#  check:
+#    name: Check
+#    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+#    runs-on: ubuntu-20.04
+#    steps:
+#
+#      - name: Check
+#        run: |
+#          jq . "${GITHUB_EVENT_PATH}"
 
   release:
     name: Release
