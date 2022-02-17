@@ -99,6 +99,8 @@ Install tools for the first time:
 bash docker-setup.sh
 ```
 
+[![asciicast](https://asciinema.org/a/469752.svg)](https://asciinema.org/a/469752)
+
 The same command updates outdated tools.
 
 Check if tools are outdated. `docker-setup` will return with exit code 1 if one or more tools are outdated:
@@ -112,14 +114,18 @@ bash docker-setup.sh --check
 Install or update selected tools, e.g. `docker`:
 
 ```bash
-bash docker-setup.sh --only docker
+bash docker-setup.sh --only docker yq
 ```
+
+[![asciicast](https://asciinema.org/a/469759.svg)](https://asciinema.org/a/469759)
 
 Check if tools are outdated:
 
 ```bash
-bash docker-setup.sh --only docker --check
+bash docker-setup.sh --only docker yq --check
 ```
+
+[![asciicast](https://asciinema.org/a/469763.svg)](https://asciinema.org/a/469763)
 
 ## Scenario 3: Reinstall all or some tools
 
@@ -135,6 +141,8 @@ The same applies when combining `--reinstall` with `--only`:
 bash docker-setup.sh --only docker --reinstall
 ```
 
+[![asciicast](https://asciinema.org/a/469765.svg)](https://asciinema.org/a/469765)
+
 ## Scenario 4: You only want to process installed tools
 
 If you have previously installed tools using `docker-setup`, you can choose to update only installed tools:
@@ -142,6 +150,8 @@ If you have previously installed tools using `docker-setup`, you can choose to u
 ```bash
 bash docker-setup.sh --only-installed
 ```
+
+[![asciicast](https://asciinema.org/a/469767.svg)](https://asciinema.org/a/469767)
 
 You cannot combine this with `--only`/`ONLY`.
 
