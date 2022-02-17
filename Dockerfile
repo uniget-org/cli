@@ -9,6 +9,7 @@ RUN apt-get update \
         tzdata \
         unzip \
         ncurses-bin \
+        asciinema \
  && update-alternatives --set iptables /usr/sbin/iptables-legacy
 
 FROM base AS docker-setup
