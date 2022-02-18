@@ -213,9 +213,7 @@ The Docker socket is necessary to install some tools or complete the installatio
 
 `docker-setup` contains a list of all tools with pinned versions. These versions are automatically updated using [RenovateBot](https://www.whitesourcesoftware.com/free-developer-tools/renovate/).
 
-Installation logs are placed in `/var/log/docker-setup`.
-
-The installation progress is cached in `/var/cache/docker-setup/progress`. The context will be removed after the installation completed.
+`docker-setup` limits the number of parallel installations to preserve resources. Installation logs are placed in `/var/log/docker-setup/`.
 
 Depending on the tool additional files are placed outside of `${TARGET}`:
 
