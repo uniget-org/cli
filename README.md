@@ -169,6 +169,8 @@ This can also be used when installing or updating some tools:
 bash docker-setup.sh --only docker --no-wait
 ```
 
+[![asciicast](https://asciinema.org/a/469927.svg)](https://asciinema.org/a/469927)
+
 ## Scenario 6: Plan installation of all or some tools
 
 Specifying `--check` will display outdated tools and return with exit code 1 if any tools are outdated. `--plan` will do neither and stop execution before any installation takes place:
@@ -176,6 +178,8 @@ Specifying `--check` will display outdated tools and return with exit code 1 if 
 ```bash
 bash docker-setup.sh --only docker --plan
 ```
+
+[![asciicast](https://asciinema.org/a/469928.svg)](https://asciinema.org/a/469928)
 
 ## Scenario 7: Provide parameters using the onliner
 
