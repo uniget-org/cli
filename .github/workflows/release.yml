@@ -102,12 +102,9 @@ jobs:
       with:
         images: ${{ env.IMAGE_NAME }}
         tags: |
-          type=ref,event=branch
-          type=ref,event=pr
-          type=edge
-          type=semver,pattern={{version}}
-          type=semver,pattern={{major}}.{{minor}}
-          type=semver,pattern={{major}}
+          type=semver,pattern={{version}},value=${{ steps.get_version.outputs.version }}
+          type=semver,pattern={{major}}.{{minor}},value=${{ steps.get_version.outputs.version }}
+          type=semver,pattern={{major}},value=${{ steps.get_version.outputs.version }}
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v1
