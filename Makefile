@@ -18,6 +18,7 @@ test-%: %
 		--privileged \
 		--env NO_WAIT=true \
 		--env SKIP_DOCS=true \
+		--volume "${PWD}/.downloads:/var/cache/docker-setup/downloads" \
 		nicholasdille/docker-setup:$*
 
 CHANGELOG.md:
