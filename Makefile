@@ -31,6 +31,20 @@ CHANGELOG.md:
         	--user nicholasdille \
             --project docker-setup
 
+build:
+	@docker image build \
+		--tag nicholasdille/docker-setup:main \
+		.
+
+test: build
+	@docker run \
+		--interactive \
+		--tty \
+		--rm \
+		--privileged \
+		--entrypoint bash \
+		nicholasdille/docker-setup:main
+
 build-%:
 	@docker image build \
 		--tag nicholasdille/docker-setup:$* \

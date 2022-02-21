@@ -10,6 +10,7 @@ RUN apt-get update \
         unzip \
         ncurses-bin \
         asciinema \
+        time \
  && update-alternatives --set iptables /usr/sbin/iptables-legacy
 
 FROM base AS docker-setup
