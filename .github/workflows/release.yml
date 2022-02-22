@@ -27,8 +27,10 @@ jobs:
 
       - name: Get version
         id: get_version
+        env:
+          SEMVER_VERSION: 3.3.0
         run: |
-          curl -sLO https://github.com/fsaintjacques/semver-tool/raw/3.3.0/src/semver; \
+          curl -sLO "https://github.com/fsaintjacques/semver-tool/raw/${SEMVER_VERSION}/src/semver"; \
           VERSION="$(jq --raw-output '.workflow_run.head_branch' "${GITHUB_EVENT_PATH}")"; \
           echo "::set-output name=version::${VERSION}"; \
           echo "::set-output name=prerelease::$(if test "$(bash semver get prerel "${VERSION}")" == ""; then echo false; else echo true; fi)"
@@ -42,8 +44,8 @@ jobs:
         env:
           SHELLCHECK_VERSION: 0.8.0
         run: |
-          curl -sL https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VERSION}/shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz \
-          | tar -xJ --strip-components=1 shellcheck-v${SHELLCHECK_VERSION}/shellcheck && \
+          curl -sL "https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VERSION}/shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" \
+          | tar -xJ --strip-components=1 "shellcheck-v${SHELLCHECK_VERSION}/shellcheck" && \
           ./shellcheck docker-setup.sh
 
       - name: Set version
