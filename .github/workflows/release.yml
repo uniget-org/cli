@@ -28,7 +28,10 @@ jobs:
       - name: Get version
         id: get_version
         run: |
-          echo ::set-output name=version::$(jq --raw-output '.workflow_run.head_branch' "${GITHUB_EVENT_PATH}")
+          curl -sLO https://github.com/fsaintjacques/semver-tool/raw/3.3.0/src/semver; \
+          VERSION="$(jq --raw-output '.workflow_run.head_branch' "${GITHUB_EVENT_PATH}")"; \
+          echo "::set-output name=version::${VERSION}"; \
+          echo "::set-output name=prerelease::$(if test "$(bash semver get prerel "${VERSION}")" == ""; then echo false; else echo true; fi)"
 
       - name: Checkout code
         uses: actions/checkout@v2
@@ -79,7 +82,7 @@ jobs:
           tag: ${{ steps.get_version.outputs.version }}
           draft: false
           bodyFile: ${{ steps.get_version.outputs.version }}.md
-          prerelease: false
+          prerelease: ${{ steps.get_version.outputs.prerelease }}
           replacesArtifacts: true
           artifacts: "docker-setup.sh,docker-setup.sh.sha256,contrib.tar.gz,contrib.tar.gz.sha256"
 
