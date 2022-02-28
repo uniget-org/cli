@@ -50,7 +50,7 @@ jobs:
 
       - name: Shellcheck
         run: |
-          ./shellcheck docker-setup.sh
+          shellcheck docker-setup.sh
 
       - name: Set version
         run: |
