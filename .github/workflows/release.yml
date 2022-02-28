@@ -25,15 +25,22 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
 
-      - name: Get version
-        id: get_version
+      - name: Install tools
         env:
           SEMVER_VERSION: 3.3.0
+          SHELLCHECK_VERSION: 0.8.0
         run: |
-          curl -sLO "https://github.com/fsaintjacques/semver-tool/raw/${SEMVER_VERSION}/src/semver"; \
+          curl -sLo /usr/local/bin/semver "https://github.com/fsaintjacques/semver-tool/raw/${SEMVER_VERSION}/src/semver"
+          chmod +x /usr/local/bin/semver
+          curl -sL "https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VERSION}/shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" \
+          | tar -xJC /usr/local/bin/ --strip-components=1 "shellcheck-v${SHELLCHECK_VERSION}/shellcheck"
+
+      - name: Get version
+        id: get_version
+        run: |
           VERSION="$(jq --raw-output '.workflow_run.head_branch' "${GITHUB_EVENT_PATH}")"; \
           echo "::set-output name=version::${VERSION}"; \
-          echo "::set-output name=prerelease::$(if test "$(bash semver get prerel "${VERSION}")" == ""; then echo false; else echo true; fi)"
+          echo "::set-output name=prerelease::$(if test "$(semver get prerel "${VERSION}")" == ""; then echo false; else echo true; fi)"
 
       - name: Checkout code
         uses: actions/checkout@v2
@@ -42,11 +49,7 @@ jobs:
           fetch-depth: '0'
 
       - name: Shellcheck
-        env:
-          SHELLCHECK_VERSION: 0.8.0
         run: |
-          curl -sL "https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VERSION}/shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" \
-          | tar -xJ --strip-components=1 "shellcheck-v${SHELLCHECK_VERSION}/shellcheck" && \
           ./shellcheck docker-setup.sh
 
       - name: Set version
@@ -69,7 +72,7 @@ jobs:
           LAST_RELEASE="$(git tag | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -Vr | head -n 1)"
           echo "Last release was ${LAST_RELEASE}."
           SINCE_TAG=""
-          if test -z "$(bash semver get prerel "${TAG}")"; then
+          if test -z "$(semver get prerel "${TAG}")"; then
               echo "Setting SINCE_TAG."
               SINCE_TAG="--since-tag ${LAST_RELEASE}"
           fi
@@ -79,7 +82,7 @@ jobs:
               --project docker-setup \
               --token ${{ secrets.BOT_GITHUB_TOKEN }} \
               ${SINCE_TAG}
-          if test -z "$(bash semver get prerel "${TAG}")"; then
+          if test -z "$(semver get prerel "${TAG}")"; then
               echo "Copying"
               cp /opt/CHANGELOG.md ${{ steps.get_version.outputs.version }}.md
           else
