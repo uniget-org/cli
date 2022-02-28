@@ -63,16 +63,32 @@ jobs:
 
       - name: Create changelog
         run: |
+          TAG="$(jq --raw-output '.workflow_run.head_branch' "${GITHUB_EVENT_PATH}")"
+          echo "Processing tag ${TAG}."
+          LAST_RELEASE="$(git tag | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -Vr | head -n 1)"
+          echo "Last release was ${LAST_RELEASE}."
+          SINCE_TAG=""
+          if test -z "$(bash semver get prerel "${TAG}")"; then
+              echo "Setting SINCE_TAG."
+              SINCE_TAG="--since-tag ${LAST_RELEASE}"
+          fi
           docker run --volume "${PWD}:/usr/local/src/your-app" \
               githubchangeloggenerator/github-changelog-generator \
               --user nicholasdille \
               --project docker-setup \
-              --token ${{ secrets.BOT_GITHUB_TOKEN }} && \
-          docker run --volume "${PWD}:/opt" \
-              sean0x42/markdown-extract:v2 \
-              ${{ steps.get_version.outputs.version }} \
-              /opt/CHANGELOG.md \
-              >${{ steps.get_version.outputs.version }}.md
+              --token ${{ secrets.BOT_GITHUB_TOKEN }} \
+              ${SINCE_TAG}
+          if test -z "$(bash semver get prerel "${TAG}")"; then
+              echo "Copying"
+              cp /opt/CHANGELOG.md ${{ steps.get_version.outputs.version }}.md
+          else
+              echo "Extracting chapter"
+              docker run --volume "${PWD}:/opt" \
+                  sean0x42/markdown-extract:v2 \
+                  ${{ steps.get_version.outputs.version }} \
+                  /opt/CHANGELOG.md \
+                  >${{ steps.get_version.outputs.version }}.md
+          fi
 
       - name: Create release
         id: create_release
