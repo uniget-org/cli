@@ -84,7 +84,7 @@ jobs:
               ${SINCE_TAG}
           if test -z "$(semver get prerel "${TAG}")"; then
               echo "Copying"
-              cp /opt/CHANGELOG.md ${{ steps.get_version.outputs.version }}.md
+              cp CHANGELOG.md ${{ steps.get_version.outputs.version }}.md
           else
               echo "Extracting chapter"
               docker run --volume "${PWD}:/opt" \
