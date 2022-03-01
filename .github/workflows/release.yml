@@ -73,18 +73,16 @@ jobs:
                   --user "github-ci-token:${{ secrets.BOT_GITHUB_TOKEN }}" \
               | jq --raw-output '.published_at'
           )"
+          echo "Latest release was published at ${LATEST_RELEASE_PUBLISHED}."
           (
             echo "Closed issues and pull requests:"
             echo
             hub issue \
                 --state closed \
                 --include-pulls \
-                --since ${LATEST_RELEASE_PUBLISHED} \
-                --format "%t ([%i](%U))%n" \
-            | while read LINE; do
-                echo "- ${LINE}"
-            done
-          ) >${{ steps.get_version.outputs.version }}.txt
+                --since "${LATEST_RELEASE_PUBLISHED}" \
+                --format "%t ([%i](%U))%n"
+          ) >body.txt
 
       - name: Create release
         id: create_release
@@ -95,7 +93,7 @@ jobs:
           name: "Version ${{ steps.get_version.outputs.version }}"
           tag: ${{ steps.get_version.outputs.version }}
           draft: false
-          bodyFile: ${{ steps.get_version.outputs.version }}.txt
+          bodyFile: body.txt
           prerelease: ${{ steps.get_version.outputs.prerelease }}
           replacesArtifacts: true
           artifacts: "docker-setup.sh,docker-setup.sh.sha256,contrib.tar.gz,contrib.tar.gz.sha256"
