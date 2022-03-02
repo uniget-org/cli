@@ -26,6 +26,13 @@ Download and run `docker-setup` as a one-liner:
 curl -sL https://github.com/nicholasdille/docker-setup/releases/latest/download/docker-setup.sh | bash
 ```
 
+Install to a well-known location:
+
+```bash
+curl -sLo /usr/local/bin/docker-setup https://github.com/nicholasdille/docker-setup/releases/latest/download/docker-setup.sh
+chmod +x /usr/local/bin/docker-setup
+```
+
 See [below](#usage) for more options.
 
 `docker-setup` will warn you if some prerequisites are missing.
