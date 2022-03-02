@@ -82,7 +82,7 @@ jobs:
               --state closed \
               --include-pulls \
               --since "${LATEST_RELEASE_PUBLISHED}" \
-              --format "%t ([%i](%U))%n" \
+              --format "- %t ([%i](%U))%n" \
               >>body.txt
 
       - name: Create release
