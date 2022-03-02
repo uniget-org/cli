@@ -66,23 +66,24 @@ jobs:
           sha256sum contrib.tar.gz >contrib.tar.gz.sha256
 
       - name: Create changelog
+        env:
+          GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
         run: |
           LATEST_RELEASE_PUBLISHED="$(
               curl "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/releases/latest" \
                   --silent \
-                  --user "github-ci-token:${{ secrets.BOT_GITHUB_TOKEN }}" \
+                  --user "github-ci-token:${GITHUB_TOKEN}" \
               | jq --raw-output '.published_at'
           )"
           echo "Latest release was published at ${LATEST_RELEASE_PUBLISHED}."
-          (
-            echo "Closed issues and pull requests:"
-            echo
-            hub issue \
-                --state closed \
-                --include-pulls \
-                --since "${LATEST_RELEASE_PUBLISHED}" \
-                --format "%t ([%i](%U))%n"
-          ) >body.txt
+          echo "Closed issues and pull requests:" >>body.txt
+          echo >>body.txt
+          hub issue \
+              --state closed \
+              --include-pulls \
+              --since "${LATEST_RELEASE_PUBLISHED}" \
+              --format "%t ([%i](%U))%n" \
+              >>body.txt
 
       - name: Create release
         id: create_release
