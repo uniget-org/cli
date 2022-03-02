@@ -76,6 +76,8 @@ You can tweak the behaviour of `docker-setup` by passing parameters or environme
 | `--no-color`        | `NO_COLOR`               | Do not display colored output |
 | `--plan`            | `PLAN`                   | Show planned installations |
 | `--skip-docs`       | `SKIP_DOCS`              | Do not install documentation for faster installation |
+| `--no-cache`        | `NO_CACHE`               | XXX |
+| `--no-cron`         | `NO_CRON`                | YYY |
 |                     | `PREFIX`                 | Install into a subdirectory (see notes below) |
 |                     | `TARGET`                 | Specifies the target directory for binaries. Defaults to /usr |
 |                     | `CGROUP_VERSION`         | Specifies which version of cgroup to use. Defaults to v2 |
