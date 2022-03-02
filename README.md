@@ -48,7 +48,7 @@ See [below](#usage) for more options.
 The following tools are included in `docker-setup`. The exact versions are pinned inside `docker-setup`.
 
 ```plaintext
-arkade buildah buildkit buildx clusterawsadm clusterctl cni cni-isolation conmon containerd containerssh cosign crane crictl crun ctop dasel dive docker docker-compose docker-machine docker-scan docuum dry duffle dyff firecracker firectl footloose fuse-overlayfs fuse-overlayfs-snapshotter glow gvisor hcloud helm helmfile hub-tool ignite img imgcrypt ipfs jp jq jwt k3d k3s k3sup k9s kapp kind kompose krew kubectl kubectl-build kubectl-free kubectl-resources kubefire kubeletctl kubeswitch kustomize lazydocker lazygit manifest-tool minikube mitmproxy nerdctl norouter notation oci-image-tool oci-runtime-tool oras patat portainer porter podman qemu regclient rootlesskit runc skopeo slirp4netns sops sshocker stargz-snapshotter trivy umoci yq ytt
+arkade buildah buildkit buildx bypass4netns clusterawsadm clusterctl cni cni-isolation conmon containerd containerssh cosign crane crictl crun ctop dasel dive docker docker-compose docker-machine docker-scan docuum dry duffle dyff firecracker firectl footloose fuse-overlayfs fuse-overlayfs-snapshotter glow gvisor hcloud helm helmfile hub-tool ignite img imgcrypt ipfs jp jq jwt k3d k3s k3sup k9s kapp kind kompose krew kubectl kubectl-build kubectl-free kubectl-resources kubefire kubeletctl kubeswitch kustomize lazydocker lazygit manifest-tool minikube mitmproxy nerdctl norouter notation oci-image-tool oci-runtime-tool oras patat portainer porter podman qemu regclient rootlesskit runc skopeo slirp4netns sops sshocker stargz-snapshotter trivy umoci yq ytt
 ```
 
 ## Supported distributons
