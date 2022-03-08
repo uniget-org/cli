@@ -11,11 +11,15 @@ RUN apt-get update \
         ncurses-bin \
         asciinema \
         time \
+        jq \
  && update-alternatives --set iptables /usr/sbin/iptables-legacy
 
 FROM base AS docker-setup
 COPY docker/entrypoint.sh /
+COPY test.sh /
 COPY docker-setup.sh /usr/local/bin/docker-setup
+RUN chmod +x /usr/local/bin/docker-setup \
+ && mkdir -p /var/cache/docker-setup
+COPY tools.json /var/cache/docker-setup/
 COPY contrib /var/cache/docker-setup/contrib
-RUN chmod +x /usr/local/bin/docker-setup
 ENTRYPOINT [ "bash", "/entrypoint.sh" ]

@@ -29,11 +29,13 @@ jobs:
         env:
           SEMVER_VERSION: 3.3.0
           SHELLCHECK_VERSION: 0.8.0
+          YQ_VERSION: 4.21.1
         run: |
           curl -sLo /usr/local/bin/semver "https://github.com/fsaintjacques/semver-tool/raw/${SEMVER_VERSION}/src/semver"
           chmod +x /usr/local/bin/semver
           curl -sL "https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VERSION}/shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" \
           | tar -xJC /usr/local/bin/ --strip-components=1 "shellcheck-v${SHELLCHECK_VERSION}/shellcheck"
+          curl -sLo /usr/local/bin/yq "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64"
 
       - name: Get version
         id: get_version
@@ -64,6 +66,11 @@ jobs:
         run: |
           tar -czf contrib.tar.gz contrib && \
           sha256sum contrib.tar.gz >contrib.tar.gz.sha256
+
+      - name: Create tools.json
+        run: |
+          yq eval . tools.yaml >tools.json
+          sha256sum tools.json >tools.json.sha256
 
       - name: Create changelog
         env:
@@ -97,7 +104,7 @@ jobs:
           bodyFile: body.txt
           prerelease: ${{ steps.get_version.outputs.prerelease }}
           replacesArtifacts: true
-          artifacts: "docker-setup.sh,docker-setup.sh.sha256,contrib.tar.gz,contrib.tar.gz.sha256"
+          artifacts: "docker-setup.sh,docker-setup.sh.sha256,tools.json,tools.json.sha256,contrib.tar.gz,contrib.tar.gz.sha256"
 
   image:
     name: docker-build
