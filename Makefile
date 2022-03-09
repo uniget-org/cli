@@ -57,7 +57,7 @@ build: docker-setup.sh tools.json
 
 test: test-amd64
 
-test-%: build-%
+test-%: check build-%
 	@docker run \
 		--interactive \
 		--tty \

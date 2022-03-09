@@ -16,7 +16,6 @@ RUN apt-get update \
 
 FROM base AS docker-setup
 COPY docker/entrypoint.sh /
-COPY test.sh /
 COPY docker-setup.sh /usr/local/bin/docker-setup
 RUN chmod +x /usr/local/bin/docker-setup \
  && mkdir -p /var/cache/docker-setup
