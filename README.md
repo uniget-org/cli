@@ -74,31 +74,30 @@ You can tweak the behaviour of `docker-setup` by passing parameters or environme
 | `--help`            | n/a                      | Display help for parameters and environment variables |
 | `--version`         | n/a                      | Display version and exit |
 | `--bash-completion` | n/a                      | Output completion script for bash |
-| `--check`           | `CHECK`                  | Only check if tools need to be installed or updated |
-| `--no-wait`         | `NO_WAIT`                | Do not wait before installing |
-| `--reinstall`       | `REINSTALL`              | Install all tools again |
-| `--only`            | `ONLY`                   | Only install specified tools |
-| `--only-installed`  | `ONLY_INSTALLED`         | Only process installed tools |
-| `--no-progressbar`  | `NO_PROGRESSBAR`         | Do not display progress bar |
-| `--no-color`        | `NO_COLOR`               | Do not display colored output |
-| `--plan`            | `PLAN`                   | Show planned installations |
-| `--skip-docs`       | `SKIP_DOCS`              | Do not install documentation for faster installation |
-| `--no-cache`        | `NO_CACHE`               | XXX |
-| `--no-cron`         | `NO_CRON`                | YYY |
-|                     | `PREFIX`                 | Install into a subdirectory (see notes below) |
-|                     | `TARGET`                 | Specifies the target directory for binaries. Defaults to /usr |
-|                     | `CGROUP_VERSION`         | Specifies which version of cgroup to use. Defaults to v2 |
-|                     | `DOCKER_ADDRESS_BASE`    | Specifies the address pool for networks, e.g. 192.168.0.0/16 |
-|                     | `DOCKER_ADDRESS_SIZE`    | Specifies the size of each network, e.g. 24 |
-|                     | `DOCKER_REGISTRY_MIRROR` | Specifies a host to be used as registry mirror, e.g. https://proxy.my-domain.tld |
-|                     | `DOCKER_COMPOSE`         | Specifies which major version of docker-compose to use. Defaults to v2 |
+| `--check`           | `check`                  | Only check if tools need to be installed or updated |
+| `--no-wait`         | `no_wait`                | Do not wait before installing |
+| `--reinstall`       | `reinstall`              | Install all tools again |
+| `--only`            | `only`                   | Only install specified tools |
+| `--only-installed`  | `only_installed`         | Only process installed tools |
+| `--no-progressbar`  | `no_progressbar`         | Do not display progress bar |
+| `--no-color`        | `no_color`               | Do not display colored output |
+| `--plan`            | `plan`                   | Show planned installations |
+| `--skip-docs`       | `skip_docs`              | Do not install documentation for faster installation |
+| `--no-cache`        | `no_cache`               | XXX |
+| `--no-cron`         | `no_cron`                | YYY |
+|                     | `prefix`                 | Install into a subdirectory (see notes below) |
+|                     | `target`                 | Specifies the target directory for binaries. Defaults to /usr |
+|                     | `cgroup_version`         | Specifies which version of cgroup to use. Defaults to v2 |
+|                     | `docker_address_base`    | Specifies the address pool for networks, e.g. 192.168.0.0/16 |
+|                     | `docker_address_size`    | Specifies the size of each network, e.g. 24 |
+|                     | `docker_registry_mirror` | Specifies a host to be used as registry mirror, e.g. https://proxy.my-domain.tld |
 
 Before installing any tools, `docker-setup` displays a list of all supported tools to visualize the current status and what will happen. All tools show the following indicators:
 
 - Suffix with either a green check mark or a red cross mark to indicate whether it is up-to-date or outdated
 - Colored in green to indicate that the tool is already installed and will not be re-installed
 - Colored in yellow to indicate that the tool will be installed or updated
-- Colored in grey to indicate that the tool will be skipped because you specified `--only`/`ONLY`
+- Colored in grey to indicate that the tool will be skipped because you specified `--only`/`only`
 
 ## Scenario 1: You want all tools
 
@@ -162,7 +161,7 @@ bash docker-setup.sh --only-installed
 
 [![asciicast](https://asciinema.org/a/469767.svg)](https://asciinema.org/a/469767)
 
-You cannot combine this with `--only`/`ONLY`.
+You cannot combine this with `--only`/`only`.
 
 ## Scenario 5: You don't want to wait
 
@@ -224,7 +223,7 @@ The Docker socket is necessary to install some tools or complete the installatio
 
 `docker-setup` limits the number of parallel installations to preserve resources. Installation logs are placed in `/var/log/docker-setup/`.
 
-Depending on the tool additional files are placed outside of `${TARGET}`:
+Depending on the tool additional files are placed outside of `${target}`:
 
 - Systemd units in `/etc/systemd/system/`
 - Init scripts in `/etc/init.d/` with defaults in `/etc/default/`
@@ -233,7 +232,7 @@ When `PREFIX` is specified, these files will also be placed in a subdirectory. B
 
 ## Docker
 
-The Docker daemon will use the executables installed to `${TARGET}/libexec/docker/bin/` which are installed from the [official binary package](https://download.docker.com/linux/static/stable/x86_64/). The systemd unit as well as the init script have been modified to ensure this.
+The Docker daemon will use the executables installed to `${target}/libexec/docker/bin/` which are installed from the [official binary package](https://download.docker.com/linux/static/stable/x86_64/). The systemd unit as well as the init script have been modified to ensure this.
 
 ## Air-gapped installation
 
