@@ -19,7 +19,7 @@ M              = $(shell printf "\033[34;1m▶\033[0m")
 
 DISTROS        = $(shell ls env/*/Dockerfile | sed -E 's|env/([^/]+)/Dockerfile|\1|')
 
-.PHONY: all check test-% build-% record-%
+.PHONY: all check env-% test test-% build build-% record-%
 
 all: check $(DISTROS)
 
@@ -29,7 +29,7 @@ check:
 $(DISTROS): docker-setup.sh tools.json
 	@distro=$@ docker buildx bake
 
-test-%: %
+env-%: %
 	@docker run \
 		--interactive \
 		--tty \
@@ -55,18 +55,22 @@ build: docker-setup.sh tools.json
 		--tag nicholasdille/docker-setup:main \
 		.
 
-test: build
+test: test-amd64
+
+test-%: build-%
 	@docker run \
 		--interactive \
 		--tty \
 		--rm \
 		--privileged \
+		--platform linux/$* \
 		--entrypoint bash \
 		nicholasdille/docker-setup:main
 
 build-%:
 	@docker image build \
-		--tag nicholasdille/docker-setup:$* \
+		--tag nicholasdille/docker-setup:main \
+		--platform linux/$* \
 		.
 
 record-%: build-%
