@@ -12,6 +12,7 @@ RUN apt-get update \
         asciinema \
         time \
         jq \
+        less \
  && update-alternatives --set iptables /usr/sbin/iptables-legacy
 
 FROM base AS docker-setup
