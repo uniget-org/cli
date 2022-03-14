@@ -67,7 +67,7 @@ test-%: check build-%
 		--entrypoint bash \
 		nicholasdille/docker-setup:main
 
-build-%:
+build-%: tools.json
 	@docker image build \
 		--tag nicholasdille/docker-setup:main \
 		--platform linux/$* \
