@@ -8,6 +8,8 @@ HUB_VERSION    = 2.14.2
 HUB            = $(BIN)/hub
 GH             = $(BIN)/gh
 GH_VERSION     = 2.5.1
+YQ             = $(BIN)/yq
+YQ_VERSION     = 4.22.1
 DIST           = $(PWD)/dist
 GIT_TAG        = $(shell git describe --tags 2>/dev/null)
 RESET          = "\\e[39m\\e[49m"
@@ -84,7 +86,7 @@ record-%: build-%
 		nicholasdille/docker-setup:$*
 
 %.json: %.yaml $(YQ)
-	@yq --output-format json eval . $*.yaml >$*.json
+	@$(YQ) --output-format json eval . $*.yaml >$*.json
 
 $(BIN): ; $(info $(M) Preparing tools...)
 	@mkdir -p $(BIN)
@@ -106,6 +108,12 @@ $(GH): $(BIN) ; $(info $(M) Installing gh...)
 	@test -f $@ && test -x $@ || ( \
 		curl -sLf https://github.com/cli/cli/releases/download/v$(GH_VERSION)/gh_$(GH_VERSION)_linux_amd64.tar.gz \
 		| tar -xzC "$(PWD)" gh_$(GH_VERSION)_linux_amd64/bin/gh --strip-components=1; \
+		chmod +x $@; \
+	)
+
+$(YQ): $(BIN) ; $(info $(M) Installing yq...)
+	@test -f $@ && test -x $@ || ( \
+		curl -sLfo $@ https://github.com/mikefarah/yq/releases/download/v$(YQ_VERSION)/yq_linux_amd64; \
 		chmod +x $@; \
 	)
 
