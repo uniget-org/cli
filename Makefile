@@ -67,7 +67,7 @@ test-%: check build-%
 		--privileged \
 		--platform linux/$* \
 		--entrypoint bash \
-		nicholasdille/docker-setup:main
+		nicholasdille/docker-setup:main --login
 
 build-%: tools.json
 	@docker image build \

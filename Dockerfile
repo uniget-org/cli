@@ -13,13 +13,17 @@ RUN apt-get update \
         time \
         jq \
         less \
+        bash-completion \
  && update-alternatives --set iptables /usr/sbin/iptables-legacy
 
 FROM base AS docker-setup
-COPY docker/entrypoint.sh /
+
 COPY docker-setup.sh /usr/local/bin/docker-setup
 RUN chmod +x /usr/local/bin/docker-setup \
  && mkdir -p /var/cache/docker-setup
 COPY tools.json /var/cache/docker-setup/
 COPY contrib /var/cache/docker-setup/contrib
+COPY completion/bash/docker-setup.sh /etc/bash_completion.d/
+
+COPY docker/entrypoint.sh /
 ENTRYPOINT [ "bash", "/entrypoint.sh" ]
