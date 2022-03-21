@@ -74,7 +74,7 @@ jobs:
 
       - name: Create tools.json
         run: |
-          yq eval . tools.yaml >tools.json
+          yq --output-format json eval . tools.yaml >tools.json
           sha256sum tools.json >tools.json.sha256
 
       - name: Create changelog
