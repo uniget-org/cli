@@ -129,6 +129,10 @@ jobs:
       with:
         ref: ${{ steps.get_version.outputs.version }}
 
+    - name: Create tools.json
+      run: |
+        make tools.json
+
     - name: Docker meta
       id: docker_meta
       uses: docker/metadata-action@v3
