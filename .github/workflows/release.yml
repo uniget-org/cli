@@ -97,6 +97,8 @@ jobs:
           echo '```bash' >>body.txt
           echo "curl -sLo /usr/local/bin/docker-setup https://github.com/nicholasdille/docker-setup/releases/download/${{ steps.get_version.outputs.version }}/docker-setup.sh" >>body.txt
           echo "chmod +x /usr/local/bin/docker-setup" >>body.txt
+          echo "docker-setup --plan" >>body.txt
+          echo "source <(docker-setup --bash-completion)" >>body.txt
           echo '```' >>body.txt
           echo >>body.txt
           echo "## Closed issues and pull requests" >>body.txt
