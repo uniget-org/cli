@@ -94,10 +94,10 @@ jobs:
           echo >>body.txt
           echo "## Installation instructions" >>body.txt
           echo >>body.txt
-          echo "```bash" >>body.txt
+          echo '```bash' >>body.txt
           echo "curl -sLo /usr/local/bin/docker-setup https://github.com/nicholasdille/docker-setup/releases/download/${{ steps.get_version.outputs.version }}/docker-setup.sh" >>body.txt
           echo "chmod +x /usr/local/bin/docker-setup" >>body.txt
-          echo "```" >>body.txt
+          echo '```' >>body.txt
           echo >>body.txt
           echo "## Closed issues and pull requests" >>body.txt
           echo >>body.txt
