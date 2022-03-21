@@ -88,7 +88,18 @@ jobs:
               | jq --raw-output '.published_at'
           )"
           echo "Latest release was published at ${LATEST_RELEASE_PUBLISHED}."
-          echo "Closed issues and pull requests:" >>body.txt
+          echo "## Overview" >>body.txt
+          echo >>body.txt
+          echo "TODO" >>body.txt
+          echo >>body.txt
+          echo "## Installation instructions" >>body.txt
+          echo >>body.txt
+          echo "```bash" >>body.txt
+          echo "curl -sLo /usr/local/bin/docker-setup https://github.com/nicholasdille/docker-setup/releases/download/${{ steps.get_version.outputs.version }}/docker-setup.sh" >>body.txt
+          echo "chmod +x /usr/local/bin/docker-setup" >>body.txt
+          echo "```" >>body.txt
+          echo >>body.txt
+          echo "## Closed issues and pull requests" >>body.txt
           echo >>body.txt
           hub issue \
               --state closed \
