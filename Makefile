@@ -85,7 +85,7 @@ record-%: build-%
 		--entrypoint bash \
 		nicholasdille/docker-setup:$*
 
-%.json: %.yaml $(YQ)
+%.json: %.yaml $(YQ) ; $(info $(M) Creating $*.json...)
 	@$(YQ) --output-format json eval . $*.yaml >$*.json
 
 $(BIN): ; $(info $(M) Preparing tools...)
