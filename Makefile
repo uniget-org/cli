@@ -57,6 +57,32 @@ build: docker-setup.sh tools.json
 		--tag nicholasdille/docker-setup:main \
 		.
 
+mount: mount-amd64
+
+mount-%: check ubuntu-22.04
+	@docker run \
+		--interactive \
+		--tty \
+		--rm \
+		--volume /var/run/docker.sock:/var/run/docker.sock \
+		--volume "$${PWD}:/src" \
+		--workdir /src \
+		--platform linux/$* \
+		--entrypoint bash \
+		nicholasdille/docker-setup:ubuntu-22.04 --login
+
+dind: dind-amd64
+
+dind-%: check build-%
+	@docker run \
+		--interactive \
+		--tty \
+		--rm \
+		--volume /var/run/docker.sock:/var/run/docker.sock \
+		--platform linux/$* \
+		--entrypoint bash \
+		nicholasdille/docker-setup:main --login
+
 test: test-amd64
 
 test-%: check build-%
