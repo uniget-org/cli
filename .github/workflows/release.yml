@@ -56,7 +56,7 @@ jobs:
 
       - name: Set version
         run: |
-          sed -i 's/^DOCKER_SETUP_VERSION="main"$/DOCKER_SETUP_VERSION=${{ steps.get_version.outputs.version }}/' docker-setup.sh
+          sed -i 's/^docker_setup_version="main"$/docker_setup_version=${{ steps.get_version.outputs.version }}/' docker-setup.sh
 
       - name: Create checksum
         run: |
