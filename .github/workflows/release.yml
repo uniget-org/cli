@@ -107,6 +107,7 @@ jobs:
               --since "${LATEST_RELEASE_PUBLISHED}" \
               --format "- %t ([%i](%U))%n" \
               >>body.txt
+          cat body.txt
 
       - name: Create release
         id: create_release
