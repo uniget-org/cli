@@ -9,18 +9,25 @@ on:
 
 jobs:
 
-#  check:
-#    name: Check
-#    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-#    runs-on: ubuntu-20.04
-#    steps:
-#
-#      - name: Check
-#        run: |
-#          jq . "${GITHUB_EVENT_PATH}"
+  prepare:
+    name: Prepare
+    runs-on: ubuntu-20.04
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+      prerelease: ${{ steps.get_version.outputs.prerelease }}
+    steps:
+
+      - name: Get version
+        id: get_version
+        run: |
+          VERSION="$(jq --raw-output '.workflow_run.head_branch' "${GITHUB_EVENT_PATH}")"; \
+          echo "::set-output name=version::${VERSION}"; \
+          echo "::set-output name=prerelease::$(if test "$(semver get prerel "${VERSION}")" == ""; then echo false; else echo true; fi)"
 
   release:
     name: Release
+    needs:
+    - prepare
     if: ${{ github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'v') }}
     runs-on: ubuntu-20.04
     steps:
@@ -37,17 +44,10 @@ jobs:
           | tar -xJC /usr/local/bin/ --strip-components=1 "shellcheck-v${SHELLCHECK_VERSION}/shellcheck"
           curl -sLo /usr/local/bin/yq "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64"
 
-      - name: Get version
-        id: get_version
-        run: |
-          VERSION="$(jq --raw-output '.workflow_run.head_branch' "${GITHUB_EVENT_PATH}")"; \
-          echo "::set-output name=version::${VERSION}"; \
-          echo "::set-output name=prerelease::$(if test "$(semver get prerel "${VERSION}")" == ""; then echo false; else echo true; fi)"
-
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          ref: ${{ steps.get_version.outputs.version }}
+          ref: ${{ needs.prepare.outputs.version }}
           fetch-depth: '0'
 
       - name: Shellcheck
@@ -56,7 +56,7 @@ jobs:
 
       - name: Set version
         run: |
-          sed -i 's/^docker_setup_version="main"$/docker_setup_version=${{ steps.get_version.outputs.version }}/' docker-setup.sh
+          sed -i 's/^docker_setup_version="main"$/docker_setup_version=${{ needs.prepare.outputs.version }}/' docker-setup.sh
 
       - name: Create checksum
         run: |
@@ -95,7 +95,7 @@ jobs:
           echo "## Installation instructions" >>body.txt
           echo >>body.txt
           echo '```bash' >>body.txt
-          echo "curl -sLo /usr/local/bin/docker-setup https://github.com/nicholasdille/docker-setup/releases/download/${{ steps.get_version.outputs.version }}/docker-setup.sh" >>body.txt
+          echo "curl -sLo /usr/local/bin/docker-setup https://github.com/${GITHUB_REPOSITORY}/releases/download/${{ needs.prepare.outputs.version }}/docker-setup.sh" >>body.txt
           echo "chmod +x /usr/local/bin/docker-setup" >>body.txt
           echo "docker-setup --plan" >>body.txt
           echo "source <(docker-setup --bash-completion)" >>body.txt
@@ -117,26 +117,23 @@ jobs:
         with:
           token: ${{ secrets.BOT_GITHUB_TOKEN }}
           allowUpdates: true
-          name: "Version ${{ steps.get_version.outputs.version }}"
-          tag: ${{ steps.get_version.outputs.version }}
+          name: "Version ${{ needs.prepare.outputs.version }}"
+          tag: ${{ needs.prepare.outputs.version }}
           draft: false
           bodyFile: body.txt
-          prerelease: ${{ steps.get_version.outputs.prerelease }}
+          prerelease: ${{ needs.prepare.outputs.prerelease }}
           replacesArtifacts: true
           artifacts: "docker-setup.sh,docker-setup.sh.sha256,tools.json,tools.json.sha256,contrib.tar.gz,contrib.tar.gz.sha256,lib.tar.gz,lib.tar.gz.sha256"
 
   image:
     name: docker-build
+    needs:
+    - prepare
     if: ${{ github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'v') }}
     runs-on: ubuntu-latest
     env:
       IMAGE_NAME: ${{ secrets.docker_hub_username }}/docker-setup
     steps:
-
-    - name: Get version
-      id: get_version
-      run: |
-        echo ::set-output name=version::$(jq --raw-output '.workflow_run.head_branch' "${GITHUB_EVENT_PATH}")
 
     - name: Checkout
       uses: actions/checkout@v3
@@ -153,9 +150,9 @@ jobs:
       with:
         images: ${{ env.IMAGE_NAME }}
         tags: |
-          type=semver,pattern={{version}},value=${{ steps.get_version.outputs.version }}
-          type=semver,pattern={{major}}.{{minor}},value=${{ steps.get_version.outputs.version }}
-          type=semver,pattern={{major}},value=${{ steps.get_version.outputs.version }}
+          type=semver,pattern={{version}},value=${{ needs.prepare.outputs.version }}
+          type=semver,pattern={{major}}.{{minor}},value=${{ needs.prepare.outputs.version }}
+          type=semver,pattern={{major}},value=${{ needs.prepare.outputs.version }}
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v1
@@ -193,3 +190,21 @@ jobs:
       uses: github/codeql-action/upload-sarif@v1
       with:
         sarif_file: 'trivy-results.sarif'
+
+  bootstrap:
+    name: Bootstrap
+    needs:
+    - release
+    runs-on: ubuntu-20.04
+    steps:
+
+      - name: Download docker-setup
+        run: |
+          set -o errexit
+          curl https://github.com/${GITHUB_REPOSITORY}/releases/download/${{ needs.prepare.outputs.version }}/docker-setup.sh \
+              --silent \
+              --location \
+              --fail \
+              --output /usr/local/bin/docker-setup 
+          chmod +x /usr/local/bin/docker-setup
+          docker-setup --plan
