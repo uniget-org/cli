@@ -216,6 +216,8 @@ jobs:
           docker container run \
               --interactive \
               --rm \
+              --env TERM \
+              --env Europe/Berlin \
               --env GITHUB_REPOSITORY \
               nicholasdille/docker-setup:base <<EOF
           curl https://github.com/${GITHUB_REPOSITORY}/releases/download/${{ needs.prepare.outputs.version }}/docker-setup.sh \
