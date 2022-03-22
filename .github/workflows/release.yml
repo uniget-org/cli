@@ -205,6 +205,14 @@ jobs:
 
       - name: Download docker-setup
         run: |
+          docker build . \
+              --target base \
+              --tag nicholasdille/docker-setup:base
+          docker container run \
+              --interactive \
+              --rm \
+              --env GITHUB_REPOSITORY \
+              nicholasdille/docker-setup:base <<EOF
           curl https://github.com/${GITHUB_REPOSITORY}/releases/download/${{ needs.prepare.outputs.version }}/docker-setup.sh \
               --silent \
               --location \
@@ -212,3 +220,4 @@ jobs:
               --output /usr/local/bin/docker-setup 
           chmod +x /usr/local/bin/docker-setup
           docker-setup --plan
+          EOF
