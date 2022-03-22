@@ -205,7 +205,6 @@ jobs:
 
       - name: Download docker-setup
         run: |
-          set -o errexit
           curl https://github.com/${GITHUB_REPOSITORY}/releases/download/${{ needs.prepare.outputs.version }}/docker-setup.sh \
               --silent \
               --location \
