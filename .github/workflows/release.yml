@@ -198,6 +198,7 @@ jobs:
   bootstrap:
     name: Bootstrap
     needs:
+    - prepare
     - release
     runs-on: ubuntu-20.04
     steps:
