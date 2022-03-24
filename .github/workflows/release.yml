@@ -210,6 +210,8 @@ jobs:
           ref: ${{ needs.prepare.outputs.version }}
 
       - name: Download docker-setup
+        env:
+          DOCKER_BUILDKIT: 1
         run: |
           docker build . \
               --target base \
