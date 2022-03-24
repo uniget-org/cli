@@ -217,7 +217,7 @@ jobs:
           docker container run \
               --interactive \
               --rm \
-              --env TERM \
+              --env TERM=xterm \
               --env Europe/Berlin \
               --env GITHUB_REPOSITORY \
               nicholasdille/docker-setup:base <<EOF
