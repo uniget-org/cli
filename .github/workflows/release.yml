@@ -149,6 +149,15 @@ jobs:
         uses: peterjgrainger/action-create-branch@v2.0.1
         with:
           branch: ${{ needs.prepare.outputs.branch }}
+      
+      - name: Add new base branch to renovate
+        run: |
+          jq --arg branch "${{ needs.prepare.outputs.branch }}" '.baseBranches += [$branch]' renovate.json
+
+      - name: Commit updates renovate config
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Added release branch ${{ needs.prepare.outputs.branch }} to renovate base branches"
 
   image:
     name: docker-build
