@@ -213,8 +213,7 @@ jobs:
     name: helpers
     needs:
     - prepare
-    #if: ${{ github.event.workflow_run.conclusion == 'success' && needs.prepare.outputs.prerelease == 'true' }}
-    if: ${{ github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'v') }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'v') && needs.prepare.outputs.prerelease == 'false' }}
     strategy:
       matrix:
         tool: ${{ fromJSON(needs.prepare.outputs.tools) }}
