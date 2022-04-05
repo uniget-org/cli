@@ -33,6 +33,11 @@ jobs:
           echo "::set-output name=version::${VERSION}"; \
           echo "::set-output name=prerelease::$(if test "$(semver get prerel "${VERSION}")" == ""; then echo false; else echo true; fi)"
 
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ steps.get_version.outputs.version }}
+
       - name: Collect dockerfiles
         id: dockerfile
         run: |
