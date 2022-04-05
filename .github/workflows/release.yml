@@ -244,7 +244,7 @@ jobs:
         )"
         export rust_version
 
-        jq --raw-output --arg tool "${tool}" '.tools[] | select(.name == $tool) | .dockerfile' tools.json \
+        jq --raw-output --arg tool "${{ matrix.tool }}" '.tools[] | select(.name == $tool) | .dockerfile' tools.json \
         | envsubst \
         >Dockerfile.${{ matrix.tool }}
 
