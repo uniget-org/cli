@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-20.04
     outputs:
       version: ${{ steps.get_version.outputs.version }}
+      branch: ${{ steps.get_verion.output.branch }}
       prerelease: ${{ steps.get_version.outputs.prerelease }}
       tools: ${{ steps.dockerfile.outputs.tools }}
     steps:
@@ -31,6 +32,7 @@ jobs:
         run: |
           VERSION="$(jq --raw-output '.workflow_run.head_branch' "${GITHUB_EVENT_PATH}")"; \
           echo "::set-output name=version::${VERSION}"; \
+          echo "::set-output name=branch::v$(semver get major "${VERSION}").$(semver get minor "${VERSION}")"; \
           echo "::set-output name=prerelease::$(if test "$(semver get prerel "${VERSION}")" == ""; then echo false; else echo true; fi)"
 
       - name: Checkout
@@ -142,6 +144,11 @@ jobs:
           prerelease: ${{ needs.prepare.outputs.prerelease }}
           replacesArtifacts: true
           artifacts: "docker-setup.sh,docker-setup.sh.sha256,tools.json,tools.json.sha256,contrib.tar.gz,contrib.tar.gz.sha256,lib.tar.gz,lib.tar.gz.sha256"
+
+      - name: Create release branch
+        uses: peterjgrainger/action-create-branch@v2.0.1
+        with:
+          branch: ${{ needs.prepare.outputs.branch }}
 
   image:
     name: docker-build
