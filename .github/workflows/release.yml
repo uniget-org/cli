@@ -16,6 +16,7 @@ jobs:
     outputs:
       version: ${{ steps.get_version.outputs.version }}
       prerelease: ${{ steps.get_version.outputs.prerelease }}
+      tools: ${{ steps.dockerfile.outputs.tools }}
     steps:
 
       - name: Install tools
@@ -31,6 +32,13 @@ jobs:
           VERSION="$(jq --raw-output '.workflow_run.head_branch' "${GITHUB_EVENT_PATH}")"; \
           echo "::set-output name=version::${VERSION}"; \
           echo "::set-output name=prerelease::$(if test "$(semver get prerel "${VERSION}")" == ""; then echo false; else echo true; fi)"
+
+      - name: Collect dockerfiles
+        id: dockerfile
+        run: |
+          make tools.json
+          tools="$(jq --compact-output '[ .tools[] | select(.dockerfile != null) | .name ]' tools.json)"
+          echo "::set-output name=tools::${tools}"
 
   release:
     name: Release
@@ -177,6 +185,83 @@ jobs:
         context: .
         tags: ${{ steps.docker_meta.outputs.tags }}
         labels: ${{ steps.docker_meta.outputs.labels }}
+        push: true
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@0.2.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        image-ref: ${{ env.IMAGE_NAME }}:${{ steps.docker_meta.outputs.version }}
+        ignore-unfixed: true
+        format: 'template'
+        template: '@/contrib/sarif.tpl'
+        output: 'trivy-results.sarif'
+        severity: 'CRITICAL,HIGH'
+
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v1
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  helpers:
+    name: helpers
+    needs:
+    - prepare
+    #if: ${{ github.event.workflow_run.conclusion == 'success' && needs.prepare.outputs.prerelease == 'true' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'v') }}
+    strategy:
+      matrix:
+        tool: ${{ fromJSON(needs.prepare.outputs.tools) }}
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: ${{ secrets.docker_hub_username }}/docker-setup
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ needs.prepare.outputs.version }}
+
+    - name: Create tools.json
+      run: |
+        make tools.json
+
+    - name: Create dockerfile
+      run: |
+        go_version="$(
+        grep "go_version=" docker-setup.sh \
+            | cut -d= -f2
+        )"
+        export go_version
+        rust_version="$(
+            grep "rust_version=" docker-setup.sh \
+            | cut -d= -f2
+        )"
+        export rust_version
+
+        jq --raw-output --arg tool "${tool}" '.tools[] | select(.name == $tool) | .dockerfile' tools.json \
+        | envsubst \
+        >Dockerfile.${{ matrix.tool }}
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v1
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.docker_hub_username }}
+        password: ${{ secrets.docker_hub_token }}
+
+    - name: Build and push
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        file: Dockerfile.${{ matrix.tool }}
+        tags: ${{ env.IMAGE_NAME }}:${{ needs.prepare.outputs.version }}-${{ matrix.tool }}
         push: true
 
     - name: Run Trivy vulnerability scanner
