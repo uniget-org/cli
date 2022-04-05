@@ -14,6 +14,7 @@ RUN apt-get update \
         jq \
         less \
         bash-completion \
+        gettext-base \
  && update-alternatives --set iptables /usr/sbin/iptables-legacy
 
 FROM base AS docker-setup
