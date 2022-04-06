@@ -147,6 +147,8 @@ jobs:
 
       - name: Create release branch
         uses: peterjgrainger/action-create-branch@v2.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
         with:
           branch: ${{ needs.prepare.outputs.branch }}
       
