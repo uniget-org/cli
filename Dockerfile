@@ -15,6 +15,7 @@ RUN apt-get update \
         less \
         bash-completion \
         gettext-base \
+        vim-tiny \
  && update-alternatives --set iptables /usr/sbin/iptables-legacy
 
 FROM base AS docker-setup
