@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-20.04
     outputs:
       version: ${{ steps.get_version.outputs.version }}
-      branch: ${{ steps.get_verion.output.branch }}
+      branch: ${{ steps.get_version.output.branch }}
       prerelease: ${{ steps.get_version.outputs.prerelease }}
       tools: ${{ steps.dockerfile.outputs.tools }}
     steps:
