@@ -159,6 +159,9 @@ jobs:
       - name: Commit updates renovate config
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
+          branch: main
+          create_branch: false
+          file_pattern: renovate.json
           commit_message: "Added release branch ${{ needs.prepare.outputs.branch }} to renovate base branches"
 
   image:
