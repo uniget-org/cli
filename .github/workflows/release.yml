@@ -18,6 +18,7 @@ jobs:
       branch: ${{ steps.get_version.outputs.branch }}
       prerelease: ${{ steps.get_version.outputs.prerelease }}
       tools: ${{ steps.dockerfile.outputs.tools }}
+      tool_count: ${{ steps.dockerfile.outputs.count }}
     steps:
 
       - name: Install tools
@@ -44,10 +45,11 @@ jobs:
         id: dockerfile
         run: |
           make tools.json
-          cat tools.json
           tools="$(jq --compact-output '[ .tools[] | select(.dockerfile != null) | .name ]' tools.json)"
-          echo "Found dockerfile for the following tools: ${tools}"
+          count="$(jq length <<<"${tools}")"
+          echo "Found dockerfile for the ${count} tool(s): ${tools}"
           echo "::set-output name=tools::${tools}"
+          echo "::set-output name=count::${count}"
 
   release:
     name: Release
@@ -249,7 +251,7 @@ jobs:
     name: helpers
     needs:
     - prepare
-    if: ${{ github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'v') && needs.prepare.outputs.prerelease == 'false' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'v') && needs.prepare.outputs.prerelease == 'false' && needs.prepare.outputs.tool_count > 0 }}
     strategy:
       matrix:
         tool: ${{ fromJSON(needs.prepare.outputs.tools) }}
