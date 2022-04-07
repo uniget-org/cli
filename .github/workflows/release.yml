@@ -44,6 +44,8 @@ jobs:
         id: dockerfile
         run: |
           make tools.json
+          ls -l
+          test -f tools.json
           tools="$(jq --compact-output '[ .tools[] | select(.dockerfile != null) | .name ]' tools.json)"
           echo "Found dockerfile for the following tools: ${tools}"
           echo "::set-output name=tools::${tools}"
