@@ -32,7 +32,7 @@ jobs:
         id: get_version
         run: |
           VERSION="$(jq --raw-output '.workflow_run.head_branch' "${GITHUB_EVENT_PATH}")"; \
-          echo "::set-output name=version::${VERSION}"; \
+          echo "::set-output name=version::${VERSION#v}"; \
           echo "::set-output name=branch::v$(semver get major "${VERSION}").$(semver get minor "${VERSION}")"; \
           echo "::set-output name=prerelease::$(if test "$(semver get prerel "${VERSION}")" == ""; then echo false; else echo true; fi)"
 
@@ -71,7 +71,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          ref: ${{ needs.prepare.outputs.version }}
+          ref: v${{ needs.prepare.outputs.version }}
 
       - name: Shellcheck
         run: |
@@ -118,7 +118,7 @@ jobs:
           echo "## Installation instructions" >>body.txt
           echo >>body.txt
           echo '```bash' >>body.txt
-          echo "curl -sLo /usr/local/bin/docker-setup https://github.com/${GITHUB_REPOSITORY}/releases/download/${{ needs.prepare.outputs.version }}/docker-setup.sh" >>body.txt
+          echo "curl -sLo /usr/local/bin/docker-setup https://github.com/${GITHUB_REPOSITORY}/releases/download/v${{ needs.prepare.outputs.version }}/docker-setup.sh" >>body.txt
           echo "chmod +x /usr/local/bin/docker-setup" >>body.txt
           echo "docker-setup --plan" >>body.txt
           echo "source <(docker-setup --bash-completion)" >>body.txt
@@ -141,7 +141,7 @@ jobs:
           token: ${{ secrets.BOT_GITHUB_TOKEN }}
           allowUpdates: true
           name: "Version ${{ needs.prepare.outputs.version }}"
-          tag: ${{ needs.prepare.outputs.version }}
+          tag: v${{ needs.prepare.outputs.version }}
           draft: false
           bodyFile: body.txt
           prerelease: ${{ needs.prepare.outputs.prerelease }}
@@ -161,7 +161,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
       with:
-        ref: ${{ needs.prepare.outputs.version }}
+        ref: v${{ needs.prepare.outputs.version }}
 
     - name: Create tools.json
       run: |
@@ -263,7 +263,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
       with:
-        ref: ${{ needs.prepare.outputs.version }}
+        ref: v${{ needs.prepare.outputs.version }}
 
     - name: Create tools.json
       run: |
@@ -334,7 +334,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ needs.prepare.outputs.version }}
+          ref: v${{ needs.prepare.outputs.version }}
 
       - name: Download docker-setup
         env:
@@ -350,7 +350,7 @@ jobs:
               --env Europe/Berlin \
               --env GITHUB_REPOSITORY \
               nicholasdille/docker-setup:base <<EOF
-          curl https://github.com/${GITHUB_REPOSITORY}/releases/download/${{ needs.prepare.outputs.version }}/docker-setup.sh \
+          curl https://github.com/${GITHUB_REPOSITORY}/releases/download/v${{ needs.prepare.outputs.version }}/docker-setup.sh \
               --silent \
               --location \
               --fail \
