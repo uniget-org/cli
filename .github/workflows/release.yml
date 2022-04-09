@@ -198,7 +198,7 @@ jobs:
         push: true
 
     - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@0.2.2
+      uses: aquasecurity/trivy-action@0.2.3
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
@@ -307,7 +307,7 @@ jobs:
         push: true
 
     - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@0.2.2
+      uses: aquasecurity/trivy-action@0.2.3
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
