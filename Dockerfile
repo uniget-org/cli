@@ -25,7 +25,6 @@ RUN chmod +x /usr/local/bin/docker-setup \
  && mkdir -p /var/cache/docker-setup
 COPY lib /var/cache/docker-setup/lib
 COPY tools.json /var/cache/docker-setup/
-COPY contrib /var/cache/docker-setup/contrib
 COPY completion/bash/docker-setup.sh /etc/bash_completion.d/
 
 COPY docker/entrypoint.sh /

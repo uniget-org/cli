@@ -85,11 +85,6 @@ jobs:
         run: |
           sha256sum docker-setup.sh >docker-setup.sh.sha256
 
-      - name: Prepare contrib tarball
-        run: |
-          tar -czf contrib.tar.gz contrib && \
-          sha256sum contrib.tar.gz >contrib.tar.gz.sha256
-
       - name: Prepare lib tarball
         run: |
           tar -czf lib.tar.gz lib && \
@@ -146,7 +141,7 @@ jobs:
           bodyFile: body.txt
           prerelease: ${{ needs.prepare.outputs.prerelease }}
           replacesArtifacts: true
-          artifacts: "docker-setup.sh,docker-setup.sh.sha256,tools.json,tools.json.sha256,contrib.tar.gz,contrib.tar.gz.sha256,lib.tar.gz,lib.tar.gz.sha256"
+          artifacts: "docker-setup.sh,docker-setup.sh.sha256,tools.json,tools.json.sha256,lib.tar.gz,lib.tar.gz.sha256"
 
   image:
     name: docker-build

@@ -153,16 +153,13 @@ info:
 	echo "$(GREEN)Repository$(RESET): $(REPOSITORY)"; \
 	echo "$(GREEN)Git tag$(RESET)   : $(GIT_TAG)"
 
-dist: $(DIST) dist/docker-setup.sh.sha256 dist/contrib.tar.gz.sha256
+dist: $(DIST) dist/docker-setup.sh.sha256
 
 $(DIST):
 	@mkdir -p $(DIST)
 
 dist/docker-setup.sh: docker-setup.sh ; $(info $(M) Creating $@...)
 	@cat docker-setup.sh | sed "s/^DOCKER_SETUP_VERSION=main$$/DOCKER_SETUP_VERSION=$(GIT_TAG)/' >$@
-
-dist/contrib.tar.gz: ; $(info $(M) Creating $@...)
-	@tar -czf $@ contrib
 
 %.sha256: % ; $(info $(M) Creating SHA256 for $*...)
 	@echo sha256sum $* > $@
