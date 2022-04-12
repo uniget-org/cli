@@ -92,6 +92,7 @@ test-%: check build-%
 		--rm \
 		--privileged \
 		--platform linux/$* \
+		--env no_wait=true \
 		--entrypoint bash \
 		nicholasdille/docker-setup:main --login
 
