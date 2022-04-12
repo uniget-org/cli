@@ -106,10 +106,6 @@ jobs:
               | jq --raw-output '.published_at'
           )"
           echo "Latest release was published at ${LATEST_RELEASE_PUBLISHED}."
-          echo "## Overview" >>body.txt
-          echo >>body.txt
-          echo "TODO" >>body.txt
-          echo >>body.txt
           echo "## Installation instructions" >>body.txt
           echo >>body.txt
           echo '```bash' >>body.txt
