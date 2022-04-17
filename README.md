@@ -39,7 +39,11 @@ See [docs](docs) for the complete documentation.
 
 ## Purpose
 
-`docker-setup` is meant to bootstrap a new box with Docker as well as install useful tools from the container ecosystem.It aims to be distribution-agnostic and provide reasonable defaults. Personally, I am using it to prepare virtual machines for my own experiments as well as training environments.
+`docker-setup` is inspired by the [convenience script](https://docs.docker.com/engine/install/ubuntu/#install-using-the-convenience-script) to install the Docker daemon. But the scope is much larger.
+
+`docker-setup` is meant to bootstrap a new box with Docker as well as install useful tools from the container ecosystem. It can also be used to update these tools. It aims to be distribution-agnostic and provide reasonable defaults. Personally, I am using it to prepare virtual machines for my own experiments as well as training environments.
+
+Tools are downloaded, installed and updated automatically.
 
 `docker-setup` is not meant to be a competitor to Docker Desktop. It is lacking important features required for developing using Docker.
 
