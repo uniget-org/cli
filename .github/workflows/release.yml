@@ -169,7 +169,7 @@ jobs:
           type=semver,pattern={{major}},value=${{ needs.prepare.outputs.version }}
 
     - name: Set up QEMU
-      uses: docker/setup-qemu-action@v1
+      uses: docker/setup-qemu-action@v2
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
@@ -278,7 +278,7 @@ jobs:
         >Dockerfile.${{ matrix.tool }}
 
     - name: Set up QEMU
-      uses: docker/setup-qemu-action@v1
+      uses: docker/setup-qemu-action@v2
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
