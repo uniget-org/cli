@@ -1,4 +1,4 @@
-#syntax=docker/dockerfile:1.3.0
+#syntax=docker/dockerfile:1.4.2
 
 FROM ubuntu:21.04@sha256:ba394fabd516b39ccf8597ec656a9ddd7d0a2688ed8cb373ca7ac9b6fe67848f AS base
 ARG DEBIAN_FRONTEND=noninteractive
