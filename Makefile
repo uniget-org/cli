@@ -79,6 +79,7 @@ dind-%: check build-%
 		--rm \
 		--volume /var/run/docker.sock:/var/run/docker.sock \
 		--platform linux/$* \
+		--env no_wait=true \
 		--entrypoint bash \
 		nicholasdille/docker-setup:main --login
 
