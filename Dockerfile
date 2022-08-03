@@ -27,8 +27,6 @@ FROM base AS docker-setup
 COPY docker-setup.sh /usr/local/bin/docker-setup
 RUN chmod +x /usr/local/bin/docker-setup \
  && mkdir -p /var/cache/docker-setup
-COPY docker-setup-oras.sh /usr/local/bin/docker-setup-oras
-RUN chmod +x /usr/local/bin/docker-setup-oras
 COPY lib /var/cache/docker-setup/lib
 COPY tools.json /var/cache/docker-setup/
 COPY completion/bash/docker-setup.sh /etc/bash_completion.d/
