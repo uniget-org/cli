@@ -32,7 +32,7 @@ env-%: %
 		--tty \
 		--rm \
 		--privileged \
-		--env NO_WAIT=true \
+		--env no_wait=true \
 		--volume "${PWD}/.downloads:/var/cache/docker-setup/downloads" \
 		nicholasdille/docker-setup:$*
 
