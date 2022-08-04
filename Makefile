@@ -16,7 +16,7 @@ M              = $(shell printf "\033[34;1m▶\033[0m")
 
 DISTROS        = $(shell ls env/*/Dockerfile | sed -E 's|env/([^/]+)/Dockerfile|\1|')
 
-.PHONY: all check env-% test test-% build-% record-% $(DISTROS)
+.PHONY: all check env-% mount mount-% dind dind-% test test-% build build-% record-% $(DISTROS)
 
 all: check $(DISTROS)
 
@@ -86,10 +86,13 @@ test-%: check build-%
 		--entrypoint bash \
 		nicholasdille/docker-setup:$(GIT_BRANCH) --login
 
+build: build-amd64
+
 build-%: tools.json ; $(info $(M) Building $(GIT_BRANCH)...)
-	@docker buildx build \
+	docker buildx build \
 		--tag nicholasdille/docker-setup:$(GIT_BRANCH) \
-		--build-arg BRANCH=$(GIT_BRANCH),DOCKER_SETUP_VERSION=$(GIT_BRANCH) \
+		--build-arg BRANCH=$(GIT_BRANCH) \
+		--build-arg DOCKER_SETUP_VERSION=$(GIT_BRANCH) \
 		--platform linux/$* \
 		--load \
 		.
