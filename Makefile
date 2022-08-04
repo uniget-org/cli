@@ -89,7 +89,7 @@ test-%: check build-%
 build: build-amd64
 
 build-%: tools.json ; $(info $(M) Building $(GIT_BRANCH)...)
-	docker buildx build \
+	@docker buildx build \
 		--tag nicholasdille/docker-setup:$(GIT_BRANCH) \
 		--build-arg BRANCH=$(GIT_BRANCH) \
 		--build-arg DOCKER_SETUP_VERSION=$(GIT_BRANCH) \
