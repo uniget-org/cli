@@ -24,7 +24,7 @@ check:
 	@shellcheck docker-setup.sh
 
 $(DISTROS): docker-setup.sh tools.json
-	@distro=$@ docker buildx bake
+	@distro=$@ docker buildx bake --load
 
 env-%: %
 	@docker run \
