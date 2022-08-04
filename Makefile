@@ -6,6 +6,7 @@ YQ             = $(BIN)/yq
 YQ_VERSION     = 4.22.1
 DIST           = $(PWD)/dist
 GIT_TAG        = $(shell git describe --tags 2>/dev/null)
+GIT_BRANCH     = $(shell git branch --show-current)
 RESET          = "\\e[39m\\e[49m"
 GREEN          = "\\e[92m"
 YELLOW         = "\\e[93m"
@@ -15,7 +16,7 @@ M              = $(shell printf "\033[34;1m▶\033[0m")
 
 DISTROS        = $(shell ls env/*/Dockerfile | sed -E 's|env/([^/]+)/Dockerfile|\1|')
 
-.PHONY: all check env-% test test-% build build-% record-%
+.PHONY: all check env-% test test-% build-% record-% $(DISTROS)
 
 all: check $(DISTROS)
 
@@ -70,7 +71,7 @@ dind-%: check build-%
 		--platform linux/$* \
 		--env no_wait=true \
 		--entrypoint bash \
-		nicholasdille/docker-setup:main --login
+		nicholasdille/docker-setup:$(GIT_BRANCH) --login
 
 test: test-amd64
 
@@ -83,12 +84,13 @@ test-%: check build-%
 		--platform linux/$* \
 		--env no_wait=true \
 		--entrypoint bash \
-		nicholasdille/docker-setup:main --login
+		nicholasdille/docker-setup:$(GIT_BRANCH) --login
 
 build-%: tools.json
 	@docker image build \
-		--tag nicholasdille/docker-setup:main \
+		--tag nicholasdille/docker-setup:$(GIT_BRANCH) \
 		--platform linux/$* \
+		--load \
 		.
 
 record-%: build-%
