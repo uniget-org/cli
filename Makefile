@@ -86,9 +86,10 @@ test-%: check build-%
 		--entrypoint bash \
 		nicholasdille/docker-setup:$(GIT_BRANCH) --login
 
-build-%: tools.json
-	@docker image build \
+build-%: tools.json ; $(info $(M) Building $(GIT_BRANCH)...)
+	@docker buildx build \
 		--tag nicholasdille/docker-setup:$(GIT_BRANCH) \
+		--build-arg BRANCH=$(GIT_BRANCH),DOCKER_SETUP_VERSION=$(GIT_BRANCH) \
 		--platform linux/$* \
 		--load \
 		.

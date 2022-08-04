@@ -184,6 +184,7 @@ jobs:
       uses: docker/build-push-action@v3
       with:
         context: .
+        build-args: BRANCH=v${{ needs.prepare.outputs.version }},DOCKER_SETUP_VERSION=${{ needs.prepare.outputs.version }}
         tags: ${{ steps.docker_meta.outputs.tags }}
         labels: ${{ steps.docker_meta.outputs.labels }}
         push: true

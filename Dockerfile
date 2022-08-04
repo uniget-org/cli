@@ -31,3 +31,11 @@ COPY completion/bash/docker-setup.sh /etc/bash_completion.d/
 
 COPY docker/entrypoint.sh /
 ENTRYPOINT [ "bash", "/entrypoint.sh" ]
+
+ARG ref_name=${BRANCH}
+ARG version=${DOCKER_SETUP_VERSION}
+LABEL org.opencontainers.image.source="https://github.com/nicholasdille/docker-setup" \
+      org.opencontainers.image.ref.name="${ref_name}" \
+      org.opencontainers.image.title="docker-setup" \
+      org.opencontainers.image.description="The container tools installer and updater" \
+      org.opencontainers.image.version="${version}"
