@@ -110,6 +110,18 @@ record-%: build-%
 %.json: %.yaml $(YQ) ; $(info $(M) Creating $*.json...)
 	@$(YQ) --output-format json eval . $*.yaml >$*.json
 
+/usr/local/bin/docker-setup: docker-setup.sh ; $(info $(M) Replacing docker-setup and preserving version...)
+	@\
+	version="$$(grep docker_setup_version= $@ | sed -E 's/docker_setup_version="([^"]+)"/\1/')"; \
+	sudo cp docker-setup.sh $@; \
+	sudo sed -i "s/docker_setup_version=\"main\"/docker_setup_version=\"$${version}\"/" $@
+
+/usr/local/bin/docker-setup-%: docker-setup.sh ; $(info $(M) Replacing docker-setup and setting version $*...)
+	@\
+	sudo cp docker-setup.sh /usr/local/bin/docker-setup; \
+	sudo sed -i "s/docker_setup_version=\"main\"/docker_setup_version=\"$*\"/" /usr/local/bin/docker-setup; \
+	sudo touch /var/cache/docker-setup/$*
+
 $(BIN): ; $(info $(M) Preparing tools...)
 	@mkdir -p $(BIN)
 
