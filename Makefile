@@ -16,7 +16,7 @@ M              = $(shell printf "\033[34;1m▶\033[0m")
 
 DISTROS        = $(shell ls env/*/Dockerfile | sed -E 's|env/([^/]+)/Dockerfile|\1|')
 
-.PHONY: all check env-% mount mount-% dind dind-% test test-% build build-% record-% $(DISTROS)
+.PHONY: all check env-% mount mount-% dind dind-% test test-% build build-% record-% $(DISTROS) install
 
 all: check $(DISTROS)
 
@@ -56,6 +56,7 @@ mount-%: check ubuntu-22.04
 		--volume /var/run/docker.sock:/var/run/docker.sock \
 		--volume "$${PWD}:/src" \
 		--workdir /src \
+		--env no_wait=true \
 		--platform linux/$* \
 		--entrypoint bash \
 		nicholasdille/docker-setup:ubuntu-22.04 --login
@@ -124,6 +125,12 @@ record-%: build-%
 
 /var/cache/docker-setup/tools.json: tools.json ; $(info $(M) Replacing tools.json...)
 	@sudo cp tools.json $@
+
+install: tools.json ; $(info $(M) Installing locally...)
+	@cp docker-setup.sh /usr/local/bin/docker-setup; \
+	mkdir -p /var/cache/docker-setup/; \
+	cp -r lib /var/cache/docker-setup/; \
+	cp tools.json /var/cache/docker-setup
 
 $(BIN): ; $(info $(M) Preparing tools...)
 	@mkdir -p $(BIN)
