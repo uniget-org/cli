@@ -132,6 +132,9 @@ install: tools.json ; $(info $(M) Installing locally...)
 	cp -r lib /var/cache/docker-setup/; \
 	cp tools.json /var/cache/docker-setup
 
+renovate.json: scripts/renovate.sh renovate-root.json tools.json
+	@bash scripts/renovate.sh
+
 $(BIN): ; $(info $(M) Preparing tools...)
 	@mkdir -p $(BIN)
 
