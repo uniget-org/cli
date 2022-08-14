@@ -19,6 +19,7 @@ RUN apt-get update \
         gettext-base \
         vim-tiny \
         xz-utils \
+        bsdextrautils \
  && update-alternatives --set iptables /usr/sbin/iptables-legacy
 
 FROM base AS docker-setup
