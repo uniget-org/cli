@@ -127,10 +127,16 @@ record-%: build-%
 	@sudo cp tools.json $@
 
 install: tools.json ; $(info $(M) Installing locally...)
-	@cp docker-setup.sh /usr/local/bin/docker-setup; \
-	mkdir -p /var/cache/docker-setup/; \
-	cp -r lib /var/cache/docker-setup/; \
-	cp tools.json /var/cache/docker-setup
+	@\
+	sudo cp docker-setup.sh /usr/local/bin/docker-setup; \
+	sudo mkdir -p /var/cache/docker-setup/; \
+	sudo cp -r lib /var/cache/docker-setup/; \
+	sudo cp tools.json /var/cache/docker-setup
+
+install-%: install ; $(info $(M) Installing locally as $*...)
+	@\
+	sudo sed -i "s/docker_setup_version=\"main\"/docker_setup_version=\"$*\"/" /usr/local/bin/docker-setup; \
+	sudo touch /var/cache/docker-setup/$*
 
 renovate.json: scripts/renovate.sh renovate-root.json tools.json
 	@bash scripts/renovate.sh
