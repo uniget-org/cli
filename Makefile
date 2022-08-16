@@ -76,7 +76,7 @@ dind-%: check build-%
 
 test: test-amd64
 
-test-%: check build-%
+test-%: check renovate.json build-%
 	@docker run \
 		--interactive \
 		--tty \
@@ -138,7 +138,7 @@ install-%: install ; $(info $(M) Installing locally as $*...)
 	sudo sed -i "s/docker_setup_version=\"main\"/docker_setup_version=\"$*\"/" /usr/local/bin/docker-setup; \
 	sudo touch /var/cache/docker-setup/$*
 
-renovate.json: scripts/renovate.sh renovate-root.json tools.json
+renovate.json: scripts/renovate.sh renovate-root.json tools.json ; $(info $(M) Updating $@...)
 	@bash scripts/renovate.sh
 
 $(BIN): ; $(info $(M) Preparing tools...)
