@@ -17,12 +17,49 @@ M              = $(shell printf "\033[34;1m▶\033[0m")
 
 DISTROS        = $(shell ls env/*/Dockerfile | sed -E 's|env/([^/]+)/Dockerfile|\1|')
 
-.PHONY: all check env-% mount mount-% dind dind-% test test-% build build-% record-% $(DISTROS) install
+.PHONY: all check check-tools check-tools-homepage check-tools-description check-tools-renovate env-% mount mount-% dind dind-% test test-% build build-% record-% $(DISTROS) install
 
 all: check $(DISTROS)
 
 check:
 	@shellcheck docker-setup.sh
+
+check-tools: check-tools-homepage check-tools-description check-tools-renovate
+
+check-tools-homepage: tools.json
+	@\
+	TOOLS="$$(jq --raw-output '.tools[] | select(.homepage == null) | .name' tools.json)"; \
+	if test -n "$${TOOLS}"; then \
+		echo "$(RED)Tools missing homepage:$(RESET)"; \
+		echo "$${TOOLS}" \
+		| while read TOOL; do \
+			echo "- $${TOOL}"; \
+		done; \
+		exit 1; \
+	fi
+
+check-tools-description: tools.json
+	@\
+	TOOLS="$$(jq --raw-output '.tools[] | select(.description == null) | .name' tools.json)"; \
+	if test -n "$${TOOLS}"; then \
+		echo "$(RED)Tools missing description:$(RESET)"; \
+		echo "$${TOOLS}" \
+		| while read TOOL; do \
+			echo "- $${TOOL}"; \
+		done; \
+		exit 1; \
+	fi
+
+check-tools-renovate: tools.json
+	@\
+	TOOLS="$$(jq --raw-output '.tools[] | select(.renovate == null) | .name' tools.json)"; \
+	if test -n "$${TOOLS}"; then \
+		echo "$(YELLOW)Tools missing renovate:$(RESET)"; \
+		echo "$${TOOLS}" \
+		| while read TOOL; do \
+			echo "- $${TOOL}"; \
+		done; \
+	fi
 
 $(DISTROS): docker-setup.sh tools.json
 	@distro=$@ docker buildx bake --load
