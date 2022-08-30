@@ -17,15 +17,17 @@ M              = $(shell printf "\033[34;1m▶\033[0m")
 
 DISTROS        = $(shell ls env/*/Dockerfile | sed -E 's|env/([^/]+)/Dockerfile|\1|')
 
-.PHONY: all check check-tools check-tools-homepage check-tools-description check-tools-renovate env-% mount mount-% dind dind-% test test-% build build-% record-% $(DISTROS) install
-
+.PHONY:
 all: check $(DISTROS)
 
+.PHONY:
 check:
 	@shellcheck docker-setup.sh
 
+.PHONY:
 check-tools: check-tools-homepage check-tools-description check-tools-renovate
 
+.PHONY:
 check-tools-homepage: tools.json
 	@\
 	TOOLS="$$(jq --raw-output '.tools[] | select(.homepage == null) | .name' tools.json)"; \
@@ -38,6 +40,7 @@ check-tools-homepage: tools.json
 		exit 1; \
 	fi
 
+.PHONY:
 check-tools-description: tools.json
 	@\
 	TOOLS="$$(jq --raw-output '.tools[] | select(.description == null) | .name' tools.json)"; \
@@ -50,6 +53,7 @@ check-tools-description: tools.json
 		exit 1; \
 	fi
 
+.PHONY:
 check-tools-renovate: tools.json
 	@\
 	TOOLS="$$(jq --raw-output '.tools[] | select(.renovate == null) | .name' tools.json)"; \
@@ -61,9 +65,11 @@ check-tools-renovate: tools.json
 		done; \
 	fi
 
+.PHONY:
 $(DISTROS): docker-setup.sh tools.json
 	@distro=$@ docker buildx bake --load
 
+.PHONY:
 env-%: %
 	@docker run \
 		--interactive \
@@ -84,8 +90,10 @@ CHANGELOG.md:
         	--user nicholasdille \
             --project docker-setup
 
+.PHONY:
 mount: mount-amd64
 
+.PHONY:
 mount-%: check ubuntu-22.04
 	@docker run \
 		--interactive \
@@ -99,8 +107,10 @@ mount-%: check ubuntu-22.04
 		--entrypoint bash \
 		nicholasdille/docker-setup:ubuntu-22.04 --login
 
+.PHONY:
 dind: dind-amd64
 
+.PHONY:
 dind-%: check build-%
 	@docker run \
 		--interactive \
@@ -112,8 +122,10 @@ dind-%: check build-%
 		--entrypoint bash \
 		nicholasdille/docker-setup:$(DOCKER_TAG) --login
 
+.PHONY:
 test: test-amd64
 
+.PHONY:
 test-%: check renovate.json build-%
 	@docker run \
 		--interactive \
@@ -125,8 +137,10 @@ test-%: check renovate.json build-%
 		--entrypoint bash \
 		nicholasdille/docker-setup:$(DOCKER_TAG) --login
 
+.PHONY:
 build: build-amd64
 
+.PHONY:
 build-%: tools.json ; $(info $(M) Building $(GIT_BRANCH)...)
 	@docker buildx build \
 		--tag nicholasdille/docker-setup:$(DOCKER_TAG) \
@@ -136,6 +150,7 @@ build-%: tools.json ; $(info $(M) Building $(GIT_BRANCH)...)
 		--load \
 		.
 
+.PHONY:
 record-%: build-%
 	@docker run \
 		--interactive \
@@ -155,6 +170,7 @@ record-%: build-%
 	sudo cp docker-setup.sh $@; \
 	sudo sed -i "s/docker_setup_version=\"main\"/docker_setup_version=\"$${version}\"/" $@
 
+.PHONY:
 /usr/local/bin/docker-setup-%: docker-setup.sh /var/cache/docker-setup/tools.json ; $(info $(M) Replacing docker-setup and setting version $*...)
 	@\
 	sudo cp docker-setup.sh /usr/local/bin/docker-setup; \
@@ -164,6 +180,7 @@ record-%: build-%
 /var/cache/docker-setup/tools.json: tools.json ; $(info $(M) Replacing tools.json...)
 	@sudo cp tools.json $@
 
+.PHONY:
 install: tools.json ; $(info $(M) Installing locally...)
 	@\
 	sudo cp docker-setup.sh /usr/local/bin/docker-setup; \
@@ -171,6 +188,7 @@ install: tools.json ; $(info $(M) Installing locally...)
 	sudo cp -r lib /var/cache/docker-setup/; \
 	sudo cp tools.json /var/cache/docker-setup
 
+.PHONY:
 install-%: install ; $(info $(M) Installing locally as $*...)
 	@\
 	sudo sed -i "s/docker_setup_version=\"main\"/docker_setup_version=\"$*\"/" /usr/local/bin/docker-setup; \
