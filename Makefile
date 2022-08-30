@@ -7,6 +7,7 @@ YQ_VERSION     = 4.22.1
 DIST           = $(PWD)/dist
 GIT_TAG        = $(shell git describe --tags 2>/dev/null)
 GIT_BRANCH     = $(shell git branch --show-current)
+DOCKER_TAG     = $(subst /,-,$(GIT_BRANCH))
 RESET          = "\\e[39m\\e[49m"
 GREEN          = "\\e[92m"
 YELLOW         = "\\e[93m"
@@ -72,7 +73,7 @@ dind-%: check build-%
 		--platform linux/$* \
 		--env no_wait=true \
 		--entrypoint bash \
-		nicholasdille/docker-setup:$(GIT_BRANCH) --login
+		nicholasdille/docker-setup:$(DOCKER_TAG) --login
 
 test: test-amd64
 
@@ -85,13 +86,13 @@ test-%: check renovate.json build-%
 		--platform linux/$* \
 		--env no_wait=true \
 		--entrypoint bash \
-		nicholasdille/docker-setup:$(GIT_BRANCH) --login
+		nicholasdille/docker-setup:$(DOCKER_TAG) --login
 
 build: build-amd64
 
 build-%: tools.json ; $(info $(M) Building $(GIT_BRANCH)...)
 	@docker buildx build \
-		--tag nicholasdille/docker-setup:$(GIT_BRANCH) \
+		--tag nicholasdille/docker-setup:$(DOCKER_TAG) \
 		--build-arg BRANCH=$(GIT_BRANCH) \
 		--build-arg DOCKER_SETUP_VERSION=$(GIT_BRANCH) \
 		--platform linux/$* \
