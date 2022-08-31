@@ -1,207 +1,125 @@
+M              = $(shell printf "\033[34;1m▶\033[0m")
+GIT_BRANCH     = $(shell git branch --show-current)
+TOOLS_DIR      = tools
+TOOLS          = $(shell find $(TOOLS_DIR) -mindepth 1 -maxdepth 1 -type d | sort)
+MANIFESTS      = $(addsuffix /manifest.json,$(TOOLS))
+DOCKERFILES    = $(addsuffix /Dockerfile,$(TOOLS))
+PREFIX         = /docker_setup_install
+TARGET         = /usr/local
+
 OWNER          = nicholasdille
 PROJECT        = docker-setup
-REPOSITORY     = $(OWNER)/$(PROJECT)
-BIN            = $(PWD)/bin
-YQ             = $(BIN)/yq
-YQ_VERSION     = 4.22.1
-DIST           = $(PWD)/dist
-GIT_TAG        = $(shell git describe --tags 2>/dev/null)
-GIT_BRANCH     = $(shell git branch --show-current)
-DOCKER_TAG     = $(subst /,-,$(GIT_BRANCH))
-RESET          = "\\e[39m\\e[49m"
-GREEN          = "\\e[92m"
-YELLOW         = "\\e[93m"
-RED            = "\\e[91m"
-GREY           = "\\e[90m"
-M              = $(shell printf "\033[34;1m▶\033[0m")
+REGISTRY       = ghcr.io
 
-DISTROS        = $(shell ls env/*/Dockerfile | sed -E 's|env/([^/]+)/Dockerfile|\1|')
+YQ             = bin/yq
 
 .PHONY:
-all: check $(DISTROS)
+all: $(TOOLS)
 
 .PHONY:
-check:
-	@shellcheck docker-setup.sh
+debug:
+	@echo "TOOLS=$(TOOLS)"
+	@echo "MANIFESTS=$(MANIFESTS)"
+	@echo "DOCKERFILES=$(DOCKERFILES)"
 
 .PHONY:
-check-tools: check-tools-homepage check-tools-description check-tools-renovate
-
-.PHONY:
-check-tools-homepage: tools.json
+clean:
 	@\
-	TOOLS="$$(jq --raw-output '.tools[] | select(.homepage == null) | .name' tools.json)"; \
-	if test -n "$${TOOLS}"; then \
-		echo "$(RED)Tools missing homepage:$(RESET)"; \
-		echo "$${TOOLS}" \
-		| while read TOOL; do \
-			echo "- $${TOOL}"; \
-		done; \
-		exit 1; \
-	fi
+	rm -f tools.json; \
+	for TOOL in $(TOOLS); do \
+		rm -f $${TOOL}/manifest.json $${TOOL}/Dockerfile; \
+	done
 
-.PHONY:
-check-tools-description: tools.json
+renovate.json: $(MANIFESTS) ; $(info $(M) Updating $@...)
+	@echo "NOT IMPLEMENTED YET"
+
+tools.json: $(MANIFESTS) ; $(info $(M) Creating $@...)
+	@jq --slurp '{"tools": map(.tools[])}' $(MANIFESTS) >tools.json
+
+$(MANIFESTS):%.json: %.yaml $(YQ) ; $(info $(M) Creating $*.json...)
+	@$(YQ) --output-format json eval '{"tools":[.]}' $*.yaml >$*.json
+
+$(DOCKERFILES):%: %.template Dockerfile.tail ; $(info $(M) Creating $@...)
 	@\
-	TOOLS="$$(jq --raw-output '.tools[] | select(.description == null) | .name' tools.json)"; \
-	if test -n "$${TOOLS}"; then \
-		echo "$(RED)Tools missing description:$(RESET)"; \
-		echo "$${TOOLS}" \
-		| while read TOOL; do \
-			echo "- $${TOOL}"; \
-		done; \
-		exit 1; \
-	fi
+	cat $@.template >$@; \
+	echo >>$@; \
+	cat Dockerfile.tail >>$@
 
 .PHONY:
-check-tools-renovate: tools.json
+login: ; $(info $(M) Logging in to $(REGISTRY)...)
 	@\
-	TOOLS="$$(jq --raw-output '.tools[] | select(.renovate == null) | .name' tools.json)"; \
-	if test -n "$${TOOLS}"; then \
-		echo "$(YELLOW)Tools missing renovate:$(RESET)"; \
-		echo "$${TOOLS}" \
-		| while read TOOL; do \
-			echo "- $${TOOL}"; \
-		done; \
-	fi
+	docker login $(REGISTRY)
 
 .PHONY:
-$(DISTROS): docker-setup.sh tools.json
-	@distro=$@ docker buildx bake --load
+base: login ; $(info $(M) Building base image...)
+	@\
+	docker buildx build @base \
+		--build-arg prefix_override=$(PREFIX) \
+		--build-arg target_override=$(TARGET) \
+		--cache-from $(REGISTRY)/$(OWNER)/$(PROJECT)/base:$(GIT_BRANCH) \
+		--tag $(REGISTRY)/$(OWNER)/$(PROJECT)/base:$(GIT_BRANCH) \
+		--push \
+		--progress plain \
+		>@base/build.log 2>&1 || \
+	cat @base/build.log
 
 .PHONY:
-env-%: %
-	@docker run \
-		--interactive \
-		--tty \
-		--rm \
-		--privileged \
-		--env no_wait=true \
-		--volume "${PWD}/.downloads:/var/cache/docker-setup/downloads" \
-		nicholasdille/docker-setup:$*
+tools: $(TOOLS)
 
-CHANGELOG.md:
-	@docker run \
-		--interactive \
-		--rm \
-		--volume "$${PWD}:/usr/local/src/your-app" \
-		--env CHANGELOG_GITHUB_TOKEN=$${GITHUB_TOKEN} \
-        githubchangeloggenerator/github-changelog-generator \
-        	--user nicholasdille \
-            --project docker-setup
+$(TOOLS):%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Building image for $@...)
+	@\
+	docker buildx build $@ \
+		--build-arg branch=$(GIT_BRANCH) \
+		--build-arg ref=$(GIT_BRANCH) \
+		--cache-from $(REGISTRY)/$(OWNER)/$(PROJECT)/$@:$(GIT_BRANCH) \
+		--tag $(REGISTRY)/$(OWNER)/$(PROJECT)/$@:$(GIT_BRANCH) \
+		--push \
+		--progress plain \
+		>$@/build.log 2>&1 || \
+	cat $@/build.log
 
 .PHONY:
-mount: mount-amd64
-
-.PHONY:
-mount-%: check ubuntu-22.04
-	@docker run \
-		--interactive \
-		--tty \
-		--rm \
-		--volume /var/run/docker.sock:/var/run/docker.sock \
-		--volume "$${PWD}:/src" \
-		--workdir /src \
-		--env no_wait=true \
-		--platform linux/$* \
-		--entrypoint bash \
-		nicholasdille/docker-setup:ubuntu-22.04 --login
-
-.PHONY:
-dind: dind-amd64
-
-.PHONY:
-dind-%: check build-%
-	@docker run \
-		--interactive \
-		--tty \
-		--rm \
-		--volume /var/run/docker.sock:/var/run/docker.sock \
-		--platform linux/$* \
-		--env no_wait=true \
-		--entrypoint bash \
-		nicholasdille/docker-setup:$(DOCKER_TAG) --login
-
-.PHONY:
-test: test-amd64
-
-.PHONY:
-test-%: check renovate.json build-%
-	@docker run \
-		--interactive \
-		--tty \
-		--rm \
-		--privileged \
-		--platform linux/$* \
-		--env no_wait=true \
-		--entrypoint bash \
-		nicholasdille/docker-setup:$(DOCKER_TAG) --login
-
-.PHONY:
-build: build-amd64
-
-.PHONY:
-build-%: tools.json ; $(info $(M) Building $(GIT_BRANCH)...)
-	@docker buildx build \
-		--tag nicholasdille/docker-setup:$(DOCKER_TAG) \
-		--build-arg BRANCH=$(GIT_BRANCH) \
-		--build-arg DOCKER_SETUP_VERSION=$(GIT_BRANCH) \
-		--platform linux/$* \
+debug-%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Debugging image for $*...)
+	@\
+	docker buildx build $* \
+		--build-arg branch=$(GIT_BRANCH) \
+		--build-arg ref=$(GIT_BRANCH) \
+		--cache-from $(REGISTRY)/$(OWNER)/$(PROJECT)/$*:$(GIT_BRANCH) \
+		--tag $(REGISTRY)/$(OWNER)/$(PROJECT)/$*:$(GIT_BRANCH) \
+		--target prepare \
 		--load \
-		.
-
-.PHONY:
-record-%: build-%
-	@docker run \
+		--progress plain \
+		--no-cache && \
+	docker container run \
 		--interactive \
 		--tty \
-		--rm \
 		--privileged \
-		--volume "${HOME}/.config/asciinema:/root/.config/asciinema" \
-		--entrypoint bash \
-		nicholasdille/docker-setup:$*
-
-%.json: %.yaml $(YQ) ; $(info $(M) Creating $*.json...)
-	@$(YQ) --output-format json eval . $*.yaml >$*.json
-
-/usr/local/bin/docker-setup: docker-setup.sh /var/cache/docker-setup/tools.json ; $(info $(M) Replacing docker-setup and preserving version...)
-	@\
-	version="$$(grep docker_setup_version= $@ | sed -E 's/docker_setup_version="([^"]+)"/\1/')"; \
-	sudo cp docker-setup.sh $@; \
-	sudo sed -i "s/docker_setup_version=\"main\"/docker_setup_version=\"$${version}\"/" $@
+		--rm \
+		$(REGISTRY)/$(OWNER)/$(PROJECT)/$*:$(GIT_BRANCH) \
+			bash
 
 .PHONY:
-/usr/local/bin/docker-setup-%: docker-setup.sh /var/cache/docker-setup/tools.json ; $(info $(M) Replacing docker-setup and setting version $*...)
+usage:
 	@\
-	sudo cp docker-setup.sh /usr/local/bin/docker-setup; \
-	sudo sed -i "s/docker_setup_version=\"main\"/docker_setup_version=\"$*\"/" /usr/local/bin/docker-setup; \
-	sudo touch /var/cache/docker-setup/$*
-
-/var/cache/docker-setup/tools.json: tools.json ; $(info $(M) Replacing tools.json...)
-	@sudo cp tools.json $@
+	for TOOL in $(TOOLS); do \
+		regctl manifest get $(REGISTRY)/$(OWNER)/$(PROJECT)/$${TOOL}:$(GIT_BRANCH) --format raw-body \
+		| jq -r '.layers[].size' \
+		| paste -sd+ \
+		| bc \
+		| numfmt --to=iec-i --suffix=B --padding=20 \
+		| xargs -I{} echo -n "{}"; \
+		echo " $${TOOL}"; \
+	done \
+	| column --table --table-right=1
 
 .PHONY:
-install: tools.json ; $(info $(M) Installing locally...)
+test: $(TOOLS) tools.json; $(info $(M) Testing image for all tools...)
 	@\
-	sudo cp docker-setup.sh /usr/local/bin/docker-setup; \
-	sudo mkdir -p /var/cache/docker-setup/; \
-	sudo cp -r lib /var/cache/docker-setup/; \
-	sudo cp tools.json /var/cache/docker-setup
-
-.PHONY:
-install-%: install ; $(info $(M) Installing locally as $*...)
-	@\
-	sudo sed -i "s/docker_setup_version=\"main\"/docker_setup_version=\"$*\"/" /usr/local/bin/docker-setup; \
-	sudo touch /var/cache/docker-setup/$*
-
-renovate.json: scripts/renovate.sh renovate-root.json tools.json ; $(info $(M) Updating $@...)
-	@bash scripts/renovate.sh
-
-$(BIN): ; $(info $(M) Preparing tools...)
-	@mkdir -p $(BIN)
-
-$(YQ): $(BIN) ; $(info $(M) Installing yq...)
-	@test -f $@ && test -x $@ || ( \
-		curl -sLfo $@ https://github.com/mikefarah/yq/releases/download/v$(YQ_VERSION)/yq_linux_amd64; \
-		chmod +x $@; \
-	)
+	bash cli.sh build-image $(REGISTRY)/$(OWNER)/$(PROJECT)/test:$(GIT_BRANCH) $(TOOLS) && \
+	docker container run \
+		--interactive \
+		--tty \
+		--privileged \
+		--rm \
+		$(REGISTRY)/$(OWNER)/$(PROJECT)/test:$(GIT_BRANCH) \
+			bash
