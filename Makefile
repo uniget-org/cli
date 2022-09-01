@@ -86,7 +86,7 @@ $(TOOLS):tools/%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; 
 	cat $@/build.log
 
 .PHONY:
-debug-%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Debugging image for $*...)
+%-debug: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Debugging image for $*...)
 	@\
 	docker buildx build $(TOOLS_DIR)/$* \
 		--build-arg branch=$(GIT_BRANCH) \
