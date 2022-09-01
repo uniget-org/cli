@@ -232,13 +232,14 @@ jobs:
       - name: Add new base branch to renovate
         run: |
           cat <<<"$(jq --arg branch "${{ needs.prepare.outputs.branch }}" '.baseBranches += [$branch]' renovate.json)" >renovate.json
+          cat <<<"$(jq --arg branch "${{ needs.prepare.outputs.branch }}" '.baseBranches += [$branch]' renovate-root.json)" >renovate-root.json
 
       - name: Commit updates renovate config
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           branch: main
           create_branch: false
-          file_pattern: renovate.json
+          file_pattern: renovate.json renovate-root.json
           commit_message: "Added release branch ${{ needs.prepare.outputs.branch }} to renovate base branches"
 
   helpers:
