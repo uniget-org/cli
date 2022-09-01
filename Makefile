@@ -2,6 +2,7 @@ M              = $(shell printf "\033[34;1m▶\033[0m")
 GIT_BRANCH     = $(shell git branch --show-current)
 TOOLS_DIR      = tools
 TOOLS          = $(shell find $(TOOLS_DIR) -mindepth 1 -maxdepth 1 -type d | sort)
+TOOLS_RAW      = $(subst tools/,,$(TOOLS))
 MANIFESTS      = $(addsuffix /manifest.json,$(TOOLS))
 DOCKERFILES    = $(addsuffix /Dockerfile,$(TOOLS))
 PREFIX         = /docker_setup_install
@@ -18,7 +19,9 @@ all: $(TOOLS)
 
 .PHONY:
 debug:
+	@echo "TOOLS_DIR=$(TOOLS_DIR)"
 	@echo "TOOLS=$(TOOLS)"
+	@echo "TOOLS_RAW=$(TOOLS_RAW)"
 	@echo "MANIFESTS=$(MANIFESTS)"
 	@echo "DOCKERFILES=$(DOCKERFILES)"
 
@@ -66,7 +69,11 @@ base: login ; $(info $(M) Building base image...)
 .PHONY:
 tools: $(TOOLS)
 
-$(TOOLS):%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Building image for $@...)
+.PHONY:
+$(TOOLS_RAW):%: tools/%
+
+.PHONY:
+$(TOOLS):tools/%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Building image for $*...)
 	@\
 	docker buildx build $@ \
 		--build-arg branch=$(GIT_BRANCH) \
@@ -81,7 +88,7 @@ $(TOOLS):%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info
 .PHONY:
 debug-%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Debugging image for $*...)
 	@\
-	docker buildx build $* \
+	docker buildx build $(TOOLS_DIR)/$* \
 		--build-arg branch=$(GIT_BRANCH) \
 		--build-arg ref=$(GIT_BRANCH) \
 		--cache-from $(REGISTRY)/$(OWNER)/$(PROJECT)/$*:$(GIT_BRANCH) \
