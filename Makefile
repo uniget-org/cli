@@ -79,7 +79,7 @@ $(TOOLS):tools/%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; 
 	docker buildx build $@ \
 		--build-arg branch=$(GIT_BRANCH) \
 		--build-arg ref=$(GIT_BRANCH) \
-		--build-arg name=$@ \
+		--build-arg name=$* \
 		--build-arg version=$${VERSION} \
 		--cache-from $(REGISTRY)/$(OWNER)/$(PROJECT)/$@:$(GIT_BRANCH) \
 		--tag $(REGISTRY)/$(OWNER)/$(PROJECT)/$@:$(GIT_BRANCH) \
@@ -95,7 +95,7 @@ $(TOOLS):tools/%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; 
 	docker buildx build $(TOOLS_DIR)/$* \
 		--build-arg branch=$(GIT_BRANCH) \
 		--build-arg ref=$(GIT_BRANCH) \
-		--build-arg name=$@ \
+		--build-arg name=$* \
 		--build-arg version=$${VERSION} \
 		--cache-from $(REGISTRY)/$(OWNER)/$(PROJECT)/$*:$(GIT_BRANCH) \
 		--tag $(REGISTRY)/$(OWNER)/$(PROJECT)/$*:$(GIT_BRANCH) \
