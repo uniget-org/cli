@@ -30,8 +30,8 @@ clean:
 		rm -f $${TOOL}/manifest.json $${TOOL}/Dockerfile; \
 	done
 
-renovate.json: $(MANIFESTS) ; $(info $(M) Updating $@...)
-	@echo "NOT IMPLEMENTED YET"
+renovate.json: scripts/renovate.sh renovate-root.json tools.json ; $(info $(M) Updating $@...)
+	@bash scripts/renovate.sh
 
 tools.json: $(MANIFESTS) ; $(info $(M) Creating $@...)
 	@jq --slurp '{"tools": map(.tools[])}' $(MANIFESTS) >tools.json
