@@ -126,9 +126,9 @@ usage:
 	| column --table --table-right=1
 
 .PHONY:
-test: $(TOOLS) tools.json; $(info $(M) Testing image for all tools...)
+test: tools.json; $(info $(M) Testing image for all tools...)
 	@\
-	bash docker-setup.sh build $(REGISTRY)/$(OWNER)/$(PROJECT)/test:$(GIT_BRANCH) $(TOOLS) && \
+	bash docker-setup.sh build $(REGISTRY)/$(OWNER)/$(PROJECT)/test:$(GIT_BRANCH) $(TOOLS_RAW) && \
 	docker container run \
 		--interactive \
 		--tty \
