@@ -31,7 +31,7 @@ COPY lib /var/cache/docker-setup/lib
 COPY tools.json /var/cache/docker-setup/
 COPY completion/bash/docker-setup.sh /etc/bash_completion.d/
 
-COPY docker/entrypoint.sh /
+COPY scripts/entrypoint.sh /
 ENTRYPOINT [ "bash", "/entrypoint.sh" ]
 
 ARG BRANCH
