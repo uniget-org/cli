@@ -25,7 +25,7 @@ jobs:
         env:
           SEMVER_VERSION: 3.3.0
         run: |
-          curl -sLo /usr/local/bin/semver "https://github.com/fsaintjacques/semver-tool/raw/${SEMVER_VERSION}/src/semver"
+          curl --silent --location --output /usr/local/bin/semver "https://github.com/fsaintjacques/semver-tool/raw/${SEMVER_VERSION}/src/semver"
           chmod +x /usr/local/bin/semver
 
       - name: Get version
@@ -66,7 +66,7 @@ jobs:
         run: |
           curl -sL "https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VERSION}/shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" \
           | tar -xJC /usr/local/bin/ --strip-components=1 "shellcheck-v${SHELLCHECK_VERSION}/shellcheck"
-          curl -sLo /usr/local/bin/yq "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64"
+          curl --silent --location --output /usr/local/bin/yq "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64"
 
       - name: Checkout code
         uses: actions/checkout@v3
@@ -109,7 +109,7 @@ jobs:
           echo "## Installation instructions" >>body.txt
           echo >>body.txt
           echo '```bash' >>body.txt
-          echo "curl -sLo /usr/local/bin/docker-setup https://github.com/${GITHUB_REPOSITORY}/releases/download/v${{ needs.prepare.outputs.version }}/docker-setup.sh" >>body.txt
+          echo "curl --silent --location --output /usr/local/bin/docker-setup https://github.com/${GITHUB_REPOSITORY}/releases/download/v${{ needs.prepare.outputs.version }}/docker-setup.sh" >>body.txt
           echo "chmod +x /usr/local/bin/docker-setup" >>body.txt
           echo "docker-setup --plan" >>body.txt
           echo "source <(docker-setup --bash-completion)" >>body.txt

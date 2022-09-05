@@ -16,7 +16,7 @@ The container tools installer and updater
 Download and run `docker-setup`:
 
 ```bash
-curl -sLO https://github.com/nicholasdille/docker-setup/releases/latest/download/docker-setup.sh
+curl --silent --location --remote-name https://github.com/nicholasdille/docker-setup/releases/latest/download/docker-setup.sh
 bash docker-setup.sh
 ```
 
@@ -29,7 +29,7 @@ curl -sL https://github.com/nicholasdille/docker-setup/releases/latest/download/
 Install to a well-known location:
 
 ```bash
-curl -sLo /usr/local/bin/docker-setup https://github.com/nicholasdille/docker-setup/releases/latest/download/docker-setup.sh
+curl --silent --location --output /usr/local/bin/docker-setup https://github.com/nicholasdille/docker-setup/releases/latest/download/docker-setup.sh
 chmod +x /usr/local/bin/docker-setup
 ```
 
