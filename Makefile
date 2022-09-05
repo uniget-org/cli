@@ -18,14 +18,6 @@ YQ             = bin/yq
 all: $(TOOLS)
 
 .PHONY:
-debug:
-	@echo "TOOLS_DIR=$(TOOLS_DIR)"
-	@echo "TOOLS=$(TOOLS)"
-	@echo "TOOLS_RAW=$(TOOLS_RAW)"
-	@echo "MANIFESTS=$(MANIFESTS)"
-	@echo "DOCKERFILES=$(DOCKERFILES)"
-
-.PHONY:
 clean:
 	@\
 	rm -f tools.json; \
@@ -81,8 +73,8 @@ $(TOOLS):tools/%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; 
 		--build-arg ref=$(GIT_BRANCH) \
 		--build-arg name=$* \
 		--build-arg version=$${VERSION} \
-		--cache-from $(REGISTRY)/$(OWNER)/$(PROJECT)/$@:$(GIT_BRANCH) \
-		--tag $(REGISTRY)/$(OWNER)/$(PROJECT)/$@:$(GIT_BRANCH) \
+		--cache-from $(REGISTRY)/$(OWNER)/$(PROJECT)/$*:$(GIT_BRANCH) \
+		--tag $(REGISTRY)/$(OWNER)/$(PROJECT)/$*:$(GIT_BRANCH) \
 		--push \
 		--progress plain \
 		>$@/build.log 2>&1 || \
@@ -135,4 +127,15 @@ test: tools.json; $(info $(M) Testing image for all tools...)
 		--privileged \
 		--rm \
 		$(REGISTRY)/$(OWNER)/$(PROJECT)/test:$(GIT_BRANCH) \
+			bash
+
+.PHONY:
+debug: base
+	@\
+	docker container run \
+		--interactive \
+		--tty \
+		--privileged \
+		--rm \
+		$(REGISTRY)/$(OWNER)/$(PROJECT)/base:$(GIT_BRANCH) \
 			bash
