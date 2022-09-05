@@ -106,7 +106,7 @@ $(TOOLS):tools/%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; 
 .PHONY:
 usage:
 	@\
-	for TOOL in $(TOOLS); do \
+	for TOOL in $(TOOLS_RAW); do \
 		regctl manifest get $(REGISTRY)/$(OWNER)/$(PROJECT)/$${TOOL}:$(GIT_BRANCH) --format raw-body \
 		| jq -r '.layers[].size' \
 		| paste -sd+ \
