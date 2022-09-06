@@ -106,16 +106,8 @@ $(TOOLS):tools/%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; 
 .PHONY:
 usage:
 	@\
-	for TOOL in $(TOOLS_RAW); do \
-		regctl manifest get $(REGISTRY)/$(OWNER)/$(PROJECT)/$${TOOL}:$(GIT_BRANCH) --format raw-body \
-		| jq -r '.layers[].size' \
-		| paste -sd+ \
-		| bc \
-		| numfmt --to=iec-i --suffix=B --padding=20 \
-		| xargs -I{} echo -n "{}"; \
-		echo " $${TOOL}"; \
-	done \
-	| column --table --table-right=1
+	export GIT_BRANCH=$(GIT_BRANCH); \
+	bash scripts/usage.sh $(TOOLS_RAW)
 
 .PHONY:
 test: tools.json; $(info $(M) Testing image for all tools...)
