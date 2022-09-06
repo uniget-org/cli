@@ -41,15 +41,31 @@ jobs:
         with:
           ref: v${{ steps.get_version.outputs.version }}
 
-      - name: Collect dockerfiles
-        id: dockerfile
+  build:
+    name: Build images
+    needs:
+    - prepare
+    if: ${{ github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'v') }}
+    runs-on: ubuntu-20.04
+    steps:
+
+      - name: Install tools
+        env:
+          SHELLCHECK_VERSION: 0.8.0
+          YQ_VERSION: 4.21.1
         run: |
-          make tools.json
-          tools="$(jq --compact-output '[ .tools[] | select(.dockerfile != null) | .name ]' tools.json)"
-          count="$(jq length <<<"${tools}")"
-          echo "Found dockerfile for the ${count} tool(s): ${tools}"
-          echo "::set-output name=tools::${tools}"
-          echo "::set-output name=count::${count}"
+          curl -sL "https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VERSION}/shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" \
+          | tar -xJC /usr/local/bin/ --strip-components=1 "shellcheck-v${SHELLCHECK_VERSION}/shellcheck"
+          curl --silent --location --output /usr/local/bin/yq "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64"
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: v${{ needs.prepare.outputs.version }}
+
+      - name: Build
+        run: |
+          make
 
   release:
     name: Release
@@ -84,16 +100,6 @@ jobs:
       - name: Create checksum
         run: |
           sha256sum docker-setup.sh >docker-setup.sh.sha256
-
-      - name: Prepare lib tarball
-        run: |
-          tar -czf lib.tar.gz lib && \
-          sha256sum lib.tar.gz >lib.tar.gz.sha256
-
-      - name: Create tools.json
-        run: |
-          yq --output-format json eval . tools.yaml >tools.json
-          sha256sum tools.json >tools.json.sha256
 
       - name: Create changelog
         env:
@@ -137,7 +143,7 @@ jobs:
           bodyFile: body.txt
           prerelease: ${{ needs.prepare.outputs.prerelease }}
           replacesArtifacts: true
-          artifacts: "docker-setup.sh,docker-setup.sh.sha256,tools.json,tools.json.sha256,lib.tar.gz,lib.tar.gz.sha256"
+          artifacts: "docker-setup.sh,docker-setup.sh.sha256,tools.json,tools.json.sha256"
 
   image:
     name: docker-build
@@ -208,115 +214,6 @@ jobs:
       with:
         sarif_file: 'trivy-results.sarif'
 
-  maintenance:
-    name: Maintenance
-    needs:
-    - prepare
-    - release
-    if: ${{ github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'v') && endsWith(github.event.workflow_run.head_branch, '.0') && needs.prepare.outputs.prerelease == 'false' }}
-    runs-on: ubuntu-20.04
-    steps:
-
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: '0'
-
-      - name: Create release branch
-        uses: peterjgrainger/action-create-branch@v2.2.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
-        with:
-          branch: ${{ needs.prepare.outputs.branch }}
-      
-      - name: Add new base branch to renovate
-        run: |
-          cat <<<"$(jq --arg branch "${{ needs.prepare.outputs.branch }}" '.baseBranches += [$branch]' renovate.json)" >renovate.json
-
-      - name: Commit updates renovate config
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          branch: main
-          create_branch: false
-          file_pattern: renovate.json
-          commit_message: "Added release branch ${{ needs.prepare.outputs.branch }} to renovate base branches"
-
-  helpers:
-    name: helpers
-    needs:
-    - prepare
-    if: ${{ github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'v') && needs.prepare.outputs.prerelease == 'false' && needs.prepare.outputs.tool_count > 0 }}
-    strategy:
-      matrix:
-        tool: ${{ fromJSON(needs.prepare.outputs.tools) }}
-    runs-on: ubuntu-latest
-    env:
-      IMAGE_NAME: ${{ secrets.docker_hub_username }}/docker-setup
-    steps:
-
-    - name: Checkout
-      uses: actions/checkout@v3
-      with:
-        ref: v${{ needs.prepare.outputs.version }}
-
-    - name: Create tools.json
-      run: |
-        make tools.json
-
-    - name: Create dockerfile
-      run: |
-        go_version="$(
-        grep "go_version=" docker-setup.sh \
-            | cut -d= -f2
-        )"
-        export go_version
-        rust_version="$(
-            grep "rust_version=" docker-setup.sh \
-            | cut -d= -f2
-        )"
-        export rust_version
-
-        jq --raw-output --arg tool "${{ matrix.tool }}" '.tools[] | select(.name == $tool) | .dockerfile' tools.json \
-        | envsubst \
-        >Dockerfile.${{ matrix.tool }}
-
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v2
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
-
-    - name: Login to DockerHub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.docker_hub_username }}
-        password: ${{ secrets.docker_hub_token }}
-
-    - name: Build and push
-      uses: docker/build-push-action@v3
-      with:
-        context: .
-        file: Dockerfile.${{ matrix.tool }}
-        tags: ${{ env.IMAGE_NAME }}:${{ needs.prepare.outputs.version }}-${{ matrix.tool }}
-        push: true
-
-    - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@0.7.1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        image-ref: ${{ env.IMAGE_NAME }}:${{ steps.docker_meta.outputs.version }}
-        ignore-unfixed: true
-        format: 'template'
-        template: '@/contrib/sarif.tpl'
-        output: 'trivy-results.sarif'
-        severity: 'CRITICAL,HIGH'
-
-    - name: Upload Trivy scan results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v2
-      with:
-        sarif_file: 'trivy-results.sarif'
-
   bootstrap:
     name: Bootstrap
     needs:
@@ -350,5 +247,5 @@ jobs:
               --fail \
               --output /usr/local/bin/docker-setup 
           chmod +x /usr/local/bin/docker-setup
-          docker-setup --plan
+          docker-setup --all --plan
           EOF
