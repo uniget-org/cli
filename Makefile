@@ -56,14 +56,13 @@ login: ; $(info $(M) Logging in to $(REGISTRY)...)
 	docker login $(REGISTRY)
 
 .PHONY:
-base: login ; $(info $(M) Building base image...)
+base: ; $(info $(M) Building base image $(REGISTRY)/$(REPOSITORY_PREFIX)base:$(VERSION)...)
 	@\
-	docker buildx build @base \
+	docker build @base \
 		--build-arg prefix_override=$(PREFIX) \
 		--build-arg target_override=$(TARGET) \
 		--cache-from $(REGISTRY)/$(REPOSITORY_PREFIX)base:$(VERSION) \
 		--tag $(REGISTRY)/$(REPOSITORY_PREFIX)base:$(VERSION) \
-		--push \
 		--progress plain \
 		>@base/build.log 2>&1 || \
 	cat @base/build.log
@@ -72,12 +71,12 @@ base: login ; $(info $(M) Building base image...)
 tools: $(TOOLS_RAW)
 
 .PHONY:
-$(TOOLS_RAW):%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Building image for $*...)
+$(TOOLS_RAW):%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Building image $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION)...)
 	@\
 	VERSION="$$(jq --raw-output '.tools[].version' tools/$*/manifest.json)"; \
 	DEPS="$$(jq --raw-output '.tools[] | select(.dependencies != null) |.dependencies[]' tools/$*/manifest.json | paste -sd,)"; \
 	TAGS="$$(jq --raw-output '.tools[] | select(.tags != null) |.tags[]' tools/$*/manifest.json | paste -sd,)"; \
-	docker buildx build $(TOOLS_DIR)/$@ \
+	docker build $(TOOLS_DIR)/$@ \
 		--build-arg branch=$(GIT_BRANCH) \
 		--build-arg ref=$(GIT_BRANCH) \
 		--build-arg name=$* \
@@ -86,10 +85,14 @@ $(TOOLS_RAW):%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(
 		--build-arg tags=$${TAGS} \
 		--cache-from $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION) \
 		--tag $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION) \
-		--push \
 		--progress plain \
 		>$(TOOLS_DIR)/$@/build.log 2>&1 || \
 	cat $@/build.log
+
+.PHONY: login base $(TOOLS_RAW) ; $(info $(M) Pushing images...)
+push:
+	@\
+	echo "NOT IMPLEMENTED YET"
 
 .PHONY:
 %-debug: $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Debugging image for $*...)
