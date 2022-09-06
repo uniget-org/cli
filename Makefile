@@ -1,28 +1,33 @@
-M              = $(shell printf "\033[34;1m▶\033[0m")
-GIT_BRANCH     = $(shell git branch --show-current)
-TOOLS_DIR      = tools
-TOOLS          = $(shell find $(TOOLS_DIR) -mindepth 1 -maxdepth 1 -type d | sort)
-TOOLS_RAW      = $(subst tools/,,$(TOOLS))
-MANIFESTS      = $(addsuffix /manifest.json,$(TOOLS))
-DOCKERFILES    = $(addsuffix /Dockerfile,$(TOOLS))
-PREFIX         = /docker_setup_install
-TARGET         = /usr/local
+M               = $(shell printf "\033[34;1m▶\033[0m")
+GIT_BRANCH     ?= $(shell git branch --show-current)
+VERSION        ?= $(patsubst v%,%,$(GIT_BRANCH))
+TOOLS_DIR       = tools
+TOOLS          ?= $(shell find $(TOOLS_DIR) -mindepth 1 -maxdepth 1 -type d | sort)
+TOOLS_RAW      ?= $(subst tools/,,$(TOOLS))
+MANIFESTS       = $(addsuffix /manifest.json,$(TOOLS))
+DOCKERFILES     = $(addsuffix /Dockerfile,$(TOOLS))
+PREFIX         ?= /docker_setup_install
+TARGET         ?= /usr/local
 
-OWNER          = nicholasdille
-PROJECT        = docker-setup
-REGISTRY       = ghcr.io
+OWNER          ?= nicholasdille
+PROJECT        ?= docker-setup
+REGISTRY       ?= ghcr.io
 
-YQ             = bin/yq
+YQ              = bin/yq
 
 .PHONY:
-all: $(TOOLS)
+all: $(TOOLS_RAW)
+
+.PHONY:
+vars:
+	@echo "VERSION=$(VERSION)"
 
 .PHONY:
 clean:
 	@\
 	rm -f tools.json; \
-	for TOOL in $(TOOLS); do \
-		rm -f $${TOOL}/manifest.json $${TOOL}/Dockerfile; \
+	for TOOL in $(TOOLS_RAW); do \
+		rm -f $(TOOLS_DIR)/$${TOOL}/manifest.json $(TOOLS_DIR)/$${TOOL}/Dockerfile; \
 	done
 
 renovate.json: scripts/renovate.sh renovate-root.json tools.json ; $(info $(M) Updating $@...)
@@ -51,33 +56,30 @@ base: login ; $(info $(M) Building base image...)
 	docker buildx build @base \
 		--build-arg prefix_override=$(PREFIX) \
 		--build-arg target_override=$(TARGET) \
-		--cache-from $(REGISTRY)/$(OWNER)/$(PROJECT)/base:$(GIT_BRANCH) \
-		--tag $(REGISTRY)/$(OWNER)/$(PROJECT)/base:$(GIT_BRANCH) \
+		--cache-from $(REGISTRY)/$(OWNER)/$(PROJECT)/base:$(VERSION) \
+		--tag $(REGISTRY)/$(OWNER)/$(PROJECT)/base:$(VERSION) \
 		--push \
 		--progress plain \
 		>@base/build.log 2>&1 || \
 	cat @base/build.log
 
 .PHONY:
-tools: $(TOOLS)
+tools: $(TOOLS_RAW)
 
 .PHONY:
-$(TOOLS_RAW):%: tools/%
-
-.PHONY:
-$(TOOLS):tools/%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Building image for $*...)
+$(TOOLS_RAW):%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Building image for $*...)
 	@\
 	VERSION="$$(jq --raw-output '.tools[].version' tools/$*/manifest.json)"; \
-	docker buildx build $@ \
+	docker buildx build $(TOOLS_DIR)/$@ \
 		--build-arg branch=$(GIT_BRANCH) \
 		--build-arg ref=$(GIT_BRANCH) \
 		--build-arg name=$* \
 		--build-arg version=$${VERSION} \
-		--cache-from $(REGISTRY)/$(OWNER)/$(PROJECT)/$*:$(GIT_BRANCH) \
-		--tag $(REGISTRY)/$(OWNER)/$(PROJECT)/$*:$(GIT_BRANCH) \
+		--cache-from $(REGISTRY)/$(OWNER)/$(PROJECT)/$*:$(VERSION) \
+		--tag $(REGISTRY)/$(OWNER)/$(PROJECT)/$*:$(VERSION) \
 		--push \
 		--progress plain \
-		>$@/build.log 2>&1 || \
+		>$(TOOLS_DIR)/$@/build.log 2>&1 || \
 	cat $@/build.log
 
 .PHONY:
@@ -89,8 +91,8 @@ $(TOOLS):tools/%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; 
 		--build-arg ref=$(GIT_BRANCH) \
 		--build-arg name=$* \
 		--build-arg version=$${VERSION} \
-		--cache-from $(REGISTRY)/$(OWNER)/$(PROJECT)/$*:$(GIT_BRANCH) \
-		--tag $(REGISTRY)/$(OWNER)/$(PROJECT)/$*:$(GIT_BRANCH) \
+		--cache-from $(REGISTRY)/$(OWNER)/$(PROJECT)/$*:$(VERSION) \
+		--tag $(REGISTRY)/$(OWNER)/$(PROJECT)/$*:$(VERSION) \
 		--target prepare \
 		--load \
 		--progress plain \
@@ -100,25 +102,25 @@ $(TOOLS):tools/%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; 
 		--tty \
 		--privileged \
 		--rm \
-		$(REGISTRY)/$(OWNER)/$(PROJECT)/$*:$(GIT_BRANCH) \
+		$(REGISTRY)/$(OWNER)/$(PROJECT)/$*:$(VERSION) \
 			bash
 
 .PHONY:
 usage:
 	@\
-	export GIT_BRANCH=$(GIT_BRANCH); \
+	export VERSION=$(VERSION); \
 	bash scripts/usage.sh $(TOOLS_RAW)
 
 .PHONY:
 test: tools.json; $(info $(M) Testing image for all tools...)
 	@\
-	bash docker-setup.sh build $(REGISTRY)/$(OWNER)/$(PROJECT)/test:$(GIT_BRANCH) $(TOOLS_RAW) && \
+	bash docker-setup.sh build $(REGISTRY)/$(OWNER)/$(PROJECT)/test:$(VERSION) $(TOOLS_RAW) && \
 	docker container run \
 		--interactive \
 		--tty \
 		--privileged \
 		--rm \
-		$(REGISTRY)/$(OWNER)/$(PROJECT)/test:$(GIT_BRANCH) \
+		$(REGISTRY)/$(OWNER)/$(PROJECT)/test:$(VERSION) \
 			bash
 
 .PHONY:
@@ -129,5 +131,5 @@ debug: base
 		--tty \
 		--privileged \
 		--rm \
-		$(REGISTRY)/$(OWNER)/$(PROJECT)/base:$(GIT_BRANCH) \
+		$(REGISTRY)/$(OWNER)/$(PROJECT)/base:$(VERSION) \
 			bash
