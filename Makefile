@@ -93,7 +93,7 @@ $(TOOLS_RAW):%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(
 		--tag $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION) \
 		--progress plain \
 		>$(TOOLS_DIR)/$@/build.log 2>&1 || \
-	cat $@/build.log
+	cat $(TOOLS_DIR)/$@/build.log
 
 .PHONY: login base $(TOOLS_RAW) ; $(info $(M) Pushing images...)
 push:
