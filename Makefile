@@ -40,10 +40,12 @@ tools.json: $(MANIFESTS) ; $(info $(M) Creating $@...)
 $(MANIFESTS):%.json: %.yaml $(YQ) ; $(info $(M) Creating $*.json...)
 	@$(YQ) --output-format json eval '{"tools":[.]}' $*.yaml >$*.json
 
-$(DOCKERFILES):%: %.template Dockerfile.tail ; $(info $(M) Creating $@...)
+$(DOCKERFILES):%/Dockerfile: %/Dockerfile.template Dockerfile.tail ; $(info $(M) Creating $@...)
 	@\
 	cat $@.template >$@; \
 	echo >>$@; \
+	echo >>$@; \
+	if test -f $*/post_install.sh; then echo 'COPY post_install.sh $${prefix}$${docker_setup_post_install}/${name}.json' >>$@; fi; \
 	cat Dockerfile.tail >>$@
 
 .PHONY:
@@ -71,11 +73,15 @@ tools: $(TOOLS_RAW)
 $(TOOLS_RAW):%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Building image for $*...)
 	@\
 	VERSION="$$(jq --raw-output '.tools[].version' tools/$*/manifest.json)"; \
+	DEPS="$$(jq --raw-output '.tools[] | select(.dependencies != null) |.dependencies[]' tools/$*/manifest.json | paste -sd,)"; \
+	TAGS="$$(jq --raw-output '.tools[] | select(.tags != null) |.tags[]' tools/$*/manifest.json | paste -sd,)"; \
 	docker buildx build $(TOOLS_DIR)/$@ \
 		--build-arg branch=$(GIT_BRANCH) \
 		--build-arg ref=$(GIT_BRANCH) \
 		--build-arg name=$* \
 		--build-arg version=$${VERSION} \
+		--build-arg deps=$${DEPS} \
+		--build-arg tags=$${TAGS} \
 		--cache-from $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION) \
 		--tag $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION) \
 		--push \
@@ -87,11 +93,15 @@ $(TOOLS_RAW):%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(
 %-debug: $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Debugging image for $*...)
 	@\
 	VERSION="$$(jq --raw-output '.tools[].version' $(TOOLS_DIR)/$*/manifest.json)"; \
+	DEPS="$$(jq --raw-output '.tools[] | select(.dependencies != null) |.dependencies[]' tools/$*/manifest.json | paste -sd,)"; \
+	TAGS="$$(jq --raw-output '.tools[] | select(.tags != null) |.tags[]' tools/$*/manifest.json | paste -sd,)"; \
 	docker buildx build $(TOOLS_DIR)/$* \
 		--build-arg branch=$(GIT_BRANCH) \
 		--build-arg ref=$(GIT_BRANCH) \
 		--build-arg name=$* \
 		--build-arg version=$${VERSION} \
+		--build-arg deps=$${DEPS} \
+		--build-arg tags=$${TAGS} \
 		--cache-from $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION) \
 		--tag $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION) \
 		--target prepare \
