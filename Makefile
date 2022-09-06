@@ -23,6 +23,7 @@ all: $(TOOLS_RAW)
 
 .PHONY:
 info: ; $(info $(M) Runtime info...)
+	@echo "git describe:      $$(git describe)"
 	@echo "GIT_BRANCH:        $(GIT_BRANCH)"
 	@echo "VERSION:           $(VERSION)"
 	@echo "OWNER:             $(OWNER)"
