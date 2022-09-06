@@ -22,8 +22,13 @@ YQ_VERSION        ?= 4.27.3
 all: $(TOOLS_RAW)
 
 .PHONY:
-vars:
-	@echo "VERSION=$(VERSION)"
+info: ; $(info $(M) Runtime info...)
+	@echo "GIT_BRANCH:        $(GIT_BRANCH)"
+	@echo "VERSION:           $(VERSION)"
+	@echo "OWNER:             $(OWNER)"
+	@echo "PROJECT:           $(PROJECT)"
+	@echo "REGISTRY:          $(REGISTRY)"
+	@echo "REPOSITORY_PREFIX: $(REPOSITORY_PREFIX)"
 
 .PHONY:
 clean:
@@ -56,7 +61,7 @@ login: ; $(info $(M) Logging in to $(REGISTRY)...)
 	docker login $(REGISTRY)
 
 .PHONY:
-base: ; $(info $(M) Building base image $(REGISTRY)/$(REPOSITORY_PREFIX)base:$(VERSION)...)
+base: info ; $(info $(M) Building base image $(REGISTRY)/$(REPOSITORY_PREFIX)base:$(VERSION)...)
 	@\
 	docker build @base \
 		--build-arg prefix_override=$(PREFIX) \
