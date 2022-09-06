@@ -14,7 +14,9 @@ PROJECT           ?= docker-setup
 REGISTRY          ?= ghcr.io
 REPOSITORY_PREFIX ?= $(OWNER)/$(PROJECT)/
 
-YQ                 = bin/yq
+BIN                = bin
+YQ                 = $(BIN)/yq
+YQ_VERSION        ?= 4.27.3
 
 .PHONY:
 all: $(TOOLS_RAW)
@@ -144,3 +146,11 @@ debug: base
 		--rm \
 		$(REGISTRY)/$(REPOSITORY_PREFIX)base:$(VERSION) \
 			bash
+
+$(YQ): ; $(info $(M) Installing yq...)
+	@\
+	mkdir -p $(BIN); \
+	test -f $@ && test -x $@ || ( \
+		curl -sLfo $@ https://github.com/mikefarah/yq/releases/download/v$(YQ_VERSION)/yq_linux_amd64; \
+		chmod +x $@; \
+	)
