@@ -81,17 +81,17 @@ tools: $(TOOLS_RAW)
 .PHONY:
 $(TOOLS_RAW):%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Building image $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION)...)
 	@\
-	VERSION="$$(jq --raw-output '.tools[].version' tools/$*/manifest.json)"; \
+	TOOL_VERSION="$$(jq --raw-output '.tools[].version' tools/$*/manifest.json)"; \
 	DEPS="$$(jq --raw-output '.tools[] | select(.dependencies != null) |.dependencies[]' tools/$*/manifest.json | paste -sd,)"; \
 	TAGS="$$(jq --raw-output '.tools[] | select(.tags != null) |.tags[]' tools/$*/manifest.json | paste -sd,)"; \
 	echo "Name:         $*"; \
-	echo "Version:      $${VERSION}"; \
+	echo "Version:      $${TOOL_VERSION}"; \
 	echo "Dependencies: $${DEPS}"; \
 	docker build $(TOOLS_DIR)/$@ \
 		--build-arg branch=$(GIT_BRANCH) \
 		--build-arg ref=$(GIT_BRANCH) \
 		--build-arg name=$* \
-		--build-arg version=$${VERSION} \
+		--build-arg version=$${TOOL_VERSION} \
 		--build-arg deps=$${DEPS} \
 		--build-arg tags=$${TAGS} \
 		--cache-from $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION) \
@@ -108,17 +108,17 @@ push:
 .PHONY:
 %-debug: $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Debugging image for $*...)
 	@\
-	VERSION="$$(jq --raw-output '.tools[].version' $(TOOLS_DIR)/$*/manifest.json)"; \
+	TOOL_VERSION="$$(jq --raw-output '.tools[].version' $(TOOLS_DIR)/$*/manifest.json)"; \
 	DEPS="$$(jq --raw-output '.tools[] | select(.dependencies != null) |.dependencies[]' tools/$*/manifest.json | paste -sd,)"; \
 	TAGS="$$(jq --raw-output '.tools[] | select(.tags != null) |.tags[]' tools/$*/manifest.json | paste -sd,)"; \
 	echo "Name:         $*"; \
-	echo "Version:      $${VERSION}"; \
+	echo "Version:      $${TOOL_VERSION}"; \
 	echo "Dependencies: $${DEPS}"; \
 	docker buildx build $(TOOLS_DIR)/$* \
 		--build-arg branch=$(GIT_BRANCH) \
 		--build-arg ref=$(GIT_BRANCH) \
 		--build-arg name=$* \
-		--build-arg version=$${VERSION} \
+		--build-arg version=$${TOOL_VERSION} \
 		--build-arg deps=$${DEPS} \
 		--build-arg tags=$${TAGS} \
 		--cache-from $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION) \
@@ -132,7 +132,7 @@ push:
 		--tty \
 		--privileged \
 		--env name=$* \
-		--env version=$${VERSION} \
+		--env version=$${TOOL_VERSION} \
 		--rm \
 		$(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION) \
 			bash
