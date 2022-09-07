@@ -17,6 +17,8 @@ REPOSITORY_PREFIX ?= $(OWNER)/$(PROJECT)/
 BIN                = bin
 YQ                 = $(BIN)/yq
 YQ_VERSION        ?= 4.27.3
+REGCTL             = $(BIN)/regctl
+REGCTL_VERSION    ?= 0.4.4
 
 .PHONY:
 all: $(TOOLS_RAW)
@@ -161,5 +163,13 @@ $(YQ): ; $(info $(M) Installing yq...)
 	mkdir -p $(BIN); \
 	test -f $@ && test -x $@ || ( \
 		curl -sLfo $@ https://github.com/mikefarah/yq/releases/download/v$(YQ_VERSION)/yq_linux_amd64; \
+		chmod +x $@; \
+	)
+
+$(REGCTL):
+	@\
+	mkdir -p $(BIN); \
+	test -f $@ && test -x $@ || ( \
+		curl --silent --location --output $@ "https://github.com/regclient/regclient/releases/download/v${REGCTL_VERSION}/regctl-linux-amd64"; \
 		chmod +x $@; \
 	)
