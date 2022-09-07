@@ -84,6 +84,9 @@ $(TOOLS_RAW):%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(
 	VERSION="$$(jq --raw-output '.tools[].version' tools/$*/manifest.json)"; \
 	DEPS="$$(jq --raw-output '.tools[] | select(.dependencies != null) |.dependencies[]' tools/$*/manifest.json | paste -sd,)"; \
 	TAGS="$$(jq --raw-output '.tools[] | select(.tags != null) |.tags[]' tools/$*/manifest.json | paste -sd,)"; \
+	echo "Name:         $*"; \
+	echo "Version:      $${VERSION}"; \
+	echo "Dependencies: $${DEPS}"; \
 	docker build $(TOOLS_DIR)/$@ \
 		--build-arg branch=$(GIT_BRANCH) \
 		--build-arg ref=$(GIT_BRANCH) \
@@ -108,6 +111,9 @@ push:
 	VERSION="$$(jq --raw-output '.tools[].version' $(TOOLS_DIR)/$*/manifest.json)"; \
 	DEPS="$$(jq --raw-output '.tools[] | select(.dependencies != null) |.dependencies[]' tools/$*/manifest.json | paste -sd,)"; \
 	TAGS="$$(jq --raw-output '.tools[] | select(.tags != null) |.tags[]' tools/$*/manifest.json | paste -sd,)"; \
+	echo "Name:         $*"; \
+	echo "Version:      $${VERSION}"; \
+	echo "Dependencies: $${DEPS}"; \
 	docker buildx build $(TOOLS_DIR)/$* \
 		--build-arg branch=$(GIT_BRANCH) \
 		--build-arg ref=$(GIT_BRANCH) \
@@ -125,6 +131,8 @@ push:
 		--interactive \
 		--tty \
 		--privileged \
+		--env name=$* \
+		--env version=$${VERSION} \
 		--rm \
 		$(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION) \
 			bash
