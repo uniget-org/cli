@@ -5,3 +5,6 @@ tools.json
 manifest.json
 tools/*/Dockerfile
 build.log
+cosign.key
+cosign.pub
+sbom/**

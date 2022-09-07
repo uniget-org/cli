@@ -6,6 +6,7 @@ TOOLS             ?= $(shell find $(TOOLS_DIR) -mindepth 1 -maxdepth 1 -type d |
 TOOLS_RAW         ?= $(subst tools/,,$(TOOLS))
 MANIFESTS          = $(addsuffix /manifest.json,$(TOOLS))
 DOCKERFILES        = $(addsuffix /Dockerfile,$(TOOLS))
+SBOMS              = $(patsubst tools/%,sbom/%.json,$(TOOLS))
 PREFIX            ?= /docker_setup_install
 TARGET            ?= /usr/local
 
@@ -106,7 +107,7 @@ push:
 	echo "NOT IMPLEMENTED YET"
 
 .PHONY:
-%-debug: $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Debugging image for $*...)
+%--debug: $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Debugging image for $*...)
 	@\
 	TOOL_VERSION="$$(jq --raw-output '.tools[].version' $(TOOLS_DIR)/$*/manifest.json)"; \
 	DEPS="$$(jq --raw-output '.tools[] | select(.dependencies != null) |.dependencies[]' tools/$*/manifest.json | paste -sd,)"; \
@@ -136,6 +137,25 @@ push:
 		--rm \
 		$(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION) \
 			bash
+
+cosign.key:
+	@\
+	cosign generate-key-pair
+
+.PHONY:
+%--sign: cosign.key ; $(info $(M) Signing image for $*...)
+	@\
+	cosign sign --key cosign.key $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION)
+
+$(SBOMS):sbom/%.json: $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Creating sbom for $*...)
+	@\
+	mkdir -p sbom; \
+	syft packages --output cyclonedx-json --file sbom/$*.json $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION)
+
+.PHONY:
+%--attest: sbom/%.json cosign.key ; $(info $(M) Attesting sbom for $*...)
+	@\
+	cosign attest --predicate sbom/$*.json --type cyclonedx --key cosign.key $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION)
 
 .PHONY:
 usage:
