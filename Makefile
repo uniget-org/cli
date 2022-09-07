@@ -66,11 +66,14 @@ help:
 	@echo "    cosign.key                   Create cosign key pair"
 	@echo "    sign                         Sign all container images"
 	@echo "    <tool>--sign                 Sign container image for specific tool"
+	@echo "    sbom"                        Create SBoM for all tools"
 	@echo "    tools/<tool>/sbom.json       Create SBoM for specific tool"
 	@echo "    attest                       Attest SBoM for all tools"
 	@echo "    <tool>--attest               Attest SBoM for specific tool"
 	@echo "    install                      Push, sign and attest all container images"
 	@echo "    <tool>--install              Push, sign and attest container image for specific tool"
+	@echo
+	@echo "Reminder: foo-% => $$*=bar $$@=foo-bar"
 	@echo
 
 .PHONY:
@@ -207,6 +210,9 @@ sign: $(addsuffix --sign,$(TOOLS_RAW))
 %--sign: cosign.key ; $(info $(M) Signing image for $*...)
 	@\
 	cosign sign --key cosign.key $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION)
+
+.PHONY:
+sbom: $(SBOMS)
 
 $(SBOMS):%/sbom.json: %/manifest.json %/Dockerfile ; $(info $(M) Creating sbom for $*...)
 	@\

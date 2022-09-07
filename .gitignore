@@ -7,4 +7,4 @@ tools/*/Dockerfile
 build.log
 cosign.key
 cosign.pub
-sbom/**
+tools/*/sbom.json
