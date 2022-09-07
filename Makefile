@@ -6,7 +6,7 @@ TOOLS             ?= $(shell find $(TOOLS_DIR) -mindepth 1 -maxdepth 1 -type d |
 TOOLS_RAW         ?= $(subst tools/,,$(TOOLS))
 MANIFESTS          = $(addsuffix /manifest.json,$(TOOLS))
 DOCKERFILES        = $(addsuffix /Dockerfile,$(TOOLS))
-SBOMS              = $(patsubst tools/%,sbom/%.json,$(TOOLS))
+SBOMS              = $(addsuffix /sbom.json,$(TOOLS))
 PREFIX            ?= /docker_setup_install
 TARGET            ?= /usr/local
 
@@ -35,12 +35,59 @@ info: ; $(info $(M) Runtime info...)
 	@echo "REPOSITORY_PREFIX: $(REPOSITORY_PREFIX)"
 
 .PHONY:
+help:
+	@echo
+	@echo "General targets:"
+	@echo "    all (default)                Build all tools"
+	@echo "    clean                        Remove all temporary files"
+	@echo "    tools.json                   Generate inventory from tools/*/manifest.json"
+	@echo
+	@echo "Dependency management:"
+	@echo "    renovate.json                Generate from tools/*/manifest.json"
+	@echo "    tools/<tool>/manifest.json   Generate from tools/*/manifest.yaml"
+	@echo
+	@echo "Reflection:"
+	@echo "    info                         Display configuration data"
+	@echo "    list                         List available tools"
+	@echo "    size                         Display storage usage"
+	@echo
+	@echo "Building:"
+	@echo "    tools/<tool>/Dockerfile      Generate from tools/*/Dockerfile.template"
+	@echo "    login                        Login to configured registry"
+	@echo "    base                         Build base container image for all tool installations"
+	@echo "    <tool>                       Build container image for specific tool"
+	@echo "    <tool>--debug                Build container image specific tool and enter shell"
+	@echo "    debug                        Enter shell in base image"
+	@echo "    push                         Push all container images"
+	@echo "    <tool>--push                 Push container image for specific tool"
+	@echo "    <tool>--inspect              Inspect pushed container image for specific tool"
+	@echo
+	@echo "Security:"
+	@echo "    cosign.key                   Create cosign key pair"
+	@echo "    sign                         Sign all container images"
+	@echo "    <tool>--sign                 Sign container image for specific tool"
+	@echo "    tools/<tool>/sbom.json       Create SBoM for specific tool"
+	@echo "    attest                       Attest SBoM for all tools"
+	@echo "    <tool>--attest               Attest SBoM for specific tool"
+	@echo "    install                      Push, sign and attest all container images"
+	@echo "    <tool>--install              Push, sign and attest container image for specific tool"
+	@echo
+
+.PHONY:
 clean:
 	@\
 	rm -f tools.json; \
 	for TOOL in $(TOOLS_RAW); do \
-		rm -f $(TOOLS_DIR)/$${TOOL}/manifest.json $(TOOLS_DIR)/$${TOOL}/Dockerfile; \
+		rm -f \
+			$(TOOLS_DIR)/$${TOOL}/manifest.json \
+			$(TOOLS_DIR)/$${TOOL}/Dockerfile \
+			$(TOOLS_DIR)/$${TOOL}/build.log \
+			$(TOOLS_DIR)/$${TOOL}/sbom.json; \
 	done
+
+.PHONY:
+list:
+	@echo "$(TOOLS_RAW)"
 
 renovate.json: scripts/renovate.sh renovate-root.json tools.json ; $(info $(M) Updating $@...)
 	@bash scripts/renovate.sh
@@ -77,9 +124,6 @@ base: info ; $(info $(M) Building base image $(REGISTRY)/$(REPOSITORY_PREFIX)bas
 	cat @base/build.log
 
 .PHONY:
-tools: $(TOOLS_RAW)
-
-.PHONY:
 $(TOOLS_RAW):%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Building image $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION)...)
 	@\
 	TOOL_VERSION="$$(jq --raw-output '.tools[].version' tools/$*/manifest.json)"; \
@@ -101,10 +145,24 @@ $(TOOLS_RAW):%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(
 		>$(TOOLS_DIR)/$@/build.log 2>&1 || \
 	cat $(TOOLS_DIR)/$@/build.log
 
-.PHONY: login base $(TOOLS_RAW) ; $(info $(M) Pushing images...)
-push:
+.PHONY:
+push: $(addsuffix --push,$(TOOLS_RAW))
+
+.PHONY:
+$(addsuffix --push,$(TOOLS_RAW)):%--push: login % ; $(info $(M) Pushing image for $*...)
 	@\
-	echo "NOT IMPLEMENTED YET"
+	docker push $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION)
+
+.PHONY:
+$(addsuffix --inspect,$(TOOLS_RAW)):%--inspect: $(REGCTL) login % ; $(info $(M) Inspecting image for $*...)
+	@\
+	regctl manifest get $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION)
+
+.PHONY:
+install: push sign attest
+
+.PHONY:
+$(addsuffix --install,$(TOOLS_RAW)):%--install: %--push %--sign %--attest
 
 .PHONY:
 %--debug: $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Debugging image for $*...)
@@ -143,14 +201,20 @@ cosign.key:
 	cosign generate-key-pair
 
 .PHONY:
+sign: $(addsuffix --sign,$(TOOLS_RAW))
+
+.PHONY:
 %--sign: cosign.key ; $(info $(M) Signing image for $*...)
 	@\
 	cosign sign --key cosign.key $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION)
 
-$(SBOMS):sbom/%.json: $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Creating sbom for $*...)
+$(SBOMS):%/sbom.json: %/manifest.json %/Dockerfile ; $(info $(M) Creating sbom for $*...)
 	@\
 	mkdir -p sbom; \
-	syft packages --output cyclonedx-json --file sbom/$*.json $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION)
+	syft packages --output cyclonedx-json --file $@ $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION)
+
+.PHONY:
+attest: $(addsuffix --attest,$(TOOLS_RAW))
 
 .PHONY:
 %--attest: sbom/%.json cosign.key ; $(info $(M) Attesting sbom for $*...)
@@ -158,22 +222,10 @@ $(SBOMS):sbom/%.json: $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $
 	cosign attest --predicate sbom/$*.json --type cyclonedx --key cosign.key $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION)
 
 .PHONY:
-usage:
+size:
 	@\
 	export VERSION=$(VERSION); \
 	bash scripts/usage.sh $(TOOLS_RAW)
-
-.PHONY:
-test: tools.json; $(info $(M) Testing image for all tools...)
-	@\
-	bash docker-setup.sh build $(REGISTRY)/$(REPOSITORY_PREFIX)test:$(VERSION) $(TOOLS_RAW) && \
-	docker container run \
-		--interactive \
-		--tty \
-		--privileged \
-		--rm \
-		$(REGISTRY)/$(REPOSITORY_PREFIX)test:$(VERSION) \
-			bash
 
 .PHONY:
 debug: base
