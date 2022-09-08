@@ -92,6 +92,10 @@ clean:
 list:
 	@echo "$(TOOLS_RAW)"
 
+.PHONY:
+%--show:
+	@ls -l $(TOOLS_DIR)/$*
+
 renovate.json: scripts/renovate.sh renovate-root.json tools.json ; $(info $(M) Updating $@...)
 	@bash scripts/renovate.sh
 
@@ -148,6 +152,11 @@ $(TOOLS_RAW):%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(
 		>$(TOOLS_DIR)/$@/build.log 2>&1 || \
 	cat $(TOOLS_DIR)/$@/build.log
 
+$(addsuffix --deep,$(TOOLS_RAW)):%--deep:
+	@\
+	DEPS="$$(./docker-setup.sh dependencies $*)"; \
+	make $${DEPS}
+
 .PHONY:
 push: $(addsuffix --push,$(TOOLS_RAW))
 
@@ -157,7 +166,7 @@ $(addsuffix --push,$(TOOLS_RAW)):%--push: login % ; $(info $(M) Pushing image fo
 	docker push $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION)
 
 .PHONY:
-$(addsuffix --inspect,$(TOOLS_RAW)):%--inspect: $(REGCTL) login % ; $(info $(M) Inspecting image for $*...)
+$(addsuffix --inspect,$(TOOLS_RAW)):%--inspect: $(REGCTL) ; $(info $(M) Inspecting image for $*...)
 	@\
 	regctl manifest get $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION)
 
@@ -214,10 +223,14 @@ sign: $(addsuffix --sign,$(TOOLS_RAW))
 .PHONY:
 sbom: $(SBOMS)
 
-$(SBOMS):%/sbom.json: %/manifest.json %/Dockerfile ; $(info $(M) Creating sbom for $*...)
+.PHONY:
+$(addsuffix --sbom,$(TOOLS_RAW)):%--sbom: $(TOOLS_DIR)/%/sbom.json
+
+$(SBOMS):$(TOOLS_DIR)/%/sbom.json: $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Creating sbom for $*...)
 	@\
 	mkdir -p sbom; \
-	syft packages --output cyclonedx-json --file $@ $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION)
+	syft packages --output cyclonedx-json --file $@ $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION); \
+	test -s $(TOOLS_DIR)/$*/sbom.json || rm $(TOOLS_DIR)/$*/sbom.json
 
 .PHONY:
 attest: $(addsuffix --attest,$(TOOLS_RAW))
