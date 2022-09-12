@@ -1,5 +1,10 @@
-bin
-dist
+/bin
 CHANGELOG.md
 .downloads
 tools.json
+manifest.json
+tools/*/Dockerfile
+build.log
+cosign.key
+cosign.pub
+tools/*/sbom.json

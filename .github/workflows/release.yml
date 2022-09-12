@@ -25,7 +25,7 @@ jobs:
         env:
           SEMVER_VERSION: 3.3.0
         run: |
-          curl -sLo /usr/local/bin/semver "https://github.com/fsaintjacques/semver-tool/raw/${SEMVER_VERSION}/src/semver"
+          curl --silent --location --output /usr/local/bin/semver "https://github.com/fsaintjacques/semver-tool/raw/${SEMVER_VERSION}/src/semver"
           chmod +x /usr/local/bin/semver
 
       - name: Get version
@@ -41,15 +41,31 @@ jobs:
         with:
           ref: v${{ steps.get_version.outputs.version }}
 
-      - name: Collect dockerfiles
-        id: dockerfile
+  build:
+    name: Build images
+    needs:
+    - prepare
+    if: ${{ github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'v') }}
+    runs-on: ubuntu-20.04
+    steps:
+
+      - name: Install tools
+        env:
+          SHELLCHECK_VERSION: 0.8.0
+          YQ_VERSION: 4.21.1
         run: |
-          make tools.json
-          tools="$(jq --compact-output '[ .tools[] | select(.dockerfile != null) | .name ]' tools.json)"
-          count="$(jq length <<<"${tools}")"
-          echo "Found dockerfile for the ${count} tool(s): ${tools}"
-          echo "::set-output name=tools::${tools}"
-          echo "::set-output name=count::${count}"
+          curl -sL "https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VERSION}/shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" \
+          | tar -xJC /usr/local/bin/ --strip-components=1 "shellcheck-v${SHELLCHECK_VERSION}/shellcheck"
+          curl --silent --location --output /usr/local/bin/yq "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64"
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: v${{ needs.prepare.outputs.version }}
+
+      - name: Build
+        run: |
+          make
 
   release:
     name: Release
@@ -66,7 +82,7 @@ jobs:
         run: |
           curl -sL "https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VERSION}/shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" \
           | tar -xJC /usr/local/bin/ --strip-components=1 "shellcheck-v${SHELLCHECK_VERSION}/shellcheck"
-          curl -sLo /usr/local/bin/yq "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64"
+          curl --silent --location --output /usr/local/bin/yq "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64"
 
       - name: Checkout code
         uses: actions/checkout@v3
@@ -85,16 +101,6 @@ jobs:
         run: |
           sha256sum docker-setup.sh >docker-setup.sh.sha256
 
-      - name: Prepare lib tarball
-        run: |
-          tar -czf lib.tar.gz lib && \
-          sha256sum lib.tar.gz >lib.tar.gz.sha256
-
-      - name: Create tools.json
-        run: |
-          yq --output-format json eval . tools.yaml >tools.json
-          sha256sum tools.json >tools.json.sha256
-
       - name: Create changelog
         env:
           GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
@@ -109,7 +115,7 @@ jobs:
           echo "## Installation instructions" >>body.txt
           echo >>body.txt
           echo '```bash' >>body.txt
-          echo "curl -sLo /usr/local/bin/docker-setup https://github.com/${GITHUB_REPOSITORY}/releases/download/v${{ needs.prepare.outputs.version }}/docker-setup.sh" >>body.txt
+          echo "curl --silent --location --output /usr/local/bin/docker-setup https://github.com/${GITHUB_REPOSITORY}/releases/download/v${{ needs.prepare.outputs.version }}/docker-setup.sh" >>body.txt
           echo "chmod +x /usr/local/bin/docker-setup" >>body.txt
           echo "docker-setup --plan" >>body.txt
           echo "source <(docker-setup --bash-completion)" >>body.txt
@@ -137,219 +143,4 @@ jobs:
           bodyFile: body.txt
           prerelease: ${{ needs.prepare.outputs.prerelease }}
           replacesArtifacts: true
-          artifacts: "docker-setup.sh,docker-setup.sh.sha256,tools.json,tools.json.sha256,lib.tar.gz,lib.tar.gz.sha256"
-
-  image:
-    name: docker-build
-    needs:
-    - prepare
-    if: ${{ github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'v') }}
-    runs-on: ubuntu-latest
-    env:
-      IMAGE_NAME: ${{ secrets.docker_hub_username }}/docker-setup
-    steps:
-
-    - name: Checkout
-      uses: actions/checkout@v3
-      with:
-        ref: v${{ needs.prepare.outputs.version }}
-
-    - name: Create tools.json
-      run: |
-        make tools.json
-
-    - name: Docker meta
-      id: docker_meta
-      uses: docker/metadata-action@v4
-      with:
-        images: ${{ env.IMAGE_NAME }}
-        tags: |
-          type=semver,pattern={{version}},value=${{ needs.prepare.outputs.version }}
-          type=semver,pattern={{major}}.{{minor}},value=${{ needs.prepare.outputs.version }}
-          type=semver,pattern={{major}},value=${{ needs.prepare.outputs.version }}
-
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v2
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
-
-    - name: Login to DockerHub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.docker_hub_username }}
-        password: ${{ secrets.docker_hub_token }}
-
-    - name: Build and push
-      uses: docker/build-push-action@v3
-      with:
-        context: .
-        build-args: |
-          BRANCH=v${{ needs.prepare.outputs.version }}
-          DOCKER_SETUP_VERSION=${{ needs.prepare.outputs.version }}
-        tags: ${{ steps.docker_meta.outputs.tags }}
-        labels: ${{ steps.docker_meta.outputs.labels }}
-        push: true
-
-    - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@0.7.1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        image-ref: ${{ env.IMAGE_NAME }}:${{ steps.docker_meta.outputs.version }}
-        ignore-unfixed: true
-        format: 'template'
-        template: '@/contrib/sarif.tpl'
-        output: 'trivy-results.sarif'
-        severity: 'CRITICAL,HIGH'
-
-    - name: Upload Trivy scan results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v2
-      with:
-        sarif_file: 'trivy-results.sarif'
-
-  maintenance:
-    name: Maintenance
-    needs:
-    - prepare
-    - release
-    if: ${{ github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'v') && endsWith(github.event.workflow_run.head_branch, '.0') && needs.prepare.outputs.prerelease == 'false' }}
-    runs-on: ubuntu-20.04
-    steps:
-
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: '0'
-
-      - name: Create release branch
-        uses: peterjgrainger/action-create-branch@v2.2.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
-        with:
-          branch: ${{ needs.prepare.outputs.branch }}
-      
-      - name: Add new base branch to renovate
-        run: |
-          cat <<<"$(jq --arg branch "${{ needs.prepare.outputs.branch }}" '.baseBranches += [$branch]' renovate.json)" >renovate.json
-          cat <<<"$(jq --arg branch "${{ needs.prepare.outputs.branch }}" '.baseBranches += [$branch]' renovate-root.json)" >renovate-root.json
-
-      - name: Commit updates renovate config
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          branch: main
-          create_branch: false
-          file_pattern: renovate.json renovate-root.json
-          commit_message: "Added release branch ${{ needs.prepare.outputs.branch }} to renovate base branches"
-
-  helpers:
-    name: helpers
-    needs:
-    - prepare
-    if: ${{ github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'v') && needs.prepare.outputs.prerelease == 'false' && needs.prepare.outputs.tool_count > 0 }}
-    strategy:
-      matrix:
-        tool: ${{ fromJSON(needs.prepare.outputs.tools) }}
-    runs-on: ubuntu-latest
-    env:
-      IMAGE_NAME: ${{ secrets.docker_hub_username }}/docker-setup
-    steps:
-
-    - name: Checkout
-      uses: actions/checkout@v3
-      with:
-        ref: v${{ needs.prepare.outputs.version }}
-
-    - name: Create tools.json
-      run: |
-        make tools.json
-
-    - name: Create dockerfile
-      run: |
-        go_version="$(
-        grep "go_version=" docker-setup.sh \
-            | cut -d= -f2
-        )"
-        export go_version
-        rust_version="$(
-            grep "rust_version=" docker-setup.sh \
-            | cut -d= -f2
-        )"
-        export rust_version
-
-        jq --raw-output --arg tool "${{ matrix.tool }}" '.tools[] | select(.name == $tool) | .dockerfile' tools.json \
-        | envsubst \
-        >Dockerfile.${{ matrix.tool }}
-
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v2
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
-
-    - name: Login to DockerHub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.docker_hub_username }}
-        password: ${{ secrets.docker_hub_token }}
-
-    - name: Build and push
-      uses: docker/build-push-action@v3
-      with:
-        context: .
-        file: Dockerfile.${{ matrix.tool }}
-        tags: ${{ env.IMAGE_NAME }}:${{ needs.prepare.outputs.version }}-${{ matrix.tool }}
-        push: true
-
-    - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@0.7.1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        image-ref: ${{ env.IMAGE_NAME }}:${{ steps.docker_meta.outputs.version }}
-        ignore-unfixed: true
-        format: 'template'
-        template: '@/contrib/sarif.tpl'
-        output: 'trivy-results.sarif'
-        severity: 'CRITICAL,HIGH'
-
-    - name: Upload Trivy scan results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v2
-      with:
-        sarif_file: 'trivy-results.sarif'
-
-  bootstrap:
-    name: Bootstrap
-    needs:
-    - prepare
-    - release
-    runs-on: ubuntu-20.04
-    steps:
-
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          ref: v${{ needs.prepare.outputs.version }}
-
-      - name: Download docker-setup
-        env:
-          DOCKER_BUILDKIT: 1
-        run: |
-          docker build . \
-              --target base \
-              --tag nicholasdille/docker-setup:base
-          docker container run \
-              --interactive \
-              --rm \
-              --env TERM=xterm \
-              --env Europe/Berlin \
-              --env GITHUB_REPOSITORY \
-              nicholasdille/docker-setup:base <<EOF
-          curl https://github.com/${GITHUB_REPOSITORY}/releases/download/v${{ needs.prepare.outputs.version }}/docker-setup.sh \
-              --silent \
-              --location \
-              --fail \
-              --output /usr/local/bin/docker-setup 
-          chmod +x /usr/local/bin/docker-setup
-          docker-setup --plan
-          EOF
+          artifacts: "docker-setup.sh,docker-setup.sh.sha256,tools.json,tools.json.sha256"
