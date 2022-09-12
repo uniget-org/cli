@@ -155,6 +155,7 @@ $(TOOLS_RAW):%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(
 $(addsuffix --deep,$(TOOLS_RAW)):%--deep:
 	@\
 	DEPS="$$(./docker-setup.sh dependencies $*)"; \
+	echo "Making deps: $${DEPS}."; \
 	make $${DEPS}
 
 .PHONY:
