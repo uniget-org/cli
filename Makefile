@@ -152,7 +152,7 @@ $(TOOLS_RAW):%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(
 		>$(TOOLS_DIR)/$@/build.log 2>&1 || \
 	cat $(TOOLS_DIR)/$@/build.log
 
-$(addsuffix --deep,$(TOOLS_RAW)):%--deep:
+$(addsuffix --deep,$(TOOLS_RAW)):%--deep: tools.json
 	@\
 	DEPS="$$(./docker-setup.sh dependencies $*)"; \
 	echo "Making deps: $${DEPS}."; \
