@@ -177,7 +177,7 @@ $(addsuffix --deep,$(TOOLS_RAW)):%--deep: tools.json
 	make $${DEPS}
 
 .PHONY:
-push: $(addsuffix --push,$(TOOLS_RAW))
+push: $(addsuffix --push,$(TOOLS_RAW)) tools.json--push
 
 .PHONY:
 $(addsuffix --push,$(TOOLS_RAW)):%--push: login % ; $(info $(M) Pushing image for $*...)
