@@ -41,6 +41,8 @@ help:
 	@echo "    all (default)                Build all tools"
 	@echo "    clean                        Remove all temporary files"
 	@echo "    tools.json                   Generate inventory from tools/*/manifest.json"
+	@echo "    tools.json--build            Build metadata image from @metadata/ and tools.json"
+	@echo "    tools.json--push             Push metadata image"
 	@echo
 	@echo "Dependency management:"
 	@echo "    renovate.json                Generate from tools/*/manifest.json"
@@ -101,6 +103,22 @@ renovate.json: scripts/renovate.sh renovate-root.json tools.json ; $(info $(M) U
 
 tools.json: $(MANIFESTS) ; $(info $(M) Creating $@...)
 	@jq --slurp '{"tools": map(.tools[])}' $(MANIFESTS) >tools.json
+
+.PHONY:
+tools.json--build: tools.json ; $(info $(M) Building metadata image...)
+	@\
+	echo -e "FROM scratch\nCOPY tools.json /" \
+	| docker build . \
+		--file @metadata/Dockerfile \
+		--tag $(REGISTRY)/$(REPOSITORY_PREFIX)metadata:$(VERSION) \
+		--progress plain \
+		>@metadata/build.log 2>&1 || \
+	cat @metadata/build.log
+
+.PHONY:
+tools.json--push: tools.json--build ; $(info $(M) Pushing metadata image...)
+	@\
+	docker push $(REGISTRY)/$(REPOSITORY_PREFIX)metadata:$(VERSION)
 
 $(MANIFESTS):%.json: %.yaml $(YQ) ; $(info $(M) Creating $*.json...)
 	@$(YQ) --output-format json eval '{"tools":[.]}' $*.yaml >$*.json
