@@ -91,15 +91,15 @@ jobs:
 
       - name: Shellcheck
         run: |
-          shellcheck docker-setup.sh
+          shellcheck docker-setup
 
       - name: Set version
         run: |
-          sed -i 's/^docker_setup_version="main"$/docker_setup_version=${{ needs.prepare.outputs.version }}/' docker-setup.sh
+          sed -i 's/^docker_setup_version="main"$/docker_setup_version=${{ needs.prepare.outputs.version }}/' docker-setup
 
       - name: Create checksum
         run: |
-          sha256sum docker-setup.sh >docker-setup.sh.sha256
+          sha256sum docker-setup >docker-setup.sha256
 
       - name: Create changelog
         env:
@@ -115,7 +115,7 @@ jobs:
           echo "## Installation instructions" >>body.txt
           echo >>body.txt
           echo '```bash' >>body.txt
-          echo "curl --silent --location --output /usr/local/bin/docker-setup https://github.com/${GITHUB_REPOSITORY}/releases/download/v${{ needs.prepare.outputs.version }}/docker-setup.sh" >>body.txt
+          echo "curl --silent --location --output /usr/local/bin/docker-setup https://github.com/${GITHUB_REPOSITORY}/releases/download/v${{ needs.prepare.outputs.version }}/docker-setup" >>body.txt
           echo "chmod +x /usr/local/bin/docker-setup" >>body.txt
           echo "docker-setup --plan" >>body.txt
           echo "source <(docker-setup --bash-completion)" >>body.txt
@@ -143,4 +143,4 @@ jobs:
           bodyFile: body.txt
           prerelease: ${{ needs.prepare.outputs.prerelease }}
           replacesArtifacts: true
-          artifacts: "docker-setup.sh,docker-setup.sh.sha256,tools.json,tools.json.sha256"
+          artifacts: "docker-setup,docker-setup.sha256,tools.json,tools.json.sha256"

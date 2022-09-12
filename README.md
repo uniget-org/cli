@@ -16,20 +16,20 @@ The container tools installer and updater
 Download and run `docker-setup`:
 
 ```bash
-curl --silent --location --remote-name https://github.com/nicholasdille/docker-setup/releases/latest/download/docker-setup.sh
-bash docker-setup.sh
+curl --silent --location --remote-name https://github.com/nicholasdille/docker-setup/releases/latest/download/docker-setup
+bash docker-setup
 ```
 
 Download and run `docker-setup` as a one-liner:
 
 ```bash
-curl -sL https://github.com/nicholasdille/docker-setup/releases/latest/download/docker-setup.sh | bash
+curl -sL https://github.com/nicholasdille/docker-setup/releases/latest/download/docker-setup | bash
 ```
 
 Install to a well-known location:
 
 ```bash
-curl --silent --location --output /usr/local/bin/docker-setup https://github.com/nicholasdille/docker-setup/releases/latest/download/docker-setup.sh
+curl --silent --location --output /usr/local/bin/docker-setup https://github.com/nicholasdille/docker-setup/releases/latest/download/docker-setup
 chmod +x /usr/local/bin/docker-setup
 ```
 
