@@ -123,13 +123,13 @@ tools.json--push: tools.json--build ; $(info $(M) Pushing metadata image...)
 $(MANIFESTS):%.json: %.yaml $(YQ) ; $(info $(M) Creating $*.json...)
 	@$(YQ) --output-format json eval '{"tools":[.]}' $*.yaml >$*.json
 
-$(DOCKERFILES):%/Dockerfile: %/Dockerfile.template Dockerfile.tail ; $(info $(M) Creating $@...)
+$(DOCKERFILES):%/Dockerfile: %/Dockerfile.template $(TOOLS_DIR)/Dockerfile.tail ; $(info $(M) Creating $@...)
 	@\
 	cat $@.template >$@; \
 	echo >>$@; \
 	echo >>$@; \
 	if test -f $*/post_install.sh; then echo 'COPY post_install.sh $${prefix}$${docker_setup_post_install}/${name}.json' >>$@; fi; \
-	cat Dockerfile.tail >>$@
+	cat $(TOOLS_DIR)/Dockerfile.tail >>$@
 
 .PHONY:
 login: ; $(info $(M) Logging in to $(REGISTRY)...)
