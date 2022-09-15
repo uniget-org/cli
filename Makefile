@@ -276,6 +276,16 @@ debug: base
 		$(REGISTRY)/$(REPOSITORY_PREFIX)base:$(VERSION) \
 			bash
 
+.PHONY:
+$(addsuffix --test,$(TOOLS_RAW)):%--test: % ; $(info $(M) Testing $*...)
+	@\
+	if ! test -f "$(TOOLS_DIR)/$*/test.sh"; then \
+		echo "Nothing to test."; \
+		exit; \
+	fi; \
+	./docker-setup build test-$* $*; \
+	bash $(TOOLS_DIR)/$*/test.sh test-$*
+
 $(YQ): ; $(info $(M) Installing yq...)
 	@\
 	mkdir -p $(BIN); \
