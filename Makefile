@@ -128,7 +128,7 @@ $(DOCKERFILES):%/Dockerfile: %/Dockerfile.template $(TOOLS_DIR)/Dockerfile.tail 
 	cat $@.template >$@; \
 	echo >>$@; \
 	echo >>$@; \
-	if test -f $*/post_install.sh; then echo 'COPY post_install.sh $${prefix}$${docker_setup_post_install}/${name}.json' >>$@; fi; \
+	if test -f $*/post_install.sh; then echo 'COPY post_install.sh $${prefix}$${docker_setup_post_install}/$${name}.sh' >>$@; fi; \
 	cat $(TOOLS_DIR)/Dockerfile.tail >>$@
 
 .PHONY:
