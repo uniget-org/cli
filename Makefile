@@ -26,7 +26,6 @@ all: $(TOOLS_RAW)
 
 .PHONY:
 info: ; $(info $(M) Runtime info...)
-	@echo "git describe:      $$(git describe)"
 	@echo "GIT_BRANCH:        $(GIT_BRANCH)"
 	@echo "VERSION:           $(VERSION)"
 	@echo "OWNER:             $(OWNER)"
@@ -68,7 +67,7 @@ help:
 	@echo "    cosign.key                   Create cosign key pair"
 	@echo "    sign                         Sign all container images"
 	@echo "    <tool>--sign                 Sign container image for specific tool"
-	@echo "    sbom"                        Create SBoM for all tools"
+	@echo "    sbom                         Create SBoM for all tools"
 	@echo "    tools/<tool>/sbom.json       Create SBoM for specific tool"
 	@echo "    attest                       Attest SBoM for all tools"
 	@echo "    <tool>--attest               Attest SBoM for specific tool"
@@ -76,6 +75,8 @@ help:
 	@echo "    <tool>--install              Push, sign and attest container image for specific tool"
 	@echo
 	@echo "Reminder: foo-% => $$*=bar $$@=foo-bar"
+	@echo
+	@echo "Only some tools: TOOLS_RAW=\$$(jq -r '.tools[].name' tools.json | grep ^k | xargs echo) make info"
 	@echo
 
 .PHONY:
