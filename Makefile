@@ -1,4 +1,5 @@
 M                  = $(shell printf "\033[34;1m▶\033[0m")
+SHELL             ?= /bin/bash
 GIT_BRANCH        ?= $(shell git branch --show-current)
 VERSION           ?= $(patsubst v%,%,$(GIT_BRANCH))
 TOOLS_DIR          = tools
@@ -286,6 +287,129 @@ $(addsuffix --test,$(TOOLS_RAW)):%--test: % ; $(info $(M) Testing $*...)
 	fi; \
 	./docker-setup build test-$* $*; \
 	bash $(TOOLS_DIR)/$*/test.sh test-$*
+
+.PHONY:
+clean-registry-untagged: $(YQ)
+	@set -o errexit; \
+	TOKEN="$$($(YQ) '."github.com".oauth_token' "$${HOME}/.config/gh/hosts.yml")"; \
+	test -n "$${TOKEN}"; \
+	test "$${TOKEN}" != "null"; \
+	gh api --paginate /user/packages?package_type=container | jq --raw-output '.[].name' \
+	| while read NAME; do \
+		echo "### Package $${NAME}"; \
+		gh api --paginate "user/packages/container/$${NAME////%2F}/versions" \
+		| jq --raw-output '.[] | select(.metadata.container.tags | length == 0) | .id' \
+		| xargs -I{} \
+			curl "https://api.github.com/users/nicholasdille/packages/container/$${NAME////%2F}/versions/{}" \
+				--silent \
+				--header "Authorization: Bearer $${TOKEN}" \
+				--request DELETE \
+				--header "Accept: application/vnd.github+json"; \
+	done
+
+.PHONY:
+clean-ghcr-unused--%: $(YQ)
+	@set -o errexit; \
+	echo "Removing tag $*"; \
+	TOKEN="$$($(YQ) '."github.com".oauth_token' "$${HOME}/.config/gh/hosts.yml")"; \
+	test -n "$${TOKEN}"; \
+	test "$${TOKEN}" != "null"; \
+	gh api --paginate /user/packages?package_type=container | jq --raw-output '.[].name' \
+	| while read NAME; do \
+		echo "### Package $${NAME}"; \
+		gh api --paginate "user/packages/container/$${NAME////%2F}/versions" \
+		| jq --raw-output --arg tag "$*" '.[] | select(.metadata.container.tags[] | contains($$tag)) | .id' \
+		| xargs -I{} \
+			curl "https://api.github.com/users/nicholasdille/packages/container/$${NAME////%2F}/versions/{}" \
+				--silent \
+				--header "Authorization: Bearer $${TOKEN}" \
+				--request DELETE \
+				--header "Accept: application/vnd.github+json"; \
+	done
+
+.PHONY:
+ghcr-orphaned:
+	@set -o errexit; \
+	gh api --paginate /user/packages?package_type=container | jq --raw-output '.[].name' \
+	| cut -d/ -f2 \
+	| while read NAME; do \
+		test "$${NAME}" == "base" && continue; \
+		test "$${NAME}" == "metadata" && continue; \
+		if ! test -f "$(TOOLS_DIR)/$${NAME}/manifest.json"; then \
+			echo "Missing tool for $${NAME}"; \
+			exit 1; \
+		fi; \
+	done
+
+.PHONY:
+ghcr-exists--%:
+	@set -o errexit; \
+	gh api --paginate "user/packages/container/docker-setup%2F$*" >/dev/null 2>&1 || exit 1
+
+.PHONY:
+ghcr-exists: $(addprefix ghcr-exists--,$(TOOLS_RAW))
+
+.PHONY:
+ghcr-inspect:
+	@set -o errexit; \
+	gh api --paginate /user/packages?package_type=container | jq --raw-output '.[].name' \
+	| while read NAME; do \
+		echo "### Package $${NAME}"; \
+		gh api --paginate "user/packages/container/$${NAME////%2F}/versions" \
+		| jq --raw-output '.[].metadata.container.tags[]'; \
+	done
+
+.PHONY:
+ghcr-tags--%:
+	@set -o errexit; \
+	gh api --paginate "user/packages/container/docker-setup%2F$*/versions" \
+	| jq --raw-output '.[] | "\(.metadata.container.tags[]);\(.name);\(.id)"' \
+	| column --separator ";" --table --table-columns Tag,SHA256,ID
+
+.PHONY:
+ghcr-inspect--%: $(YQ)
+	@set -o errexit; \
+	gh api --paginate "user/packages/container/docker-setup%2F$*" \
+	| $(YQ) --prettyPrint
+
+.PHONY:
+delete-ghcr--%: $(YQ)
+	@\
+	TOKEN="$$($(YQ) '."github.com".oauth_token' "$${HOME}/.config/gh/hosts.yml")"; \
+	test -n "$${TOKEN}"; \
+	test "$${TOKEN}" != "null"; \
+	PARAM=$*; \
+	NAME="$${PARAM%%:*}"; \
+	TAG="$${PARAM#*:}"; \
+	echo "Removing $${NAME}:$${TAG}"; \
+	gh api --paginate "user/packages/container/docker-setup%2F$${NAME}/versions" \
+	| jq --raw-output --arg tag "$${TAG}" '.[] | select(.metadata.container.tags[] | contains($$tag)) | .id' \
+	| xargs -I{} \
+		curl "https://api.github.com/users/nicholasdille/packages/container/docker-setup%2F$${NAME}/versions/{}" \
+			--silent \
+			--header "Authorization: Bearer $${TOKEN}" \
+			--request DELETE \
+			--header "Accept: application/vnd.github+json"
+
+.PHONY:
+ghcr-tags--%:
+	@set -o errexit; \
+	gh api --paginate "user/packages/container/docker-setup%2F$*/versions" \
+	| jq --raw-output '.[] | "\(.metadata.container.tags[]);\(.name);\(.id)"' \
+	| column --separator ";" --table --table-columns Tag,SHA256,ID
+
+.PHONY:
+ghcr-private:
+	@set -o errexit; \
+	gh api --paginate "user/packages?package_type=container&visibility=private" \
+	| jq '.[] | "\(.name);\(.url)"' \
+	| column --separator ";" --table --table-columns Name,Url
+
+.PHONY:
+ghcr-private--%: ; $(info $(M) Testing that $* is publicly visible...)
+	@\
+	gh api "user/packages/container/docker-setup%2F$*" \
+	| jq --exit-status 'select(.visibility == "public")' >/dev/null 2>&1
 
 $(YQ): ; $(info $(M) Installing yq...)
 	@\
