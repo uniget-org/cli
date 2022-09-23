@@ -195,6 +195,23 @@ $(addsuffix --inspect,$(TOOLS_RAW)):%--inspect: $(REGCTL) ; $(info $(M) Inspecti
 install: push sign attest
 
 .PHONY:
+recent: recent-days--3
+
+.PHONY:
+recent-days--%:
+	@\
+	CHANGED_TOOLS="$$( \
+		git log --pretty=format: --name-only --since="$* days ago" \
+		| sort \
+		| uniq \
+		| grep -E "^tools/[^/]+/" \
+		| cut -d/ -f2 \
+		| xargs \
+	)"; \
+	echo "Tools changed in the last $* day(s): $${CHANGED_TOOLS}."; \
+	make $${CHANGED_TOOLS}
+
+.PHONY:
 $(addsuffix --install,$(TOOLS_RAW)):%--install: %--push %--sign %--attest
 
 .PHONY:
