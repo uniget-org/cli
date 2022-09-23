@@ -1,5 +1,5 @@
 M                  = $(shell printf "\033[34;1m▶\033[0m")
-SHELL             ?= /bin/bash
+SHELL             := /bin/bash
 GIT_BRANCH        ?= $(shell git branch --show-current)
 VERSION           ?= $(patsubst v%,%,$(GIT_BRANCH))
 TOOLS_DIR          = tools
@@ -246,8 +246,9 @@ $(addsuffix --install,$(TOOLS_RAW)):%--install: %--push %--sign %--attest
 		$(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION) \
 			bash
 
-cosign.key:
+cosign.key: ; $(info $(M) Creating key pair for cosign...)
 	@\
+	source .env; \
 	cosign generate-key-pair
 
 .PHONY:
@@ -256,6 +257,7 @@ sign: $(addsuffix --sign,$(TOOLS_RAW))
 .PHONY:
 %--sign: cosign.key ; $(info $(M) Signing image for $*...)
 	@\
+	source .env; \
 	cosign sign --key cosign.key $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION)
 
 .PHONY:
@@ -276,6 +278,7 @@ attest: $(addsuffix --attest,$(TOOLS_RAW))
 .PHONY:
 %--attest: sbom/%.json cosign.key ; $(info $(M) Attesting sbom for $*...)
 	@\
+	source .env; \
 	cosign attest --predicate sbom/$*.json --type cyclonedx --key cosign.key $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION)
 
 .PHONY:
