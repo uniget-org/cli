@@ -207,8 +207,8 @@ recent-days--%:
 		git log --pretty=format: --name-only --since="$* days ago" \
 		| sort \
 		| grep -E "^tools/[^/]+/" \
-		| uniq \
 		| cut -d/ -f2 \
+		| uniq \
 		| xargs \
 	)"; \
 	echo "Tools changed in the last $* day(s): $${CHANGED_TOOLS}."; \
