@@ -119,9 +119,13 @@ tools.json--build: tools.json @metadata/Dockerfile ; $(info $(M) Building metada
 	cat @metadata/build.log
 
 .PHONY:
-tools.json--push: tools.json--build cosign.key ; $(info $(M) Pushing metadata image...)
+tools.json--push: tools.json--build ; $(info $(M) Pushing metadata image...)
 	@\
-	docker push $(REGISTRY)/$(REPOSITORY_PREFIX)metadata:$(VERSION); \
+	docker push $(REGISTRY)/$(REPOSITORY_PREFIX)metadata:$(VERSION)
+
+.PHONY:
+tools.json--sign: cosign.key ; $(info $(M) Signing metadata image...)
+	@\
 	source .env; \
 	cosign sign --key cosign.key $(REGISTRY)/$(REPOSITORY_PREFIX)metadata:$(VERSION)
 
