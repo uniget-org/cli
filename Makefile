@@ -41,9 +41,9 @@ help:
 	@echo "General targets:"
 	@echo "    all (default)                Build all tools"
 	@echo "    clean                        Remove all temporary files"
-	@echo "    tools.json                   Generate inventory from tools/*/manifest.json"
-	@echo "    tools.json--build            Build metadata image from @metadata/ and tools.json"
-	@echo "    tools.json--push             Push metadata image"
+	@echo "    metadata.json                Generate inventory from tools/*/manifest.json"
+	@echo "    metadata.json--build         Build metadata image from @metadata/ and metadata.json"
+	@echo "    metadata.json--push          Push metadata image"
 	@echo
 	@echo "Dependency management:"
 	@echo "    renovate.json                Generate from tools/*/manifest.json"
@@ -78,13 +78,13 @@ help:
 	@echo
 	@echo "Reminder: foo-% => $$*=bar $$@=foo-bar"
 	@echo
-	@echo "Only some tools: TOOLS_RAW=\$$(jq -r '.tools[].name' tools.json | grep ^k | xargs echo) make info"
+	@echo "Only some tools: TOOLS_RAW=\$$(jq -r '.tools[].name' metadata.json | grep ^k | xargs echo) make info"
 	@echo
 
 .PHONY:
 clean:
 	@\
-	rm -f tools.json; \
+	rm -f metadata.json; \
 	for TOOL in $(TOOLS_RAW); do \
 		rm -f \
 			$(TOOLS_DIR)/$${TOOL}/manifest.json \
@@ -101,14 +101,14 @@ list:
 %--show:
 	@ls -l $(TOOLS_DIR)/$*
 
-renovate.json: scripts/renovate.sh renovate-root.json tools.json ; $(info $(M) Updating $@...)
+renovate.json: scripts/renovate.sh renovate-root.json metadata.json ; $(info $(M) Updating $@...)
 	@bash scripts/renovate.sh
 
-tools.json: $(MANIFESTS) ; $(info $(M) Creating $@...)
-	@jq --slurp '{"tools": map(.tools[])}' $(MANIFESTS) >tools.json
+metadata.json: $(MANIFESTS) ; $(info $(M) Creating $@...)
+	@jq --slurp '{"tools": map(.tools[])}' $(MANIFESTS) >metadata.json
 
 .PHONY:
-tools.json--build: tools.json @metadata/Dockerfile ; $(info $(M) Building metadata image for $(GIT_COMMIT_SHA)...)
+metadata.json--build: metadata.json @metadata/Dockerfile ; $(info $(M) Building metadata image for $(GIT_COMMIT_SHA)...)
 	@\
 	docker build . \
 		--file @metadata/Dockerfile \
@@ -119,12 +119,12 @@ tools.json--build: tools.json @metadata/Dockerfile ; $(info $(M) Building metada
 	cat @metadata/build.log
 
 .PHONY:
-tools.json--push: tools.json--build ; $(info $(M) Pushing metadata image...)
+metadata.json--push: metadata.json--build ; $(info $(M) Pushing metadata image...)
 	@\
 	docker push $(REGISTRY)/$(REPOSITORY_PREFIX)metadata:$(VERSION)
 
 .PHONY:
-tools.json--sign: cosign.key ; $(info $(M) Signing metadata image...)
+metadata.json--sign: cosign.key ; $(info $(M) Signing metadata image...)
 	@\
 	source .env; \
 	cosign sign --key cosign.key $(REGISTRY)/$(REPOSITORY_PREFIX)metadata:$(VERSION)
@@ -179,14 +179,14 @@ $(TOOLS_RAW):%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(
 		>$(TOOLS_DIR)/$@/build.log 2>&1 || \
 	cat $(TOOLS_DIR)/$@/build.log
 
-$(addsuffix --deep,$(TOOLS_RAW)):%--deep: tools.json
+$(addsuffix --deep,$(TOOLS_RAW)):%--deep: metadata.json
 	@\
 	DEPS="$$(./docker-setup --tools="$*" dependencies)"; \
 	echo "Making deps: $${DEPS}."; \
 	make $${DEPS}
 
 .PHONY:
-push: $(addsuffix --push,$(TOOLS_RAW)) tools.json--push
+push: $(addsuffix --push,$(TOOLS_RAW)) metadata.json--push
 
 .PHONY:
 $(addsuffix --push,$(TOOLS_RAW)):%--push: login % ; $(info $(M) Pushing image for $*...)

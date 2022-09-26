@@ -2,7 +2,7 @@
 /bin
 CHANGELOG.md
 .downloads
-tools.json
+metadata.json
 manifest.json
 tools/*/Dockerfile
 build.log

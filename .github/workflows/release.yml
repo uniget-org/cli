@@ -156,4 +156,4 @@ jobs:
           bodyFile: body.txt
           prerelease: ${{ needs.prepare.outputs.prerelease }}
           replacesArtifacts: true
-          artifacts: "docker-setup,docker-setup.sha256,tools.json,tools.json.sha256"
+          artifacts: "docker-setup,docker-setup.sha256,metadata.json,metadata.json.sha256"
