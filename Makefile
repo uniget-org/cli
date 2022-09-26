@@ -1,6 +1,7 @@
 M                  = $(shell printf "\033[34;1m▶\033[0m")
 SHELL             := /bin/bash
 GIT_BRANCH        ?= $(shell git branch --show-current)
+GIT_COMMIT_SHA     = $(shell git rev-parse $(GIT_BRANCH))
 VERSION           ?= $(patsubst v%,%,$(GIT_BRANCH))
 TOOLS_DIR          = tools
 TOOLS             ?= $(shell find $(TOOLS_DIR) -mindepth 1 -maxdepth 1 -type d | sort)
@@ -107,20 +108,22 @@ tools.json: $(MANIFESTS) ; $(info $(M) Creating $@...)
 	@jq --slurp '{"tools": map(.tools[])}' $(MANIFESTS) >tools.json
 
 .PHONY:
-tools.json--build: tools.json ; $(info $(M) Building metadata image...)
+tools.json--build: tools.json @metadata/Dockerfile ; $(info $(M) Building metadata image for $(GIT_COMMIT_SHA)...)
 	@\
-	echo -e "FROM scratch\nCOPY tools.json /" \
-	| docker build . \
+	docker build . \
 		--file @metadata/Dockerfile \
+		--build-arg commit=$(GIT_COMMIT_SHA) \
 		--tag $(REGISTRY)/$(REPOSITORY_PREFIX)metadata:$(VERSION) \
 		--progress plain \
 		>@metadata/build.log 2>&1 || \
 	cat @metadata/build.log
 
 .PHONY:
-tools.json--push: tools.json--build ; $(info $(M) Pushing metadata image...)
+tools.json--push: tools.json--build cosign.key ; $(info $(M) Pushing metadata image...)
 	@\
-	docker push $(REGISTRY)/$(REPOSITORY_PREFIX)metadata:$(VERSION)
+	docker push $(REGISTRY)/$(REPOSITORY_PREFIX)metadata:$(VERSION); \
+	source .env; \
+	cosign sign --key cosign.key $(REGISTRY)/$(REPOSITORY_PREFIX)metadata:$(VERSION)
 
 $(MANIFESTS):%.json: %.yaml $(YQ) ; $(info $(M) Creating $*.json...)
 	@$(YQ) --output-format json eval '{"tools":[.]}' $*.yaml >$*.json
