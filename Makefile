@@ -305,7 +305,7 @@ $(addsuffix --test,$(TOOLS_RAW)):%--test: % ; $(info $(M) Testing $*...)
 		echo "Nothing to test."; \
 		exit; \
 	fi; \
-	./docker-setup build test-$* $*; \
+	./docker-setup --tools=$* build test-$*; \
 	bash $(TOOLS_DIR)/$*/test.sh test-$*
 
 .PHONY:
