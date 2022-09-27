@@ -76,7 +76,7 @@ help:
 	@echo "    install                      Push, sign and attest all container images"
 	@echo "    <tool>--install              Push, sign and attest container image for specific tool"
 	@echo
-	@echo "Reminder: foo-% => $$*=bar $$@=foo-bar"
+	@echo "Reminder: foo-% => \$$@=foo-bar \$$*=bar"
 	@echo
 	@echo "Only some tools: TOOLS_RAW=\$$(jq -r '.tools[].name' metadata.json | grep ^k | xargs echo) make info"
 	@echo
