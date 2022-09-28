@@ -429,7 +429,7 @@ ghcr-tags--%:
 ghcr-private:
 	@set -o errexit; \
 	gh api --paginate "user/packages?package_type=container&visibility=private" \
-	| jq '.[] | "\(.name);\(.url)"' \
+	| jq '.[] | "\(.name);\(.html_url)"' \
 	| column --separator ";" --table --table-columns Name,Url
 
 .PHONY:
