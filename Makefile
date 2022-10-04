@@ -3,6 +3,7 @@ SHELL             := /bin/bash
 GIT_BRANCH        ?= $(shell git branch --show-current)
 GIT_COMMIT_SHA     = $(shell git rev-parse $(GIT_BRANCH))
 VERSION           ?= $(patsubst v%,%,$(GIT_BRANCH))
+DOCKER_TAG        ?= $(subst /,-,$(VERSION))
 TOOLS_DIR          = tools
 TOOLS             ?= $(shell find $(TOOLS_DIR) -mindepth 1 -maxdepth 1 -type d | sort)
 TOOLS_RAW         ?= $(subst tools/,,$(TOOLS))
@@ -30,6 +31,7 @@ all: $(TOOLS_RAW)
 info: ; $(info $(M) Runtime info...)
 	@echo "GIT_BRANCH:        $(GIT_BRANCH)"
 	@echo "VERSION:           $(VERSION)"
+	@echo "DOCKER_TAG:        $(DOCKER_TAG)"
 	@echo "OWNER:             $(OWNER)"
 	@echo "PROJECT:           $(PROJECT)"
 	@echo "REGISTRY:          $(REGISTRY)"
@@ -113,7 +115,7 @@ metadata.json--build: metadata.json @metadata/Dockerfile ; $(info $(M) Building 
 	docker build . \
 		--file @metadata/Dockerfile \
 		--build-arg commit=$(GIT_COMMIT_SHA) \
-		--tag $(REGISTRY)/$(REPOSITORY_PREFIX)metadata:$(VERSION) \
+		--tag $(REGISTRY)/$(REPOSITORY_PREFIX)metadata:$(DOCKER_TAG) \
 		--progress plain \
 		>@metadata/build.log 2>&1 || \
 	cat @metadata/build.log
@@ -121,13 +123,13 @@ metadata.json--build: metadata.json @metadata/Dockerfile ; $(info $(M) Building 
 .PHONY:
 metadata.json--push: metadata.json--build ; $(info $(M) Pushing metadata image...)
 	@\
-	docker push $(REGISTRY)/$(REPOSITORY_PREFIX)metadata:$(VERSION)
+	docker push $(REGISTRY)/$(REPOSITORY_PREFIX)metadata:$(DOCKER_TAG)
 
 .PHONY:
 metadata.json--sign: cosign.key ; $(info $(M) Signing metadata image...)
 	@\
 	source .env; \
-	cosign sign --key cosign.key $(REGISTRY)/$(REPOSITORY_PREFIX)metadata:$(VERSION)
+	cosign sign --key cosign.key $(REGISTRY)/$(REPOSITORY_PREFIX)metadata:$(DOCKER_TAG)
 
 $(MANIFESTS):%.json: %.yaml $(YQ) ; $(info $(M) Creating $*.json...)
 	@$(YQ) --output-format json eval '{"tools":[.]}' $*.yaml >$*.json
@@ -146,19 +148,19 @@ login: ; $(info $(M) Logging in to $(REGISTRY)...)
 	docker login $(REGISTRY)
 
 .PHONY:
-base: info ; $(info $(M) Building base image $(REGISTRY)/$(REPOSITORY_PREFIX)base:$(VERSION)...)
+base: info ; $(info $(M) Building base image $(REGISTRY)/$(REPOSITORY_PREFIX)base:$(DOCKER_TAG)...)
 	@\
 	docker build @base \
 		--build-arg prefix_override=$(PREFIX) \
 		--build-arg target_override=$(TARGET) \
-		--cache-from $(REGISTRY)/$(REPOSITORY_PREFIX)base:$(VERSION) \
-		--tag $(REGISTRY)/$(REPOSITORY_PREFIX)base:$(VERSION) \
+		--cache-from $(REGISTRY)/$(REPOSITORY_PREFIX)base:$(DOCKER_TAG) \
+		--tag $(REGISTRY)/$(REPOSITORY_PREFIX)base:$(DOCKER_TAG) \
 		--progress plain \
 		>@base/build.log 2>&1 || \
 	cat @base/build.log
 
 .PHONY:
-$(TOOLS_RAW):%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Building image $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION)...)
+$(TOOLS_RAW):%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Building image $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(DOCKER_TAG)...)
 	@\
 	TOOL_VERSION="$$(jq --raw-output '.tools[].version' tools/$*/manifest.json)"; \
 	DEPS="$$(jq --raw-output '.tools[] | select(.dependencies != null) |.dependencies[]' tools/$*/manifest.json | paste -sd,)"; \
@@ -167,14 +169,14 @@ $(TOOLS_RAW):%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(
 	echo "Version:      $${TOOL_VERSION}"; \
 	echo "Dependencies: $${DEPS}"; \
 	docker build $(TOOLS_DIR)/$@ \
-		--build-arg branch=$(GIT_BRANCH) \
-		--build-arg ref=$(GIT_BRANCH) \
+		--build-arg branch=$(DOCKER_TAG) \
+		--build-arg ref=$(DOCKER_TAG) \
 		--build-arg name=$* \
 		--build-arg version=$${TOOL_VERSION} \
 		--build-arg deps=$${DEPS} \
 		--build-arg tags=$${TAGS} \
-		--cache-from $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION) \
-		--tag $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION) \
+		--cache-from $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(DOCKER_TAG) \
+		--tag $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(DOCKER_TAG) \
 		--progress plain \
 		>$(TOOLS_DIR)/$@/build.log 2>&1 || \
 	cat $(TOOLS_DIR)/$@/build.log
@@ -191,12 +193,12 @@ push: $(addsuffix --push,$(TOOLS_RAW)) metadata.json--push
 .PHONY:
 $(addsuffix --push,$(TOOLS_RAW)):%--push: login % ; $(info $(M) Pushing image for $*...)
 	@\
-	docker push $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION)
+	docker push $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(DOCKER_TAG)
 
 .PHONY:
 $(addsuffix --inspect,$(TOOLS_RAW)):%--inspect: $(REGCTL) ; $(info $(M) Inspecting image for $*...)
 	@\
-	regctl manifest get $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION)
+	regctl manifest get $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(DOCKER_TAG)
 
 .PHONY:
 install: push sign attest
@@ -231,14 +233,14 @@ $(addsuffix --debug,$(TOOLS_RAW)):%--debug: $(TOOLS_DIR)/%/manifest.json $(TOOLS
 	echo "Version:      $${TOOL_VERSION}"; \
 	echo "Dependencies: $${DEPS}"; \
 	docker buildx build $(TOOLS_DIR)/$* \
-		--build-arg branch=$(GIT_BRANCH) \
-		--build-arg ref=$(GIT_BRANCH) \
+		--build-arg branch=$(DOCKER_TAG) \
+		--build-arg ref=$(DOCKER_TAG) \
 		--build-arg name=$* \
 		--build-arg version=$${TOOL_VERSION} \
 		--build-arg deps=$${DEPS} \
 		--build-arg tags=$${TAGS} \
-		--cache-from $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION) \
-		--tag $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION) \
+		--cache-from $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(DOCKER_TAG) \
+		--tag $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(DOCKER_TAG) \
 		--target prepare \
 		--load \
 		--progress plain \
@@ -250,7 +252,7 @@ $(addsuffix --debug,$(TOOLS_RAW)):%--debug: $(TOOLS_DIR)/%/manifest.json $(TOOLS
 		--env name=$* \
 		--env version=$${TOOL_VERSION} \
 		--rm \
-		$(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION) \
+		$(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(DOCKER_TAG) \
 			bash
 
 cosign.key: ; $(info $(M) Creating key pair for cosign...)
@@ -265,7 +267,7 @@ sign: $(addsuffix --sign,$(TOOLS_RAW))
 %--sign: cosign.key ; $(info $(M) Signing image for $*...)
 	@\
 	source .env; \
-	cosign sign --key cosign.key $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION)
+	cosign sign --key cosign.key $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(DOCKER_TAG)
 
 .PHONY:
 sbom: $(SBOMS)
@@ -276,7 +278,7 @@ $(addsuffix --sbom,$(TOOLS_RAW)):%--sbom: $(TOOLS_DIR)/%/sbom.json
 $(SBOMS):$(TOOLS_DIR)/%/sbom.json: $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Creating sbom for $*...)
 	@\
 	mkdir -p sbom; \
-	syft packages --output cyclonedx-json --file $@ $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION); \
+	syft packages --output cyclonedx-json --file $@ $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(DOCKER_TAG); \
 	test -s $(TOOLS_DIR)/$*/sbom.json || rm $(TOOLS_DIR)/$*/sbom.json
 
 .PHONY:
@@ -286,7 +288,7 @@ attest: $(addsuffix --attest,$(TOOLS_RAW))
 %--attest: sbom/%.json cosign.key ; $(info $(M) Attesting sbom for $*...)
 	@\
 	source .env; \
-	cosign attest --predicate sbom/$*.json --type cyclonedx --key cosign.key $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(VERSION)
+	cosign attest --predicate sbom/$*.json --type cyclonedx --key cosign.key $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(DOCKER_TAG)
 
 .PHONY:
 size:
@@ -302,7 +304,7 @@ debug: base
 		--tty \
 		--privileged \
 		--rm \
-		$(REGISTRY)/$(REPOSITORY_PREFIX)base:$(VERSION) \
+		$(REGISTRY)/$(REPOSITORY_PREFIX)base:$(DOCKER_TAG) \
 			bash
 
 .PHONY:
