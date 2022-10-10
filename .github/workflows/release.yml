@@ -32,7 +32,7 @@ jobs:
           TAG="${GITHUB_REF#refs/tags/}"
           echo "::set-output name=tag::${TAG}"
           echo "::set-output name=version::${TAG#v}"
-          echo "::set-output name=prerelease::$(if test "$(bin/semver get prerel "${VERSION}")" == ""; then echo "false"; else echo "true"; fi)"
+          echo "::set-output name=prerelease::$(if test "$(bin/semver get prerel "${TAG#v}")" == ""; then echo "false"; else echo "true"; fi)"
 
   release:
     name: Release
