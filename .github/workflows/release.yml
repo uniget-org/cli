@@ -53,6 +53,10 @@ jobs:
 
       - name: Build
         run: |
+          export GIT_BRANCH="$(
+              git branch --contains tags/v2.0.0-alpha.3 \
+              | cut -d' ' -f2
+          )"
           make push
 
   release:
