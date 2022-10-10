@@ -20,7 +20,7 @@ REPOSITORY_PREFIX  ?= $(OWNER)/$(PROJECT)/
 
 BIN                 = bin
 YQ                  = $(BIN)/yq
-YQ_VERSION         ?= 4.27.3
+YQ_VERSION         ?= 4.27.5
 REGCTL              = $(BIN)/regctl
 REGCTL_VERSION     ?= 0.4.4
 SHELLCHECK          = $(BIN)/shellcheck
