@@ -25,6 +25,8 @@ REGCTL              = $(BIN)/regctl
 REGCTL_VERSION     ?= 0.4.4
 SHELLCHECK          = $(BIN)/shellcheck
 SHELLCHECK_VERSION ?= 0.8.0
+SEMVER              = $(BIN)/semver
+SEMVER_VERSION     ?= 3.3.0
 
 .PHONY:
 all: $(TOOLS_RAW)
@@ -59,6 +61,7 @@ help:
 	@echo "    size                         Display storage usage"
 	@echo
 	@echo "Building:"
+	@echo "    check                        Run shellcheck on docker-setup"
 	@echo "    tools/<tool>/Dockerfile      Generate from tools/*/Dockerfile.template"
 	@echo "    base                         Build base container image for all tool installations"
 	@echo "    <tool>                       Build container image for specific tool"
@@ -142,6 +145,10 @@ $(DOCKERFILES):%/Dockerfile: %/Dockerfile.template $(TOOLS_DIR)/Dockerfile.tail 
 	echo >>$@; \
 	if test -f $*/post_install.sh; then echo 'COPY post_install.sh $${prefix}$${docker_setup_post_install}/$${name}.sh' >>$@; fi; \
 	cat $(TOOLS_DIR)/Dockerfile.tail >>$@
+
+.PHONY:
+check: $(SHELLCHECK)
+	@$(SHELLCHECK) docker-setup
 
 .PHONY:
 base: info ; $(info $(M) Building base image $(REGISTRY)/$(REPOSITORY_PREFIX)base:$(DOCKER_TAG)...)
@@ -458,5 +465,13 @@ $(SHELLCHECK):
 	test -f $@ && test -x $@ || ( \
 		curl --silent --location "https://github.com/koalaman/shellcheck/releases/download/v$(SHELLCHECK_VERSION)/shellcheck-v$(SHELLCHECK_VERSION).linux.x86_64.tar.xz" \
 		| tar --extract --xz --directory=$(BIN) --strip-components=1 "shellcheck-v$(SHELLCHECK_VERSION)/shellcheck"; \
+		chmod +x $@; \
+	)
+
+$(SEMVER):
+	@\
+	mkdir -p $(BIN); \
+	test -f $@ && test -x $@ || ( \
+		curl --silent --location --output $@ "https://github.com/fsaintjacques/semver-tool/raw/$(SEMVER_VERSION)/src/semver"; \
 		chmod +x $@; \
 	)

@@ -13,6 +13,7 @@ jobs:
     outputs:
       tag: ${{ steps.get_version.output.tag }}
       version: ${{ steps.get_version.outputs.version }}
+      prerelease: ${{ steps.get_version.outputs.prerelease }}
     steps:
 
       - name: printenv
@@ -22,42 +23,11 @@ jobs:
       - name: Get version
         id: get_version
         run: |
+          make bin/semver
           TAG="${GITHUB_REF#refs/tags/}"
-          echo "::set-output name=version::${TAG}"
+          echo "::set-output name=tag::${TAG}"
           echo "::set-output name=version::${TAG#v}"
-
-  build:
-    name: Build images
-    needs:
-    - prepare
-    runs-on: ubuntu-20.04
-    steps:
-
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          ref: v${{ needs.prepare.outputs.version }}
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Login to GitHub Container Registry as ${{ secrets.BOT_USERNAME }}
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ secrets.BOT_USERNAME }}
-          password: ${{ secrets.BOT_PACKAGES_TOKEN }}
-
-      - name: Build
-        run: |
-          export GIT_BRANCH="$(
-              git branch --contains tags/v2.0.0-alpha.3 \
-              | cut -d' ' -f2
-          )"
-          make push
+          echo "::set-output name=prerelease::$(if test "$(semver get prerel "${VERSION}")" == ""; then echo "false"; else echo "true"; fi)"
 
   release:
     name: Release
@@ -71,13 +41,9 @@ jobs:
         with:
           ref: ${{ needs.prepare.outputs.tag }}
 
-      - name: Install tools
-        run: |
-          make bin/yq bin/shellcheck bin/regctl
-
       - name: Shellcheck
         run: |
-          shellcheck docker-setup
+          make check
 
       - name: Set version
         run: |
@@ -90,6 +56,7 @@ jobs:
       - name: Create changelog
         env:
           GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
+          TAG: ${{ needs.prepare.outputs.tag }}
         run: |
           LATEST_RELEASE_PUBLISHED="$(
               curl "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/releases/latest" \
@@ -113,11 +80,8 @@ jobs:
               --include-pulls \
               --since "${LATEST_RELEASE_PUBLISHED}" \
               --format "- %t ([%i](%U))%n" \
-          | sort \
-          | grep -v " (v1.7)" \
-          | grep -v " (v1.6)" \
-          >>body.txt
-          cat body.txt
+              --milestone "${TAG}" \
+          | tee body.txt || true
 
       - name: Create release
         id: create_release
@@ -126,7 +90,7 @@ jobs:
           token: ${{ secrets.BOT_GITHUB_TOKEN }}
           allowUpdates: true
           name: "Version ${{ needs.prepare.outputs.version }}"
-          tag: v${{ needs.prepare.outputs.version }}
+          tag: ${{ needs.prepare.outputs.tag }}
           draft: false
           bodyFile: body.txt
           prerelease: ${{ needs.prepare.outputs.prerelease }}
