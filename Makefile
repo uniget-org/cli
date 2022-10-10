@@ -89,7 +89,7 @@ help:
 
 .PHONY:
 clean:
-	@\
+	@set -o errexit; \
 	rm -f metadata.json; \
 	for TOOL in $(TOOLS_RAW); do \
 		rm -f \
@@ -115,23 +115,24 @@ metadata.json: $(MANIFESTS) ; $(info $(M) Creating $@...)
 
 .PHONY:
 metadata.json--build: metadata.json @metadata/Dockerfile ; $(info $(M) Building metadata image for $(GIT_COMMIT_SHA)...)
-	@\
-	docker build . \
-		--file @metadata/Dockerfile \
-		--build-arg commit=$(GIT_COMMIT_SHA) \
-		--tag $(REGISTRY)/$(REPOSITORY_PREFIX)metadata:$(DOCKER_TAG) \
-		--progress plain \
-		>@metadata/build.log 2>&1 || \
-	cat @metadata/build.log
+	@set -o errexit; \
+	if ! docker build . \
+			--file @metadata/Dockerfile \
+			--build-arg commit=$(GIT_COMMIT_SHA) \
+			--tag $(REGISTRY)/$(REPOSITORY_PREFIX)metadata:$(DOCKER_TAG) \
+			--progress plain \
+			>@metadata/build.log 2>&1; then \
+		cat @metadata/build.log; \
+		exit 1; \
+	fi
 
 .PHONY:
 metadata.json--push: metadata.json--build ; $(info $(M) Pushing metadata image...)
-	@\
-	docker push $(REGISTRY)/$(REPOSITORY_PREFIX)metadata:$(DOCKER_TAG)
+	@docker push $(REGISTRY)/$(REPOSITORY_PREFIX)metadata:$(DOCKER_TAG)
 
 .PHONY:
 metadata.json--sign: cosign.key ; $(info $(M) Signing metadata image...)
-	@\
+	@set -o errexit; \
 	source .env; \
 	cosign sign --key cosign.key $(REGISTRY)/$(REPOSITORY_PREFIX)metadata:$(DOCKER_TAG)
 
@@ -139,7 +140,7 @@ $(MANIFESTS):%.json: %.yaml $(YQ) ; $(info $(M) Creating $*.json...)
 	@$(YQ) --output-format json eval '{"tools":[.]}' $*.yaml >$*.json
 
 $(DOCKERFILES):%/Dockerfile: %/Dockerfile.template $(TOOLS_DIR)/Dockerfile.tail ; $(info $(M) Creating $@...)
-	@\
+	@set -o errexit; \
 	cat $@.template >$@; \
 	echo >>$@; \
 	echo >>$@; \
@@ -152,40 +153,44 @@ check: $(SHELLCHECK)
 
 .PHONY:
 base: info ; $(info $(M) Building base image $(REGISTRY)/$(REPOSITORY_PREFIX)base:$(DOCKER_TAG)...)
-	@\
-	docker build @base \
-		--build-arg prefix_override=$(PREFIX) \
-		--build-arg target_override=$(TARGET) \
-		--cache-from $(REGISTRY)/$(REPOSITORY_PREFIX)base:$(DOCKER_TAG) \
-		--tag $(REGISTRY)/$(REPOSITORY_PREFIX)base:$(DOCKER_TAG) \
-		--progress plain \
-		>@base/build.log 2>&1 || \
-	cat @base/build.log
+	@set -o errexit; \
+	if ! docker build @base \
+			--build-arg prefix_override=$(PREFIX) \
+			--build-arg target_override=$(TARGET) \
+			--cache-from $(REGISTRY)/$(REPOSITORY_PREFIX)base:$(DOCKER_TAG) \
+			--tag $(REGISTRY)/$(REPOSITORY_PREFIX)base:$(DOCKER_TAG) \
+			--progress plain \
+			>@base/build.log 2>&1; then \
+		cat @base/build.log; \
+		exit 1; \
+	fi
 
 .PHONY:
 $(TOOLS_RAW):%: base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Building image $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(DOCKER_TAG)...)
-	@\
+	@set -o errexit; \
 	TOOL_VERSION="$$(jq --raw-output '.tools[].version' tools/$*/manifest.json)"; \
 	DEPS="$$(jq --raw-output '.tools[] | select(.dependencies != null) |.dependencies[]' tools/$*/manifest.json | paste -sd,)"; \
 	TAGS="$$(jq --raw-output '.tools[] | select(.tags != null) |.tags[]' tools/$*/manifest.json | paste -sd,)"; \
 	echo "Name:         $*"; \
 	echo "Version:      $${TOOL_VERSION}"; \
 	echo "Dependencies: $${DEPS}"; \
-	docker build $(TOOLS_DIR)/$@ \
-		--build-arg branch=$(DOCKER_TAG) \
-		--build-arg ref=$(DOCKER_TAG) \
-		--build-arg name=$* \
-		--build-arg version=$${TOOL_VERSION} \
-		--build-arg deps=$${DEPS} \
-		--build-arg tags=$${TAGS} \
-		--cache-from $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(DOCKER_TAG) \
-		--tag $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(DOCKER_TAG) \
-		--progress plain \
-		>$(TOOLS_DIR)/$@/build.log 2>&1 || \
-	cat $(TOOLS_DIR)/$@/build.log
+	if ! docker build $(TOOLS_DIR)/$@ \
+			--build-arg branch=$(DOCKER_TAG) \
+			--build-arg ref=$(DOCKER_TAG) \
+			--build-arg name=$* \
+			--build-arg version=$${TOOL_VERSION} \
+			--build-arg deps=$${DEPS} \
+			--build-arg tags=$${TAGS} \
+			--cache-from $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(DOCKER_TAG) \
+			--tag $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(DOCKER_TAG) \
+			--progress plain \
+			>$(TOOLS_DIR)/$@/build.log 2>&1; then \
+		cat $(TOOLS_DIR)/$@/build.log; \
+		exit 1; \
+	fi
 
 $(addsuffix --deep,$(TOOLS_RAW)):%--deep: metadata.json
-	@\
+	@set -o errexit; \
 	DEPS="$$(./docker-setup --tools="$*" dependencies)"; \
 	echo "Making deps: $${DEPS}."; \
 	make $${DEPS}
@@ -195,13 +200,11 @@ push: $(addsuffix --push,$(TOOLS_RAW)) metadata.json--push
 
 .PHONY:
 $(addsuffix --push,$(TOOLS_RAW)):%--push: % ; $(info $(M) Pushing image for $*...)
-	@\
-	docker push $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(DOCKER_TAG)
+	@docker push $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(DOCKER_TAG)
 
 .PHONY:
 $(addsuffix --inspect,$(TOOLS_RAW)):%--inspect: $(REGCTL) ; $(info $(M) Inspecting image for $*...)
-	@\
-	regctl manifest get $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(DOCKER_TAG)
+	@regctl manifest get $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(DOCKER_TAG)
 
 .PHONY:
 install: push sign attest
@@ -211,7 +214,7 @@ recent: recent-days--3
 
 .PHONY:
 recent-days--%:
-	@\
+	@set -o errexit; \
 	CHANGED_TOOLS="$$( \
 		git log --pretty=format: --name-only --since="$* days ago" \
 		| sort \
@@ -228,7 +231,7 @@ $(addsuffix --install,$(TOOLS_RAW)):%--install: %--push %--sign %--attest
 
 .PHONY:
 $(addsuffix --debug,$(TOOLS_RAW)):%--debug: $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Debugging image for $*...)
-	@\
+	@set -o errexit; \
 	TOOL_VERSION="$$(jq --raw-output '.tools[].version' $(TOOLS_DIR)/$*/manifest.json)"; \
 	DEPS="$$(jq --raw-output '.tools[] | select(.dependencies != null) |.dependencies[]' tools/$*/manifest.json | paste -sd,)"; \
 	TAGS="$$(jq --raw-output '.tools[] | select(.tags != null) |.tags[]' tools/$*/manifest.json | paste -sd,)"; \
@@ -259,7 +262,7 @@ $(addsuffix --debug,$(TOOLS_RAW)):%--debug: $(TOOLS_DIR)/%/manifest.json $(TOOLS
 			bash
 
 cosign.key: ; $(info $(M) Creating key pair for cosign...)
-	@\
+	@set -o errexit; \
 	source .env; \
 	cosign generate-key-pair
 
@@ -268,7 +271,7 @@ sign: $(addsuffix --sign,$(TOOLS_RAW))
 
 .PHONY:
 %--sign: cosign.key ; $(info $(M) Signing image for $*...)
-	@\
+	@set -o errexit; \
 	source .env; \
 	cosign sign --key cosign.key $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(DOCKER_TAG)
 
@@ -279,7 +282,7 @@ sbom: $(SBOMS)
 $(addsuffix --sbom,$(TOOLS_RAW)):%--sbom: $(TOOLS_DIR)/%/sbom.json
 
 $(SBOMS):$(TOOLS_DIR)/%/sbom.json: $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Creating sbom for $*...)
-	@\
+	@set -o errexit; \
 	mkdir -p sbom; \
 	syft packages --output cyclonedx-json --file $@ $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(DOCKER_TAG); \
 	test -s $(TOOLS_DIR)/$*/sbom.json || rm $(TOOLS_DIR)/$*/sbom.json
@@ -289,20 +292,19 @@ attest: $(addsuffix --attest,$(TOOLS_RAW))
 
 .PHONY:
 %--attest: sbom/%.json cosign.key ; $(info $(M) Attesting sbom for $*...)
-	@\
+	@set -o errexit; \
 	source .env; \
 	cosign attest --predicate sbom/$*.json --type cyclonedx --key cosign.key $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(DOCKER_TAG)
 
 .PHONY:
 size:
-	@\
+	@set -o errexit; \
 	export VERSION=$(VERSION); \
 	bash scripts/usage.sh $(TOOLS_RAW)
 
 .PHONY:
 debug: base
-	@\
-	docker container run \
+	@docker container run \
 		--interactive \
 		--tty \
 		--privileged \
@@ -312,7 +314,7 @@ debug: base
 
 .PHONY:
 $(addsuffix --test,$(TOOLS_RAW)):%--test: % ; $(info $(M) Testing $*...)
-	@\
+	@set -o errexit; \
 	if ! test -f "$(TOOLS_DIR)/$*/test.sh"; then \
 		echo "Nothing to test."; \
 		exit; \
@@ -375,8 +377,7 @@ ghcr-orphaned:
 
 .PHONY:
 ghcr-exists--%:
-	@set -o errexit; \
-	gh api --paginate "user/packages/container/docker-setup%2F$*" >/dev/null 2>&1 || exit 1
+	@gh api --paginate "user/packages/container/docker-setup%2F$*" >/dev/null 2>&1
 
 .PHONY:
 ghcr-exists: $(addprefix ghcr-exists--,$(TOOLS_RAW))
@@ -406,7 +407,7 @@ ghcr-inspect--%: $(YQ)
 
 .PHONY:
 delete-ghcr--%: $(YQ)
-	@\
+	@set -o errexit; \
 	TOKEN="$$($(YQ) '."github.com".oauth_token' "$${HOME}/.config/gh/hosts.yml")"; \
 	test -n "$${TOKEN}"; \
 	test "$${TOKEN}" != "null"; \
@@ -439,12 +440,11 @@ ghcr-private:
 
 .PHONY:
 ghcr-private--%: ; $(info $(M) Testing that $* is publicly visible...)
-	@\
-	gh api "user/packages/container/docker-setup%2F$*" \
+	@gh api "user/packages/container/docker-setup%2F$*" \
 	| jq --exit-status 'select(.visibility == "public")' >/dev/null 2>&1
 
 $(YQ): ; $(info $(M) Installing yq...)
-	@\
+	@set -o errexit; \
 	mkdir -p $(BIN); \
 	test -f $@ && test -x $@ || ( \
 		curl -sLfo $@ https://github.com/mikefarah/yq/releases/download/v$(YQ_VERSION)/yq_linux_amd64; \
@@ -452,7 +452,7 @@ $(YQ): ; $(info $(M) Installing yq...)
 	)
 
 $(REGCTL):
-	@\
+	@set -o errexit; \
 	mkdir -p $(BIN); \
 	test -f $@ && test -x $@ || ( \
 		curl --silent --location --output $@ "https://github.com/regclient/regclient/releases/download/v${REGCTL_VERSION}/regctl-linux-amd64"; \
@@ -460,7 +460,7 @@ $(REGCTL):
 	)
 
 $(SHELLCHECK):
-	@\
+	@set -o errexit; \
 	mkdir -p $(BIN); \
 	test -f $@ && test -x $@ || ( \
 		curl --silent --location "https://github.com/koalaman/shellcheck/releases/download/v$(SHELLCHECK_VERSION)/shellcheck-v$(SHELLCHECK_VERSION).linux.x86_64.tar.xz" \
@@ -469,7 +469,7 @@ $(SHELLCHECK):
 	)
 
 $(SEMVER):
-	@\
+	@set -o errexit; \
 	mkdir -p $(BIN); \
 	test -f $@ && test -x $@ || ( \
 		curl --silent --location --output $@ "https://github.com/fsaintjacques/semver-tool/raw/$(SEMVER_VERSION)/src/semver"; \
