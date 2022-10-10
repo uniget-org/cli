@@ -58,7 +58,6 @@ help:
 	@echo
 	@echo "Building:"
 	@echo "    tools/<tool>/Dockerfile      Generate from tools/*/Dockerfile.template"
-	@echo "    login                        Login to configured registry"
 	@echo "    base                         Build base container image for all tool installations"
 	@echo "    <tool>                       Build container image for specific tool"
 	@echo "    <tool>--debug                Build container image specific tool and enter shell"
@@ -143,11 +142,6 @@ $(DOCKERFILES):%/Dockerfile: %/Dockerfile.template $(TOOLS_DIR)/Dockerfile.tail 
 	cat $(TOOLS_DIR)/Dockerfile.tail >>$@
 
 .PHONY:
-login: ; $(info $(M) Logging in to $(REGISTRY)...)
-	@\
-	docker login $(REGISTRY)
-
-.PHONY:
 base: info ; $(info $(M) Building base image $(REGISTRY)/$(REPOSITORY_PREFIX)base:$(DOCKER_TAG)...)
 	@\
 	docker build @base \
@@ -191,7 +185,7 @@ $(addsuffix --deep,$(TOOLS_RAW)):%--deep: metadata.json
 push: $(addsuffix --push,$(TOOLS_RAW)) metadata.json--push
 
 .PHONY:
-$(addsuffix --push,$(TOOLS_RAW)):%--push: login % ; $(info $(M) Pushing image for $*...)
+$(addsuffix --push,$(TOOLS_RAW)):%--push: % ; $(info $(M) Pushing image for $*...)
 	@\
 	docker push $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(DOCKER_TAG)
 
