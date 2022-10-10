@@ -1,28 +1,30 @@
-M                  = $(shell printf "\033[34;1m▶\033[0m")
-SHELL             := /bin/bash
-GIT_BRANCH        ?= $(shell git branch --show-current)
-GIT_COMMIT_SHA     = $(shell git rev-parse $(GIT_BRANCH))
-VERSION           ?= $(patsubst v%,%,$(GIT_BRANCH))
-DOCKER_TAG        ?= $(subst /,-,$(VERSION))
-TOOLS_DIR          = tools
-TOOLS             ?= $(shell find $(TOOLS_DIR) -mindepth 1 -maxdepth 1 -type d | sort)
-TOOLS_RAW         ?= $(subst tools/,,$(TOOLS))
-MANIFESTS          = $(addsuffix /manifest.json,$(TOOLS))
-DOCKERFILES        = $(addsuffix /Dockerfile,$(TOOLS))
-SBOMS              = $(addsuffix /sbom.json,$(TOOLS))
-PREFIX            ?= /docker_setup_install
-TARGET            ?= /usr/local
+M                   = $(shell printf "\033[34;1m▶\033[0m")
+SHELL              := /bin/bash
+GIT_BRANCH         ?= $(shell git branch --show-current)
+GIT_COMMIT_SHA      = $(shell git rev-parse $(GIT_BRANCH))
+VERSION            ?= $(patsubst v%,%,$(GIT_BRANCH))
+DOCKER_TAG         ?= $(subst /,-,$(VERSION))
+TOOLS_DIR           = tools
+TOOLS              ?= $(shell find $(TOOLS_DIR) -mindepth 1 -maxdepth 1 -type d | sort)
+TOOLS_RAW          ?= $(subst tools/,,$(TOOLS))
+MANIFESTS           = $(addsuffix /manifest.json,$(TOOLS))
+DOCKERFILES         = $(addsuffix /Dockerfile,$(TOOLS))
+SBOMS               = $(addsuffix /sbom.json,$(TOOLS))
+PREFIX             ?= /docker_setup_install
+TARGET             ?= /usr/local
 
-OWNER             ?= nicholasdille
-PROJECT           ?= docker-setup
-REGISTRY          ?= ghcr.io
-REPOSITORY_PREFIX ?= $(OWNER)/$(PROJECT)/
+OWNER              ?= nicholasdille
+PROJECT            ?= docker-setup
+REGISTRY           ?= ghcr.io
+REPOSITORY_PREFIX  ?= $(OWNER)/$(PROJECT)/
 
-BIN                = bin
-YQ                 = $(BIN)/yq
-YQ_VERSION        ?= 4.27.3
-REGCTL             = $(BIN)/regctl
-REGCTL_VERSION    ?= 0.4.4
+BIN                 = bin
+YQ                  = $(BIN)/yq
+YQ_VERSION         ?= 4.27.3
+REGCTL              = $(BIN)/regctl
+REGCTL_VERSION     ?= 0.4.4
+SHELLCHECK          = $(BIN)/shellcheck
+SHELLCHECK_VERSION ?= 0.8.0
 
 .PHONY:
 all: $(TOOLS_RAW)
@@ -447,5 +449,14 @@ $(REGCTL):
 	mkdir -p $(BIN); \
 	test -f $@ && test -x $@ || ( \
 		curl --silent --location --output $@ "https://github.com/regclient/regclient/releases/download/v${REGCTL_VERSION}/regctl-linux-amd64"; \
+		chmod +x $@; \
+	)
+
+$(SHELLCHECK):
+	@\
+	mkdir -p $(BIN); \
+	test -f $@ && test -x $@ || ( \
+		curl --silent --location "https://github.com/koalaman/shellcheck/releases/download/v$(SHELLCHECK_VERSION)/shellcheck-v$(SHELLCHECK_VERSION).linux.x86_64.tar.xz" \
+		| tar --extract --xz --directory=$(BIN) --strip-components=1 "shellcheck-v$(SHELLCHECK_VERSION)/shellcheck"; \
 		chmod +x $@; \
 	)
