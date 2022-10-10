@@ -18,7 +18,7 @@ jobs:
       - name: Get version
         id: get_version
         run: |
-          TAG="${GITHUB_REF#refs/heads/}"
+          TAG="${GITHUB_REF#refs/tags/}"
           echo "::set-output name=version::${TAG}"
           echo "::set-output name=version::${TAG#v}"
 
