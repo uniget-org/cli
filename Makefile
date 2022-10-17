@@ -152,6 +152,15 @@ check: $(SHELLCHECK)
 	@$(SHELLCHECK) docker-setup
 
 .PHONY:
+assert-no-hardcoded-version:
+	@\
+	find tools -type f -name Dockerfile.template -exec grep -P '\d+\.\d+(\.\d+)?' {} \; \
+	| grep -v "^#syntax=" \
+	| grep -v "^FROM " \
+	| grep -v "^ARG " \
+	| grep -v "127.0.0.1"
+
+.PHONY:
 base: info ; $(info $(M) Building base image $(REGISTRY)/$(REPOSITORY_PREFIX)base:$(DOCKER_TAG)...)
 	@set -o errexit; \
 	if ! docker build @base \
