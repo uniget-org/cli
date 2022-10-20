@@ -5,7 +5,7 @@ GIT_COMMIT_SHA      = $(shell git rev-parse $(GIT_BRANCH))
 VERSION            ?= $(patsubst v%,%,$(GIT_BRANCH))
 DOCKER_TAG         ?= $(subst /,-,$(VERSION))
 TOOLS_DIR           = tools
-TOOLS              ?= $(shell find $(TOOLS_DIR) -mindepth 1 -maxdepth 1 -type d | sort)
+TOOLS              ?= $(shell find tools -type f -wholename \*/manifest.yaml | cut -d/ -f1-2 | sort)
 TOOLS_RAW          ?= $(subst tools/,,$(TOOLS))
 MANIFESTS           = $(addsuffix /manifest.json,$(TOOLS))
 DOCKERFILES         = $(addsuffix /Dockerfile,$(TOOLS))
@@ -40,6 +40,7 @@ info: ; $(info $(M) Runtime info...)
 	@echo "PROJECT:           $(PROJECT)"
 	@echo "REGISTRY:          $(REGISTRY)"
 	@echo "REPOSITORY_PREFIX: $(REPOSITORY_PREFIX)"
+	@echo "TOOLS_RAW:         $(TOOLS_RAW)"
 
 .PHONY:
 help:
