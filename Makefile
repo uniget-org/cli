@@ -153,6 +153,47 @@ check: $(SHELLCHECK)
 	@$(SHELLCHECK) docker-setup
 
 .PHONY:
+check-tools: check-tools-homepage check-tools-description check-tools-renovate
+
+.PHONY:
+check-tools-homepage: metadata.json
+	@\
+	TOOLS="$$(jq --raw-output '.tools[] | select(.homepage == null) | .name' metadata.json)"; \
+	if test -n "$${TOOLS}"; then \
+		echo "$(RED)Tools missing homepage:$(RESET)"; \
+		echo "$${TOOLS}" \
+		| while read TOOL; do \
+			echo "- $${TOOL}"; \
+		done; \
+		exit 1; \
+	fi
+
+.PHONY:
+check-tools-description: metadata.json
+	@\
+	TOOLS="$$(jq --raw-output '.tools[] | select(.description == null) | .name' metadata.json)"; \
+	if test -n "$${TOOLS}"; then \
+		echo "$(RED)Tools missing description:$(RESET)"; \
+		echo "$${TOOLS}" \
+		| while read TOOL; do \
+			echo "- $${TOOL}"; \
+		done; \
+		exit 1; \
+	fi
+
+.PHONY:
+check-tools-renovate: metadata.json
+	@\
+	TOOLS="$$(jq --raw-output '.tools[] | select(.renovate == null) | .name' metadata.json)"; \
+	if test -n "$${TOOLS}"; then \
+		echo "$(YELLOW)Tools missing renovate:$(RESET)"; \
+		echo "$${TOOLS}" \
+		| while read TOOL; do \
+			echo "- $${TOOL}"; \
+		done; \
+	fi
+
+.PHONY:
 assert-no-hardcoded-version:
 	@\
 	find tools -type f -name Dockerfile.template -exec grep -P '\d+\.\d+(\.\d+)?' {} \; \
