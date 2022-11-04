@@ -34,6 +34,7 @@ all: $(TOOLS_RAW)
 .PHONY:
 info: ; $(info $(M) Runtime info...)
 	@echo "GIT_BRANCH:        $(GIT_BRANCH)"
+	@echo "GIT_COMMIT_SHA:    $(GIT_COMMIT_SHA)"
 	@echo "VERSION:           $(VERSION)"
 	@echo "DOCKER_TAG:        $(DOCKER_TAG)"
 	@echo "OWNER:             $(OWNER)"
@@ -112,7 +113,7 @@ renovate.json: scripts/renovate.sh renovate-root.json metadata.json ; $(info $(M
 	@bash scripts/renovate.sh
 
 metadata.json: $(MANIFESTS) ; $(info $(M) Creating $@...)
-	@jq --slurp '{"tools": map(.tools[])}' $(MANIFESTS) >metadata.json
+	@jq --slurp --arg revision "$(GIT_COMMIT_SHA)" '{"revision": $$revision, "tools": map(.tools[])}' $(MANIFESTS) >metadata.json
 
 .PHONY:
 metadata.json--build: metadata.json @metadata/Dockerfile ; $(info $(M) Building metadata image for $(GIT_COMMIT_SHA)...)
