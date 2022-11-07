@@ -1,9 +1,11 @@
 .env
-/bin
+/helper
+/cache
 CHANGELOG.md
 .downloads
 metadata.json
 manifest.json
+history.json
 tools/*/Dockerfile
 build.log
 cosign.key
