@@ -28,11 +28,11 @@ jobs:
       - name: Get version
         id: get_version
         run: |
-          make bin/semver
+          make require--semver
           TAG="${GITHUB_REF#refs/tags/}"
           echo "::set-output name=tag::${TAG}"
           echo "::set-output name=version::${TAG#v}"
-          echo "::set-output name=prerelease::$(if test "$(bin/semver get prerel "${TAG#v}")" == ""; then echo "false"; else echo "true"; fi)"
+          echo "::set-output name=prerelease::$(if test "$(helper/usr/local/bin/semver get prerel "${TAG#v}")" == ""; then echo "false"; else echo "true"; fi)"
 
   release:
     name: Release
