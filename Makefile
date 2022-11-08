@@ -41,10 +41,12 @@ help:
 	@echo
 	@echo "General targets:"
 	@echo "    all (default)                Build all tools"
+	@echo "    help                         Display help for targets"
 	@echo "    clean                        Remove all temporary files"
 	@echo "    metadata.json                Generate inventory from tools/*/manifest.json"
 	@echo "    metadata.json--build         Build metadata image from @metadata/ and metadata.json"
 	@echo "    metadata.json--push          Push metadata image"
+	@echo "    metadata.json--show          Push metadata image"
 	@echo
 	@echo "Dependency management:"
 	@echo "    renovate.json                Generate from tools/*/manifest.json"
@@ -63,21 +65,53 @@ help:
 	@echo "    base                         Build base container image for all tool installations"
 	@echo "    <tool>                       Build container image for specific tool"
 	@echo "    <tool>--debug                Build container image specific tool and enter shell"
+	@echo "    <tool>--test                 Test a tool in a container image"
+	@echo "    <tool>--deep                 Build container image including all dependencies"
 	@echo "    debug                        Enter shell in base image"
 	@echo "    push                         Push all container images"
 	@echo "    <tool>--push                 Push container image for specific tool"
 	@echo "    <tool>--inspect              Inspect pushed container image for specific tool"
+	@echo "    check-tools                  Run all checks check-tools-*"
+	@echo "    check-tools-homepage         Display tools without a homepage"
+	@echo "    check-tools-description      Display tools without a description"
+	@echo "    check-tools-deps             Display tools with missing dependencies"
+	@echo "    check-tools-tags             Display tools without tags or with a single tag"
+	@echo "    check-tools-renovate         Display tools without renovate information"
+	@echo "    tag-usage                    Show how many times the tag is used"
+	@echo "    assert-no-hardcoded-version  Display tools with hardcoded versions"
 	@echo
 	@echo "Security:"
 	@echo "    cosign.key                   Create cosign key pair"
+	@echo "    metadata.json--sign          Sign metadata container image"
 	@echo "    sign                         Sign all container images"
 	@echo "    <tool>--sign                 Sign container image for specific tool"
 	@echo "    sbom                         Create SBoM for all tools"
+	@echo "    <tool>--sbom                 Create SBoM for a specific tool"
 	@echo "    tools/<tool>/sbom.json       Create SBoM for specific tool"
+	@echo "    <tool>--scan                 Scan SBoM for vulnerabilities"
 	@echo "    attest                       Attest SBoM for all tools"
 	@echo "    <tool>--attest               Attest SBoM for specific tool"
 	@echo "    install                      Push, sign and attest all container images"
 	@echo "    <tool>--install              Push, sign and attest container image for specific tool"
+	@echo
+	@echo "Git operations:"
+	@echo "    recent                       Show tools changed in the last 3 days"
+	@echo "    recent-days--<N>             Show tools changed in the last <N> days"
+	@echo
+	@echo "Helper tools:"
+	@echo "    require--<tool>              Install specified tool"
+	@echo
+	@echo "GHCR:"
+	@echo "    clean-registry-untagged      Remove all untagged container images"
+	@echo "    clean-ghcr-unused--<tool>    Remove a tag on all container images"
+	@echo "    ghcr-orphaned                List container image without a tools/<tool>/manifest.yaml"
+	@echo "    ghcr-exists--<tool>          Check is a container image exists"
+	@echo "    ghcr-exists                  Check if all container images exist"
+	@echo "    ghcr-inspect                 List tags for all container images"
+	@echo "    <tool>--ghcr-tags            Display tags for a container image"
+	@echo "    <tool>--ghcr-inspect         Display API object for a container image"
+	@echo "    delete-ghcr--<tool>          Delete container image"
+	@echo "    ghcr-private                 List all private container images"
 	@echo
 	@echo "Reminder: foo-% => \$$@=foo-bar \$$*=bar"
 	@echo
@@ -312,9 +346,6 @@ $(addsuffix --inspect,$(ALL_TOOLS_RAW)):%--inspect: require--regclient ; $(info 
 	@regctl manifest get $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(DOCKER_TAG)
 
 .PHONY:
-install: push sign attest
-
-.PHONY:
 recent: recent-days--3
 
 .PHONY:
@@ -330,6 +361,9 @@ recent-days--%:
 	)"; \
 	echo "Tools changed in the last $* day(s): $${CHANGED_TOOLS}."; \
 	make $${CHANGED_TOOLS}
+
+.PHONY:
+install: push sign attest
 
 .PHONY:
 $(addsuffix --install,$(ALL_TOOLS_RAW)):%--install: %--push %--sign %--attest
@@ -375,7 +409,7 @@ cosign.key: require--cosign ; $(info $(M) Creating key pair for cosign...)
 sign: $(addsuffix --sign,$(TOOLS_RAW))
 
 .PHONY:
-%--sign: require--cosign cosign.key ; $(info $(M) Signing image for $*...)
+$(addsuffix --sign,$(ALL_TOOLS_RAW)):%--sign: require--cosign cosign.key ; $(info $(M) Signing image for $*...)
 	@set -o errexit; \
 	source .env; \
 	cosign sign --key cosign.key $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(DOCKER_TAG)
@@ -478,7 +512,7 @@ ghcr-orphaned: require--gh require--jq
 	| while read NAME; do \
 		test "$${NAME}" == "base" && continue; \
 		test "$${NAME}" == "metadata" && continue; \
-		if ! test -f "$(TOOLS_DIR)/$${NAME}/manifest.json"; then \
+		if ! test -f "$(TOOLS_DIR)/$${NAME}/manifest.yaml"; then \
 			echo "Missing tool for $${NAME}"; \
 			exit 1; \
 		fi; \
@@ -544,10 +578,6 @@ ghcr-private: require--gh require--jq
 $(addsuffix --ghcr-private,$(ALL_TOOLS_RAW)): require--gh require--jq ; $(info $(M) Testing that $* is publicly visible...)
 	@gh api "user/packages/container/docker-setup%2F$*" \
 	| jq --exit-status 'select(.visibility == "public")' >/dev/null 2>&1
-
-.PHONY:
-$(addsuffix --helper,$(ALL_TOOLS_RAW)):%--helper: ; $(info $(M) Installing helper $*)
-	@docker_setup_cache="$${PWD}/cache" ./docker-setup --tools=$* --prefix=$(HELPER) install | cat
 
 .PHONY:
 $(addprefix require--,$(ALL_TOOLS_RAW)):require--%: $(HELPER)/var/lib/docker-setup/manifests/%.json
