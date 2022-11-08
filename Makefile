@@ -143,7 +143,7 @@ $(addsuffix /history.json,$(TOOLS)):$(TOOLS_DIR)/%/history.json: require--jq ; $
 	git log --author=renovate* --pretty="format:%cs %s" -- $(TOOLS_DIR)/$*/manifest.yaml \
 	| jq --raw-input --slurp 'split("\n")' >$@
 
-$(addsuffix /manifest.json,$(TOOLS)):$(TOOLS_DIR)/%/manifest.json: require--jq require--yq $(TOOLS_DIR)/%/manifest.yaml $(TOOLS_DIR)/%/history.json yq ; $(info $(M) Creating manifest for $*...)
+$(addsuffix /manifest.json,$(TOOLS)):$(TOOLS_DIR)/%/manifest.json: require--jq require--yq $(TOOLS_DIR)/%/manifest.yaml $(TOOLS_DIR)/%/history.json ; $(info $(M) Creating manifest for $*...)
 	@set -o errexit; \
 	yq --output-format json eval '{"tools":[.]}' $(TOOLS_DIR)/$*/manifest.yaml \
 	| jq --slurp '.[0].tools[0].history = .[1] | .[0]' - $(TOOLS_DIR)/$*/history.json >$(TOOLS_DIR)/$*/manifest.json
