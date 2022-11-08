@@ -9,6 +9,15 @@ apt-get -y install --no-install-recommends \
     bsdextrautils
 EOF
 
+FROM base AS dev
+RUN <<EOF
+apt-get update
+apt-get -y install --no-install-recommends \
+    make
+EOF
+WORKDIR /src
+COPY . .
+
 FROM base AS local
 COPY docker-setup /usr/local/bin/
 COPY tools/Dockerfile.template /var/cache/docker-setup/
