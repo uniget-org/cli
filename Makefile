@@ -17,7 +17,6 @@ REPOSITORY_PREFIX  ?= $(OWNER)/$(PROJECT)/
 
 HELPER              = helper
 BIN                 = $(HELPER)/usr/local/bin
-HELPERS             = jq,yq,curl,regclient,shellcheck,semver,gh,cosign,syft,grype
 export PATH        := $(BIN):$(PATH)
 
 .PHONY:
@@ -87,6 +86,7 @@ help:
 clean:
 	@set -o errexit; \
 	rm -f metadata.json; \
+	rm -rf helper; \
 	for TOOL in $(TOOLS_RAW); do \
 		rm -f \
 			$(TOOLS_DIR)/$${TOOL}/history.json \
@@ -548,9 +548,7 @@ $(addsuffix --helper,$(TOOLS_RAW)):%--helper: ; $(info $(M) Installing helper $*
 	@docker_setup_cache="$${PWD}/cache" ./docker-setup --tools=$* --prefix=$(HELPER) install | cat
 
 .PHONY:
-$(addprefix require--,$(TOOLS_RAW)):require--%:
-	@test -f "$(HELPER)/var/lib/docker-setup/manifests/$*.json"
+$(addprefix require--,$(TOOLS_RAW)):require--%: $(HELPER)/var/lib/docker-setup/manifests/%.json
 
-.PHONY:
-helpers:
-	@docker_setup_cache="$${PWD}/cache" ./docker-setup --tools=$(HELPERS) --prefix=$(HELPER) install | cat
+$(HELPER)/var/lib/docker-setup/manifests/%.json:
+	@docker_setup_cache="$${PWD}/cache" ./docker-setup --tools=$* --prefix=$(HELPER) install | cat
