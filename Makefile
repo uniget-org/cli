@@ -5,6 +5,8 @@ GIT_COMMIT_SHA      = $(shell git rev-parse $(GIT_BRANCH))
 VERSION            ?= $(patsubst v%,%,$(GIT_BRANCH))
 DOCKER_TAG         ?= $(subst /,-,$(VERSION))
 TOOLS_DIR           = tools
+ALL_TOOLS           = $(shell find tools -type f -wholename \*/manifest.yaml | cut -d/ -f1-2 | sort)
+ALL_TOOLS_RAW       = $(subst tools/,,$(ALL_TOOLS))
 TOOLS              ?= $(shell find tools -type f -wholename \*/manifest.yaml | cut -d/ -f1-2 | sort)
 TOOLS_RAW          ?= $(subst tools/,,$(TOOLS))
 PREFIX             ?= /docker_setup_install
@@ -20,7 +22,7 @@ BIN                 = $(HELPER)/usr/local/bin
 export PATH        := $(BIN):$(PATH)
 
 .PHONY:
-all: $(TOOLS_RAW)
+all: $(ALL_TOOLS_RAW)
 
 .PHONY:
 info: ; $(info $(M) Runtime info...)
@@ -87,7 +89,7 @@ clean:
 	@set -o errexit; \
 	rm -f metadata.json; \
 	rm -rf helper; \
-	for TOOL in $(TOOLS_RAW); do \
+	for TOOL in $(ALL_TOOLS_RAW); do \
 		rm -f \
 			$(TOOLS_DIR)/$${TOOL}/history.json \
 			$(TOOLS_DIR)/$${TOOL}/manifest.json \
@@ -98,17 +100,17 @@ clean:
 
 .PHONY:
 list:
-	@echo "$(TOOLS_RAW)"
+	@echo "$(ALL_TOOLS_RAW)"
 
 .PHONY:
-$(addsuffix --show,$(TOOLS_RAW)):%--show: $(TOOLS_DIR)/$*
+$(addsuffix --show,$(ALL_TOOLS_RAW)):%--show: $(TOOLS_DIR)/$*
 	@ls -l $(TOOLS_DIR)/$*
 
 renovate.json: scripts/renovate.sh renovate-root.json metadata.json ; $(info $(M) Updating $@...)
 	@bash scripts/renovate.sh
 
-metadata.json: require--jq $(addsuffix /manifest.json,$(TOOLS)) ; $(info $(M) Creating $@...)
-	@jq --slurp --arg revision "$(GIT_COMMIT_SHA)" '{"revision": $$revision, "tools": map(.tools[])}' $(addsuffix /manifest.json,$(TOOLS)) >metadata.json
+metadata.json: require--jq $(addsuffix /manifest.json,$(ALL_TOOLS)) ; $(info $(M) Creating $@...)
+	@jq --slurp --arg revision "$(GIT_COMMIT_SHA)" '{"revision": $$revision, "tools": map(.tools[])}' $(addsuffix /manifest.json,$(ALL_TOOLS)) >metadata.json
 
 .PHONY:
 metadata.json--show:%--show:
@@ -137,19 +139,18 @@ metadata.json--sign: require--cosign cosign.key ; $(info $(M) Signing metadata i
 	source .env; \
 	cosign sign --key cosign.key $(REGISTRY)/$(REPOSITORY_PREFIX)metadata:$(DOCKER_TAG)
 
-#.PRECIOUS: $(addsuffix /history.json,$(TOOLS))
-.SECONDARY:
-$(addsuffix /history.json,$(TOOLS)):$(TOOLS_DIR)/%/history.json: require--jq ; $(info $(M) Generating history for $*...)
+.SECONDARY: $(addsuffix /history.json,$(ALL_TOOLS))
+$(addsuffix /history.json,$(ALL_TOOLS)):$(TOOLS_DIR)/%/history.json: require--jq ; $(info $(M) Generating history for $*...)
 	@set -o errexit; \
 	git log --author=renovate* --pretty="format:%cs %s" -- $(TOOLS_DIR)/$*/manifest.yaml \
 	| jq --raw-input --slurp 'split("\n")' >$@
 
-$(addsuffix /manifest.json,$(TOOLS)):$(TOOLS_DIR)/%/manifest.json: require--jq require--yq $(TOOLS_DIR)/%/manifest.yaml $(TOOLS_DIR)/%/history.json ; $(info $(M) Creating manifest for $*...)
+$(addsuffix /manifest.json,$(ALL_TOOLS)):$(TOOLS_DIR)/%/manifest.json: require--jq require--yq $(TOOLS_DIR)/%/manifest.yaml $(TOOLS_DIR)/%/history.json ; $(info $(M) Creating manifest for $*...)
 	@set -o errexit; \
 	yq --output-format json eval '{"tools":[.]}' $(TOOLS_DIR)/$*/manifest.yaml \
 	| jq --slurp '.[0].tools[0].history = .[1] | .[0]' - $(TOOLS_DIR)/$*/history.json >$(TOOLS_DIR)/$*/manifest.json
 
-$(addsuffix /Dockerfile,$(TOOLS)):$(TOOLS_DIR)/%/Dockerfile: $(TOOLS_DIR)/%/Dockerfile.template $(TOOLS_DIR)/Dockerfile.tail ; $(info $(M) Creating $@...)
+$(addsuffix /Dockerfile,$(ALL_TOOLS)):$(TOOLS_DIR)/%/Dockerfile: $(TOOLS_DIR)/%/Dockerfile.template $(TOOLS_DIR)/Dockerfile.tail ; $(info $(M) Creating $@...)
 	@set -o errexit; \
 	cat $@.template >$@; \
 	echo >>$@; \
@@ -270,7 +271,7 @@ base: info ; $(info $(M) Building base image $(REGISTRY)/$(REPOSITORY_PREFIX)bas
 	fi
 
 .PHONY:
-$(TOOLS_RAW):%: require--jq base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Building image $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(DOCKER_TAG)...)
+$(ALL_TOOLS_RAW):%: require--jq base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Building image $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(DOCKER_TAG)...)
 	@set -o errexit; \
 	TOOL_VERSION="$$(jq --raw-output '.tools[].version' tools/$*/manifest.json)"; \
 	DEPS="$$(jq --raw-output '.tools[] | select(.dependencies != null) |.dependencies[]' tools/$*/manifest.json | paste -sd,)"; \
@@ -293,7 +294,7 @@ $(TOOLS_RAW):%: require--jq base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Doc
 		exit 1; \
 	fi
 
-$(addsuffix --deep,$(TOOLS_RAW)):%--deep: metadata.json
+$(addsuffix --deep,$(ALL_TOOLS_RAW)):%--deep: metadata.json
 	@set -o errexit; \
 	DEPS="$$(./docker-setup --tools="$*" dependencies)"; \
 	echo "Making deps: $${DEPS}."; \
@@ -303,11 +304,11 @@ $(addsuffix --deep,$(TOOLS_RAW)):%--deep: metadata.json
 push: $(addsuffix --push,$(TOOLS_RAW)) metadata.json--push
 
 .PHONY:
-$(addsuffix --push,$(TOOLS_RAW)):%--push: % ; $(info $(M) Pushing image for $*...)
+$(addsuffix --push,$(ALL_TOOLS_RAW)):%--push: % ; $(info $(M) Pushing image for $*...)
 	@docker push $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(DOCKER_TAG)
 
 .PHONY:
-$(addsuffix --inspect,$(TOOLS_RAW)):%--inspect: require--regclient ; $(info $(M) Inspecting image for $*...)
+$(addsuffix --inspect,$(ALL_TOOLS_RAW)):%--inspect: require--regclient ; $(info $(M) Inspecting image for $*...)
 	@regctl manifest get $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(DOCKER_TAG)
 
 .PHONY:
@@ -331,10 +332,10 @@ recent-days--%:
 	make $${CHANGED_TOOLS}
 
 .PHONY:
-$(addsuffix --install,$(TOOLS_RAW)):%--install: %--push %--sign %--attest
+$(addsuffix --install,$(ALL_TOOLS_RAW)):%--install: %--push %--sign %--attest
 
 .PHONY:
-$(addsuffix --debug,$(TOOLS_RAW)):%--debug: require--jq $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Debugging image for $*...)
+$(addsuffix --debug,$(ALL_TOOLS_RAW)):%--debug: require--jq $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Debugging image for $*...)
 	@set -o errexit; \
 	TOOL_VERSION="$$(jq --raw-output '.tools[].version' $(TOOLS_DIR)/$*/manifest.json)"; \
 	DEPS="$$(jq --raw-output '.tools[] | select(.dependencies != null) |.dependencies[]' tools/$*/manifest.json | paste -sd,)"; \
@@ -383,9 +384,9 @@ sign: $(addsuffix --sign,$(TOOLS_RAW))
 sbom: $(addsuffix /sbom.json,$(TOOLS))
 
 .PHONY:
-$(addsuffix --sbom,$(TOOLS_RAW)):%--sbom: $(TOOLS_DIR)/%/sbom.json
+$(addsuffix --sbom,$(ALL_TOOLS_RAW)):%--sbom: $(TOOLS_DIR)/%/sbom.json
 
-$(addsuffix /sbom.json,$(TOOLS)):$(TOOLS_DIR)/%/sbom.json: require--syft $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Creating sbom for $*...)
+$(addsuffix /sbom.json,$(ALL_TOOLS)):$(TOOLS_DIR)/%/sbom.json: require--syft $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%/Dockerfile ; $(info $(M) Creating sbom for $*...)
 	@set -o errexit; \
 	syft packages --output cyclonedx-json --file $@ $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(DOCKER_TAG); \
 	test -s $(TOOLS_DIR)/$*/sbom.json || rm $(TOOLS_DIR)/$*/sbom.json
@@ -394,12 +395,12 @@ $(addsuffix /sbom.json,$(TOOLS)):$(TOOLS_DIR)/%/sbom.json: require--syft $(TOOLS
 attest: $(addsuffix --attest,$(TOOLS_RAW))
 
 .PHONY:
-$(addsuffix --scan,$(TOOLS_RAW)):%--scan: require--grype $(TOOLS_DIR)/%/sbom.json
+$(addsuffix --scan,$(ALL_TOOLS_RAW)):%--scan: require--grype $(TOOLS_DIR)/%/sbom.json
 	@set -o errexit; \
 	grype sbom:$(TOOLS_DIR)/$*/sbom.json --add-cpes-if-none --fail-on high --output table
 
 .PHONY:
-$(addsuffix --attest,$(TOOLS_RAW)):%--attest: require--cosign sbom/%.json cosign.key ; $(info $(M) Attesting sbom for $*...)
+$(addsuffix --attest,$(ALL_TOOLS_RAW)):%--attest: require--cosign sbom/%.json cosign.key ; $(info $(M) Attesting sbom for $*...)
 	@set -o errexit; \
 	source .env; \
 	cosign attest --predicate sbom/$*.json --type cyclonedx --key cosign.key $(REGISTRY)/$(REPOSITORY_PREFIX)$*:$(DOCKER_TAG)
@@ -421,7 +422,7 @@ debug: base
 			bash
 
 .PHONY:
-$(addsuffix --test,$(TOOLS_RAW)):%--test: % ; $(info $(M) Testing $*...)
+$(addsuffix --test,$(ALL_TOOLS_RAW)):%--test: % ; $(info $(M) Testing $*...)
 	@set -o errexit; \
 	if ! test -f "$(TOOLS_DIR)/$*/test.sh"; then \
 		echo "Nothing to test."; \
@@ -501,14 +502,14 @@ ghcr-inspect: require--gh require--jq
 	done
 
 .PHONY:
-$(addsuffix --ghcr-tags,$(TOOLS_RAW)):%--ghcr-tags: require--gh require--jq
+$(addsuffix --ghcr-tags,$(ALL_TOOLS_RAW)):%--ghcr-tags: require--gh require--jq
 	@set -o errexit; \
 	gh api --paginate "user/packages/container/docker-setup%2F$*/versions" \
 	| jq --raw-output '.[] | "\(.metadata.container.tags[]);\(.name);\(.id)"' \
 	| column --separator ";" --table --table-columns Tag,SHA256,ID
 
 .PHONY:
-$(addsuffix --ghcr-inspect,$(TOOLS_RAW)):%--ghcr-inspect: require--gh require--yq
+$(addsuffix --ghcr-inspect,$(ALL_TOOLS_RAW)):%--ghcr-inspect: require--gh require--yq
 	@set -o errexit; \
 	gh api --paginate "user/packages/container/docker-setup%2F$*" \
 	| yq --prettyPrint
@@ -540,16 +541,16 @@ ghcr-private: require--gh require--jq
 	| column --separator ";" --table --table-columns Name,Url
 
 .PHONY:
-$(addsuffix --ghcr-private,$(TOOLS_RAW)): require--gh require--jq ; $(info $(M) Testing that $* is publicly visible...)
+$(addsuffix --ghcr-private,$(ALL_TOOLS_RAW)): require--gh require--jq ; $(info $(M) Testing that $* is publicly visible...)
 	@gh api "user/packages/container/docker-setup%2F$*" \
 	| jq --exit-status 'select(.visibility == "public")' >/dev/null 2>&1
 
 .PHONY:
-$(addsuffix --helper,$(TOOLS_RAW)):%--helper: ; $(info $(M) Installing helper $*)
+$(addsuffix --helper,$(ALL_TOOLS_RAW)):%--helper: ; $(info $(M) Installing helper $*)
 	@docker_setup_cache="$${PWD}/cache" ./docker-setup --tools=$* --prefix=$(HELPER) install | cat
 
 .PHONY:
-$(addprefix require--,$(TOOLS_RAW)):require--%: $(HELPER)/var/lib/docker-setup/manifests/%.json
+$(addprefix require--,$(ALL_TOOLS_RAW)):require--%: $(HELPER)/var/lib/docker-setup/manifests/%.json
 
 $(HELPER)/var/lib/docker-setup/manifests/%.json:
 	@docker_setup_cache="$${PWD}/cache" ./docker-setup --tools=$* --prefix=$(HELPER) install | cat
