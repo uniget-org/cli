@@ -1,7 +1,7 @@
 M                   = $(shell printf "\033[34;1m▶\033[0m")
 SHELL              := /bin/bash
 GIT_BRANCH         ?= $(shell git branch --show-current)
-GIT_COMMIT_SHA      = $(shell git rev-parse $(GIT_BRANCH))
+GIT_COMMIT_SHA      = $(shell git rev-parse HEAD)
 VERSION            ?= $(patsubst v%,%,$(GIT_BRANCH))
 DOCKER_TAG         ?= $(subst /,-,$(VERSION))
 TOOLS_DIR           = tools
@@ -328,7 +328,7 @@ $(ALL_TOOLS_RAW):%: require--jq base $(TOOLS_DIR)/%/manifest.json $(TOOLS_DIR)/%
 		exit 1; \
 	fi
 
-$(addsuffix --deep,$(ALL_TOOLS_RAW)):%--deep: metadata.json
+$(addsuffix --deep,$(ALL_TOOLS_RAW)):%--deep: info metadata.json
 	@set -o errexit; \
 	DEPS="$$(./docker-setup --tools="$*" dependencies)"; \
 	echo "Making deps: $${DEPS}."; \
