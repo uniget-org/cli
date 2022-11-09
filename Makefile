@@ -363,6 +363,27 @@ recent-days--%:
 	make $${CHANGED_TOOLS}
 
 .PHONY:
+build-new: require--regclient
+	@ \
+	CONFIG_DIGEST="$$( \
+		regctl manifest get $(REGISTRY)/$(REPOSITORY_PREFIX)metadata:$(DOCKER_TAG) --format raw-body \
+		| jq --raw-output '.config.digest' \
+	)"; \
+	OLD_COMMIT_SHA="$$( \
+		regctl blob get $(REGISTRY)/$(REPOSITORY_PREFIX)metadata:$(DOCKER_TAG) $${CONFIG_DIGEST} \
+		| jq --raw-output '.config.Labels."org.opencontainers.image.revision"' \
+	)"; \
+	CHANGED_TOOLS="$$( \
+		git log --pretty=format: --name-only $${OLD_COMMIT_SHA}..$${GITHUB_SHA} \
+		| sort \
+		| grep -E "^tools/[^/]+/" \
+		| cut -d/ -f2 \
+		| uniq \
+		| xargs \
+	)"; \
+	TOOLS_RAW="$${CHANGED_TOOLS}" make push metadata.json--push
+
+.PHONY:
 install: push sign attest
 
 .PHONY:
