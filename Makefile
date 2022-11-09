@@ -363,7 +363,7 @@ recent-days--%:
 	make $${CHANGED_TOOLS}
 
 .PHONY:
-build-new: require--regclient
+push-new: require--regclient
 	@ \
 	CONFIG_DIGEST="$$( \
 		regctl manifest get $(REGISTRY)/$(REPOSITORY_PREFIX)metadata:$(DOCKER_TAG) --format raw-body \
