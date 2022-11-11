@@ -28,7 +28,7 @@ jobs:
       - name: Get version
         id: get_version
         run: |
-          make $(HELPER)/var/lib/docker-setup/manifests/semver.json
+          make helper/var/lib/docker-setup/manifests/semver.json
           TAG="${GITHUB_REF#refs/tags/}"
           echo "::set-output name=tag::${TAG}"
           echo "::set-output name=version::${TAG#v}"
