@@ -20,7 +20,7 @@ apt-get -y install --no-install-recommends \
     bsdextrautils
 EOF
 
-FROM alpine:3.17@sha256:36a03c95c2f0c83775d500101869054b927143a8320728f0e135dc151cb8ae61 AS alpine-3.16
+FROM alpine:3.17@sha256:8914eb54f968791faf6a8638949e480fef81e697984fba772b3976835194c6d4 AS alpine-3.16
 RUN <<EOF
 apk update
 apk add \
