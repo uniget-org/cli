@@ -611,3 +611,6 @@ $(HELPER)/var/lib/docker-setup/manifests/regclient.json $(HELPER)/var/lib/docker
 	curl --silent --location --output "$(HELPER)/usr/bin/jq" "https://github.com/stedolan/jq/releases/latest/download/jq-linux64"; \
 	chmod +x "$(HELPER)/usr/bin/regctl" "$(HELPER)/usr/bin/jq"; \
 	PATH="$(HELPER)/usr/bin:$${PATH}" docker_setup_cache="$${PWD}/cache" ./docker-setup --tools=regclient,jq --prefix=$(HELPER) install | cat
+
+site/content/tools/%.md: tools/%/manifest.json
+	@echo "TODO"
