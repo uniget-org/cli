@@ -12,6 +12,10 @@ TOOLS_RAW          ?= $(subst tools/,,$(TOOLS))
 PREFIX             ?= /docker_setup_install
 TARGET             ?= /usr/local
 
+# Pre-defined colors: https://github.com/moby/buildkit/blob/master/util/progress/progressui/colors.go
+BUILDKIT_COLORS    ?= run=green:warning=yellow:error=red:cancel=255,165,0
+NO_COLOR           ?= ""
+
 OWNER              ?= nicholasdille
 PROJECT            ?= docker-setup
 REGISTRY           ?= ghcr.io
@@ -26,6 +30,8 @@ all: $(ALL_TOOLS_RAW)
 
 .PHONY:
 info: ; $(info $(M) Runtime info...)
+	@echo "BUILDKIT_COLORS:   $(BUILDKIT_COLORS)"
+	@echo "NO_COLOR:          $(NO_COLOR)"
 	@echo "GIT_BRANCH:        $(GIT_BRANCH)"
 	@echo "GIT_COMMIT_SHA:    $(GIT_COMMIT_SHA)"
 	@echo "VERSION:           $(VERSION)"
