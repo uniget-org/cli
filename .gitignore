@@ -10,3 +10,4 @@ tools/*/Dockerfile
 build.log
 cosign.key
 tools/*/sbom.json
+report.txt
