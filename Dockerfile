@@ -1,4 +1,4 @@
-#syntax=docker/dockerfile:1.4.3
+#syntax=docker/dockerfile:1.5.1
 
 ARG base=ubuntu-22.04
 
