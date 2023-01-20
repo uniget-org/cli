@@ -2,7 +2,8 @@ M                   = $(shell printf "\033[34;1m▶\033[0m")
 SHELL              := /bin/bash
 GIT_BRANCH         ?= $(shell git branch --show-current)
 GIT_COMMIT_SHA      = $(shell git rev-parse HEAD)
-VERSION            ?= $(patsubst v%,%,$(GIT_BRANCH))
+#VERSION            ?= $(patsubst v%,%,$(GIT_BRANCH))
+VERSION            ?= main
 DOCKER_TAG         ?= $(subst /,-,$(VERSION))
 TOOLS_DIR           = tools
 ALL_TOOLS           = $(shell find tools -type f -wholename \*/manifest.yaml | cut -d/ -f1-2 | sort)
@@ -40,7 +41,7 @@ info: ; $(info $(M) Runtime info...)
 	@echo "PROJECT:           $(PROJECT)"
 	@echo "REGISTRY:          $(REGISTRY)"
 	@echo "REPOSITORY_PREFIX: $(REPOSITORY_PREFIX)"
-	@echo "TOOLS_RAW:         $(TOOLS_RAW)"
+	#@echo "TOOLS_RAW:         $(TOOLS_RAW)"
 
 .PHONY:
 help:
