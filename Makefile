@@ -41,6 +41,7 @@ info: ; $(info $(M) Runtime info...)
 	@echo "PROJECT:           $(PROJECT)"
 	@echo "REGISTRY:          $(REGISTRY)"
 	@echo "REPOSITORY_PREFIX: $(REPOSITORY_PREFIX)"
+	@echo "TOOLS_RAW:         $(TOOLS_RAW)"
 
 .PHONY:
 help:
