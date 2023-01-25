@@ -58,7 +58,6 @@ help:
 	@echo "Dependency management:"
 	@echo "    renovate.json                Generate from tools/*/manifest.json"
 	@echo "    tools/<tool>/manifest.json   Generate from tools/*/manifest.yaml"
-	@echo "    tools/<tool>/history.json    Generate history from git"
 	@echo
 	@echo "Reflection:"
 	@echo "    info                         Display configuration data"
@@ -133,7 +132,6 @@ clean:
 	rm -rf helper; \
 	for TOOL in $(ALL_TOOLS_RAW); do \
 		rm -f \
-			$(TOOLS_DIR)/$${TOOL}/history.json \
 			$(TOOLS_DIR)/$${TOOL}/manifest.json \
 			$(TOOLS_DIR)/$${TOOL}/Dockerfile \
 			$(TOOLS_DIR)/$${TOOL}/build.log \
