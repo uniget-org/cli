@@ -11,7 +11,7 @@ apt-get -y install --no-install-recommends \
     bsdextrautils
 EOF
 
-FROM debian:11.6@sha256:a24e7d1cd59683c4bc05f415dcb97b38f2305584cce9b88d342def4fde2c3e5f AS debian-11.5
+FROM debian:11.6@sha256:92277f7108c432febe41beffd367dbb6dac60b9fbfe517c77208e6457eafe22b AS debian-11.5
 RUN <<EOF
 apt-get update
 apt-get -y install --no-install-recommends \
