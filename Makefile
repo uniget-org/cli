@@ -14,7 +14,7 @@ PREFIX             ?= /docker_setup_install
 TARGET             ?= /usr/local
 
 # Pre-defined colors: https://github.com/moby/buildkit/blob/master/util/progress/progressui/colors.go
-BUILDKIT_COLORS    ?= run=green:warning=yellow:error=red:cancel=255,165,0
+BUILDKIT_COLORS    ?= run=light-blue:warning=yellow:error=red:cancel=255,165,0
 NO_COLOR           ?= ""
 
 OWNER              ?= nicholasdille
@@ -26,22 +26,39 @@ HELPER              = helper
 BIN                 = $(HELPER)/usr/local/bin
 export PATH        := $(BIN):$(PATH)
 
+SUPPORTED_ARCH     := x86_64 aarch64
+SUPPORTED_ALT_ARCH := amd64 arm64
+ARCH               ?= $(shell uname -m)
+ifeq ($(ARCH),x86_64)
+ALT_ARCH           := amd64
+endif
+ifeq ($(ARCH),aarch64)
+ALT_ARCH           := arm64
+endif
+ifndef ALT_ARCH
+$(error ERROR: Unable to determine alternative name for architecture ($(ARCH)))
+endif
+
 .PHONY:
 all: $(ALL_TOOLS_RAW)
 
 .PHONY:
 info: ; $(info $(M) Runtime info...)
-	@echo "BUILDKIT_COLORS:   $(BUILDKIT_COLORS)"
-	@echo "NO_COLOR:          $(NO_COLOR)"
-	@echo "GIT_BRANCH:        $(GIT_BRANCH)"
-	@echo "GIT_COMMIT_SHA:    $(GIT_COMMIT_SHA)"
-	@echo "VERSION:           $(VERSION)"
-	@echo "DOCKER_TAG:        $(DOCKER_TAG)"
-	@echo "OWNER:             $(OWNER)"
-	@echo "PROJECT:           $(PROJECT)"
-	@echo "REGISTRY:          $(REGISTRY)"
-	@echo "REPOSITORY_PREFIX: $(REPOSITORY_PREFIX)"
-	@echo "TOOLS_RAW:         $(TOOLS_RAW)"
+	@echo "BUILDKIT_COLORS:    $(BUILDKIT_COLORS)"
+	@echo "NO_COLOR:           $(NO_COLOR)"
+	@echo "GIT_BRANCH:         $(GIT_BRANCH)"
+	@echo "GIT_COMMIT_SHA:     $(GIT_COMMIT_SHA)"
+	@echo "VERSION:            $(VERSION)"
+	@echo "DOCKER_TAG:         $(DOCKER_TAG)"
+	@echo "OWNER:              $(OWNER)"
+	@echo "PROJECT:            $(PROJECT)"
+	@echo "REGISTRY:           $(REGISTRY)"
+	@echo "REPOSITORY_PREFIX:  $(REPOSITORY_PREFIX)"
+	@echo "TOOLS_RAW:          $(TOOLS_RAW)"
+	@echo "SUPPORTED_ARCH:     $(SUPPORTED_ARCH)"
+	@echo "SUPPORTED_ALT_ARCH: $(SUPPORTED_ALT_ARCH)"
+	@echo "ARCH:               $(ARCH)"
+	@echo "ALT_ARCH:           $(ALT_ARCH)"
 
 .PHONY:
 help:
