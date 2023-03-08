@@ -32,8 +32,8 @@ For details about version 1 of `docker-setup` please refer to the [last stable r
 Download and run `docker-setup`:
 
 ```bash
-curl --silent --location --output /usr/local/bin/docker-setup https://github.com/nicholasdille/docker-setup/releases/latest/download/docker-setup
-chmod +x /usr/local/bin/docker-setup
+curl --silent --location https://github.com/nicholasdille/docker-setup/releases/latest/download/docker-setup | sudo tee /usr/local/bin/docker-setup >/dev/null
+sudo chmod +x /usr/local/bin/docker-setup
 ```
 
 See [docs](docs) for the complete documentation.
