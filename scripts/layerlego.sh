@@ -6,21 +6,33 @@ set -o errexit
 # - Docker must be present
 # - Docker must be at least 23.0.0
 #
+echo "Checking prerequisites"
 if ! type docker >/dev/null 2>&1; then
     echo "ERROR: Docker is required for this script."
     exit 1
 fi
+MINIMUM_DOCKER_VERSION=23.0.0
 DOCKER_VERSION="$(
-    { echo "23.0.0"; docker version --format "{{json .}}" | jq --raw-output '.Client.Version'; } \
+    { echo "${MINIMUM_DOCKER_VERSION}"; docker version --format "{{json .}}" | jq --raw-output '.Client.Version'; } \
     | sort -V \
     | head -n 1
 )"
-if test "${DOCKER_VERSION}" != "23.0.0"; then
-    echo "ERROR: Script requires at least Docker 23.0.0"
+if test "${DOCKER_VERSION}" != "${MINIMUM_DOCKER_VERSION}"; then
+    echo "ERROR: Script requires at least Docker v${MINIMUM_DOCKER_VERSION}"
     exit 1
 fi
 if ! type regctl >/dev/null 2>&1; then
     echo "ERROR: regclient is required for this script."
+    exit 1
+fi
+MINIMUM_REGCTL_VERSION=0.4.8
+REGCTL_VERSION="$(
+    { echo "${MINIMUM_REGCTL_VERSION}"; regctl version; } \
+    | sort -V \
+    | head -n 1
+)"
+if test "${REGCTL_VERSION}" != "${MINIMUM_REGCTL_VERSION}"; then
+    echo "ERROR: Script requires at least regctl v${MINIMUM_REGCTL_VERSION}"
     exit 1
 fi
 
@@ -44,19 +56,72 @@ esac
 ######
 # XXX
 #
+echo "Populating variables"
 NAME_BASE=nicholasdille/docker-setup
 NAME_SOURCE="${NAME_BASE}/base:latest"
-IMAGES=(
-    "ghcr.io/nicholasdille/docker-setup/kubectl:main"
-    "ghcr.io/nicholasdille/docker-setup/helm:main"
-    "ghcr.io/nicholasdille/docker-setup/kubeswitch:main"
+TOOLS_IMAGE_PREFIX="ghcr.io/nicholasdille/docker-setup/"
+TOOLS_IMAGE_SUFFIX=":main"
+TOOLS=(
+    "dotnet"
+    "powershell"
+    "scala"
+    "nodejs"
+    "npm"
+    "nvm"
+    "grunt"
+    "serverless"
+    "newman"
+    "yarn"
+    "nx"
+    "az"
+    "pipx"
+    "aws2"
+    "dependency-check"
+    "docker"
+    "buildx"
+    "docker-compose"
+    "docker-machine"
+    "jenkins-remoting"
+    "cosign"
+    "rekor"
+    "trivy"
+    "syft"
+    "grype"
+    "go"
+    "kubectl"
+    "helm"
+    "sops"
+    "terraform"
+    "terragrunt"
+    "sonar-scanner"
+    "jf"
+    "oc"
+    "jaxb"
+    "gradle"
+    "maven"
 )
+IMAGES=()
+for TOOL in ${TOOLS[*]}; do
+    IMAGES+=( "${TOOLS_IMAGE_PREFIX}${TOOL}${TOOLS_IMAGE_SUFFIX}" )
+done
+for IMAGE in ${IMAGES[*]}; do
+    echo "Checking ${IMAGE}"
+    if ! regctl manifest head "${IMAGE}" >/dev/null; then
+        echo "ERROR: Image ${IMAGE} does not exist."
+        exit 1
+    fi
+done \
+| pv --name "Checking images" --progress --timer --eta --line-mode --size "${#IMAGES[*]}" >/dev/null
 REGISTRY=127.0.0.1:5000
 FULL_NAME_SOURCE="${REGISTRY}/${NAME_SOURCE}"
 
 ######
 # XXX
 #
+echo "Starting registry"
+if test "$(docker container ls --all --filter status=exited --filter name=registry | wc -l)" -gt 1; then
+    docker container rm registry
+fi
 if test "$(docker container ls --filter name=registry | wc -l)" -eq 1; then
     docker container run --detach --name registry --publish "${REGISTRY}:5000" registry
 fi
@@ -74,12 +139,17 @@ trap cleanup EXIT
 ######
 # XXX
 #
+if ! test -f Dockerfile.base; then
+    echo "ERROR: Script expects a Dockerfile.base in the current directory (${PWD})."
+    exit 1
+fi
 echo "Building base image"
 docker image build \
+    --file Dockerfile.base \
     --cache-from "${FULL_NAME_SOURCE}" \
     --tag "${FULL_NAME_SOURCE}" \
     --push \
-    @base
+    .
 
 ######
 # XXX
@@ -97,6 +167,20 @@ cat "${TEMP}/manifest.json" \
 # XXX
 #
 for IMAGE in ${IMAGES[*]}; do
+    echo "Image ${IMAGE}"
+    REPOSITORY_TAG="$(
+        echo "${IMAGE}" \
+        | cut -d/ -f2-
+    )"
+    regctl image copy "${IMAGE}" "${REGISTRY}/${REPOSITORY_TAG}" --platform linux/amd64
+done \
+| pv --name "Importing images" --progress --timer --eta --line-mode --size "${#IMAGES[*]}" >/dev/null
+
+######
+# XXX
+#
+SECONDS=0
+for IMAGE in ${IMAGES[*]}; do
     echo
     echo "Image ${IMAGE}"
 
@@ -109,12 +193,6 @@ for IMAGE in ${IMAGES[*]}; do
     )"
     LOCAL_NAME="${REGISTRY}/${REPOSITORY_TAG}"
     echo "+ Name with local registry: ${LOCAL_NAME}"
-
-    ######
-    # XXX
-    #
-    echo "+ Copy image to local registry"
-    regctl image copy "${IMAGE}" "${REGISTRY}/${REPOSITORY_TAG}"
 
     ######
     # XXX
@@ -142,7 +220,7 @@ for IMAGE in ${IMAGES[*]}; do
     # XXX
     #
     echo "+ Mount blob to target repository"
-    "${HOME}/.local/bin/regctl" blob copy "${LOCAL_NAME}" "${FULL_NAME_SOURCE}" "${LAYER_DIGEST}"
+    regctl blob copy "${LOCAL_NAME}" "${FULL_NAME_SOURCE}" "${LAYER_DIGEST}"
 
     ######
     # XXX
@@ -172,7 +250,7 @@ echo
 ######
 # XXX
 #
-echo "Upload config"
+echo "Upload config for ${FULL_NAME_SOURCE}"
 NEW_CONFIG_DIGEST="$(
     cat "${TEMP}/config.json" \
     | regctl blob put "${FULL_NAME_SOURCE}"
@@ -181,7 +259,13 @@ NEW_CONFIG_DIGEST="$(
 ######
 # XXX
 #
-echo "Update and upload manifest"
+echo "Update and upload manifest for ${FULL_NAME_SOURCE}"
 cat "${TEMP}/manifest.json" \
 | jq --arg digest "${NEW_CONFIG_DIGEST}" '.config.digest = $digest' \
 | regctl manifest put "${FULL_NAME_SOURCE}"
+
+######
+# XXX
+#
+echo
+echo "Finished after ${SECONDS} second(s)"
