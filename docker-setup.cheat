@@ -1,0 +1,12 @@
+% docker-setup
+
+$ tool: docker-setup --all list --- --column 1 --delimiter ' '
+
+# Install default tools
+sudo docker-setup --default install
+
+# Install all tools
+sudo docker-setup --all install
+
+# Install specific tool
+sudo docker-setup --tools=<tool> install
