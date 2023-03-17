@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	tools, err := tool.LoadFromFile("metadata.json")
+	tools, err := tool.LoadFromFile2("metadata.json")
 	if err != nil {
 		os.Exit(1)
 	}

@@ -23,8 +23,14 @@ func (tool *Tool) List() {
 func (tools *Tools) List() {
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
+	//t.SetStyle(table.StyleRounded)
+	t.Style().Options.DrawBorder = false
+	t.Style().Options.SeparateColumns = false
+	t.Style().Options.SeparateFooter = false
+	t.Style().Options.SeparateHeader = false
+	t.Style().Options.SeparateRows = false
 
-	t.AppendHeader(table.Row{"#", "Name", "Version"})
+	t.AppendHeader(table.Row{"Name", "Version"})
 
 	for index, tool := range tools.Tools {
 		t.AppendRows([]table.Row{
@@ -53,6 +59,7 @@ func (tools *Tools) ListWithStatus(toolStatus map[string]ToolStatus) {
 
 func (tool *Tool) Print() {
 	fmt.Printf("\n")
+	//fmt.Printf("%v\n", tool)
 	fmt.Printf("Name: %s\n", tool.Name)
 	fmt.Printf("  Description: %s\n", tool.Description)
 	fmt.Printf("  Homepage: %s\n", tool.Homepage)
@@ -71,10 +78,36 @@ func (tool *Tool) Print() {
 		fmt.Printf("    %s\n", tag)
 	}
 
+	if tool.BuildDependencies != nil {
+		fmt.Printf("  Build dependencies:\n")
+		for _, dep := range tool.BuildDependencies {
+			fmt.Printf("    %s\n", dep)
+		}
+	}
+
 	if tool.RuntimeDependencies != nil {
 		fmt.Printf("  Runtime dependencies:\n")
 		for _, dep := range tool.RuntimeDependencies {
 			fmt.Printf("    %s\n", dep)
+		}
+	}
+
+	if tool.Platforms != nil {
+		fmt.Printf("  Platforms:\n")
+		for _, dep := range tool.Platforms {
+			fmt.Printf("    %s\n", dep)
+		}
+	}
+
+	if tool.Renovate.Datasource != "" {
+		fmt.Printf("  Renovate:\n")
+		fmt.Printf("    Datasource: %s\n", tool.Renovate.Datasource)
+		fmt.Printf("    Package: %s\n", tool.Renovate.Package)
+		if tool.Renovate.ExtractVersion != "" {
+			fmt.Printf("    ExtractVersion: %s\n", tool.Renovate.ExtractVersion)
+		}
+		if tool.Renovate.Versioning != "" {
+			fmt.Printf("    Versioning: %s\n", tool.Renovate.Versioning)
 		}
 	}
 }
