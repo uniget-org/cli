@@ -10,7 +10,7 @@ func initListCmd() {
 
 var listCmd = &cobra.Command{
 	Use:     "list",
-	Aliases: []string{"l"},
+	Aliases: []string{"l", "get"},
 	Short:   "List tools",
 	Long:    header + "\nList tools",
 	Args:    cobra.NoArgs,

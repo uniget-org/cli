@@ -19,7 +19,7 @@ func initDescribeCmd() {
 
 var describeCmd = &cobra.Command{
 	Use:     "describe",
-	Aliases: []string{"d"},
+	Aliases: []string{"d", "info"},
 	Short:   "Show detailed information about tools",
 	Long:    header + "\nShow detailed information about tools",
 	Args:    cobra.ExactArgs(1),

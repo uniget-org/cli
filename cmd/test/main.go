@@ -21,6 +21,8 @@ import (
 	"github.com/regclient/regclient/types/manifest"
 )
 
+var version = "main"
+
 var arch = "x86_64"
 var alt_arch = "amd64"
 var prefix = "/"

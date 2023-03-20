@@ -62,12 +62,10 @@ var installCmd = &cobra.Command{
 			log.Tracef("Getting status for requested tool %s", tool.Name)
 			tools.Tools[index].ReplaceVariables(target, arch, alt_arch)
 
-			status, err := tools.Tools[index].GetStatus()
+			err := tools.Tools[index].GetBinaryStatus()
 			if err != nil {
-				return fmt.Errorf("Unable to determine status of %s: %s", tool.Name, err)
+				return fmt.Errorf("Unable to determine binary status of %s: %s", tool.Name, err)
 			}
-			
-			toolStatus[tool.Name] = status
 		}
 
 		// Collect requested tools based on mode

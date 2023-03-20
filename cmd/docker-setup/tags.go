@@ -13,10 +13,10 @@ func initTagsCmd() {
 }
 
 var tagsCmd = &cobra.Command{
-	Use:     "get",
-	Aliases: []string{"g"},
-	Short:   "List tools and tags",
-	Long:    header + "\nList tools and tags",
+	Use:     "tags",
+	Aliases: []string{"t"},
+	Short:   "List tags",
+	Long:    header + "\nList tags",
 	Args:    cobra.NoArgs,
 	RunE:    func(cmd *cobra.Command, args []string) error {
 		tags := make(map[string]int)

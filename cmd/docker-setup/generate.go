@@ -12,6 +12,7 @@ func initGenerateCmd() {
 
 var generateCmd = &cobra.Command{
 	Use:     "generate",
+	Aliases: []string{"gen", "g"},
 	Short:   "Generate new tool definition",
 	Long:    header + "\nGenerate new tool definition",
 	Args:    cobra.NoArgs,
