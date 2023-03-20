@@ -58,8 +58,6 @@ func (tools *Tools) ListWithStatus(toolStatus map[string]ToolStatus) {
 }
 
 func (tool *Tool) Print() {
-	fmt.Printf("\n")
-	//fmt.Printf("%v\n", tool)
 	fmt.Printf("Name: %s\n", tool.Name)
 	fmt.Printf("  Description: %s\n", tool.Description)
 	fmt.Printf("  Homepage: %s\n", tool.Homepage)
@@ -115,7 +113,7 @@ func (tool *Tool) Print() {
 	fmt.Printf("    Binary present: %t\n", tool.Status.BinaryPresent)
 	if tool.Status.Version != "" {
 		fmt.Printf("    Version: %s\n", tool.Status.Version)
-		fmt.Printf("    Version matches: %s\n", tool.Status.VersionMatches)
+		fmt.Printf("    Version matches: %t\n", tool.Status.VersionMatches)
 	}
 }
 

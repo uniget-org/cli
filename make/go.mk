@@ -17,5 +17,5 @@ run-in-docker--%:
 	    --mount type=bind,src=$${HOME}/.cache/go-build,dst=/.cache/go-build \
 		--mount type=bind,src=$${PWD},dst=/src \
 		--workdir /src \
-		golang:alpine \
+		golang \
 			go run ./cmd/$*
