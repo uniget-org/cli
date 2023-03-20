@@ -105,44 +105,34 @@ func (tool *Tool) ReplaceVariables(target string, arch string, alt_arch string) 
 	)
 }
 
-func (tool *Tool) GetStatus() (ToolStatus, error) {
-	status := ToolStatus{
-		Name:           tool.Name,
-		BinaryPresent:  false,
-		Version:        "",
-		VersionMatches: false,
-	}
-
-	// Check presence of binary
+func (tool *Tool) GetBinaryStatus() error {
 	_, err := os.Stat(tool.Binary)
 	if err == nil {
-		status.BinaryPresent = true
+		tool.Status.BinaryPresent = true
 	  
 	} else if errors.Is(err, os.ErrNotExist) {
-		status.BinaryPresent = false
+		tool.Status.BinaryPresent = false
 	  
 	} else {
-		return ToolStatus{}, fmt.Errorf("Unable to check binary status: %s", err)
+		return fmt.Errorf("Unable to check binary status: %s", err)
 	}
 
-	// Retrieve version
-	if status.BinaryPresent && tool.Check != "" {
+	return nil
+}
+
+func (tool *Tool) GetVersionStatus() error {
+	if tool.Status.BinaryPresent && tool.Check != "" {
 		log.Tracef("Running version check for %s: %s", tool.Name, tool.Check)
 		cmd := exec.Command("/bin/bash", "-c", tool.Check + " | tr -d '\n'")
 		version, err := cmd.CombinedOutput()
 		if err != nil {
-			return ToolStatus{}, fmt.Errorf("Unable to execute version check (%s): %s", tool.Check, err)
+			return fmt.Errorf("Unable to execute version check (%s): %s", tool.Check, err)
 		}
-		status.Version = string(version)
+		tool.Status.Version = string(version)
 	}
 
-	// Check version
-	log.Tracef("Comparing requested version <%s> with installed version <%s>.", tool.Version, status.Version)
-	if status.Version == tool.Version {
-		status.VersionMatches = true
-	}
+	log.Tracef("Comparing requested version <%s> with installed version <%s>.", tool.Version, tool.Status.Version)
+	tool.Status.VersionMatches = tool.Status.Version == tool.Version
 
-	log.Tracef("Status of %s: %+v", tool.Name, status)
-
-	return status, nil
+	return nil
 }

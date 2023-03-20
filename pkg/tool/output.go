@@ -110,6 +110,13 @@ func (tool *Tool) Print() {
 			fmt.Printf("    Versioning: %s\n", tool.Renovate.Versioning)
 		}
 	}
+
+	fmt.Printf("  Status\n")
+	fmt.Printf("    Binary present: %t\n", tool.Status.BinaryPresent)
+	if tool.Status.Version != "" {
+		fmt.Printf("    Version: %s\n", tool.Status.Version)
+		fmt.Printf("    Version matches: %s\n", tool.Status.VersionMatches)
+	}
 }
 
 func (tools *Tools) Describe(name string) error {

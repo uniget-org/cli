@@ -19,6 +19,7 @@ type Tool struct {
 	Homepage            string     `json:"homepage"`
 	Description         string     `json:"description"`
 	Renovate            Renovate   `json:"renovate,omitempty"`
+	Status              ToolStatus
 }
 
 type Tools struct {
@@ -26,7 +27,6 @@ type Tools struct {
 }
 
 type ToolStatus struct {
-	Name           string
 	BinaryPresent  bool
 	Version        string
 	VersionMatches bool

@@ -12,10 +12,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	tools.List()
-	tool, err := tools.GetByName("az")
+	//tools.List()
+	tool, err := tools.GetByName("regclient")
 	if err != nil {
 		os.Exit(1)
 	}
+	tool.GetBinaryStatus()
+	tool.GetVersionStatus()
 	tool.Print()
 }
