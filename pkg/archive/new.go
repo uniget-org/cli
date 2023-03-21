@@ -1,0 +1,57 @@
+package archive
+
+import (
+	"archive/tar"
+    "compress/gzip"
+	"fmt"
+	"io"
+	"os"
+)
+
+// TODO: Check if https://github.com/mholt/archiver makes more sense
+func ExtractTarGz(gzipStream io.Reader) error {
+    uncompressedStream, err := gzip.NewReader(gzipStream)
+    if err != nil {
+        return fmt.Errorf("ExtractTarGz: NewReader failed")
+    }
+
+    tarReader := tar.NewReader(uncompressedStream)
+
+    for true {
+        header, err := tarReader.Next()
+
+        if err == io.EOF {
+            break
+        }
+
+        if err != nil {
+            return fmt.Errorf("ExtractTarGz: Next() failed: %s", err.Error())
+        }
+
+        switch header.Typeflag {
+        case tar.TypeDir:
+			if stat, err := os.Stat(header.Name); err == nil && ! stat.IsDir() {
+				if err := os.Mkdir(header.Name, 0755); err != nil {
+					return fmt.Errorf("ExtractTarGz: Mkdir() failed: %s", err.Error())
+				}
+			}
+
+        case tar.TypeReg:
+            outFile, err := os.Create(header.Name)
+            if err != nil {
+                return fmt.Errorf("ExtractTarGz: Create() failed: %s", err.Error())
+            }
+            if _, err := io.Copy(outFile, tarReader); err != nil {
+                return fmt.Errorf("ExtractTarGz: Copy() failed: %s", err.Error())
+            }
+			outFile.Chmod(os.FileMode(header.Mode))
+            outFile.Close()
+
+        default:
+            return fmt.Errorf("ExtractTarGz: uknown type: %s in %s", header.Typeflag, header.Name)
+        }
+
+    }
+
+	return nil
+}
