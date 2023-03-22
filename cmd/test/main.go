@@ -1,11 +1,8 @@
 package main
 
 import (
-	"archive/tar"
-    "compress/gzip"
 	"context"
 	"fmt"
-	"io"
 	"os"
 	"time"
 
@@ -73,73 +70,76 @@ func main() {
 	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(30 * time.Second))
 	defer cancel()
 
+	r, err := ref.New(image)
+	if err != nil {
+		fmt.Printf("Failed to parse image name <%s>: %s\n", image, err)
+		os.Exit(1)
+	}
+
 	rcOpts := []regclient.Opt{}
 	rcOpts = append(rcOpts, regclient.WithUserAgent("docker-setup"))
 	rcOpts = append(rcOpts, regclient.WithDockerCreds())
 	rc := regclient.New(rcOpts...)
 	defer rc.Close(ctx, r)
 
-	r, err := ref.New(image)
+	m, err := containers.GetPlatformManifest(ctx, rc, r, alt_arch)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to parse image name <%s>: %s\n", image, err)
+		fmt.Printf("Failed to get manifest: %s\n", err)
+		os.Exit(1)
 	}
-
-	m, err := GetPlatformImage(ctx, rc, r, alt_arch)
+	err = ProcessLayers(ctx, rc, m, r, prefix)
 	if err != nil {
-		err = ProcessLayers(ctx, rc, m, r)
-		if err != nil {
-			fmt.Printf("Failed to process layers: %s\n", err)
-			os.Exit(1)
-		}
+		fmt.Printf("Failed to process layers: %s\n", err)
+		os.Exit(1)
 	}
 }
 
-func ProcessLayers(ctx context.Context, rc *regclient.RegClient, m manifest.Manifest, r ref.Ref) error {
-	fmt.Printf("ProcessLayers()\n")
-
-	if mi, ok := m.(manifest.Imager); ok {
-		fmt.Printf("Type of mi: %T\n", mi)
-
-		layers, err := mi.GetLayers()
-		if err != nil {
-			return fmt.Errorf("Failed to get layers: %s", err)
-		}
-		
-		if len(layers) > 1 {
-			return fmt.Errorf("Image must have exactly one layer but got %d", len(layers))
-		}
-
-		layer := layers[0]
-		fmt.Printf("mediaType: %s\n", layer.MediaType)
-		// TODO: Test known but unsupported media types
-		if layer.MediaType == types.MediaTypeOCI1Layer || layer.MediaType == types.MediaTypeOCI1LayerZstd {
-			return fmt.Errorf("Only layers with gzip compression are supported (not %s)", layer.MediaType)
-		}
-		if layer.MediaType == types.MediaTypeOCI1LayerGzip || layer.MediaType == types.MediaTypeDocker2LayerGzip  {
-			
-			d, err := digest.Parse(string(layer.Digest))
-			if err != nil {
-				return fmt.Errorf("Failed to parse digest %s: %s", layer.Digest, err)
-			}
-
-			blob, err := rc.BlobGet(ctx, r, types.Descriptor{Digest: d})
-			if err != nil {
-				return fmt.Errorf("Failed to get blob for digest %s: %s", layer.Digest, err)
-			}
-			defer blob.Close()
-
-			//fmt.Printf("len of blob: %d\n", len(blob))
-			//fmt.Printf("type of blob: %T\n", blob)
-
-			os.Chdir(prefix)
-			ExtractTarGz(blob)
-
-			return nil
-		}
-		
-		// TODO: Test unknown media types
-		return fmt.Errorf("Unknown media type encountered: %s", layer.MediaType)	
+func ProcessLayers(ctx context.Context, rc *regclient.RegClient, m manifest.Manifest, r ref.Ref, prefix string) error {
+	if m.IsList() {
+		return fmt.Errorf("Manifest is a list")
 	}
 
-	return nil
+	mi, ok := m.(manifest.Imager)
+	if !ok {
+		return fmt.Errorf("ERROR")
+	}
+
+	layers, err := mi.GetLayers()
+	if err != nil {
+		return fmt.Errorf("Failed to get layers: %s", err)
+	}
+	
+	if len(layers) > 1 {
+		return fmt.Errorf("Image must have exactly one layer but got %d", len(layers))
+	}
+
+	layer := layers[0]
+	// TODO: Test known but unsupported media types
+	if layer.MediaType == types.MediaTypeOCI1Layer || layer.MediaType == types.MediaTypeOCI1LayerZstd {
+		return fmt.Errorf("Only layers with gzip compression are supported (not %s)", layer.MediaType)
+	}
+	if layer.MediaType == types.MediaTypeOCI1LayerGzip || layer.MediaType == types.MediaTypeDocker2LayerGzip  {
+		
+		d, err := digest.Parse(string(layer.Digest))
+		if err != nil {
+			return fmt.Errorf("Failed to parse digest %s: %s", layer.Digest, err)
+		}
+
+		blob, err := rc.BlobGet(ctx, r, types.Descriptor{Digest: d})
+		if err != nil {
+			return fmt.Errorf("Failed to get blob for digest %s: %s", layer.Digest, err)
+		}
+		defer blob.Close()
+
+		//fmt.Printf("len of blob: %d\n", len(blob))
+		//fmt.Printf("type of blob: %T\n", blob)
+
+		os.Chdir(prefix)
+		archive.ExtractTarGz(blob)
+
+		return nil
+	}
+	
+	// TODO: Test unknown media types
+	return fmt.Errorf("Unknown media type encountered: %s", layer.MediaType)
 }
