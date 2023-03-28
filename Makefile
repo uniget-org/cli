@@ -39,6 +39,13 @@ ifndef ALT_ARCH
 $(error ERROR: Unable to determine alternative name for architecture ($(ARCH)))
 endif
 
+check_defined = \
+    $(strip $(foreach 1,$1, \
+        $(call __check_defined,$1,$(strip $(value 2)))))
+__check_defined = \
+    $(if $(value $1),, \
+      $(error Undefined $1$(if $2, ($2))))
+
 .PHONY:
 all: $(ALL_TOOLS_RAW)
 
@@ -163,6 +170,7 @@ list:
 $(addsuffix --show,$(ALL_TOOLS_RAW)):%--show: $(TOOLS_DIR)/$*
 	@ls -l $(TOOLS_DIR)/$*
 
+-include .env.mk
 include make/dev.mk
 include make/metadata.mk
 include make/tool.mk
