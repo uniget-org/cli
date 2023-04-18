@@ -16,15 +16,18 @@ import (
 
 	"github.com/regclient/regclient"
 	"github.com/regclient/regclient/types"
-	"github.com/regclient/regclient/types/ref"
+	"github.com/regclient/regclient/types/blob"
 	"github.com/regclient/regclient/types/manifest"
+	"github.com/regclient/regclient/types/ref"
 )
 
 var version = "main"
 
+var cache_dir = "/tmp"
+
 var arch = "x86_64"
 var alt_arch = "amd64"
-var prefix = "/"
+var prefix = "/tmp"
 var target = "usr/local"
 
 func main() {
@@ -33,6 +36,12 @@ func main() {
 		os.Exit(1)
 	}
 	toolName := os.Args[1]
+
+	GetManifest("ghcr.io/nicholasdille/docker-setup/metadata:main", func (blob blob.Reader) error {
+		os.Chdir(cache_dir)
+		archive.ExtractTarGz(blob)
+		return nil
+	})
 
 	tools, err := tool.LoadFromFile("metadata.json")
 	if err != nil {
@@ -66,14 +75,29 @@ func main() {
 	}
 
 	image := fmt.Sprintf("ghcr.io/nicholasdille/docker-setup/%s:main", tool.Name)
+	err = GetManifest(image, func (blob blob.Reader) error {
+		os.Chdir(prefix)
 
+		err := archive.ExtractTarGz(blob)
+		if err != nil {
+			return fmt.Errorf("Failed to extract layer: %s\n", err)
+		}
+
+		return nil
+	})
+	if err != nil {
+		fmt.Printf("Failed to get manifest: %s\n", err)
+		os.Exit(1)
+	}
+}
+
+func GetManifest(image string, callback func(blob blob.Reader) error) error {
 	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(30 * time.Second))
 	defer cancel()
 
 	r, err := ref.New(image)
 	if err != nil {
-		fmt.Printf("Failed to parse image name <%s>: %s\n", image, err)
-		os.Exit(1)
+		return fmt.Errorf("Failed to parse image name <%s>: %s\n", image, err)
 	}
 
 	rcOpts := []regclient.Opt{}
@@ -84,17 +108,17 @@ func main() {
 
 	m, err := containers.GetPlatformManifest(ctx, rc, r, alt_arch)
 	if err != nil {
-		fmt.Printf("Failed to get manifest: %s\n", err)
-		os.Exit(1)
+		return fmt.Errorf("Failed to get manifest: %s\n", err)
 	}
-	err = ProcessLayers(ctx, rc, m, r, prefix)
+	err = ProcessLayersCallback(ctx, rc, m, r, callback)
 	if err != nil {
-		fmt.Printf("Failed to process layers: %s\n", err)
-		os.Exit(1)
+		return fmt.Errorf("Failed to process layers with callback: %s\n", err)
 	}
+
+	return nil
 }
 
-func ProcessLayers(ctx context.Context, rc *regclient.RegClient, m manifest.Manifest, r ref.Ref, prefix string) error {
+func ProcessLayersCallback(ctx context.Context, rc *regclient.RegClient, m manifest.Manifest, r ref.Ref, callback func(blob blob.Reader) error) error {
 	if m.IsList() {
 		return fmt.Errorf("Manifest is a list")
 	}
@@ -134,8 +158,10 @@ func ProcessLayers(ctx context.Context, rc *regclient.RegClient, m manifest.Mani
 		//fmt.Printf("len of blob: %d\n", len(blob))
 		//fmt.Printf("type of blob: %T\n", blob)
 
-		os.Chdir(prefix)
-		archive.ExtractTarGz(blob)
+		err = callback(blob)
+		if err != nil {
+			return fmt.Errorf("Failed callback: %s", err)
+		}
 
 		return nil
 	}

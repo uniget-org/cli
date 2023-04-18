@@ -30,8 +30,10 @@ func ExtractTarGz(gzipStream io.Reader) error {
 
         switch header.Typeflag {
         case tar.TypeDir:
-			if stat, err := os.Stat(header.Name); err == nil && ! stat.IsDir() {
-				if err := os.Mkdir(header.Name, 0755); err != nil {
+            _, err := os.Stat(header.Name)
+			if err != nil {
+                err := os.Mkdir(header.Name, 0755)
+				if err != nil {
 					return fmt.Errorf("ExtractTarGz: Mkdir() failed: %s", err.Error())
 				}
 			}
