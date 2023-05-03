@@ -22,12 +22,17 @@ var updateCmd = &cobra.Command{
 	Long:    header + "\nUpdate tool manifest",
 	Args:    cobra.NoArgs,
 	Run:     func(cmd *cobra.Command, args []string) {
-		// TODO: cacheDiectory is writable
-
 		containers.GetManifest("ghcr.io/nicholasdille/docker-setup/metadata:main", alt_arch, func (blob blob.Reader) error {
 			os.Chdir(cacheDirectory)
 			archive.ExtractTarGz(blob)
 			return nil
 		})
+
+		var err error
+		tools, err = tool.LoadFromFile(metadataFileName)
+		if err != nil {
+			fmt.Printf("Error loading metadata from file %s: %s\n", metadataFileName, err)
+			os.Exit(1)
+		}
 	},
 }

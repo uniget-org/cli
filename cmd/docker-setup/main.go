@@ -30,7 +30,7 @@ var (
 )
 
 func init() {
-	//initDockerSetup()
+	initDockerSetup()
 
 	initDescribeCmd()
 	initGenerateCmd()

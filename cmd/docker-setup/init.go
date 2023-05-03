@@ -18,6 +18,13 @@ var metadataFileName = cacheDirectory + "/metadata.json"
 var tools tool.Tools
 
 func initDockerSetup() {
+	var err error
+
+	if os.Geteuid() != 0 {
+		fmt.Printf("Use must use sudo\n")
+		os.Exit(1)
+	}
+
 	if alt_arch == "amd64" {
 		arch = "x86_64"
 
@@ -32,11 +39,12 @@ func initDockerSetup() {
 	os.MkdirAll(cacheDirectory, 0755)
 	os.MkdirAll(libDirectory, 0755)
 
-	// TODO: Check for file
-	var err error
-	tools, err = tool.LoadFromFile(metadataFileName)
-	if err != nil {
-		fmt.Printf("Error loading metadata from file %s: %s\n", metadataFileName, err)
-		os.Exit(1)
+	_, err = os.Stat(metadataFileName)
+	if err == nil {
+		tools, err = tool.LoadFromFile(metadataFileName)
+		if err != nil {
+			fmt.Printf("Error loading metadata from file %s: %s\n", metadataFileName, err)
+			os.Exit(1)
+		}
 	}
 }
