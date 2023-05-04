@@ -8,6 +8,7 @@ import (
 
 	"github.com/nicholasdille/docker-setup/pkg/archive"
 	"github.com/nicholasdille/docker-setup/pkg/containers"
+	"github.com/nicholasdille/docker-setup/pkg/tool"
 
 	"github.com/regclient/regclient/types/blob"
 )

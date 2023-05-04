@@ -18,8 +18,7 @@ var header string = `
                                                                 |_|
 `
 var logLevel string
-var target string
-var no_color bool
+//var no_color bool
 
 var (
 	rootCmd = &cobra.Command{

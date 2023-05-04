@@ -2,14 +2,12 @@ package main
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/spf13/cobra"
 	log "github.com/sirupsen/logrus"
 	//"github.com/fatih/color"
 
 	"github.com/nicholasdille/docker-setup/pkg/tool"
-	//"github.com/nicholasdille/docker-setup/pkg/shell"
 )
 
 var installMode string
@@ -18,7 +16,6 @@ var plan bool
 var toolStatus map[string]tool.ToolStatus = make(map[string]tool.ToolStatus)
 var requestedTools tool.Tools
 var plannedTools tool.Tools
-var no_wait bool
 
 //var check_mark string = "✓" // Unicode=\u2713 UTF-8=\xE2\x9C\x93 (https://www.compart.com/de/unicode/U+2713)
 //var cross_mark string = "✗" // Unicode=\u2717 UTF-8=\xE2\x9C\x97 (https://www.compart.com/de/unicode/U+2717)
@@ -26,15 +23,11 @@ var no_wait bool
 func initInstallCmd() {
 	rootCmd.AddCommand(installCmd)
 
-	installCmd.Flags().StringVarP(&installMode, "mode",    "m", "default", "How to install (default, list, tags, installed)")
+	installCmd.Flags().StringVarP(&installMode, "mode",    "m", "default", "How to install (default, tags, installed)")
 	installCmd.Flags().BoolVarP(  &plan,        "plan",    "p", false,     "Show planned installations")
 	installCmd.Flags().BoolVarP(  &check,       "check",   "c", false,     "Abort after checking versions")
-	installCmd.Flags().BoolVarP(  &no_wait,     "no-wait", "n", false,     "Skip wait before installation")
 
-	installCmd.Flags().BoolP("skip-docs",       "s", false, "Do not install documentation for faster installation")
 	installCmd.Flags().BoolP("reinstall",       "r", false, "Reinstall tools")
-	installCmd.Flags().BoolP("no-cache",        "",  false, "Do not cache downloads")
-	installCmd.Flags().BoolP("no-cron",         "",  false, "Do not create cronjob for automated updates")
 }
 
 var installCmd = &cobra.Command{
@@ -57,6 +50,11 @@ var installCmd = &cobra.Command{
 			return fmt.Errorf("You can only only specify one: --check, --plan")
 		}
 
+		tools, err := tool.LoadFromFile(metadataFileName)
+		if err != nil {
+			return fmt.Errorf("Failed to load metadata from file %s: %s\n", metadataFileName, err)
+		}
+
 		// Fill default values and replace variables
 		for index, tool := range tools.Tools {
 			log.Tracef("Getting status for requested tool %s", tool.Name)
@@ -66,17 +64,25 @@ var installCmd = &cobra.Command{
 			if err != nil {
 				return fmt.Errorf("Unable to determine binary status of %s: %s", tool.Name, err)
 			}
+
+			err = tools.Tools[index].GetVersionStatus()
+			if err != nil {
+				return fmt.Errorf("Unable to determine version status of %s: %s", tool.Name, err)
+			}
 		}
 
 		// Collect requested tools based on mode
-		if installMode == "list" {
-			requestedTools = tools.GetByNames(args)
-
-		} else if installMode == "tags" {
+		if len(args) > 0 && installMode == "default" {
+			installMode = "list"
+		}
+		if installMode == "tags" {
 			requestedTools = tools.GetByTags(args)
 
+		} else if installMode == "list" {
+			requestedTools = tools.GetByNames(args)
+
 		} else if installMode == "default" {
-			requestedTools = tools
+			requestedTools = tools.GetByTags([]string{"category/default"})
 
 		} else if installMode == "only-installed" {
 			for _, tool := range tools.Tools {
@@ -112,32 +118,16 @@ var installCmd = &cobra.Command{
 			return nil
 		}
 
-		// Wait before installation
-		if ! no_wait {
-			log.Info("Press Ctrl-C to interrupt...")
-			time.Sleep(10 * time.Second)
-		}
-
 		// Install
 		for _, tool := range plannedTools.Tools {
-			log.Infof("Installing %s", tool.Name)
-			err := tool.Install(alt_arch)
+			fmt.Printf("%s Installing %s %s", emoji_tool, tool.Name, tool.Version)
+			err := tool.Install(prefix, alt_arch)
+			fmt.Printf("\n")
 			if err != nil {
 				return fmt.Errorf("Unable to install downloads: %s", err)
 			}
 		}
 
 		return nil
-
-		//toolName := "docker"
-		//toolCacheDirectory := cacheDirectory + "/" + toolName
-		//toolInstallScript := toolCacheDirectory + "/install.sh"
-		//os.MkdirAll(toolCacheDirectory, 0755)
-		//err := shell.CreateScript(toolInstallScript, "pwd", "ls -l", "whoami", "printenv | sort")
-		//if err != nil {
-		//	log.Errorf("Unable to create installation script %s for %s: %s", toolInstallScript, toolName, err)
-		//	os.Exit(1)
-		//}
-		//shell.ExecuteScript(toolInstallScript)
 	},
 }

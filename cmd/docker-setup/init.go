@@ -12,10 +12,17 @@ import (
 
 var alt_arch string = runtime.GOARCH
 var arch string
+
+var prefix = "/"
+var target = "usr/local"
 var cacheDirectory = "/var/cache/docker-setup"
 var libDirectory = "/var/lib/docker-setup"
 var metadataFileName = cacheDirectory + "/metadata.json"
 var tools tool.Tools
+
+var emoji_tool = "\U0001F528"
+
+// TODO: variables for registry
 
 func initDockerSetup() {
 	var err error
