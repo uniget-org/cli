@@ -7,6 +7,8 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/spf13/cobra"
+
+	"github.com/nicholasdille/docker-setup/pkg/tool"
 )
 
 var describeOutput string
@@ -24,6 +26,11 @@ var describeCmd = &cobra.Command{
 	Long:    header + "\nShow detailed information about tools",
 	Args:    cobra.ExactArgs(1),
 	RunE:    func(cmd *cobra.Command, args []string) error {
+		tools, err := tool.LoadFromFile(metadataFileName)
+		if err != nil {
+			return fmt.Errorf("Failed to load metadata from file %s: %s\n", metadataFileName, err)
+		}
+
 		tool, err := tools.GetByName(args[0])
 		if err != nil {
 			return fmt.Errorf("Error getting tool %s\n", args[0])
