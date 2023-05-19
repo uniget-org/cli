@@ -34,29 +34,10 @@ jobs:
           echo "::set-output name=version::${TAG#v}"
           echo "::set-output name=prerelease::$(if test "$(helper/usr/local/bin/semver get prerel "${TAG#v}")" == ""; then echo "false"; else echo "true"; fi)"
 
-  build:
-    name: Prepare
-    runs-on: ubuntu-20.04
-    steps:
-
-      - name: printenv
-        run: |
-          printenv | sort
-
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ needs.prepare.outputs.tag }}
-
-      - name: Build binary
-        run: |
-          make docker-setup
-
   release:
     name: Release
     needs:
     - prepare
-    - build
     runs-on: ubuntu-20.04
     steps:
 
@@ -72,6 +53,10 @@ jobs:
       - name: Set version
         run: |
           sed -i 's/docker_setup_version:=main/docker_setup_version:=${{ needs.prepare.outputs.version }}/' docker-setup.sh
+
+      - name: Build binary
+        run: |
+          make docker-setup
 
       - name: Create checksum
         run: |
