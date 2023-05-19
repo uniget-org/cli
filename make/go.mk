@@ -30,7 +30,6 @@ docker-setup: make/go.mk $(GO_SOURCES)
         --rm \
 	    --mount type=bind,src=$${PWD},dst=/src \
 		--workdir /src \
-		--user $$(id -u):$$(id -g) \
 		--env CGO_ENABLED=0 \
 		golang \
 			go build -buildvcs=false -ldflags "-X main.version=$(VERSION)" -o docker-setup ./cmd/docker-setup
