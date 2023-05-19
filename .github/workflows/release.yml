@@ -71,11 +71,12 @@ jobs:
 
       - name: Set version
         run: |
-          sed -i 's/docker_setup_version:=main/docker_setup_version:=${{ needs.prepare.outputs.version }}/' docker-setup
+          sed -i 's/docker_setup_version:=main/docker_setup_version:=${{ needs.prepare.outputs.version }}/' docker-setup.sh
 
       - name: Create checksum
         run: |
           sha256sum docker-setup >docker-setup.sha256
+          sha256sum docker-setup.sh >docker-setup.sh.sha256
 
       - name: Create changelog
         env:
