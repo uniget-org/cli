@@ -26,7 +26,7 @@ build: docker-setup
 GO_SOURCES = $(shell find . -type f -name \*.go)
 docker-setup: make/go.mk $(GO_SOURCES)
 	@\
-	docker run --interactive --tty --rm \
+	docker run --rm \
 	    --mount type=bind,src=$${HOME}/go/pkg/mod,dst=/go/pkg/mod \
 	    --mount type=bind,src=$${HOME}/.cache/go-build,dst=/.cache/go-build \
 		--mount type=bind,src=$${PWD},dst=/src \
