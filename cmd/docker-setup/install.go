@@ -11,6 +11,9 @@ import (
 )
 
 var installMode string
+var defaultMode bool
+var tagsMode bool
+var installedMode bool
 var check bool
 var plan bool
 var toolStatus map[string]tool.ToolStatus = make(map[string]tool.ToolStatus)
@@ -23,9 +26,13 @@ var plannedTools tool.Tools
 func initInstallCmd() {
 	rootCmd.AddCommand(installCmd)
 
-	installCmd.Flags().StringVarP(&installMode, "mode",    "m", "default", "How to install (default, tags, installed)")
-	installCmd.Flags().BoolVarP(  &plan,        "plan",    "p", false,     "Show planned installations")
-	installCmd.Flags().BoolVarP(  &check,       "check",   "c", false,     "Abort after checking versions")
+	installCmd.Flags().StringVarP(&installMode,   "mode",      "m", "default", "How to install (default, tags, installed)")
+	installCmd.Flags().BoolVarP(  &defaultMode,   "default",   "d", false,     "Install default tools")
+	installCmd.Flags().BoolVarP(  &tagsMode,      "tags",      "t", false,     "Install tools matching tag")
+	installCmd.Flags().BoolVarP(  &installedMode, "installed", "i", false,     "Update installed tools")
+	installCmd.Flags().BoolVarP(  &plan,          "plan",      "p", false,     "Show planned installations")
+	installCmd.Flags().BoolVarP(  &check,         "check",     "c", false,     "Abort after checking versions")
+	installCmd.MarkFlagsMutuallyExclusive("mode", "default", "tags", "installed")
 
 	installCmd.Flags().BoolP("reinstall",       "r", false, "Reinstall tools")
 }
@@ -65,10 +72,25 @@ var installCmd = &cobra.Command{
 				return fmt.Errorf("Unable to determine binary status of %s: %s", tool.Name, err)
 			}
 
+			err = tools.Tools[index].GetMarkerFileStatus(cacheDirectory)
+			if err != nil {
+				return fmt.Errorf("Unable to determine marker file status of %s: %s", tool.Name, err)
+			}
+
 			err = tools.Tools[index].GetVersionStatus()
 			if err != nil {
 				return fmt.Errorf("Unable to determine version status of %s: %s", tool.Name, err)
 			}
+		}
+
+		if defaultMode {
+			installMode = "default"
+		}
+		if tagsMode {
+			installMode = "tags"
+		}
+		if installedMode {
+			installMode = "only-installed"
 		}
 
 		// Collect requested tools based on mode
@@ -124,8 +146,9 @@ var installCmd = &cobra.Command{
 			err := tool.Install(prefix, alt_arch)
 			fmt.Printf("\n")
 			if err != nil {
-				return fmt.Errorf("Unable to install downloads: %s", err)
+				return fmt.Errorf("Unable to install %s: %s", tool, err)
 			}
+			// TODO: Create marker file
 		}
 
 		return nil

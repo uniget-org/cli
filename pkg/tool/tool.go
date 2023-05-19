@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
-	
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -97,7 +97,7 @@ func (tool *Tool) ReplaceVariables(target string, arch string, alt_arch string) 
 	if tool.Binary[:1] != "/" {
 		tool.Binary = target + "/bin/" + tool.Binary
 	}
-			
+
 	//check
 	tool.Check = replaceVariables(tool.Check,
 		[]string{"${binary}", "${name}", "${target}"},
@@ -109,12 +109,27 @@ func (tool *Tool) GetBinaryStatus() error {
 	_, err := os.Stat(tool.Binary)
 	if err == nil {
 		tool.Status.BinaryPresent = true
-	  
+
 	} else if errors.Is(err, os.ErrNotExist) {
 		tool.Status.BinaryPresent = false
-	  
+
 	} else {
-		return fmt.Errorf("Unable to check binary status: %s", err)
+		return fmt.Errorf("Unable to check binary status for %s: %s", tool.Name, err)
+	}
+
+	return nil
+}
+
+func (tool *Tool) GetMarkerFileStatus(markerFileDirectory string) error {
+	_, err := os.Stat(fmt.Sprintf("%s/%s/%s", markerFileDirectory, tool.Name, tool.Version))
+	if err == nil {
+		tool.Status.MarkerFilePresent = true
+
+	} else if errors.Is(err, os.ErrNotExist) {
+		tool.Status.MarkerFilePresent = false
+
+	} else {
+		return fmt.Errorf("Unable to check marker file status for %s: %s", tool.Name, err)
 	}
 
 	return nil

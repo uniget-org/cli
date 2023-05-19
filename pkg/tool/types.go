@@ -27,7 +27,8 @@ type Tools struct {
 }
 
 type ToolStatus struct {
-	BinaryPresent  bool
-	Version        string
-	VersionMatches bool
+	BinaryPresent     bool
+	Version           string
+	VersionMatches    bool
+	MarkerFilePresent bool
 }
