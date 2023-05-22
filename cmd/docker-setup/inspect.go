@@ -39,7 +39,7 @@ var inspectCmd = &cobra.Command{
 		tool.ReplaceVariables(prefix + target, arch, alt_arch)
 
 		fmt.Printf("%s Inspecting %s %s\n", emoji_tool, tool.Name, tool.Version)
-		err = tool.Inspect(registryImagePrefix, prefix, alt_arch)
+		err = tool.Inspect(registryImagePrefix, alt_arch)
 		if err != nil {
 			return fmt.Errorf("Unable to inspect %s: %s", tool, err)
 		}

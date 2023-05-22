@@ -13,7 +13,7 @@ import (
 var alt_arch string = runtime.GOARCH
 var arch string
 
-var prefix = "/"
+var prefix = ""
 var target = "usr/local"
 var cacheDirectory = "/var/cache/docker-setup"
 var libDirectory = "/var/lib/docker-setup"
@@ -27,7 +27,13 @@ var tools tool.Tools
 
 var emoji_tool = "\U0001F528"
 
-// TODO: variables for registry
+func assertWritableTarget() {
+	_, err := os.Stat(prefix + "/" + target)
+	if err != nil {
+		fmt.Printf("Target directory %s is not writable: %s\n", prefix + "/" + target, err)
+		os.Exit(1)
+	}
+}
 
 func initDockerSetup() {
 	var err error

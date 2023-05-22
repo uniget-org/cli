@@ -72,7 +72,7 @@ var installCmd = &cobra.Command{
 		// Fill default values and replace variables
 		for index, tool := range tools.Tools {
 			log.Tracef("Getting status for requested tool %s", tool.Name)
-			tools.Tools[index].ReplaceVariables(prefix + target, arch, alt_arch)
+			tools.Tools[index].ReplaceVariables(prefix + "/" + target, arch, alt_arch)
 
 			err := tools.Tools[index].GetBinaryStatus()
 			if err != nil {
@@ -155,7 +155,7 @@ var installCmd = &cobra.Command{
 			}
 
 			fmt.Printf("%s Installing %s %s", emoji_tool, tool.Name, tool.Version)
-			err := tool.Install(registryImagePrefix, prefix, alt_arch)
+			err := tool.Install(registryImagePrefix, prefix + "/", alt_arch)
 			fmt.Printf("\n")
 			if err != nil {
 				return fmt.Errorf("Unable to install %s: %s", tool, err)

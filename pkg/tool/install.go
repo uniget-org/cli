@@ -12,7 +12,7 @@ import (
 
 func (tool *Tool) Install(registryImagePrefix string, prefix string, alt_arch string) error {
 	err := containers.GetManifest(fmt.Sprintf(registryImagePrefix + "%s:main", tool.Name), alt_arch, func (blob blob.Reader) error {
-		os.Chdir(prefix)
+		os.Chdir(prefix + "/")
 		err := archive.ExtractTarGz(blob)
 		if err != nil {
 			return fmt.Errorf("Failed to extract layer: %s\n", err)
@@ -27,7 +27,7 @@ func (tool *Tool) Install(registryImagePrefix string, prefix string, alt_arch st
 	return nil
 }
 
-func (tool *Tool) Inspect(registryImagePrefix string, prefix string, alt_arch string) error {
+func (tool *Tool) Inspect(registryImagePrefix string, alt_arch string) error {
 	err := containers.GetManifest(fmt.Sprintf(registryImagePrefix + "%s:main", tool.Name), alt_arch, func (blob blob.Reader) error {
 		result, err := archive.ListTarGz(blob)
 		if err != nil {
@@ -35,7 +35,7 @@ func (tool *Tool) Inspect(registryImagePrefix string, prefix string, alt_arch st
 		}
 
 		for _, file := range result {
-			fmt.Printf(prefix + "%s\n", file)
+			fmt.Printf("%s\n", file)
 		}
 
 		return nil
