@@ -9,13 +9,15 @@ func initUninstallCmd() {
 }
 
 var uninstallCmd = &cobra.Command{
-	Use:     "uninstall",
-	Aliases: []string{"u"},
-	Short:   "Uninstall tool",
-	Long:    header + "\nUninstall tools",
-	Args:    cobra.ExactArgs(1),
-	RunE:     func(cmd *cobra.Command, args []string) error {
+	Use:       "uninstall",
+	Aliases:   []string{"u"},
+	Short:     "Uninstall tool",
+	Long:      header + "\nUninstall tools",
+	Args:      cobra.ExactArgs(1),
+	ValidArgs: tools.GetNames(),
+	RunE:      func(cmd *cobra.Command, args []string) error {
 		assertMetadataFileExists()
+		assertMetadataIsLoaded()
 
 		assertWritableTarget()
 		assertLibDirectory()

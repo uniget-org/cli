@@ -167,10 +167,10 @@ func (tool *Tool) RemoveMarkerFile(markerFileDirectory string) error {
 }
 
 func (tool *Tool) GetVersionStatus() error {
-	if tool.Status.BinaryPresent && tool.Check != "" {
+	if tool.Status.BinaryPresent && len(tool.Check) > 0 {
 		log.Tracef("Running version check for %s: %s", tool.Name, tool.Check)
 		cmd := exec.Command("/bin/bash", "-c", tool.Check + " | tr -d '\n'")
-		version, err := cmd.CombinedOutput()
+		version, err := cmd.Output()
 		if err != nil {
 			return fmt.Errorf("Unable to execute version check (%s): %s", tool.Check, err)
 		}

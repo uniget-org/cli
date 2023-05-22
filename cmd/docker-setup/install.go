@@ -16,7 +16,6 @@ var tagsMode bool
 var installedMode bool
 var check bool
 var plan bool
-var toolStatus map[string]tool.ToolStatus = make(map[string]tool.ToolStatus)
 var requestedTools tool.Tools
 var plannedTools tool.Tools
 var reinstall bool
@@ -28,11 +27,11 @@ func initInstallCmd() {
 	rootCmd.AddCommand(installCmd)
 
 	installCmd.Flags().StringVarP(&installMode,   "mode",      "m", "default", "How to install (default, tags, installed)")
-	installCmd.Flags().BoolVarP(  &defaultMode,   "default",   "d", false,     "Install default tools")
-	installCmd.Flags().BoolVarP(  &tagsMode,      "tags",      "t", false,     "Install tool(s) matching tag")
+	installCmd.Flags().BoolVarP(  &defaultMode,   "default",   "",  false,     "Install default tools")
+	installCmd.Flags().BoolVarP(  &tagsMode,      "tags",      "",  false,     "Install tool(s) matching tag")
 	installCmd.Flags().BoolVarP(  &installedMode, "installed", "i", false,     "Update installed tool(s)")
-	installCmd.Flags().BoolVarP(  &plan,          "plan",      "p", false,     "Show tool(s) planned installation")
-	installCmd.Flags().BoolVarP(  &check,         "check",     "c", false,     "Abort after checking versions")
+	installCmd.Flags().BoolVarP(  &plan,          "plan",      "",  false,     "Show tool(s) planned installation")
+	installCmd.Flags().BoolVarP(  &check,         "check",     "c",  false,     "Abort after checking versions")
 	installCmd.Flags().BoolVarP(  &reinstall,     "reinstall", "r", false,     "Reinstall tool(s)")
 	installCmd.MarkFlagsMutuallyExclusive("mode", "default", "tags", "installed")
 	installCmd.MarkFlagsMutuallyExclusive("check", "plan")
@@ -43,8 +42,8 @@ var installCmd = &cobra.Command{
 	Aliases:   []string{"i"},
 	Short:     "Install tools",
 	Long:      header + "\nInstall and update tools",
-	ValidArgs: tools.GetNames(),
 	Args:      cobra.OnlyValidArgs,
+	ValidArgs: tools.GetNames(),
 	RunE:      func(cmd *cobra.Command, args []string) error {
 
 		// Validation checks
@@ -56,31 +55,7 @@ var installCmd = &cobra.Command{
 		}
 
 		assertMetadataFileExists()
-		tools, err := tool.LoadFromFile(metadataFile)
-		if err != nil {
-			return fmt.Errorf("Failed to load metadata from file %s: %s\n", metadataFile, err)
-		}
-
-		// Fill default values and replace variables
-		for index, tool := range tools.Tools {
-			log.Tracef("Getting status for requested tool %s", tool.Name)
-			tools.Tools[index].ReplaceVariables(prefix + "/" + target, arch, alt_arch)
-
-			err := tools.Tools[index].GetBinaryStatus()
-			if err != nil {
-				return fmt.Errorf("Unable to determine binary status of %s: %s", tool.Name, err)
-			}
-
-			err = tools.Tools[index].GetMarkerFileStatus(cacheDirectory)
-			if err != nil {
-				return fmt.Errorf("Unable to determine marker file status of %s: %s", tool.Name, err)
-			}
-
-			err = tools.Tools[index].GetVersionStatus()
-			if err != nil {
-				return fmt.Errorf("Unable to determine version status of %s: %s", tool.Name, err)
-			}
-		}
+		assertMetadataIsLoaded()
 
 		if defaultMode {
 			installMode = "default"
@@ -91,6 +66,8 @@ var installCmd = &cobra.Command{
 		if installedMode {
 			installMode = "only-installed"
 		}
+
+		log.Debugf("Using install mode %s", installMode)
 
 		// Collect requested tools based on mode
 		if len(args) > 0 && installMode == "default" {
@@ -106,8 +83,23 @@ var installCmd = &cobra.Command{
 			requestedTools = tools.GetByTags([]string{"category/default"})
 
 		} else if installMode == "only-installed" {
-			for _, tool := range tools.Tools {
-				if toolStatus[tool.Name].BinaryPresent {
+			log.Debugf("Collecting installed tools")
+			for index, tool := range tools.Tools {
+				log.Tracef("Getting status for requested tool %s", tool.Name)
+				tools.Tools[index].ReplaceVariables(prefix + "/" + target, arch, alt_arch)
+	
+				err := tools.Tools[index].GetBinaryStatus()
+				if err != nil {
+					return fmt.Errorf("Unable to determine binary status of %s: %s", tool.Name, err)
+				}
+	
+				err = tools.Tools[index].GetMarkerFileStatus(cacheDirectory)
+				if err != nil {
+					return fmt.Errorf("Unable to determine marker file status of %s: %s", tool.Name, err)
+				}
+
+				if  tools.Tools[index].Status.MarkerFilePresent &&  tools.Tools[index].Status.BinaryPresent {
+					log.Tracef("Adding %s to requested tools", tool.Name)
 					requestedTools.Tools = append(requestedTools.Tools, tool)
 				}
 			}
@@ -124,13 +116,39 @@ var installCmd = &cobra.Command{
 		}
 		log.Debugf("Planned %d tool(s)", len(plannedTools.Tools))
 
+		// Populate status of planned tools
+		// TODO: Display spinner
+		for index, tool := range plannedTools.Tools {
+			log.Tracef("Getting status for requested tool %s", tool.Name)
+			plannedTools.Tools[index].ReplaceVariables(prefix + "/" + target, arch, alt_arch)
+
+			err := plannedTools.Tools[index].GetBinaryStatus()
+			if err != nil {
+				return fmt.Errorf("Unable to determine binary status of %s: %s", tool.Name, err)
+			}
+
+			err = plannedTools.Tools[index].GetMarkerFileStatus(cacheDirectory)
+			if err != nil {
+				return fmt.Errorf("Unable to determine marker file status of %s: %s", tool.Name, err)
+			}
+
+			if plannedTools.Tools[index].Status.BinaryPresent && plannedTools.Tools[index].Status.MarkerFilePresent {
+				// TODO: Run version check in parallel
+				err := plannedTools.Tools[index].GetVersionStatus()
+				if err != nil {
+					return fmt.Errorf("Unable to determine version status of %s: %s", tool.Name, err)
+				}
+			}
+		}
+
 		// Terminate if checking or planning
 		if plan || check {
-			plannedTools.ListWithStatus(toolStatus)
+			// TODO: Improve output
+			plannedTools.ListWithStatus()
 		}
 		if check {
 			for _, tool := range plannedTools.Tools {
-				if ! toolStatus[tool.Name].BinaryPresent || ! toolStatus[tool.Name].VersionMatches {
+				if ! tool.Status.BinaryPresent || ! tool.Status.VersionMatches {
 					return fmt.Errorf("Found missing or outdated tool")
 				}
 			}

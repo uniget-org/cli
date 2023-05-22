@@ -8,7 +8,6 @@ import (
 
 	"github.com/nicholasdille/docker-setup/pkg/archive"
 	"github.com/nicholasdille/docker-setup/pkg/containers"
-	"github.com/nicholasdille/docker-setup/pkg/tool"
 
 	"github.com/regclient/regclient/types/blob"
 )
@@ -34,11 +33,6 @@ var updateCmd = &cobra.Command{
 			return nil
 		})
 
-		var err error
-		tools, err = tool.LoadFromFile(metadataFileName)
-		if err != nil {
-			fmt.Printf("Error loading metadata from file %s: %s\n", metadataFileName, err)
-			os.Exit(1)
-		}
+		loadMetadata()
 	},
 }

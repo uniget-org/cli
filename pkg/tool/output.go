@@ -41,16 +41,15 @@ func (tools *Tools) List() {
 	t.Render()
 }
 
-func (tools *Tools) ListWithStatus(toolStatus map[string]ToolStatus) {
+func (tools *Tools) ListWithStatus() {
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
 
-	t.AppendHeader(table.Row{"#", "Name", "Version", "Binary present", "Installed version", "Version matches"})
+	t.AppendHeader(table.Row{"#", "Name", "Version", "Binary?", "Installed", "Matches?"})
 
 	for index, tool := range tools.Tools {
-		status := toolStatus[tool.Name]
 		t.AppendRows([]table.Row{
-			{index + 1, tool.Name, tool.Version, status.BinaryPresent, status.Version, status.VersionMatches},
+			{index + 1, tool.Name, tool.Version, tool.Status.BinaryPresent, tool.Status.Version, tool.Status.VersionMatches},
 		})
 	}
 
@@ -59,6 +58,7 @@ func (tools *Tools) ListWithStatus(toolStatus map[string]ToolStatus) {
 
 func (tool *Tool) Print() {
 	fmt.Printf("Name: %s\n", tool.Name)
+	fmt.Printf("  %+v", tool)
 	fmt.Printf("  Description: %s\n", tool.Description)
 	fmt.Printf("  Homepage: %s\n", tool.Homepage)
 	fmt.Printf("  Version: %s\n", tool.Version)
@@ -67,8 +67,8 @@ func (tool *Tool) Print() {
 		fmt.Printf("  Binary: %s\n", tool.Binary)
 	}
 
-	if tool.Check != "" {
-		fmt.Printf("  Check: %s\n", tool.Check)
+	if len(tool.Check) > 0 {
+		fmt.Printf("  Check: <%s>\n", tool.Check)
 	}
 
 	fmt.Printf("  Tags:\n")

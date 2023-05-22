@@ -4,8 +4,6 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-
-	"github.com/nicholasdille/docker-setup/pkg/tool"
 )
 
 func initSearchCmd() {
@@ -20,17 +18,15 @@ func initSearchCmd() {
 }
 
 var searchCmd = &cobra.Command{
-	Use:     "search <term>",
-	Aliases: []string{"s"},
-	Short:   "Search for tools",
-	Long:    header + "\nSearch for tools",
-	Args:    cobra.ExactArgs(1),
-	RunE:    func(cmd *cobra.Command, args []string) error {
+	Use:       "search <term>",
+	Aliases:   []string{"s"},
+	Short:     "Search for tools",
+	Long:      header + "\nSearch for tools",
+	Args:      cobra.ExactArgs(1),
+	ValidArgs: tools.GetNames(),
+	RunE:      func(cmd *cobra.Command, args []string) error {
 		assertMetadataFileExists()
-		tools, err := tool.LoadFromFile(metadataFileName)
-		if err != nil {
-			return fmt.Errorf("Failed to load metadata from file %s: %s\n", metadataFileName, err)
-		}
+		assertMetadataIsLoaded()
 
 		onlySearchInName, err := cmd.Flags().GetBool("only-names")
 		if err != nil {

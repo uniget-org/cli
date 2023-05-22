@@ -18,13 +18,13 @@ var header string = `
                                                                 |_|
 `
 var logLevel string
-//var no_color bool
 
 var (
 	rootCmd = &cobra.Command{
-		Use:     "docker-setup",
-		Version: version,
-		Short:   header + "The container tools installer and updater",
+		Use:         "docker-setup",
+		Version:     version,
+		Short:       header + "The container tools installer and updater",
+		SilenceUsage: true,
 	}
 )
 
@@ -62,11 +62,12 @@ func main() {
 		return nil
 	}
 	rootCmd.PersistentFlags().StringVarP(&logLevel, "log-level", "l", log.WarnLevel.String(), "Log level (trace, debug, info, warning, error)")
+	// TODO: Add flags --trace and --debug (make mutually exclusive)
 	rootCmd.PersistentFlags().StringVarP(&prefix, "prefix", "p", "/", "Prefix for installation")
 	rootCmd.PersistentFlags().StringVarP(&target, "target", "t", "usr/local", "Target directory for installation")
 	rootCmd.PersistentFlags().StringVarP(&cacheDirectory, "cache-directory", "C", "/var/cache/docker-setup", "Cache directory")
 	rootCmd.PersistentFlags().StringVarP(&libDirectory, "lib-directory", "L", "/var/lib/docker-setup", "Library directory")
-	rootCmd.PersistentFlags().StringVarP(&metadataFileName, "metadata-file", "m", "metadata.json", "Metadata file")
+	rootCmd.PersistentFlags().StringVarP(&metadataFileName, "metadata-file", "f", "metadata.json", "Metadata file")
 
 	rootCmd.Execute()
 }

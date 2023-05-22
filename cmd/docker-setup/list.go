@@ -1,11 +1,7 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
-
-	"github.com/nicholasdille/docker-setup/pkg/tool"
 )
 
 func initListCmd() {
@@ -20,10 +16,7 @@ var listCmd = &cobra.Command{
 	Args:    cobra.NoArgs,
 	RunE:    func(cmd *cobra.Command, args []string) error {
 		assertMetadataFileExists()
-		tools, err := tool.LoadFromFile(metadataFileName)
-		if err != nil {
-			return fmt.Errorf("Failed to load metadata from file %s: %s\n", metadataFileName, err)
-		}
+		assertMetadataIsLoaded()
 
 		tools.List()
 

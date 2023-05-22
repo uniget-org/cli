@@ -37,6 +37,12 @@ func directoryExists(directory string) bool {
 	return err == nil
 }
 
+func fileExists(file string) bool {
+	log.Tracef("Checking if file %s exists", file)
+	_, err := os.Stat(file)
+	return err == nil
+}
+
 func directoryIsWritable(directory string) bool {
 	log.Tracef("Checking if directory %s is writable", directory)
 	return unix.Access(directory, unix.W_OK) == nil
@@ -84,6 +90,22 @@ func assertMetadataFileExists() {
 	}
 }
 
+func loadMetadata() {
+	var err error
+	tools, err = tool.LoadFromFile(metadataFile)
+	if err != nil {
+		fmt.Printf("Failed to load metadata from file %s: %s\n", metadataFile, err)
+		os.Exit(1)
+	}
+}
+
+func assertMetadataIsLoaded() {
+	if len(tools.Tools) == 0 {
+		fmt.Printf("Metadata is not loaded\n")
+		os.Exit(1)
+	}
+}
+
 func initDockerSetup() {
 	if alt_arch == "amd64" {
 		arch = "x86_64"
@@ -94,5 +116,9 @@ func initDockerSetup() {
 	} else {
 		log.Errorf("Unsupported architecture: %s", arch)
 		os.Exit(1)
+	}
+
+	if fileExists(metadataFile) {
+		loadMetadata()
 	}
 }
