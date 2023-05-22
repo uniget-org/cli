@@ -1,8 +1,6 @@
 .env
+.env.mk
 /helper
-/cache
-CHANGELOG.md
-.downloads
 metadata.json
 manifest.json
 tools/*/Dockerfile
@@ -10,5 +8,4 @@ build.log
 cosign.key
 tools/*/sbom.json
 report.txt
-.env.mk
 docker-setup

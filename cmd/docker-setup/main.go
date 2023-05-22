@@ -7,7 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var version string = "v2.2.0-alpha.1"
+var version string = "main"
 var header string = `
      _             _
     | |           | |                                  _
@@ -39,6 +39,7 @@ func init() {
 	initInspectCmd()
 	initUninstallCmd()
 	initUpdateCmd()
+	initVersionCmd()
 
 	// TODO: Add new subcommands for executables docker-setup-<subcommand>
 	//       - build
