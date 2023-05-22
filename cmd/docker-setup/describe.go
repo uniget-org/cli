@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 
 	"gopkg.in/yaml.v3"
 
@@ -26,15 +27,22 @@ var describeCmd = &cobra.Command{
 	Long:    header + "\nShow detailed information about tools",
 	Args:    cobra.ExactArgs(1),
 	RunE:    func(cmd *cobra.Command, args []string) error {
-		tools, err := tool.LoadFromFile(metadataFileName)
+		// Check existance of metadata file
+		_, err := os.Stat(metadataFile)
 		if err != nil {
-			return fmt.Errorf("Failed to load metadata from file %s: %s\n", metadataFileName, err)
+			return fmt.Errorf("Metadata file %s does not exist", metadataFile)
+		}
+
+		tools, err := tool.LoadFromFile(metadataFile)
+		if err != nil {
+			return fmt.Errorf("Failed to load metadata from file %s: %s\n", metadataFile, err)
 		}
 
 		tool, err := tools.GetByName(args[0])
 		if err != nil {
 			return fmt.Errorf("Error getting tool %s\n", args[0])
 		}
+		tool.ReplaceVariables(prefix + target, arch, alt_arch)
 
 		if describeOutput == "pretty" {
 			tool.Print()

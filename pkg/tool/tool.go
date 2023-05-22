@@ -108,9 +108,11 @@ func (tool *Tool) ReplaceVariables(target string, arch string, alt_arch string) 
 func (tool *Tool) GetBinaryStatus() error {
 	_, err := os.Stat(tool.Binary)
 	if err == nil {
+		log.Debugf("Binary for tool %s is present", tool.Name)
 		tool.Status.BinaryPresent = true
 
 	} else if errors.Is(err, os.ErrNotExist) {
+		log.Debugf("Binary for tool %s is not present", tool.Name)
 		tool.Status.BinaryPresent = false
 
 	} else {
@@ -123,13 +125,42 @@ func (tool *Tool) GetBinaryStatus() error {
 func (tool *Tool) GetMarkerFileStatus(markerFileDirectory string) error {
 	_, err := os.Stat(fmt.Sprintf("%s/%s/%s", markerFileDirectory, tool.Name, tool.Version))
 	if err == nil {
+		log.Debugf("Marker file for tool %s is present", tool.Name)
 		tool.Status.MarkerFilePresent = true
 
 	} else if errors.Is(err, os.ErrNotExist) {
+		log.Debugf("Marker file for tool %s is not present", tool.Name)
 		tool.Status.MarkerFilePresent = false
 
 	} else {
 		return fmt.Errorf("Unable to check marker file status for %s: %s", tool.Name, err)
+	}
+
+	return nil
+}
+
+func (tool *Tool) CreateMarkerFile(markerFileDirectory string) error {
+	log.Tracef("Creating marker file for %s", tool.Name)
+
+	err := os.MkdirAll(fmt.Sprintf("%s/%s", markerFileDirectory, tool.Name), 0755)
+	if err != nil {
+		return fmt.Errorf("Unable to create marker file directory for %s: %s", tool.Name, err)
+	}
+
+	_, err = os.Create(fmt.Sprintf("%s/%s/%s", markerFileDirectory, tool.Name, tool.Version))
+	if err != nil {
+		return fmt.Errorf("Unable to create marker file for %s: %s", tool.Name, err)
+	}
+
+	return nil
+}
+
+func (tool *Tool) RemoveMarkerFile(markerFileDirectory string) error {
+	log.Tracef("Removing marker file for %s", tool.Name)
+
+	err := os.Remove(fmt.Sprintf("%s/%s/%s", markerFileDirectory, tool.Name, tool.Version))
+	if err != nil {
+		return fmt.Errorf("Unable to remove marker file for %s: %s", tool.Name, err)
 	}
 
 	return nil

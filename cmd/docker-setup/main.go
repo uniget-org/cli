@@ -32,16 +32,13 @@ func init() {
 	initDockerSetup()
 
 	initDescribeCmd()
-	initGenerateCmd()
 	initInstallCmd()
 	initListCmd()
 	initSearchCmd()
 	initTagsCmd()
 	initInspectCmd()
-	initReinstallCmd()
 	initUninstallCmd()
 	initUpdateCmd()
-	initUpgradeCmd()
 
 	// TODO: Add new subcommands for executables docker-setup-<subcommand>
 	//       - build
@@ -64,6 +61,11 @@ func main() {
 		return nil
 	}
 	rootCmd.PersistentFlags().StringVarP(&logLevel, "log-level", "l", log.WarnLevel.String(), "Log level (trace, debug, info, warning, error)")
+	rootCmd.PersistentFlags().StringVarP(&prefix, "prefix", "p", "/", "Prefix for installation")
+	rootCmd.PersistentFlags().StringVarP(&target, "target", "t", "usr/local", "Target directory for installation")
+	rootCmd.PersistentFlags().StringVarP(&cacheDirectory, "cache-directory", "C", "/var/cache/docker-setup", "Cache directory")
+	rootCmd.PersistentFlags().StringVarP(&libDirectory, "lib-directory", "L", "/var/lib/docker-setup", "Library directory")
+	rootCmd.PersistentFlags().StringVarP(&metadataFileName, "metadata-file", "m", "metadata.json", "Metadata file")
 
 	rootCmd.Execute()
 }

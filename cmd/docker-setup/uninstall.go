@@ -15,6 +15,7 @@ var uninstallCmd = &cobra.Command{
 	Long:    header + "\nUninstall tools",
 	Args:    cobra.NoArgs,
 	Run:     func(cmd *cobra.Command, args []string) {
-		//
+		// Remove all files listes in /var/lib/docker-setup/manifests/<tool>.txt
+		// tool.RemoveMarkerFile()
 	},
 }

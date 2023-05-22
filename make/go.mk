@@ -25,11 +25,10 @@ build: docker-setup
 
 GO_SOURCES = $(shell find . -type f -name \*.go)
 docker-setup: make/go.mk $(GO_SOURCES)
-	@\
-	docker run \
-        --rm \
-	    --mount type=bind,src=$${PWD},dst=/src \
-		--workdir /src \
-		--env CGO_ENABLED=0 \
-		golang \
-			go build -buildvcs=false -ldflags "-X main.version=$(VERSION)" -o docker-setup ./cmd/docker-setup
+	@CGO_ENABLED=0 \
+		go build -buildvcs=false -ldflags "-X main.version=$(VERSION)" -o docker-setup ./cmd/docker-setup
+
+.PHONY:
+go-deps:
+	@go get -u ./...
+	@go mod tidy

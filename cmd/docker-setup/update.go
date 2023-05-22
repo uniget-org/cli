@@ -23,7 +23,7 @@ var updateCmd = &cobra.Command{
 	Long:    header + "\nUpdate tool manifest",
 	Args:    cobra.NoArgs,
 	Run:     func(cmd *cobra.Command, args []string) {
-		containers.GetManifest("ghcr.io/nicholasdille/docker-setup/metadata:main", alt_arch, func (blob blob.Reader) error {
+		containers.GetManifest(registryImagePrefix + "metadata:main", alt_arch, func (blob blob.Reader) error {
 			os.Chdir(cacheDirectory)
 			archive.ExtractTarGz(blob)
 			return nil

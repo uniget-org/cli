@@ -57,3 +57,38 @@ func ExtractTarGz(gzipStream io.Reader) error {
 
 	return nil
 }
+
+func ListTarGz(gzipStream io.Reader) ([]string, error) {
+    uncompressedStream, err := gzip.NewReader(gzipStream)
+    if err != nil {
+        return nil, fmt.Errorf("ListTarGz: NewReader failed")
+    }
+
+    tarReader := tar.NewReader(uncompressedStream)
+
+    result := []string{}
+    for true {
+        header, err := tarReader.Next()
+
+        if err == io.EOF {
+            break
+        }
+
+        if err != nil {
+            return nil, fmt.Errorf("ListTarGz: Next() failed: %s", err.Error())
+        }
+
+        switch header.Typeflag {
+        case tar.TypeDir:
+
+        case tar.TypeReg:
+            result = append(result, header.Name)
+
+        default:
+            return nil, fmt.Errorf("ListTarGz: uknown type: %s in %s", header.Typeflag, header.Name)
+        }
+
+    }
+
+	return result, nil
+}

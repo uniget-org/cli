@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 	log "github.com/sirupsen/logrus"
@@ -19,6 +20,7 @@ var plan bool
 var toolStatus map[string]tool.ToolStatus = make(map[string]tool.ToolStatus)
 var requestedTools tool.Tools
 var plannedTools tool.Tools
+var reinstall bool
 
 //var check_mark string = "✓" // Unicode=\u2713 UTF-8=\xE2\x9C\x93 (https://www.compart.com/de/unicode/U+2713)
 //var cross_mark string = "✗" // Unicode=\u2717 UTF-8=\xE2\x9C\x97 (https://www.compart.com/de/unicode/U+2717)
@@ -28,13 +30,12 @@ func initInstallCmd() {
 
 	installCmd.Flags().StringVarP(&installMode,   "mode",      "m", "default", "How to install (default, tags, installed)")
 	installCmd.Flags().BoolVarP(  &defaultMode,   "default",   "d", false,     "Install default tools")
-	installCmd.Flags().BoolVarP(  &tagsMode,      "tags",      "t", false,     "Install tools matching tag")
-	installCmd.Flags().BoolVarP(  &installedMode, "installed", "i", false,     "Update installed tools")
-	installCmd.Flags().BoolVarP(  &plan,          "plan",      "p", false,     "Show planned installations")
+	installCmd.Flags().BoolVarP(  &tagsMode,      "tags",      "t", false,     "Install tool(s) matching tag")
+	installCmd.Flags().BoolVarP(  &installedMode, "installed", "i", false,     "Update installed tool(s)")
+	installCmd.Flags().BoolVarP(  &plan,          "plan",      "p", false,     "Show tool(s) planned installation")
 	installCmd.Flags().BoolVarP(  &check,         "check",     "c", false,     "Abort after checking versions")
+	installCmd.Flags().BoolVarP(  &reinstall,     "reinstall", "r", false,     "Reinstall tool(s)")
 	installCmd.MarkFlagsMutuallyExclusive("mode", "default", "tags", "installed")
-
-	installCmd.Flags().BoolP("reinstall",       "r", false, "Reinstall tools")
 }
 
 var installCmd = &cobra.Command{
@@ -57,15 +58,21 @@ var installCmd = &cobra.Command{
 			return fmt.Errorf("You can only only specify one: --check, --plan")
 		}
 
-		tools, err := tool.LoadFromFile(metadataFileName)
+		// Check existance of metadata file
+		_, err := os.Stat(metadataFile)
 		if err != nil {
-			return fmt.Errorf("Failed to load metadata from file %s: %s\n", metadataFileName, err)
+			return fmt.Errorf("Metadata file %s does not exist", metadataFile)
+		}
+
+		tools, err := tool.LoadFromFile(metadataFile)
+		if err != nil {
+			return fmt.Errorf("Failed to load metadata from file %s: %s\n", metadataFile, err)
 		}
 
 		// Fill default values and replace variables
 		for index, tool := range tools.Tools {
 			log.Tracef("Getting status for requested tool %s", tool.Name)
-			tools.Tools[index].ReplaceVariables(target, arch, alt_arch)
+			tools.Tools[index].ReplaceVariables(prefix + target, arch, alt_arch)
 
 			err := tools.Tools[index].GetBinaryStatus()
 			if err != nil {
@@ -142,13 +149,18 @@ var installCmd = &cobra.Command{
 
 		// Install
 		for _, tool := range plannedTools.Tools {
+			if tool.Status.MarkerFilePresent && ! reinstall {
+				fmt.Printf("Skipping %s %s because it is already installed.\n", tool.Name, tool.Version)
+				continue
+			}
+
 			fmt.Printf("%s Installing %s %s", emoji_tool, tool.Name, tool.Version)
-			err := tool.Install(prefix, alt_arch)
+			err := tool.Install(registryImagePrefix, prefix, alt_arch)
 			fmt.Printf("\n")
 			if err != nil {
 				return fmt.Errorf("Unable to install %s: %s", tool, err)
 			}
-			// TODO: Create marker file
+			tool.CreateMarkerFile(cacheDirectory)
 		}
 
 		return nil
