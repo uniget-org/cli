@@ -16,23 +16,23 @@ jobs:
       prerelease: ${{ steps.get_version.outputs.prerelease }}
     steps:
 
-      - name: printenv
-        run: |
-          printenv | sort
+    - name: printenv
+      run: |
+        printenv | sort
 
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ needs.prepare.outputs.tag }}
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ needs.prepare.outputs.tag }}
 
-      - name: Get version
-        id: get_version
-        run: |
-          make helper/var/lib/docker-setup/manifests/semver.json
-          TAG="${GITHUB_REF#refs/tags/}"
-          echo "::set-output name=tag::${TAG}"
-          echo "::set-output name=version::${TAG#v}"
-          echo "::set-output name=prerelease::$(if test "$(helper/usr/local/bin/semver get prerel "${TAG#v}")" == ""; then echo "false"; else echo "true"; fi)"
+    - name: Get version
+      id: get_version
+      run: |
+        make helper/var/lib/docker-setup/manifests/semver.json
+        TAG="${GITHUB_REF#refs/tags/}"
+        echo "::set-output name=tag::${TAG}"
+        echo "::set-output name=version::${TAG#v}"
+        echo "::set-output name=prerelease::$(if test "$(helper/usr/local/bin/semver get prerel "${TAG#v}")" == ""; then echo "false"; else echo "true"; fi)"
 
   release:
     name: Release
@@ -41,68 +41,68 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
 
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ needs.prepare.outputs.tag }}
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ needs.prepare.outputs.tag }}
 
-      - name: Shellcheck
-        run: |
-          make check
+    - name: Shellcheck
+      run: |
+        make check
 
-      - name: Set version
-        run: |
-          sed -i 's/docker_setup_version:=main/docker_setup_version:=${{ needs.prepare.outputs.version }}/' docker-setup.sh
+    - name: Set version
+      run: |
+        sed -i 's/docker_setup_version:=main/docker_setup_version:=${{ needs.prepare.outputs.version }}/' docker-setup.sh
 
-      - name: Build binary
-        run: |
-          make docker-setup
+    - name: Build binary
+      run: |
+        make docker-setup
 
-      - name: Create checksum
-        run: |
-          sha256sum docker-setup >docker-setup.sha256
-          sha256sum docker-setup.sh >docker-setup.sh.sha256
+    - name: Create checksum
+      run: |
+        sha256sum docker-setup >docker-setup.sha256
+        sha256sum docker-setup.sh >docker-setup.sh.sha256
 
-      - name: Create changelog
-        env:
-          GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
-          TAG: ${{ needs.prepare.outputs.tag }}
-        run: |
-          LATEST_RELEASE_PUBLISHED="$(
-              curl "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/releases/latest" \
-                  --silent \
-                  --user "github-ci-token:${GITHUB_TOKEN}" \
-              | jq --raw-output '.published_at'
-          )"
-          echo "Latest release was published at ${LATEST_RELEASE_PUBLISHED}."
-          echo "## Installation instructions" >>body.txt
-          echo >>body.txt
-          echo '```bash' >>body.txt
-          echo "curl --silent --location --output /usr/local/bin/docker-setup https://github.com/${GITHUB_REPOSITORY}/releases/download/${{ needs.prepare.outputs.tag }}/docker-setup" >>body.txt
-          echo "chmod +x /usr/local/bin/docker-setup" >>body.txt
-          echo "docker-setup plan" >>body.txt
-          echo '```' >>body.txt
-          echo >>body.txt
-          echo "## Closed issues and pull requests" >>body.txt
-          echo >>body.txt
-          hub issue \
-              --state closed \
-              --include-pulls \
-              --since "${LATEST_RELEASE_PUBLISHED}" \
-              --format "- %t ([%i](%U))%n" \
-              --milestone "${TAG}" \
-          | tee body.txt || true
+    - name: Create changelog
+      env:
+        GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
+        TAG: ${{ needs.prepare.outputs.tag }}
+      run: |
+        LATEST_RELEASE_PUBLISHED="$(
+            curl "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/releases/latest" \
+                --silent \
+                --user "github-ci-token:${GITHUB_TOKEN}" \
+            | jq --raw-output '.published_at'
+        )"
+        echo "Latest release was published at ${LATEST_RELEASE_PUBLISHED}."
+        echo "## Installation instructions" >>body.txt
+        echo >>body.txt
+        echo '```bash' >>body.txt
+        echo "curl --silent --location --output /usr/local/bin/docker-setup https://github.com/${GITHUB_REPOSITORY}/releases/download/${{ needs.prepare.outputs.tag }}/docker-setup" >>body.txt
+        echo "chmod +x /usr/local/bin/docker-setup" >>body.txt
+        echo "docker-setup plan" >>body.txt
+        echo '```' >>body.txt
+        echo >>body.txt
+        echo "## Closed issues and pull requests" >>body.txt
+        echo >>body.txt
+        hub issue \
+            --state closed \
+            --include-pulls \
+            --since "${LATEST_RELEASE_PUBLISHED}" \
+            --format "- %t ([%i](%U))%n" \
+            --milestone "${TAG}" \
+        | tee body.txt || true
 
-      - name: Create release
-        id: create_release
-        uses: ncipollo/release-action@v1
-        with:
-          token: ${{ secrets.BOT_GITHUB_TOKEN }}
-          allowUpdates: true
-          name: "Version ${{ needs.prepare.outputs.version }}"
-          tag: ${{ needs.prepare.outputs.tag }}
-          draft: false
-          bodyFile: body.txt
-          prerelease: ${{ needs.prepare.outputs.prerelease }}
-          replacesArtifacts: true
-          artifacts: "docker-setup,docker-setup.sha256,docker-setup.sh,docker-setup.sh.sha256"
+    - name: Create release
+      id: create_release
+      uses: ncipollo/release-action@v1
+      with:
+        token: ${{ secrets.BOT_GITHUB_TOKEN }}
+        allowUpdates: true
+        name: "Version ${{ needs.prepare.outputs.version }}"
+        tag: ${{ needs.prepare.outputs.tag }}
+        draft: false
+        bodyFile: body.txt
+        prerelease: ${{ needs.prepare.outputs.prerelease }}
+        replacesArtifacts: true
+        artifacts: "docker-setup,docker-setup.sha256,docker-setup.sh,docker-setup.sh.sha256"
