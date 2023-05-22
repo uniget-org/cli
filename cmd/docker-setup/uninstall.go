@@ -13,9 +13,15 @@ var uninstallCmd = &cobra.Command{
 	Aliases: []string{"u"},
 	Short:   "Uninstall tool",
 	Long:    header + "\nUninstall tools",
-	Args:    cobra.NoArgs,
-	Run:     func(cmd *cobra.Command, args []string) {
+	Args:    cobra.ExactArgs(1),
+	RunE:     func(cmd *cobra.Command, args []string) error {
+		assertMetadataFileExists()
+
+		assertWritableTarget()
+		assertLibDirectory()
 		// Remove all files listes in /var/lib/docker-setup/manifests/<tool>.txt
 		// tool.RemoveMarkerFile()
+
+		return nil
 	},
 }

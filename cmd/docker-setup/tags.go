@@ -22,6 +22,7 @@ var tagsCmd = &cobra.Command{
 	Long:    header + "\nList tags",
 	Args:    cobra.NoArgs,
 	RunE:    func(cmd *cobra.Command, args []string) error {
+		assertMetadataFileExists()
 		tools, err := tool.LoadFromFile(metadataFileName)
 		if err != nil {
 			return fmt.Errorf("Failed to load metadata from file %s: %s\n", metadataFileName, err)

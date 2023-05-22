@@ -12,8 +12,11 @@ import (
 
 func (tool *Tool) Install(registryImagePrefix string, prefix string, alt_arch string) error {
 	err := containers.GetManifest(fmt.Sprintf(registryImagePrefix + "%s:main", tool.Name), alt_arch, func (blob blob.Reader) error {
-		os.Chdir(prefix + "/")
-		err := archive.ExtractTarGz(blob)
+		err := os.Chdir(prefix + "/")
+		if err != nil {
+			return fmt.Errorf("Error changing directory to %s: %s\n", prefix + "/", err)
+		}
+		err = archive.ExtractTarGz(blob)
 		if err != nil {
 			return fmt.Errorf("Failed to extract layer: %s\n", err)
 		}

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 	log "github.com/sirupsen/logrus"
@@ -36,6 +35,7 @@ func initInstallCmd() {
 	installCmd.Flags().BoolVarP(  &check,         "check",     "c", false,     "Abort after checking versions")
 	installCmd.Flags().BoolVarP(  &reinstall,     "reinstall", "r", false,     "Reinstall tool(s)")
 	installCmd.MarkFlagsMutuallyExclusive("mode", "default", "tags", "installed")
+	installCmd.MarkFlagsMutuallyExclusive("check", "plan")
 }
 
 var installCmd = &cobra.Command{
@@ -54,16 +54,8 @@ var installCmd = &cobra.Command{
 				return fmt.Errorf("You must specify at least one tool for mode list or tags.")
 			}
 		}
-		if check && plan {
-			return fmt.Errorf("You can only only specify one: --check, --plan")
-		}
 
-		// Check existance of metadata file
-		_, err := os.Stat(metadataFile)
-		if err != nil {
-			return fmt.Errorf("Metadata file %s does not exist", metadataFile)
-		}
-
+		assertMetadataFileExists()
 		tools, err := tool.LoadFromFile(metadataFile)
 		if err != nil {
 			return fmt.Errorf("Failed to load metadata from file %s: %s\n", metadataFile, err)
@@ -148,6 +140,8 @@ var installCmd = &cobra.Command{
 		}
 
 		// Install
+		assertWritableTarget()
+		assertLibDirectory()
 		for _, tool := range plannedTools.Tools {
 			if tool.Status.MarkerFilePresent && ! reinstall {
 				fmt.Printf("Skipping %s %s because it is already installed.\n", tool.Name, tool.Version)

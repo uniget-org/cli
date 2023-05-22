@@ -5,6 +5,8 @@ import (
 	"os"
 	"runtime"
 
+	"golang.org/x/sys/unix"
+
 	log "github.com/sirupsen/logrus"
 
 	"github.com/nicholasdille/docker-setup/pkg/tool"
@@ -15,8 +17,10 @@ var arch string
 
 var prefix = ""
 var target = "usr/local"
-var cacheDirectory = "/var/cache/docker-setup"
-var libDirectory = "/var/lib/docker-setup"
+var cacheRoot = "/var/cache"
+var cacheDirectory = cacheRoot + "/docker-setup"
+var libRoot = "/var/lib"
+var libDirectory = libRoot + "/docker-setup"
 var metadataFileName = "metadata.json"
 var metadataFile = cacheDirectory + "/" + metadataFileName
 var registry = "ghcr.io"
@@ -27,22 +31,60 @@ var tools tool.Tools
 
 var emoji_tool = "\U0001F528"
 
+func directoryExists(directory string) bool {
+	log.Tracef("Checking if directory %s exists", directory)
+	_, err := os.Stat(directory)
+	return err == nil
+}
+
+func directoryIsWritable(directory string) bool {
+	log.Tracef("Checking if directory %s is writable", directory)
+	return unix.Access(directory, unix.W_OK) == nil
+}
+
+func assertWritableDirectory(directory string) {
+	if !directoryExists(directory) {
+		log.Errorf("Directory %s does not exist\n", directory)
+		os.Exit(1)
+	}
+	if !directoryIsWritable(directory) {
+		log.Errorf("Directory %s is not writable", directory)
+		os.Exit(1)
+	}
+}
+
 func assertWritableTarget() {
-	_, err := os.Stat(prefix + "/" + target)
+	assertWritableDirectory(prefix + "/" + target)
+}
+
+func assertDirectory(directory string) {
+	log.Tracef("Creating directory %s", directory)
+	err := os.MkdirAll(directory, 0755)
 	if err != nil {
-		fmt.Printf("Target directory %s is not writable: %s\n", prefix + "/" + target, err)
+		fmt.Printf("Error creating directory %s: %s\n", directory, err)
+		os.Exit(1)
+	}
+}
+
+func assertLibDirectory() {
+	assertWritableDirectory(libRoot)
+	assertDirectory(libDirectory)
+}
+
+func assertCacheDirectory() {
+	assertWritableDirectory(cacheRoot)
+	assertDirectory(cacheDirectory)
+}
+
+func assertMetadataFileExists() {
+	_, err := os.Stat(metadataFile)
+	if err != nil {
+		fmt.Printf("Metadata file %s does not exist: %s\n", metadataFile, err)
 		os.Exit(1)
 	}
 }
 
 func initDockerSetup() {
-	var err error
-
-	if os.Geteuid() != 0 {
-		fmt.Printf("Use must use sudo\n")
-		os.Exit(1)
-	}
-
 	if alt_arch == "amd64" {
 		arch = "x86_64"
 
@@ -52,17 +94,5 @@ func initDockerSetup() {
 	} else {
 		log.Errorf("Unsupported architecture: %s", arch)
 		os.Exit(1)
-	}
-
-	os.MkdirAll(cacheDirectory, 0755)
-	os.MkdirAll(libDirectory, 0755)
-
-	_, err = os.Stat(metadataFile)
-	if err == nil {
-		tools, err = tool.LoadFromFile(metadataFile)
-		if err != nil {
-			fmt.Printf("Error loading metadata from file %s: %s\n", metadataFile, err)
-			os.Exit(1)
-		}
 	}
 }

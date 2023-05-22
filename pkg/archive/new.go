@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+    log "github.com/sirupsen/logrus"
 )
 
 // TODO: Check if https://github.com/mholt/archiver makes more sense
@@ -30,6 +32,7 @@ func ExtractTarGz(gzipStream io.Reader) error {
 
         switch header.Typeflag {
         case tar.TypeDir:
+            log.Tracef("Creating directory %s\n", header.Name)
             _, err := os.Stat(header.Name)
 			if err != nil {
                 err := os.Mkdir(header.Name, 0755)
@@ -39,6 +42,7 @@ func ExtractTarGz(gzipStream io.Reader) error {
 			}
 
         case tar.TypeReg:
+            log.Tracef("Untarring file %s\n", header.Name)
             outFile, err := os.Create(header.Name)
             if err != nil {
                 return fmt.Errorf("ExtractTarGz: Create() failed: %s", err.Error())

@@ -23,8 +23,13 @@ var updateCmd = &cobra.Command{
 	Long:    header + "\nUpdate tool manifest",
 	Args:    cobra.NoArgs,
 	Run:     func(cmd *cobra.Command, args []string) {
+		assertCacheDirectory()
 		containers.GetManifest(registryImagePrefix + "metadata:main", alt_arch, func (blob blob.Reader) error {
-			os.Chdir(cacheDirectory)
+			err := os.Chdir(cacheDirectory)
+			if err != nil {
+				fmt.Printf("Error changing directory to %s: %s\n", cacheDirectory, err)
+				os.Exit(1)
+			}
 			archive.ExtractTarGz(blob)
 			return nil
 		})

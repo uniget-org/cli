@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 	//log "github.com/sirupsen/logrus"
@@ -21,12 +20,7 @@ var inspectCmd = &cobra.Command{
 	Long:    header + "\nInspect tools",
 	Args:    cobra.ExactArgs(1),
 	RunE:    func(cmd *cobra.Command, args []string) error {
-		// Check existance of metadata file
-		_, err := os.Stat(metadataFile)
-		if err != nil {
-			return fmt.Errorf("Metadata file %s does not exist", metadataFile)
-		}
-
+		assertMetadataFileExists()
 		tools, err := tool.LoadFromFile(metadataFile)
 		if err != nil {
 			return fmt.Errorf("Failed to load metadata from file %s: %s\n", metadataFile, err)
