@@ -5,6 +5,8 @@ import (
 
 	"github.com/spf13/cobra"
 	log "github.com/sirupsen/logrus"
+
+	git "github.com/go-git/go-git/v5"
 )
 
 var version string = "main"
@@ -40,6 +42,21 @@ func init() {
 	initUninstallCmd()
 	initUpdateCmd()
 	initVersionCmd()
+
+	if fileExists(".git/config") {
+		repo, err := git.PlainOpen(".")
+		if err != nil {
+			log.Fatal(err)
+		}
+		config, err := repo.Config()
+		if err != nil {
+			log.Fatal(err)
+		}
+		origin := config.Remotes["origin"]
+		if origin.URLs[0] == "https://github.com/nicholasdille/docker-setup" {
+			initDevCmd()
+		}
+	}
 
 	// TODO: Add new subcommands for executables docker-setup-<subcommand>
 	//       - build

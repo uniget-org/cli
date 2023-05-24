@@ -8,4 +8,4 @@ build.log
 cosign.key
 tools/*/sbom.json
 report.txt
-docker-setup
+/docker-setup
