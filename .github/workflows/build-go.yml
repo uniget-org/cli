@@ -3,7 +3,7 @@ name: build-go
 on:
   push:
     tags-ignore:
-    - "v*°"
+    - "v*"
     paths:
     - "**/*.go"
     - "make/go.mk"
