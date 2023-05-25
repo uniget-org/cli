@@ -10,11 +10,11 @@ func initSearchCmd() {
 	rootCmd.AddCommand(searchCmd)
 
 	searchCmd.Flags().BoolP("only-names", "", false, "Search only in names")
-	searchCmd.Flags().BoolP("no-names",   "", false, "Do not search in names")
-	searchCmd.Flags().BoolP("only-tags",  "", false, "Search only on tags")
-	searchCmd.Flags().BoolP("no-tags",    "", false, "Do not search in tags")
-	searchCmd.Flags().BoolP("only-deps",  "", false, "Search only in dependencies")
-	searchCmd.Flags().BoolP("no-deps",    "", false, "Do not search in dependencies")
+	searchCmd.Flags().BoolP("no-names", "", false, "Do not search in names")
+	searchCmd.Flags().BoolP("only-tags", "", false, "Search only on tags")
+	searchCmd.Flags().BoolP("no-tags", "", false, "Do not search in tags")
+	searchCmd.Flags().BoolP("only-deps", "", false, "Search only in dependencies")
+	searchCmd.Flags().BoolP("no-deps", "", false, "Do not search in dependencies")
 }
 
 var searchCmd = &cobra.Command{
@@ -24,49 +24,49 @@ var searchCmd = &cobra.Command{
 	Long:      header + "\nSearch for tools",
 	Args:      cobra.ExactArgs(1),
 	ValidArgs: tools.GetNames(),
-	RunE:      func(cmd *cobra.Command, args []string) error {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		assertMetadataFileExists()
 		assertMetadataIsLoaded()
 
 		onlySearchInName, err := cmd.Flags().GetBool("only-names")
 		if err != nil {
-			return fmt.Errorf("Error retrieving only-names flag: %s\n", err)
+			return fmt.Errorf("error retrieving only-names flag: %s", err)
 		}
 		noSearchInName, err := cmd.Flags().GetBool("no-names")
 		if err != nil {
-			return fmt.Errorf("Error retrieving no-names flag: %s\n", err)
+			return fmt.Errorf("error retrieving no-names flag: %s", err)
 		}
 		onlySearchInTags, err := cmd.Flags().GetBool("only-tags")
 		if err != nil {
-			return fmt.Errorf("Error retrieving only-tags flag: %s\n", err)
+			return fmt.Errorf("error retrieving only-tags flag: %s", err)
 		}
 		noSearchInTags, err := cmd.Flags().GetBool("no-tags")
 		if err != nil {
-			return fmt.Errorf("Error retrieving no-tags flag: %s\n", err)
+			return fmt.Errorf("error retrieving no-tags flag: %s", err)
 		}
 		onlySearchInDeps, err := cmd.Flags().GetBool("only-deps")
 		if err != nil {
-			return fmt.Errorf("Error retrieving only-deps flag: %s\n", err)
+			return fmt.Errorf("error retrieving only-deps flag: %s", err)
 		}
 		noSearchInDeps, err := cmd.Flags().GetBool("no-deps")
 		if err != nil {
-			return fmt.Errorf("Error retrieving no-deps flag: %s\n", err)
+			return fmt.Errorf("error retrieving no-deps flag: %s", err)
 		}
 
 		if onlySearchInName && noSearchInName {
-			return fmt.Errorf("Error: Cannot process only-names and no-names at the same time\n")
+			return fmt.Errorf("error: Cannot process only-names and no-names at the same time")
 		}
 		if onlySearchInTags && noSearchInTags {
-			return fmt.Errorf("Error: Cannot process only-tags and no-tags at the same time\n")
+			return fmt.Errorf("error: Cannot process only-tags and no-tags at the same time")
 		}
 		if onlySearchInDeps && noSearchInDeps {
-			return fmt.Errorf("Error: Cannot process only-deps and no-deps at the same time\n")
+			return fmt.Errorf("error: Cannot process only-deps and no-deps at the same time")
 		}
 
 		if (onlySearchInName && onlySearchInTags) ||
 			(onlySearchInName && onlySearchInDeps) ||
 			(onlySearchInTags && onlySearchInDeps) {
-			return fmt.Errorf("Error: Can only process one of only-names, only-tags and only-deps at the same time\n")
+			return fmt.Errorf("error: Can only process one of only-names, only-tags and only-deps at the same time")
 		}
 
 		results := tools.Find(

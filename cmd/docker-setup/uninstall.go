@@ -17,7 +17,7 @@ var uninstallCmd = &cobra.Command{
 	Long:      header + "\nUninstall tools",
 	Args:      cobra.ExactArgs(1),
 	ValidArgs: tools.GetNames(),
-	RunE:      func(cmd *cobra.Command, args []string) error {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		assertMetadataFileExists()
 		assertMetadataIsLoaded()
 
@@ -26,7 +26,7 @@ var uninstallCmd = &cobra.Command{
 
 		tool, err := tools.GetByName(args[0])
 		if err != nil {
-			return fmt.Errorf("Unable to find tool %s: %s", args[0], err)
+			return fmt.Errorf("unable to find tool %s: %s", args[0], err)
 		}
 		if fileExists(libDirectory + "/manifests/" + tool.Name + ".txt") {
 			// Remove all files listes in /var/lib/docker-setup/manifests/<tool>.txt
@@ -34,7 +34,7 @@ var uninstallCmd = &cobra.Command{
 			// Remove libDirectory + "/manifests/" + tool.Name + ".txt"
 			// Remove libDirectory + "/manifests/" + tool.Name + ".json"
 		} else {
-			return fmt.Errorf("Tool %s does not have a manifest file. Is it installed?", tool.Name)
+			return fmt.Errorf("tool %s does not have a manifest file. Is it installed?", tool.Name)
 		}
 
 		return nil

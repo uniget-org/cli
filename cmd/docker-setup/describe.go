@@ -25,15 +25,15 @@ var describeCmd = &cobra.Command{
 	Long:      header + "\nShow detailed information about tools",
 	Args:      cobra.ExactArgs(1),
 	ValidArgs: tools.GetNames(),
-	RunE:      func(cmd *cobra.Command, args []string) error {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		assertMetadataFileExists()
 		assertMetadataIsLoaded()
 
 		tool, err := tools.GetByName(args[0])
 		if err != nil {
-			return fmt.Errorf("Error getting tool %s\n", args[0])
+			return fmt.Errorf("error getting tool %s", args[0])
 		}
-		tool.ReplaceVariables(prefix + target, arch, alt_arch)
+		tool.ReplaceVariables(prefix+target, arch, alt_arch)
 
 		if describeOutput == "pretty" {
 			tool.Print()
@@ -41,7 +41,7 @@ var describeCmd = &cobra.Command{
 		} else if describeOutput == "json" {
 			data, err := json.Marshal(tool)
 			if err != nil {
-				return fmt.Errorf("Failed to marshal to json: %s\n", err)
+				return fmt.Errorf("failed to marshal to json: %s", err)
 			}
 			fmt.Println(string(data))
 
@@ -51,7 +51,7 @@ var describeCmd = &cobra.Command{
 			defer yamlEncoder.Close()
 			err := yamlEncoder.Encode(tool)
 			if err != nil {
-				return fmt.Errorf("Failed to encode yaml: %s\n", err)
+				return fmt.Errorf("failed to encode yaml: %s", err)
 			}
 		}
 

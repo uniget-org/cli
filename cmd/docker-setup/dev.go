@@ -23,7 +23,7 @@ var devCmd = &cobra.Command{
 		dev.Env = append(os.Environ(), "TOOL="+args[0])
 		output, err := dev.CombinedOutput()
 		if err != nil {
-			return fmt.Errorf("Unable to run dev script for %s: %s", args[0], err)
+			return fmt.Errorf("unable to run dev script for %s: %s", args[0], err)
 		}
 		fmt.Println(string(output))
 
