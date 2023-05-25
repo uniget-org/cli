@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"os/exec"
 
 	"github.com/spf13/cobra"
@@ -18,9 +17,10 @@ var devCmd = &cobra.Command{
 	Long:      header + "\nMaintainer tools",
 	Args:      cobra.ExactArgs(1),
 	ValidArgs: tools.GetNames(),
-	RunE:      func(cmd *cobra.Command, args []string) error {
-		dev := exec.Command("/bin/bash", "./scripts/dev.sh")
-		dev.Env = append(os.Environ(), "TOOL="+args[0])
+	RunE: func(cmd *cobra.Command, args []string) error {
+		devArgs := []string{"./scripts/dev.sh"}
+		devArgs = append(devArgs, args...)
+		dev := exec.Command("/bin/bash", devArgs...)
 		output, err := dev.CombinedOutput()
 		if err != nil {
 			return fmt.Errorf("unable to run dev script for %s: %s", args[0], err)
