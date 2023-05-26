@@ -38,7 +38,7 @@ jobs:
     - name: Get version
       id: get_version
       run: |
-        mkdir helper helper/var/cache helper/var/lib
+        mkdir -p helper helper/var/cache helper/var/lib
         helper/usr/local/bin/docker-setup --prefix "$PWD/helper" update
         helper/usr/local/bin/docker-setup install semver
         TAG="${GITHUB_REF#refs/tags/}"
