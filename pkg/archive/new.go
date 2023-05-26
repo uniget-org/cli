@@ -1,11 +1,11 @@
 package archive
 
 import (
-	"archive/tar"
+    "archive/tar"
     "compress/gzip"
-	"fmt"
-	"io"
-	"os"
+    "fmt"
+    "io"
+    "os"
 
     log "github.com/sirupsen/logrus"
 )
@@ -19,7 +19,7 @@ func ExtractTarGz(gzipStream io.Reader) error {
 
     tarReader := tar.NewReader(uncompressedStream)
 
-    for true {
+    for {
         header, err := tarReader.Next()
 
         if err == io.EOF {
@@ -34,12 +34,12 @@ func ExtractTarGz(gzipStream io.Reader) error {
         case tar.TypeDir:
             log.Tracef("Creating directory %s\n", header.Name)
             _, err := os.Stat(header.Name)
-			if err != nil {
+            if err != nil {
                 err := os.Mkdir(header.Name, 0755)
-				if err != nil {
-					return fmt.Errorf("ExtractTarGz: Mkdir() failed: %s", err.Error())
-				}
-			}
+                if err != nil {
+                    return fmt.Errorf("ExtractTarGz: Mkdir() failed: %s", err.Error())
+                }
+            }
 
         case tar.TypeReg:
             log.Tracef("Untarring file %s\n", header.Name)
@@ -50,16 +50,29 @@ func ExtractTarGz(gzipStream io.Reader) error {
             if _, err := io.Copy(outFile, tarReader); err != nil {
                 return fmt.Errorf("ExtractTarGz: Copy() failed: %s", err.Error())
             }
-			outFile.Chmod(os.FileMode(header.Mode))
+            outFile.Chmod(os.FileMode(header.Mode))
             outFile.Close()
 
+        case tar.TypeSymlink:
+            log.Tracef("Untarring symlink %s\n", header.Name)
+            _, err := os.Stat(header.Name)
+            if err != nil {
+                err := os.Symlink(header.Linkname, header.Name)
+                if err != nil {
+                    return fmt.Errorf("ExtractTarGz: Symlink() failed: %s", err.Error())
+                }
+
+            } else {
+                log.Tracef("File/symlink %s already exists\n", header.Name)
+            }
+
         default:
-            return fmt.Errorf("ExtractTarGz: uknown type: %s in %s", header.Typeflag, header.Name)
+            return fmt.Errorf("ExtractTarGz: unknown type for entry %s", header.Name)
         }
 
     }
 
-	return nil
+    return nil
 }
 
 func ListTarGz(gzipStream io.Reader) ([]string, error) {
@@ -71,7 +84,7 @@ func ListTarGz(gzipStream io.Reader) ([]string, error) {
     tarReader := tar.NewReader(uncompressedStream)
 
     result := []string{}
-    for true {
+    for {
         header, err := tarReader.Next()
 
         if err == io.EOF {
@@ -88,11 +101,14 @@ func ListTarGz(gzipStream io.Reader) ([]string, error) {
         case tar.TypeReg:
             result = append(result, header.Name)
 
+        case tar.TypeSymlink:
+            result = append(result, header.Name+" -> "+header.Linkname)
+
         default:
-            return nil, fmt.Errorf("ListTarGz: uknown type: %s in %s", header.Typeflag, header.Name)
+            return nil, fmt.Errorf("ListTarGz: unknown type in entry %s", header.Name)
         }
 
     }
 
-	return result, nil
+    return result, nil
 }
