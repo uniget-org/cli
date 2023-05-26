@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -24,6 +25,14 @@ var searchCmd = &cobra.Command{
 	Long:      header + "\nSearch for tools",
 	Args:      cobra.ExactArgs(1),
 	ValidArgs: tools.GetNames(),
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		if fileExists(prefix + "/" + metadataFile) {
+			log.Tracef("Loaded metadata file from %s", prefix+"/"+metadataFile)
+			loadMetadata()
+		}
+
+		return nil
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		assertMetadataFileExists()
 		assertMetadataIsLoaded()

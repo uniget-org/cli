@@ -7,6 +7,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -25,6 +26,14 @@ var describeCmd = &cobra.Command{
 	Long:      header + "\nShow detailed information about tools",
 	Args:      cobra.ExactArgs(1),
 	ValidArgs: tools.GetNames(),
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		if fileExists(prefix + "/" + metadataFile) {
+			log.Tracef("Loaded metadata file from %s", prefix+"/"+metadataFile)
+			loadMetadata()
+		}
+
+		return nil
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		assertMetadataFileExists()
 		assertMetadataIsLoaded()

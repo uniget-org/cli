@@ -1,6 +1,7 @@
 package main
 
 import (
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -14,7 +15,15 @@ var listCmd = &cobra.Command{
 	Short:   "List tools",
 	Long:    header + "\nList tools",
 	Args:    cobra.NoArgs,
-	RunE:    func(cmd *cobra.Command, args []string) error {
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		if fileExists(prefix + "/" + metadataFile) {
+			log.Tracef("Loaded metadata file from %s", prefix+"/"+metadataFile)
+			loadMetadata()
+		}
+
+		return nil
+	},
+	RunE: func(cmd *cobra.Command, args []string) error {
 		assertMetadataFileExists()
 		assertMetadataIsLoaded()
 
