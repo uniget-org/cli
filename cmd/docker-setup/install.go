@@ -32,7 +32,7 @@ func initInstallCmd() {
 	installCmd.Flags().BoolVarP(&plan, "plan", "", false, "Show tool(s) planned installation")
 	installCmd.Flags().BoolVarP(&check, "check", "c", false, "Abort after checking versions")
 	installCmd.Flags().BoolVarP(&reinstall, "reinstall", "r", false, "Reinstall tool(s)")
-	installCmd.MarkFlagsMutuallyExclusive("mode", "default", "tags", "installed")
+	installCmd.MarkFlagsMutuallyExclusive("default", "tags", "installed")
 	installCmd.MarkFlagsMutuallyExclusive("check", "plan")
 }
 
