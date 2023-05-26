@@ -43,6 +43,14 @@ var installCmd = &cobra.Command{
 	Long:      header + "\nInstall and update tools",
 	Args:      cobra.OnlyValidArgs,
 	ValidArgs: tools.GetNames(),
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		if fileExists(prefix + "/" + metadataFile) {
+			log.Tracef("Loaded metadata file from %s", prefix+"/"+metadataFile)
+			loadMetadata()
+		}
+
+		return nil
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// TODO: Introduce --user and adjust libRoot and cacheRoot when set
 
@@ -68,7 +76,7 @@ var installCmd = &cobra.Command{
 					return fmt.Errorf("unable to determine binary status of %s: %s", tool.Name, err)
 				}
 
-				err = tools.Tools[index].GetMarkerFileStatus(cacheDirectory)
+				err = tools.Tools[index].GetMarkerFileStatus(prefix + "/" + cacheDirectory)
 				if err != nil {
 					return fmt.Errorf("unable to determine marker file status of %s: %s", tool.Name, err)
 				}
@@ -107,7 +115,7 @@ var installCmd = &cobra.Command{
 				return fmt.Errorf("unable to determine binary status of %s: %s", tool.Name, err)
 			}
 
-			err = plannedTools.Tools[index].GetMarkerFileStatus(cacheDirectory)
+			err = plannedTools.Tools[index].GetMarkerFileStatus(prefix + "/" + cacheDirectory)
 			if err != nil {
 				return fmt.Errorf("unable to determine marker file status of %s: %s", tool.Name, err)
 			}
@@ -154,7 +162,7 @@ var installCmd = &cobra.Command{
 			if err != nil {
 				return fmt.Errorf("unable to install %s: %s", tool.Name, err)
 			}
-			tool.CreateMarkerFile(cacheDirectory)
+			tool.CreateMarkerFile(prefix + "/" + cacheDirectory)
 		}
 
 		// TODO: Call post_install.sh scripts

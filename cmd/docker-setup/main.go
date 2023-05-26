@@ -84,8 +84,8 @@ func main() {
 	// TODO: Add flags --trace and --debug (make mutually exclusive)
 	rootCmd.PersistentFlags().StringVarP(&prefix, "prefix", "p", "/", "Prefix for installation")
 	rootCmd.PersistentFlags().StringVarP(&target, "target", "t", "usr/local", "Target directory for installation")
-	rootCmd.PersistentFlags().StringVarP(&cacheDirectory, "cache-directory", "C", "/var/cache/docker-setup", "Cache directory")
-	rootCmd.PersistentFlags().StringVarP(&libDirectory, "lib-directory", "L", "/var/lib/docker-setup", "Library directory")
+	rootCmd.PersistentFlags().StringVarP(&cacheDirectory, "cache-directory", "C", "var/cache/docker-setup", "Cache directory relative to PREFIX")
+	rootCmd.PersistentFlags().StringVarP(&libDirectory, "lib-directory", "L", "var/lib/docker-setup", "Library directory relative to PREFIX")
 	rootCmd.PersistentFlags().StringVarP(&metadataFileName, "metadata-file", "f", "metadata.json", "Metadata file")
 
 	rootCmd.Execute()

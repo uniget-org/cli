@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -17,6 +18,14 @@ var uninstallCmd = &cobra.Command{
 	Long:      header + "\nUninstall tools",
 	Args:      cobra.ExactArgs(1),
 	ValidArgs: tools.GetNames(),
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		if fileExists(prefix + "/" + metadataFile) {
+			log.Tracef("Loaded metadata file from %s", prefix+"/"+metadataFile)
+			loadMetadata()
+		}
+
+		return nil
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		assertMetadataFileExists()
 		assertMetadataIsLoaded()
@@ -28,11 +37,11 @@ var uninstallCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("unable to find tool %s: %s", args[0], err)
 		}
-		if fileExists(libDirectory + "/manifests/" + tool.Name + ".txt") {
+		if fileExists(prefix + "/" + libDirectory + "/manifests/" + tool.Name + ".txt") {
 			// Remove all files listes in /var/lib/docker-setup/manifests/<tool>.txt
-			tool.RemoveMarkerFile(cacheDirectory)
-			// Remove libDirectory + "/manifests/" + tool.Name + ".txt"
-			// Remove libDirectory + "/manifests/" + tool.Name + ".json"
+			tool.RemoveMarkerFile(prefix + "/" + cacheDirectory)
+			// Remove prefix + "/" + libDirectory + "/manifests/" + tool.Name + ".txt"
+			// Remove prefix + "/" + libDirectory + "/manifests/" + tool.Name + ".json"
 		} else {
 			return fmt.Errorf("tool %s does not have a manifest file. Is it installed?", tool.Name)
 		}

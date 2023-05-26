@@ -17,9 +17,9 @@ var arch string
 
 var prefix = ""
 var target = "usr/local"
-var cacheRoot = "/var/cache"
+var cacheRoot = "var/cache"
 var cacheDirectory = cacheRoot + "/docker-setup"
-var libRoot = "/var/lib"
+var libRoot = "var/lib"
 var libDirectory = libRoot + "/docker-setup"
 var metadataFileName = "metadata.json"
 var metadataFile = cacheDirectory + "/" + metadataFileName
@@ -73,28 +73,28 @@ func assertDirectory(directory string) {
 }
 
 func assertLibDirectory() {
-	assertWritableDirectory(libRoot)
-	assertDirectory(libDirectory)
+	assertWritableDirectory(prefix + "/" + libRoot)
+	assertDirectory(prefix + "/" + libDirectory)
 }
 
 func assertCacheDirectory() {
-	assertWritableDirectory(cacheRoot)
-	assertDirectory(cacheDirectory)
+	assertWritableDirectory(prefix + "/" + cacheRoot)
+	assertDirectory(prefix + "/" + cacheDirectory)
 }
 
 func assertMetadataFileExists() {
-	_, err := os.Stat(metadataFile)
+	_, err := os.Stat(prefix + "/" + metadataFile)
 	if err != nil {
-		fmt.Printf("Metadata file %s does not exist: %s\n", metadataFile, err)
+		fmt.Printf("Metadata file %s does not exist: %s\n", prefix+"/"+metadataFile, err)
 		os.Exit(1)
 	}
 }
 
 func loadMetadata() {
 	var err error
-	tools, err = tool.LoadFromFile(metadataFile)
+	tools, err = tool.LoadFromFile(prefix + "/" + metadataFile)
 	if err != nil {
-		fmt.Printf("Failed to load metadata from file %s: %s\n", metadataFile, err)
+		fmt.Printf("Failed to load metadata from file %s: %s\n", prefix+"/"+metadataFile, err)
 		os.Exit(1)
 	}
 }
@@ -116,9 +116,5 @@ func initDockerSetup() {
 	} else {
 		log.Errorf("Unsupported architecture: %s", arch)
 		os.Exit(1)
-	}
-
-	if fileExists(metadataFile) {
-		loadMetadata()
 	}
 }
