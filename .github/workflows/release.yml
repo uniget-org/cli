@@ -34,13 +34,13 @@ jobs:
             --fail \
             --output helper/usr/local/bin/docker-setup
         chmod +x helper/usr/local/bin/docker-setup
-        helper/usr/local/bin/docker-setup update
 
     - name: Get version
       id: get_version
       run: |
         mkdir helper helper/var/cache helper/var/lib
-        helper/usr/local/bin/docker-setup --prefix "$PWD/helper" install semver
+        helper/usr/local/bin/docker-setup --prefix "$PWD/helper" update
+        helper/usr/local/bin/docker-setup install semver
         TAG="${GITHUB_REF#refs/tags/}"
         echo "::set-output name=tag::${TAG}"
         echo "::set-output name=version::${TAG#v}"
