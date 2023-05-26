@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 
-	"github.com/spf13/cobra"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 
 	git "github.com/go-git/go-git/v5"
 )
@@ -23,9 +23,9 @@ var logLevel string
 
 var (
 	rootCmd = &cobra.Command{
-		Use:         "docker-setup",
-		Version:     version,
-		Short:       header + "The container tools installer and updater",
+		Use:          "docker-setup",
+		Version:      version,
+		Short:        header + "The container tools installer and updater",
 		SilenceUsage: true,
 	}
 )
@@ -33,12 +33,13 @@ var (
 func init() {
 	initDockerSetup()
 
+	// TODO: Add cron subcommand
 	initDescribeCmd()
+	initInspectCmd()
 	initInstallCmd()
 	initListCmd()
 	initSearchCmd()
 	initTagsCmd()
-	initInspectCmd()
 	initUninstallCmd()
 	initUpdateCmd()
 	initVersionCmd()
@@ -59,6 +60,7 @@ func init() {
 	}
 
 	// TODO: Add new subcommands for executables docker-setup-<subcommand>
+	//       - generate
 	//       - build
 	//       - build-flat
 	//       - install-from-registry

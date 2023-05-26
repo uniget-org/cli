@@ -17,13 +17,13 @@ func initUpdateCmd() {
 }
 
 var updateCmd = &cobra.Command{
-	Use:     "update",
-	Short:   "Update tool manifest",
-	Long:    header + "\nUpdate tool manifest",
-	Args:    cobra.NoArgs,
-	Run:     func(cmd *cobra.Command, args []string) {
+	Use:   "update",
+	Short: "Update tool manifest",
+	Long:  header + "\nUpdate tool manifest",
+	Args:  cobra.NoArgs,
+	Run: func(cmd *cobra.Command, args []string) {
 		assertCacheDirectory()
-		containers.GetManifest(registryImagePrefix + "metadata:main", alt_arch, func (blob blob.Reader) error {
+		containers.GetManifest(registryImagePrefix+"metadata:main", alt_arch, func(blob blob.Reader) error {
 			err := os.Chdir(cacheDirectory)
 			if err != nil {
 				fmt.Printf("Error changing directory to %s: %s\n", cacheDirectory, err)
@@ -34,5 +34,7 @@ var updateCmd = &cobra.Command{
 		})
 
 		loadMetadata()
+
+		// TODO: Display commit for metadata
 	},
 }

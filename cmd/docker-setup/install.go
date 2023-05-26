@@ -11,7 +11,6 @@ import (
 	"github.com/nicholasdille/docker-setup/pkg/tool"
 )
 
-var installMode string
 var defaultMode bool
 var tagsMode bool
 var installedMode bool
@@ -27,7 +26,6 @@ var reinstall bool
 func initInstallCmd() {
 	rootCmd.AddCommand(installCmd)
 
-	installCmd.Flags().StringVarP(&installMode, "mode", "m", "default", "How to install (default, tags, installed)")
 	installCmd.Flags().BoolVarP(&defaultMode, "default", "", false, "Install default tools")
 	installCmd.Flags().BoolVarP(&tagsMode, "tags", "", false, "Install tool(s) matching tag")
 	installCmd.Flags().BoolVarP(&installedMode, "installed", "i", false, "Update installed tool(s)")
@@ -46,44 +44,20 @@ var installCmd = &cobra.Command{
 	Args:      cobra.OnlyValidArgs,
 	ValidArgs: tools.GetNames(),
 	RunE: func(cmd *cobra.Command, args []string) error {
-
-		// Validation checks
-		log.Tracef("Found %d argument(s): %+v", len(args), args)
-		if installMode == "list" || installMode == "tags" {
-			if len(args) == 0 {
-				return fmt.Errorf("you must specify at least one tool for mode list or tags")
-			}
-		}
+		// TODO: Introduce --user and adjust libRoot and cacheRoot when set
 
 		assertMetadataFileExists()
 		assertMetadataIsLoaded()
 
-		if defaultMode {
-			installMode = "default"
-		}
-		if tagsMode {
-			installMode = "tags"
-		}
-		if installedMode {
-			installMode = "only-installed"
-		}
-
-		log.Debugf("Using install mode %s", installMode)
-
 		// Collect requested tools based on mode
-		if len(args) > 0 && installMode == "default" {
-			installMode = "list"
-		}
-		if installMode == "tags" {
-			requestedTools = tools.GetByTags(args)
-
-		} else if installMode == "list" {
-			requestedTools = tools.GetByNames(args)
-
-		} else if installMode == "default" {
+		// TODO: Add --all flag
+		if defaultMode {
 			requestedTools = tools.GetByTags([]string{"category/default"})
 
-		} else if installMode == "only-installed" {
+		} else if tagsMode {
+			requestedTools = tools.GetByTags(args)
+
+		} else if installedMode {
 			log.Debugf("Collecting installed tools")
 			for index, tool := range tools.Tools {
 				log.Tracef("Getting status for requested tool %s", tool.Name)
@@ -104,6 +78,9 @@ var installCmd = &cobra.Command{
 					requestedTools.Tools = append(requestedTools.Tools, tool)
 				}
 			}
+
+		} else {
+			requestedTools = tools.GetByNames(args)
 		}
 		log.Debugf("Requested %d tool(s)", len(requestedTools.Tools))
 
@@ -116,6 +93,8 @@ var installCmd = &cobra.Command{
 			}
 		}
 		log.Debugf("Planned %d tool(s)", len(plannedTools.Tools))
+
+		// TODO: Check for conflicts
 
 		// Populate status of planned tools
 		// TODO: Display spinner
@@ -145,6 +124,8 @@ var installCmd = &cobra.Command{
 		// Terminate if checking or planning
 		if plan || check {
 			// TODO: Improve output
+			//       - Show version status (installed, outdated, missing)
+			//       - Use color and emoji
 			plannedTools.ListWithStatus()
 		}
 		if check {
@@ -175,6 +156,8 @@ var installCmd = &cobra.Command{
 			}
 			tool.CreateMarkerFile(cacheDirectory)
 		}
+
+		// TODO: Call post_install.sh scripts
 
 		return nil
 	},
