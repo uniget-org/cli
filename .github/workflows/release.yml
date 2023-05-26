@@ -25,10 +25,21 @@ jobs:
       with:
         ref: ${{ needs.prepare.outputs.tag }}
 
+    - name: Install docker-setup
+      run: |
+        mkdir -p helper/usr/local/bin
+        curl --url "https://github.com/nicholasdille/docker-setup/releases/latest/download/docker-setup" \
+            --silent \
+            --location \
+            --fail \
+            --output helper/usr/local/bin/docker-setup
+        helper/usr/local/bin/docker-setup update
+
     - name: Get version
       id: get_version
       run: |
-        make helper/var/lib/docker-setup/manifests/semver.json
+        mkdir helper
+        helper/usr/local/bin/docker-setup --prefix "$PWD/helper" install semver
         TAG="${GITHUB_REF#refs/tags/}"
         echo "::set-output name=tag::${TAG}"
         echo "::set-output name=version::${TAG#v}"
@@ -61,7 +72,6 @@ jobs:
     - name: Create checksum
       run: |
         sha256sum docker-setup >docker-setup.sha256
-        sha256sum docker-setup.sh >docker-setup.sh.sha256
 
     - name: Create changelog
       env:
@@ -80,7 +90,7 @@ jobs:
         echo '```bash' >>body.txt
         echo "curl --silent --location --output /usr/local/bin/docker-setup https://github.com/${GITHUB_REPOSITORY}/releases/download/${{ needs.prepare.outputs.tag }}/docker-setup" >>body.txt
         echo "chmod +x /usr/local/bin/docker-setup" >>body.txt
-        echo "docker-setup plan" >>body.txt
+        echo "docker-setup install --plan" >>body.txt
         echo '```' >>body.txt
         echo >>body.txt
         echo "## Closed issues and pull requests" >>body.txt
@@ -105,4 +115,4 @@ jobs:
         bodyFile: body.txt
         prerelease: ${{ needs.prepare.outputs.prerelease }}
         replacesArtifacts: true
-        artifacts: "docker-setup,docker-setup.sha256,docker-setup.sh,docker-setup.sh.sha256"
+        artifacts: "docker-setup,docker-setup.sha256"
