@@ -40,7 +40,7 @@ jobs:
       run: |
         mkdir -p helper helper/var/cache helper/var/lib
         helper/usr/local/bin/docker-setup --prefix "$PWD/helper" update
-        helper/usr/local/bin/docker-setup install semver
+        helper/usr/local/bin/docker-setup --prefix "$PWD/helper" install semver
         TAG="${GITHUB_REF#refs/tags/}"
         echo "::set-output name=tag::${TAG}"
         echo "::set-output name=version::${TAG#v}"
