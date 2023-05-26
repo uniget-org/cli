@@ -39,7 +39,7 @@ jobs:
     - name: Get version
       id: get_version
       run: |
-        mkdir helper
+        mkdir helper helper/var/cache helper/var/lib
         helper/usr/local/bin/docker-setup --prefix "$PWD/helper" install semver
         TAG="${GITHUB_REF#refs/tags/}"
         echo "::set-output name=tag::${TAG}"
