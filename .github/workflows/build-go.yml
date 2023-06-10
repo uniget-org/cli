@@ -23,4 +23,4 @@ jobs:
 
     - name: Build binary
       run: |
-        make docker-setup
+        make bin/docker-setup

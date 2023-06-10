@@ -68,11 +68,11 @@ jobs:
 
     - name: Build binary
       run: |
-        make docker-setup
+        make bin/docker-setup
 
     - name: Create checksum
       run: |
-        sha256sum docker-setup >docker-setup.sha256
+        sha256sum bin/docker-setup >bin/docker-setup.sha256
 
     - name: Create changelog
       env:
@@ -116,4 +116,4 @@ jobs:
         bodyFile: body.txt
         prerelease: ${{ needs.prepare.outputs.prerelease }}
         replacesArtifacts: true
-        artifacts: "docker-setup,docker-setup.sha256"
+        artifacts: "bin/docker-setup,bin/docker-setup.sha256"
