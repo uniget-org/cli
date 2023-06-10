@@ -6,12 +6,13 @@ go-info:
 	@echo "GO_VERSION: $(GO_VERSION)"
 
 bin/docker-setup: bin/docker-setup-linux-$(ALT_ARCH)
+	@cp bin/docker-setup-linux-$(ALT_ARCH) bin/docker-setup
 
 bin/docker-setup-linux-$(ALT_ARCH):bin/docker-setup-linux-%: make/go.mk $(GO_SOURCES) ; $(info $(M) Building docker-setup version $(GO_VERSION) for $(ALT_ARCH)...)
 	@\
+	export GOOS=linux; \
+	export GOARCH=$*; \
 	CGO_ENABLED=0 \
-	GOOS=linux \
-	GOARCH=$* \
 		go build -buildvcs=false -ldflags "-w -s -X main.version=$(GO_VERSION)" -o bin/docker-setup-$${GOOS}-$${GOARCH} ./cmd/docker-setup
 
 .PHONY:

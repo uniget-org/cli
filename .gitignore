@@ -9,3 +9,4 @@ cosign.key
 tools/*/sbom.json
 report.txt
 /docker-setup
+/bin/docker-setup*
