@@ -6,6 +6,8 @@ on:
     - "v*"
     paths:
     - "**/*.go"
+    - "go.mod"
+    - "go.sum"
     - "make/go.mk"
     - ".github/workflows/build-go.yml"
 
