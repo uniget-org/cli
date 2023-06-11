@@ -117,3 +117,38 @@ jobs:
         prerelease: ${{ needs.prepare.outputs.prerelease }}
         replacesArtifacts: true
         artifacts: "bin/docker-setup,bin/docker-setup.sha256"
+
+  build:
+    name: Build
+    needs:
+    - release
+    runs-on: ubuntu-20.04
+    steps:
+
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install docker-setup
+      run: |
+        curl \
+            --silent \
+            --location \
+            --url https://github.com/nicholasdille/docker-setup/releases/latest/download/docker-setup
+            --output docker-setup
+        chmod +x docker-setup
+
+    - name: Update manifest
+      run: |
+        mkdir -p helper helper/var/cache helper/var/lib
+        ./docker-setup --prefix "$PWD/helper" update
+        ./docker-setup --prefix "$PWD/helper" install yq
+        VERSION=${{ needs.prepare.outputs.version }} \
+            helper/usr/local/bin/yq eval --inplace '.version = env(VERSION)' tools/docker-setup/manifest.yaml
+
+    - name: Commit updated manifest
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        branch: main
+        create_branch: false
+        file_pattern: tools/docker-setup/manifest.yaml
+        commit_message: "Version bump for docker-setup"
