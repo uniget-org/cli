@@ -139,7 +139,7 @@ jobs:
 
     - name: Update manifest
       run: |
-        mkdir -p helper helper/var/cache helper/var/lib
+        mkdir -p helper/usrt/local helper/var/cache helper/var/lib
         ./docker-setup --prefix "$PWD/helper" update
         ./docker-setup --prefix "$PWD/helper" install yq
         VERSION=${{ needs.prepare.outputs.version }} \
