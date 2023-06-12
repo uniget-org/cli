@@ -146,6 +146,10 @@ jobs:
         VERSION=${{ needs.prepare.outputs.version }} \
             helper/usr/local/bin/yq eval --inplace '.version = env(VERSION)' tools/docker-setup/manifest.yaml
 
+    - name: Build and push
+      run: |
+        make docker-setup--push metadata.json--push
+
     - name: Commit updated manifest
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
