@@ -1,13 +1,12 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"os"
-	"regexp"
-	"strings"
 
 	"github.com/spf13/cobra"
+
+	myos "github.com/nicholasdille/docker-setup/pkg/os"
 )
 
 var cronUpdateScript = `#!/bin/bash
@@ -56,18 +55,9 @@ var cronCmd = &cobra.Command{
 }
 
 func createCron() error {
-	f, err := os.Open(prefix + "/etc/os-release")
+	osVendor, err := myos.GetOsVendor(prefix)
 	if err != nil {
-		return fmt.Errorf("cannot read /etc/os-release: %w", err)
-	}
-	defer f.Close()
-
-	var osVendor string
-	s := bufio.NewScanner(f)
-	for s.Scan() {
-		if m := regexp.MustCompile(`^ID=(.*)$`).FindStringSubmatch(s.Text()); m != nil {
-			osVendor = strings.Trim(m[1], `"`)
-		}
+		return fmt.Errorf("cannot determine OS: %w", err)
 	}
 
 	var cronWeeklyPath string
