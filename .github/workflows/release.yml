@@ -58,14 +58,6 @@ jobs:
       with:
         ref: ${{ needs.prepare.outputs.tag }}
 
-    - name: Shellcheck
-      run: |
-        make check
-
-    - name: Set version
-      run: |
-        sed -i 's/docker_setup_version:=main/docker_setup_version:=${{ needs.prepare.outputs.version }}/' docker-setup.sh
-
     - name: Build binary
       run: |
         make bin/docker-setup
