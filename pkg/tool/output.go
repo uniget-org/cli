@@ -23,7 +23,6 @@ func (tool *Tool) List() {
 func (tools *Tools) List() {
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
-	//t.SetStyle(table.StyleRounded)
 	t.Style().Options.DrawBorder = false
 	t.Style().Options.SeparateColumns = false
 	t.Style().Options.SeparateFooter = false

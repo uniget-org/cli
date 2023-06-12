@@ -35,6 +35,6 @@ var updateCmd = &cobra.Command{
 
 		loadMetadata()
 
-		// TODO: Display commit for metadata
+		// TODO: Display commit and changes for metadata
 	},
 }

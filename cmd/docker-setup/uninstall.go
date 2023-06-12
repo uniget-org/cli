@@ -40,8 +40,8 @@ var uninstallCmd = &cobra.Command{
 		if fileExists(prefix + "/" + libDirectory + "/manifests/" + tool.Name + ".txt") {
 			// Remove all files listes in /var/lib/docker-setup/manifests/<tool>.txt
 			tool.RemoveMarkerFile(prefix + "/" + cacheDirectory)
-			// Remove prefix + "/" + libDirectory + "/manifests/" + tool.Name + ".txt"
-			// Remove prefix + "/" + libDirectory + "/manifests/" + tool.Name + ".json"
+			// TODO: Remove prefix + "/" + libDirectory + "/manifests/" + tool.Name + ".txt"
+			// TODO: Remove prefix + "/" + libDirectory + "/manifests/" + tool.Name + ".json"
 		} else {
 			return fmt.Errorf("tool %s does not have a manifest file. Is it installed?", tool.Name)
 		}

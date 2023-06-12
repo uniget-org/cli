@@ -59,14 +59,6 @@ func init() {
 			initDevCmd()
 		}
 	}
-
-	// TODO: Add new subcommands for executables docker-setup-<subcommand>
-	//       - build
-	//       - build-flat
-	//       - install-from-registry
-	//       - install-from-image
-	//       - install-from-image-build
-	//       - lego
 }
 
 func main() {

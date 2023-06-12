@@ -10,8 +10,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	//"github.com/fatih/color"
-
 	"github.com/nicholasdille/docker-setup/pkg/tool"
 )
 
@@ -23,9 +21,6 @@ var plan bool
 var requestedTools tool.Tools
 var plannedTools tool.Tools
 var reinstall bool
-
-//var check_mark string = "✓" // Unicode=\u2713 UTF-8=\xE2\x9C\x93 (https://www.compart.com/de/unicode/U+2713)
-//var cross_mark string = "✗" // Unicode=\u2717 UTF-8=\xE2\x9C\x97 (https://www.compart.com/de/unicode/U+2717)
 
 func initInstallCmd() {
 	rootCmd.AddCommand(installCmd)
