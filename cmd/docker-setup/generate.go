@@ -13,7 +13,7 @@ var baseImage string
 func initGenerateCmd() {
 	rootCmd.AddCommand(generateCmd)
 
-	generateCmd.Flags().StringVarP(&baseImage, "base", "", "ubuntu:22.04", "Base image to use")
+	generateCmd.Flags().StringVar(&baseImage, "base", "ubuntu:22.04", "Base image to use")
 }
 
 var generateCmd = &cobra.Command{

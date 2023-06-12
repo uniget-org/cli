@@ -10,12 +10,12 @@ import (
 func initSearchCmd() {
 	rootCmd.AddCommand(searchCmd)
 
-	searchCmd.Flags().BoolP("only-names", "", false, "Search only in names")
-	searchCmd.Flags().BoolP("no-names", "", false, "Do not search in names")
-	searchCmd.Flags().BoolP("only-tags", "", false, "Search only on tags")
-	searchCmd.Flags().BoolP("no-tags", "", false, "Do not search in tags")
-	searchCmd.Flags().BoolP("only-deps", "", false, "Search only in dependencies")
-	searchCmd.Flags().BoolP("no-deps", "", false, "Do not search in dependencies")
+	searchCmd.Flags().Bool("only-names", false, "Search only in names")
+	searchCmd.Flags().Bool("no-names", false, "Do not search in names")
+	searchCmd.Flags().Bool("only-tags", false, "Search only on tags")
+	searchCmd.Flags().Bool("no-tags", false, "Do not search in tags")
+	searchCmd.Flags().Bool("only-deps", false, "Search only in dependencies")
+	searchCmd.Flags().Bool("no-deps", false, "Do not search in dependencies")
 }
 
 var searchCmd = &cobra.Command{

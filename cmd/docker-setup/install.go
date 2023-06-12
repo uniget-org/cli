@@ -25,10 +25,10 @@ var reinstall bool
 func initInstallCmd() {
 	rootCmd.AddCommand(installCmd)
 
-	installCmd.Flags().BoolVarP(&defaultMode, "default", "", false, "Install default tools")
-	installCmd.Flags().BoolVarP(&tagsMode, "tags", "", false, "Install tool(s) matching tag")
+	installCmd.Flags().BoolVar(&defaultMode, "default", false, "Install default tools")
+	installCmd.Flags().BoolVar(&tagsMode, "tags", false, "Install tool(s) matching tag")
 	installCmd.Flags().BoolVarP(&installedMode, "installed", "i", false, "Update installed tool(s)")
-	installCmd.Flags().BoolVarP(&plan, "plan", "", false, "Show tool(s) planned installation")
+	installCmd.Flags().BoolVar(&plan, "plan", false, "Show tool(s) planned installation")
 	installCmd.Flags().BoolVarP(&check, "check", "c", false, "Abort after checking versions")
 	installCmd.Flags().BoolVarP(&reinstall, "reinstall", "r", false, "Reinstall tool(s)")
 	installCmd.MarkFlagsMutuallyExclusive("default", "tags", "installed")
