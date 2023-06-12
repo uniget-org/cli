@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"os"
 	"os/exec"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -154,7 +155,7 @@ var installCmd = &cobra.Command{
 		assertWritableTarget()
 		assertLibDirectory()
 		for _, tool := range plannedTools.Tools {
-			if tool.Status.MarkerFilePresent && !reinstall {
+			if tool.Status.MarkerFilePresent && tool.Status.VersionMatches && !reinstall {
 				fmt.Printf("Skipping %s %s because it is already installed.\n", tool.Name, tool.Version)
 				continue
 			}
