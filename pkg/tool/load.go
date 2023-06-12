@@ -1,10 +1,9 @@
 package tool
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
-
-	"gopkg.in/yaml.v3"
 )
 
 func LoadFromFile(filename string) (Tools, error) {
@@ -24,7 +23,7 @@ func LoadFromFile(filename string) (Tools, error) {
 func LoadFromBytes(data []byte) (Tools, error) {
 	var tools Tools
 
-	err := yaml.Unmarshal(data, &tools)
+	err := json.Unmarshal(data, &tools)
 	if err != nil {
 		return Tools{}, err
 	}

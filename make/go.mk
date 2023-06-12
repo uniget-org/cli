@@ -13,6 +13,7 @@ bin/docker-setup: bin/docker-setup-linux-$(ALT_ARCH)
 
 bin/docker-setup-linux-$(ALT_ARCH):bin/docker-setup-linux-%: make/go.mk $(GO_SOURCES) ; $(info $(M) Building docker-setup version $(GO_VERSION) for $(ALT_ARCH)...)
 	@\
+	go test github.com/nicholasdille/docker-setup/pkg/... github.com/nicholasdille/docker-setup/cmd/docker-setup; \
 	export GOOS=linux; \
 	export GOARCH=$*; \
 	CGO_ENABLED=0 \
