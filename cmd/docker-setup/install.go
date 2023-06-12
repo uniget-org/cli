@@ -183,7 +183,7 @@ var installCmd = &cobra.Command{
 				infos = append(infos, info)
 			}
 			for _, file := range infos {
-				if !file.IsDir() {
+				if !file.IsDir() && strings.HasSuffix(file.Name(), ".sh") {
 					fmt.Printf("Running post_install script %s\n", file.Name())
 
 					log.Tracef("Running post_install script %s", prefix+"/"+libDirectory+"/post_install/"+file.Name())
