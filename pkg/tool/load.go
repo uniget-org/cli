@@ -2,13 +2,13 @@ package tool
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	"gopkg.in/yaml.v3"
 )
 
 func LoadFromFile(filename string) (Tools, error) {
-	data, err := ioutil.ReadFile(filename)
+	data, err := os.ReadFile(filename)
 	if err != nil {
 		return Tools{}, fmt.Errorf("error loading file contents: %s", err)
 	}
