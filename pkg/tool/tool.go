@@ -79,7 +79,7 @@ func (tool *Tool) MatchesRuntimeDependency(term string) bool {
 func replaceVariables(source string, variables []string, values []string) (result string) {
 	result = source
 
-	for index, _ := range variables {
+	for index := range variables {
 		result = strings.Replace(result, variables[index], values[index], -1)
 	}
 
@@ -116,7 +116,7 @@ func (tool *Tool) GetBinaryStatus() error {
 		tool.Status.BinaryPresent = false
 
 	} else {
-		return fmt.Errorf("Unable to check binary status for %s: %s", tool.Name, err)
+		return fmt.Errorf("unable to check binary status for %s: %s", tool.Name, err)
 	}
 
 	return nil
@@ -133,7 +133,7 @@ func (tool *Tool) GetMarkerFileStatus(markerFileDirectory string) error {
 		tool.Status.MarkerFilePresent = false
 
 	} else {
-		return fmt.Errorf("Unable to check marker file status for %s: %s", tool.Name, err)
+		return fmt.Errorf("unable to check marker file status for %s: %s", tool.Name, err)
 	}
 
 	return nil
@@ -144,12 +144,12 @@ func (tool *Tool) CreateMarkerFile(markerFileDirectory string) error {
 
 	err := os.MkdirAll(fmt.Sprintf("%s/%s", markerFileDirectory, tool.Name), 0755)
 	if err != nil {
-		return fmt.Errorf("Unable to create marker file directory for %s: %s", tool.Name, err)
+		return fmt.Errorf("unable to create marker file directory for %s: %s", tool.Name, err)
 	}
 
 	_, err = os.Create(fmt.Sprintf("%s/%s/%s", markerFileDirectory, tool.Name, tool.Version))
 	if err != nil {
-		return fmt.Errorf("Unable to create marker file for %s: %s", tool.Name, err)
+		return fmt.Errorf("unable to create marker file for %s: %s", tool.Name, err)
 	}
 
 	return nil
@@ -160,7 +160,7 @@ func (tool *Tool) RemoveMarkerFile(markerFileDirectory string) error {
 
 	err := os.Remove(fmt.Sprintf("%s/%s/%s", markerFileDirectory, tool.Name, tool.Version))
 	if err != nil {
-		return fmt.Errorf("Unable to remove marker file for %s: %s", tool.Name, err)
+		return fmt.Errorf("unable to remove marker file for %s: %s", tool.Name, err)
 	}
 
 	return nil
@@ -169,10 +169,10 @@ func (tool *Tool) RemoveMarkerFile(markerFileDirectory string) error {
 func (tool *Tool) GetVersionStatus() error {
 	if tool.Status.BinaryPresent && len(tool.Check) > 0 {
 		log.Tracef("Running version check for %s: %s", tool.Name, tool.Check)
-		cmd := exec.Command("/bin/bash", "-c", tool.Check + " | tr -d '\n'")
+		cmd := exec.Command("/bin/bash", "-c", tool.Check+" | tr -d '\n'")
 		version, err := cmd.Output()
 		if err != nil {
-			return fmt.Errorf("Unable to execute version check (%s): %s", tool.Check, err)
+			return fmt.Errorf("unable to execute version check (%s): %s", tool.Check, err)
 		}
 		tool.Status.Version = string(version)
 	}

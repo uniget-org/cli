@@ -10,12 +10,12 @@ import (
 func LoadFromFile(filename string) (Tools, error) {
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return Tools{}, fmt.Errorf("Error loading file contents: %s\n", err)
+		return Tools{}, fmt.Errorf("error loading file contents: %s", err)
 	}
 
 	tools, err := LoadFromBytes(data)
 	if err != nil {
-		return Tools{}, fmt.Errorf("Error loading data: %s\n", err)
+		return Tools{}, fmt.Errorf("error loading data: %s", err)
 	}
 
 	return tools, nil

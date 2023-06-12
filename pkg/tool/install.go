@@ -11,30 +11,30 @@ import (
 )
 
 func (tool *Tool) Install(registryImagePrefix string, prefix string, alt_arch string) error {
-	err := containers.GetManifest(fmt.Sprintf(registryImagePrefix + "%s:main", tool.Name), alt_arch, func (blob blob.Reader) error {
+	err := containers.GetManifest(fmt.Sprintf(registryImagePrefix+"%s:main", tool.Name), alt_arch, func(blob blob.Reader) error {
 		err := os.Chdir(prefix + "/")
 		if err != nil {
-			return fmt.Errorf("Error changing directory to %s: %s\n", prefix + "/", err)
+			return fmt.Errorf("error changing directory to %s: %s", prefix+"/", err)
 		}
 		err = archive.ExtractTarGz(blob)
 		if err != nil {
-			return fmt.Errorf("Failed to extract layer: %s\n", err)
+			return fmt.Errorf("failed to extract layer: %s", err)
 		}
 
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("Failed to get manifest: %s\n", err)
+		return fmt.Errorf("failed to get manifest: %s", err)
 	}
 
 	return nil
 }
 
 func (tool *Tool) Inspect(registryImagePrefix string, alt_arch string) error {
-	err := containers.GetManifest(fmt.Sprintf(registryImagePrefix + "%s:main", tool.Name), alt_arch, func (blob blob.Reader) error {
+	err := containers.GetManifest(fmt.Sprintf(registryImagePrefix+"%s:main", tool.Name), alt_arch, func(blob blob.Reader) error {
 		result, err := archive.ListTarGz(blob)
 		if err != nil {
-			return fmt.Errorf("Failed to extract layer: %s\n", err)
+			return fmt.Errorf("failed to extract layer: %s", err)
 		}
 
 		for _, file := range result {
@@ -44,7 +44,7 @@ func (tool *Tool) Inspect(registryImagePrefix string, alt_arch string) error {
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("Failed to get manifest: %s\n", err)
+		return fmt.Errorf("failed to get manifest: %s", err)
 	}
 
 	return nil
