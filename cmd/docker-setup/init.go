@@ -50,8 +50,7 @@ func directoryIsWritable(directory string) bool {
 
 func assertWritableDirectory(directory string) {
 	if !directoryExists(directory) {
-		log.Errorf("Directory %s does not exist\n", directory)
-		os.Exit(1)
+		assertDirectory(directory)
 	}
 	if !directoryIsWritable(directory) {
 		log.Errorf("Directory %s is not writable", directory)
@@ -73,11 +72,17 @@ func assertDirectory(directory string) {
 }
 
 func assertLibDirectory() {
+	if !directoryExists(prefix + "/" + libRoot) {
+		assertDirectory(prefix + "/" + libRoot)
+	}
 	assertWritableDirectory(prefix + "/" + libRoot)
 	assertDirectory(prefix + "/" + libDirectory)
 }
 
 func assertCacheDirectory() {
+	if !directoryExists(prefix + "/" + cacheRoot) {
+		assertDirectory(prefix + "/" + cacheRoot)
+	}
 	assertWritableDirectory(prefix + "/" + cacheRoot)
 	assertDirectory(prefix + "/" + cacheDirectory)
 }
@@ -91,6 +96,10 @@ func assertMetadataFileExists() {
 }
 
 func loadMetadata() {
+	if !fileExists(prefix + "/" + metadataFile) {
+		fmt.Printf("Metadata file %s does not exist\n", prefix+"/"+metadataFile)
+		os.Exit(1)
+	}
 	var err error
 	tools, err = tool.LoadFromFile(prefix + "/" + metadataFile)
 	if err != nil {

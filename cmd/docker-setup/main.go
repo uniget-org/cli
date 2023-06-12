@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"os"
+	"regexp"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -70,6 +72,20 @@ func main() {
 		}
 		log.SetLevel(level)
 		log.Debugf("Log level is now %s\n", logLevel)
+
+		re, err := regexp.Compile(`^\/`)
+		if err != nil {
+			return fmt.Errorf("cannot compile regexp: %w", err)
+		}
+		if !re.MatchString(prefix) {
+			wd, err := os.Getwd()
+			if err != nil {
+				return fmt.Errorf("cannot determine working directory: %w", err)
+			}
+			prefix = wd + "/" + prefix
+			log.Debugf("Convered prefix to absolute path %s\n", prefix)
+		}
+
 		return nil
 	}
 	rootCmd.PersistentFlags().StringVarP(&logLevel, "log-level", "l", log.WarnLevel.String(), "Log level (trace, debug, info, warning, error)")
