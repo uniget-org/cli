@@ -33,7 +33,7 @@ var (
 func init() {
 	initDockerSetup()
 
-	// TODO: Add cron subcommand
+	initCronCmd()
 	initDescribeCmd()
 	initGenerateCmd()
 	initInspectCmd()
