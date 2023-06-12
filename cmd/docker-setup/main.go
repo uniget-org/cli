@@ -88,5 +88,8 @@ func main() {
 	rootCmd.PersistentFlags().StringVarP(&libDirectory, "lib-directory", "L", "var/lib/docker-setup", "Library directory relative to PREFIX")
 	rootCmd.PersistentFlags().StringVarP(&metadataFileName, "metadata-file", "f", "metadata.json", "Metadata file")
 
-	rootCmd.Execute()
+	err := rootCmd.Execute()
+	if err != nil {
+		os.Exit(1)
+	}
 }
