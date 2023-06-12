@@ -35,6 +35,7 @@ func init() {
 
 	// TODO: Add cron subcommand
 	initDescribeCmd()
+	initGenerateCmd()
 	initInspectCmd()
 	initInstallCmd()
 	initListCmd()
@@ -60,7 +61,6 @@ func init() {
 	}
 
 	// TODO: Add new subcommands for executables docker-setup-<subcommand>
-	//       - generate
 	//       - build
 	//       - build-flat
 	//       - install-from-registry
