@@ -65,7 +65,7 @@ func GetPlatformManifest(ctx context.Context, rc *regclient.RegClient, r ref.Ref
 }
 
 func GetManifest(image string, altArch string, callback func(blob blob.Reader) error) error {
-	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(30*time.Second))
+	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(60*time.Second))
 	defer cancel()
 
 	r, err := ref.New(image)
