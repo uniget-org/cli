@@ -38,7 +38,7 @@ var uninstallCmd = &cobra.Command{
 			return fmt.Errorf("unable to find tool %s: %s", args[0], err)
 		}
 		if fileExists(prefix + "/" + libDirectory + "/manifests/" + tool.Name + ".txt") {
-			// Remove all files listes in /var/lib/docker-setup/manifests/<tool>.txt
+			// TODO: Remove all files listes in /var/lib/docker-setup/manifests/<tool>.txt
 			tool.RemoveMarkerFile(prefix + "/" + cacheDirectory)
 			// TODO: Remove prefix + "/" + libDirectory + "/manifests/" + tool.Name + ".txt"
 			// TODO: Remove prefix + "/" + libDirectory + "/manifests/" + tool.Name + ".json"

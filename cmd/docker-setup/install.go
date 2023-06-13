@@ -16,6 +16,7 @@ import (
 var defaultMode bool
 var tagsMode bool
 var installedMode bool
+var skipConflicts bool
 var check bool
 var plan bool
 var requestedTools tool.Tools
@@ -29,6 +30,7 @@ func initInstallCmd() {
 	installCmd.Flags().BoolVar(&tagsMode, "tags", false, "Install tool(s) matching tag")
 	installCmd.Flags().BoolVarP(&installedMode, "installed", "i", false, "Update installed tool(s)")
 	installCmd.Flags().BoolVar(&plan, "plan", false, "Show tool(s) planned installation")
+	installCmd.Flags().BoolVar(&skipConflicts, "skip-conflicts", false, "Skip conflicting tools")
 	installCmd.Flags().BoolVarP(&check, "check", "c", false, "Abort after checking versions")
 	installCmd.Flags().BoolVarP(&reinstall, "reinstall", "r", false, "Reinstall tool(s)")
 	installCmd.MarkFlagsMutuallyExclusive("default", "tags", "installed")
@@ -101,8 +103,6 @@ var installCmd = &cobra.Command{
 		}
 		log.Debugf("Planned %d tool(s)", len(plannedTools.Tools))
 
-		// TODO: Check for conflicts
-
 		// Populate status of planned tools
 		// TODO: Display spinner
 		for index, tool := range plannedTools.Tools {
@@ -128,12 +128,61 @@ var installCmd = &cobra.Command{
 			}
 		}
 
+		// Check for conflicts
+		var conflictsDetected = false
+		var conflictsWithInstalled tool.Tools
+		var conflictsBetweenPlanned tool.Tools
+		for index, tool := range plannedTools.Tools {
+			if !tool.Status.BinaryPresent && len(tool.ConflictsWith) > 0 {
+				for _, conflict := range tool.ConflictsWith {
+					conflictTool, err := plannedTools.GetByName(conflict)
+					if err != nil {
+						continue
+					}
+					if plannedTools.Contains(conflict) {
+						if conflictTool.Status.BinaryPresent {
+							conflictsWithInstalled.Tools = append(conflictsWithInstalled.Tools, tool)
+						} else {
+							conflictsBetweenPlanned.Tools = append(conflictsBetweenPlanned.Tools, tool)
+						}
+						conflictsDetected = true
+
+						if skipConflicts {
+							plannedTools.Tools[index].Status.SkipDueToConflicts = true
+						}
+					}
+				}
+			}
+		}
+		if conflictsDetected {
+			plannedTools.ListWithStatus()
+		}
+		if len(conflictsWithInstalled.Tools) > 0 {
+			log.Errorf("Conflicts with installed tools:")
+			for _, conflict := range conflictsWithInstalled.Tools {
+				log.Errorf("  %s conflicts with %s", conflict.Name, strings.Join(conflict.ConflictsWith, ", "))
+			}
+			conflictsDetected = true
+		}
+		if len(conflictsBetweenPlanned.Tools) > 0 {
+			log.Errorf("Conflicts between planned tools:")
+			for _, conflict := range conflictsBetweenPlanned.Tools {
+				log.Errorf("  %s conflicts with %s", conflict.Name, strings.Join(conflict.ConflictsWith, ", "))
+			}
+			conflictsDetected = true
+		}
+		if conflictsDetected && !skipConflicts {
+			return fmt.Errorf("conflicts detected")
+		}
+
 		// Terminate if checking or planning
 		if plan || check {
 			// TODO: Improve output
 			//       - Show version status (installed, outdated, missing)
 			//       - Use color and emoji
-			plannedTools.ListWithStatus()
+			if !conflictsDetected {
+				plannedTools.ListWithStatus()
+			}
 		}
 		if check {
 			for _, tool := range plannedTools.Tools {
@@ -152,6 +201,10 @@ var installCmd = &cobra.Command{
 		for _, tool := range plannedTools.Tools {
 			if tool.Status.MarkerFilePresent && tool.Status.VersionMatches && !reinstall {
 				fmt.Printf("Skipping %s %s because it is already installed.\n", tool.Name, tool.Version)
+				continue
+			}
+			if tool.Status.SkipDueToConflicts {
+				fmt.Printf("Skipping %s because it conflicts with another tool.\n", tool.Name)
 				continue
 			}
 

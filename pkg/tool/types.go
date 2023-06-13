@@ -16,6 +16,7 @@ type Tool struct {
 	BuildDependencies   []string `json:"build_dependencies,omitempty"`
 	RuntimeDependencies []string `json:"runtime_dependencies,omitempty"`
 	Platforms           []string `json:"platforms,omitempty"`
+	ConflictsWith       []string `json:"conflicts_with,omitempty"`
 	Homepage            string   `json:"homepage"`
 	Description         string   `json:"description"`
 	Renovate            Renovate `json:"renovate,omitempty"`
@@ -27,8 +28,9 @@ type Tools struct {
 }
 
 type ToolStatus struct {
-	BinaryPresent     bool
-	Version           string
-	VersionMatches    bool
-	MarkerFilePresent bool
+	BinaryPresent      bool
+	Version            string
+	VersionMatches     bool
+	MarkerFilePresent  bool
+	SkipDueToConflicts bool
 }

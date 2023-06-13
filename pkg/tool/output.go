@@ -44,11 +44,11 @@ func (tools *Tools) ListWithStatus() {
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
 
-	t.AppendHeader(table.Row{"#", "Name", "Version", "Binary?", "Installed", "Matches?"})
+	t.AppendHeader(table.Row{"#", "Name", "Version", "Binary?", "Installed", "Matches?", "Skip?"})
 
 	for index, tool := range tools.Tools {
 		t.AppendRows([]table.Row{
-			{index + 1, tool.Name, tool.Version, tool.Status.BinaryPresent, tool.Status.Version, tool.Status.VersionMatches},
+			{index + 1, tool.Name, tool.Version, tool.Status.BinaryPresent, tool.Status.Version, tool.Status.VersionMatches, tool.Status.SkipDueToConflicts},
 		})
 	}
 
@@ -89,6 +89,13 @@ func (tool *Tool) Print() {
 		}
 	}
 
+	if tool.ConflictsWith != nil {
+		fmt.Printf("  Conflicts with:\n")
+		for _, conflict := range tool.ConflictsWith {
+			fmt.Printf("    %s\n", conflict)
+		}
+	}
+
 	if tool.Platforms != nil {
 		fmt.Printf("  Platforms:\n")
 		for _, dep := range tool.Platforms {
@@ -114,6 +121,7 @@ func (tool *Tool) Print() {
 		fmt.Printf("    Version: %s\n", tool.Status.Version)
 		fmt.Printf("    Version matches: %t\n", tool.Status.VersionMatches)
 	}
+	fmt.Printf("    Skip: %t\n", tool.Status.SkipDueToConflicts)
 }
 
 func (tools *Tools) Describe(name string) error {

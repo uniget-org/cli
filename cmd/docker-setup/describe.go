@@ -62,6 +62,9 @@ var describeCmd = &cobra.Command{
 			if err != nil {
 				return fmt.Errorf("failed to encode yaml: %s", err)
 			}
+
+		} else {
+			return fmt.Errorf("invalid output format: %s", describeOutput)
 		}
 
 		return nil
