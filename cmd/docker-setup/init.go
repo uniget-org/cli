@@ -12,7 +12,7 @@ import (
 	"github.com/nicholasdille/docker-setup/pkg/tool"
 )
 
-var alt_arch string = runtime.GOARCH
+var altArch string = runtime.GOARCH
 var arch string
 
 var prefix = ""
@@ -29,7 +29,7 @@ var toolSeparator = "/"
 var registryImagePrefix = registry + "/" + repository + toolSeparator
 var tools tool.Tools
 
-var emoji_tool = "\U0001F528"
+var emojiTool = "\U0001F528"
 
 func directoryExists(directory string) bool {
 	log.Tracef("Checking if directory %s exists", directory)
@@ -116,10 +116,10 @@ func assertMetadataIsLoaded() {
 }
 
 func initDockerSetup() {
-	if alt_arch == "amd64" {
+	if altArch == "amd64" {
 		arch = "x86_64"
 
-	} else if alt_arch == "arm64" {
+	} else if altArch == "arm64" {
 		arch = "aarch64"
 
 	} else {

@@ -17,10 +17,10 @@ import (
 	"github.com/regclient/regclient/types/ref"
 )
 
-func GetPlatformManifest(ctx context.Context, rc *regclient.RegClient, r ref.Ref, alt_arch string) (manifest.Manifest, error) {
+func GetPlatformManifest(ctx context.Context, rc *regclient.RegClient, r ref.Ref, altArch string) (manifest.Manifest, error) {
 	m, err := rc.ManifestGet(ctx, r)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to get manifest: %s\n", err)
+		return nil, fmt.Errorf("failed to get manifest: %s", err)
 	}
 
 	// TODO: Test manifest list with Docker media types
@@ -31,29 +31,29 @@ func GetPlatformManifest(ctx context.Context, rc *regclient.RegClient, r ref.Ref
 
 		mi, ok := m.(manifest.Indexer)
 		if !ok {
-			return nil, fmt.Errorf("ERROR")
+			return nil, fmt.Errorf("failed to get imager")
 		}
 		manifests, err := mi.GetManifestList()
 		if err != nil {
-			return nil, fmt.Errorf("Error getting manifests")
+			return nil, fmt.Errorf("error getting manifests")
 		}
 
 		for _, manifest := range manifests {
 
-			if manifest.Platform.Architecture == alt_arch {
+			if manifest.Platform.Architecture == altArch {
 				platformImage := fmt.Sprintf("%s@%s", r.Reference, manifest.Digest)
 				r2, err := ref.New(platformImage)
 				if err != nil {
-					return nil, fmt.Errorf("Failed to parse image name <%s>: %s\n", platformImage, err)
+					return nil, fmt.Errorf("failed to parse image name <%s>: %s", platformImage, err)
 				}
 
 				m, err := rc.ManifestGet(ctx, r2)
 				if err != nil {
-					return nil, fmt.Errorf("Failed to get manifest: %s\n", err)
+					return nil, fmt.Errorf("failed to get manifest: %s", err)
 				}
 
 				if m.IsList() {
-					return nil, fmt.Errorf("Manifest cannot be list again")
+					return nil, fmt.Errorf("manifest cannot be list again")
 				}
 
 				return m, nil
@@ -64,13 +64,13 @@ func GetPlatformManifest(ctx context.Context, rc *regclient.RegClient, r ref.Ref
 	return m, nil
 }
 
-func GetManifest(image string, alt_arch string, callback func(blob blob.Reader) error) error {
+func GetManifest(image string, altArch string, callback func(blob blob.Reader) error) error {
 	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(30*time.Second))
 	defer cancel()
 
 	r, err := ref.New(image)
 	if err != nil {
-		return fmt.Errorf("Failed to parse image name <%s>: %s\n", image, err)
+		return fmt.Errorf("failed to parse image name <%s>: %s", image, err)
 	}
 
 	rcOpts := []regclient.Opt{}
@@ -79,13 +79,13 @@ func GetManifest(image string, alt_arch string, callback func(blob blob.Reader) 
 	rc := regclient.New(rcOpts...)
 	defer rc.Close(ctx, r)
 
-	m, err := GetPlatformManifest(ctx, rc, r, alt_arch)
+	m, err := GetPlatformManifest(ctx, rc, r, altArch)
 	if err != nil {
-		return fmt.Errorf("Failed to get manifest: %s\n", err)
+		return fmt.Errorf("failed to get manifest: %s", err)
 	}
 	err = ProcessLayersCallback(ctx, rc, m, r, callback)
 	if err != nil {
-		return fmt.Errorf("Failed to process layers with callback: %s\n", err)
+		return fmt.Errorf("failed to process layers with callback: %s", err)
 	}
 
 	return nil
@@ -93,49 +93,49 @@ func GetManifest(image string, alt_arch string, callback func(blob blob.Reader) 
 
 func ProcessLayersCallback(ctx context.Context, rc *regclient.RegClient, m manifest.Manifest, r ref.Ref, callback func(blob blob.Reader) error) error {
 	if m.IsList() {
-		return fmt.Errorf("Manifest is a list")
+		return fmt.Errorf("manifest is a list")
 	}
 
 	mi, ok := m.(manifest.Imager)
 	if !ok {
-		return fmt.Errorf("ERROR")
+		return fmt.Errorf("failed to get imager")
 	}
 
 	layers, err := mi.GetLayers()
 	if err != nil {
-		return fmt.Errorf("Failed to get layers: %s", err)
+		return fmt.Errorf("failed to get layers: %s", err)
 	}
 
 	if len(layers) > 1 {
-		return fmt.Errorf("Image must have exactly one layer but got %d", len(layers))
+		return fmt.Errorf("image must have exactly one layer but got %d", len(layers))
 	}
 
 	layer := layers[0]
 	// TODO: Test known but unsupported media types
 	if layer.MediaType == types.MediaTypeOCI1Layer || layer.MediaType == types.MediaTypeOCI1LayerZstd {
-		return fmt.Errorf("Only layers with gzip compression are supported (not %s)", layer.MediaType)
+		return fmt.Errorf("only layers with gzip compression are supported (not %s)", layer.MediaType)
 	}
 	if layer.MediaType == types.MediaTypeOCI1LayerGzip || layer.MediaType == types.MediaTypeDocker2LayerGzip {
 
 		d, err := digest.Parse(string(layer.Digest))
 		if err != nil {
-			return fmt.Errorf("Failed to parse digest %s: %s", layer.Digest, err)
+			return fmt.Errorf("failed to parse digest %s: %s", layer.Digest, err)
 		}
 
 		blob, err := rc.BlobGet(ctx, r, types.Descriptor{Digest: d})
 		if err != nil {
-			return fmt.Errorf("Failed to get blob for digest %s: %s", layer.Digest, err)
+			return fmt.Errorf("failed to get blob for digest %s: %s", layer.Digest, err)
 		}
 		defer blob.Close()
 
 		err = callback(blob)
 		if err != nil {
-			return fmt.Errorf("Failed callback: %s", err)
+			return fmt.Errorf("failed callback: %s", err)
 		}
 
 		return nil
 	}
 
 	// TODO: Test unknown media types
-	return fmt.Errorf("Unknown media type encountered: %s", layer.MediaType)
+	return fmt.Errorf("unknown media type encountered: %s", layer.MediaType)
 }

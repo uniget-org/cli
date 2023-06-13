@@ -68,7 +68,7 @@ var installCmd = &cobra.Command{
 			log.Debugf("Collecting installed tools")
 			for index, tool := range tools.Tools {
 				log.Tracef("Getting status for requested tool %s", tool.Name)
-				tools.Tools[index].ReplaceVariables(prefix+"/"+target, arch, alt_arch)
+				tools.Tools[index].ReplaceVariables(prefix+"/"+target, arch, altArch)
 
 				err := tools.Tools[index].GetBinaryStatus()
 				if err != nil {
@@ -107,7 +107,7 @@ var installCmd = &cobra.Command{
 		// TODO: Display spinner
 		for index, tool := range plannedTools.Tools {
 			log.Tracef("Getting status for requested tool %s", tool.Name)
-			plannedTools.Tools[index].ReplaceVariables(prefix+"/"+target, arch, alt_arch)
+			plannedTools.Tools[index].ReplaceVariables(prefix+"/"+target, arch, altArch)
 
 			err := plannedTools.Tools[index].GetBinaryStatus()
 			if err != nil {
@@ -155,8 +155,8 @@ var installCmd = &cobra.Command{
 				continue
 			}
 
-			fmt.Printf("%s Installing %s %s", emoji_tool, tool.Name, tool.Version)
-			err := tool.Install(registryImagePrefix, prefix+"/", alt_arch)
+			fmt.Printf("%s Installing %s %s", emojiTool, tool.Name, tool.Version)
+			err := tool.Install(registryImagePrefix, prefix+"/", altArch)
 			fmt.Printf("\n")
 			if err != nil {
 				return fmt.Errorf("unable to install %s: %s", tool.Name, err)
@@ -188,7 +188,7 @@ var installCmd = &cobra.Command{
 						"prefix="+prefix,
 						"target="+target,
 						"arch="+arch,
-						"alt_arch="+alt_arch,
+						"altArch="+altArch,
 					)
 					output, err := cmd.CombinedOutput()
 					if err != nil {

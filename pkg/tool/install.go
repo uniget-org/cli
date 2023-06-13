@@ -10,8 +10,8 @@ import (
 	"github.com/regclient/regclient/types/blob"
 )
 
-func (tool *Tool) Install(registryImagePrefix string, prefix string, alt_arch string) error {
-	err := containers.GetManifest(fmt.Sprintf(registryImagePrefix+"%s:main", tool.Name), alt_arch, func(blob blob.Reader) error {
+func (tool *Tool) Install(registryImagePrefix string, prefix string, altArch string) error {
+	err := containers.GetManifest(fmt.Sprintf(registryImagePrefix+"%s:main", tool.Name), altArch, func(blob blob.Reader) error {
 		err := os.Chdir(prefix + "/")
 		if err != nil {
 			return fmt.Errorf("error changing directory to %s: %s", prefix+"/", err)
@@ -30,8 +30,8 @@ func (tool *Tool) Install(registryImagePrefix string, prefix string, alt_arch st
 	return nil
 }
 
-func (tool *Tool) Inspect(registryImagePrefix string, alt_arch string) error {
-	err := containers.GetManifest(fmt.Sprintf(registryImagePrefix+"%s:main", tool.Name), alt_arch, func(blob blob.Reader) error {
+func (tool *Tool) Inspect(registryImagePrefix string, altArch string) error {
+	err := containers.GetManifest(fmt.Sprintf(registryImagePrefix+"%s:main", tool.Name), altArch, func(blob blob.Reader) error {
 		result, err := archive.ListTarGz(blob)
 		if err != nil {
 			return fmt.Errorf("failed to extract layer: %s", err)

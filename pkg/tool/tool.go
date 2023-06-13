@@ -86,7 +86,7 @@ func replaceVariables(source string, variables []string, values []string) (resul
 	return
 }
 
-func (tool *Tool) ReplaceVariables(target string, arch string, alt_arch string) {
+func (tool *Tool) ReplaceVariables(target string, arch string, altArch string) {
 	log.Tracef("Replacing variables for %s", tool.Name)
 
 	//binary

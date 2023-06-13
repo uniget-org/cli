@@ -67,7 +67,7 @@ func (tools *Tools) GetByTags(tagNames []string) Tools {
 }
 
 func (tools *Tools) Find(term string, searchInName bool, searchInTags bool, searchInDeps bool) Tools {
-	var results Tools = Tools{}
+	var results = Tools{}
 
 	for _, tool := range tools.Tools {
 		matches := false

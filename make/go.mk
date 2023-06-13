@@ -7,19 +7,19 @@ go-info:
 	@echo "GO_VERSION: $(GO_VERSION)"
 
 coverage.out.tmp: $(GO_SOURCES)
-	@go test -cover -coverprofile ./coverage.out.tmp ./...
+	@$(GO) test -v -race -buildvcs -coverprofile ./coverage.out.tmp ./...
 
 coverage.out: coverage.out.tmp
 	@cat ./coverage.out.tmp | grep -v '.pb.go' | grep -v 'mock_' > ./coverage.out
 
 .PHONY:
 test: $(GO_SOURCES) ; $(info $(M) Running unit tests...)
-	@go test ./...
+	@$(GO) test ./...
 
 .PHONY:
 cover: coverage.out
 	@echo ""
-	@go tool cover -func ./coverage.out
+	@$(GO) tool cover -func ./coverage.out
 
 bin/docker-setup: bin/docker-setup-linux-$(ALT_ARCH)
 	@\
@@ -47,3 +47,16 @@ go-clean:
 	@rm -rf bin
 	@rm docker-setup
 	@rm coverage.out
+
+,PHONY:
+go-tidy:
+	@$(GO) fmt ./...
+	@$(GO) mod tidy -v
+
+.PHONY:
+go-audit:
+	@$(GO) mod verify
+	@$(GO) vet ./...
+	@$(GO) run honnef.co/go/tools/cmd/staticcheck@latest -checks=all,-ST1000,-U1000 ./...
+	@$(GO) run golang.org/x/vuln/cmd/govulncheck@latest ./...
+	@$(GO) test -race -buildvcs -vet=off ./...

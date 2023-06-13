@@ -23,7 +23,7 @@ var updateCmd = &cobra.Command{
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		assertCacheDirectory()
-		containers.GetManifest(registryImagePrefix+"metadata:main", alt_arch, func(blob blob.Reader) error {
+		containers.GetManifest(registryImagePrefix+"metadata:main", altArch, func(blob blob.Reader) error {
 			err := os.Chdir(prefix + "/" + cacheDirectory)
 			if err != nil {
 				fmt.Printf("Error changing directory to %s: %s\n", prefix+"/"+cacheDirectory, err)

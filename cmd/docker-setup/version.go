@@ -16,7 +16,7 @@ var versionCmd = &cobra.Command{
 	Short:   "Show version",
 	Long:    header + "\nShow version",
 	Args:    cobra.NoArgs,
-	Run:     func(cmd *cobra.Command, args []string) {
+	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("docker-setup version %s\n", version)
 	},
 }
