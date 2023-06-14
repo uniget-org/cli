@@ -27,4 +27,4 @@ jobs:
             --env LOG_LEVEL \
             --env RENOVATE_TOKEN \
             renovate/renovate:slim \
-                ${{ env.GITHUB_REPOSITORY }}
+                ${GITHUB_REPOSITORY}
