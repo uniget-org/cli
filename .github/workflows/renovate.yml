@@ -20,8 +20,11 @@ jobs:
 
     - name: Self-hosted Renovate
       env:
-        LOG_LEVEL: 'debug'
-      uses: renovatebot/github-action@v36.0.0
-      with:
-        useSlim: true
-        token: ${{ secrets.BOT_GITHUB_TOKEN }}
+        LOG_LEVEL: debug
+        RENOVATE_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
+      run: |
+        docker run --interactive --rm \
+            --env LOG_LEVEL \
+            --env RENOVATE_TOKEN \
+            renovate/renovate:slim \
+                ${{ env.GITHUB_REPOSITORY }}
