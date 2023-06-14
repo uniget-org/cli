@@ -10,6 +10,7 @@ on:
     - "go.sum"
     - "make/go.mk"
     - ".github/workflows/build-go.yml"
+  workflow_dispatch:
 
 jobs:
 
