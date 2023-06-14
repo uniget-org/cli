@@ -24,4 +24,4 @@ jobs:
       uses: renovatebot/github-action@v36.0.0
       with:
         useSlim: true
-        token: ${{ secrets.RENOVATE_TOKEN }}
+        token: ${{ secrets.BOT_GITHUB_TOKEN }}
