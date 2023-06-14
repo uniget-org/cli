@@ -8,7 +8,7 @@ require (
 	github.com/regclient/regclient v0.4.8
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.7.0
-	golang.org/x/sys v0.8.0
+	golang.org/x/sys v0.9.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
