@@ -140,6 +140,7 @@ func (tools *Tools) ResolveDependencies(queue *Tools, toolName string) error {
 			return err
 		}
 
+		dep.Status.IsDependency = true
 		queue.AddIfMissing(dep)
 	}
 

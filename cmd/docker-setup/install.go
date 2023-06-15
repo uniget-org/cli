@@ -13,6 +13,7 @@ import (
 var defaultMode bool
 var tagsMode bool
 var installedMode bool
+var skipDependencies bool
 var skipConflicts bool
 var check bool
 var plan bool
@@ -27,6 +28,7 @@ func initInstallCmd() {
 	installCmd.Flags().BoolVar(&tagsMode, "tags", false, "Install tool(s) matching tag")
 	installCmd.Flags().BoolVarP(&installedMode, "installed", "i", false, "Update installed tool(s)")
 	installCmd.Flags().BoolVar(&plan, "plan", false, "Show tool(s) planned installation")
+	installCmd.Flags().BoolVar(&skipDependencies, "skip-deps", false, "Skip dependencies")
 	installCmd.Flags().BoolVar(&skipConflicts, "skip-conflicts", false, "Skip conflicting tools")
 	installCmd.Flags().BoolVarP(&check, "check", "c", false, "Abort after checking versions")
 	installCmd.Flags().BoolVarP(&reinstall, "reinstall", "r", false, "Reinstall tool(s)")
@@ -197,6 +199,10 @@ var installCmd = &cobra.Command{
 			}
 			if tool.Status.SkipDueToConflicts {
 				fmt.Printf("Skipping %s because it conflicts with another tool.\n", tool.Name)
+				continue
+			}
+			if skipDependencies && tool.Status.IsDependency {
+				fmt.Printf("Skipping %s because it is a dependency (--skip-deps was specified)\n", tool.Name)
 				continue
 			}
 
