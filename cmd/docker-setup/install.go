@@ -45,12 +45,7 @@ var installCmd = &cobra.Command{
 	Args:      cobra.OnlyValidArgs,
 	ValidArgs: tools.GetNames(),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if fileExists(prefix + "/" + metadataFile) {
-			log.Tracef("Loaded metadata file from %s", prefix+"/"+metadataFile)
-			loadMetadata()
-		}
-
-		return nil
+		return loadMetadata()
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// TODO: Introduce --user and adjust libRoot and cacheRoot when set

@@ -95,19 +95,6 @@ func assertMetadataFileExists() {
 	}
 }
 
-func loadMetadata() {
-	if !fileExists(prefix + "/" + metadataFile) {
-		fmt.Printf("Metadata file %s does not exist\n", prefix+"/"+metadataFile)
-		os.Exit(1)
-	}
-	var err error
-	tools, err = tool.LoadFromFile(prefix + "/" + metadataFile)
-	if err != nil {
-		fmt.Printf("Failed to load metadata from file %s: %s\n", prefix+"/"+metadataFile, err)
-		os.Exit(1)
-	}
-}
-
 func assertMetadataIsLoaded() {
 	if len(tools.Tools) == 0 {
 		fmt.Printf("Metadata is not loaded\n")

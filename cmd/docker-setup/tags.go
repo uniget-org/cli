@@ -5,7 +5,6 @@ import (
 	"sort"
 
 	"github.com/jedib0t/go-pretty/v6/table"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -20,12 +19,7 @@ var tagsCmd = &cobra.Command{
 	Long:    header + "\nList tags",
 	Args:    cobra.NoArgs,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if fileExists(prefix + "/" + metadataFile) {
-			log.Tracef("Loaded metadata file from %s", prefix+"/"+metadataFile)
-			loadMetadata()
-		}
-
-		return nil
+		return loadMetadata()
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		assertMetadataFileExists()
