@@ -1,5 +1,5 @@
 GO_SOURCES = $(shell find . -type f -name \*.go)
-GO_VERSION = $(shell git describe --tags --abbrev=0)
+GO_VERSION = $(shell git describe --tags --abbrev=0 | tr -d v)
 GO         = go
 
 .PHONY:
