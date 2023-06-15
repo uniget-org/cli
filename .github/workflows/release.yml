@@ -136,18 +136,19 @@ jobs:
 
     - name: Install docker-setup
       run: |
+        mkdir -p helper/usr/local/bin
         curl \
             --silent \
             --location \
             --url https://github.com/nicholasdille/docker-setup/releases/latest/download/docker-setup \
-            --output docker-setup
-        chmod +x docker-setup
+            --output helper/usr/local/bin/docker-setup
+        chmod +x helper/usr/local/bin/docker-setup
 
     - name: Update manifest
       run: |
         mkdir -p helper/usr/local helper/var/cache helper/var/lib
-        ./docker-setup --prefix "$PWD/helper" update
-        ./docker-setup --prefix "$PWD/helper" install yq
+        helper/usr/local/bin/docker-setup --prefix "$PWD/helper" update
+        helper/usr/local/bin/docker-setup --prefix "$PWD/helper" install yq
         VERSION=${{ needs.prepare.outputs.version }} \
             helper/usr/local/bin/yq eval --inplace '.version = env(VERSION)' tools/docker-setup/manifest.yaml
 
