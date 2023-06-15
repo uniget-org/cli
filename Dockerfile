@@ -3,6 +3,17 @@
 ARG base=ubuntu-22.04
 FROM ghcr.io/nicholasdille/docker-setup/docker-setup:main AS docker-setup
 
+FROM golang:1.20.5 AS binary
+ARG version=dev
+WORKDIR /go/src/github.com/nicholasdille/docker-setup
+COPY go.* .
+RUN go mod download
+COPY . .
+RUN make bin/docker-setup GO_VERSION=${version}
+
+FROM ubuntu:22.04 AS ubuntu-test
+COPY --link --from=binary /go/src/github.com/nicholasdille/docker-setup/bin/docker-setup /usr/local/bin/docker-setup
+
 FROM ubuntu:22.04 AS ubuntu
 COPY --from=docker-setup /usr/local/bin/docker-setup /usr/local/bin/docker-setup
 
