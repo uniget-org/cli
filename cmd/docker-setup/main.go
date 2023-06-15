@@ -57,24 +57,26 @@ func main() {
 		log.SetLevel(level)
 		log.Debugf("Log level is now %s\n", logLevel)
 
-		re, err := regexp.Compile(`^\/`)
-		if err != nil {
-			return fmt.Errorf("cannot compile regexp: %w", err)
-		}
-		if !re.MatchString(prefix) {
-			wd, err := os.Getwd()
+		if len(prefix) > 0 {
+			re, err := regexp.Compile(`^\/`)
 			if err != nil {
-				return fmt.Errorf("cannot determine working directory: %w", err)
+				return fmt.Errorf("cannot compile regexp: %w", err)
 			}
-			prefix = wd + "/" + prefix
-			log.Debugf("Convered prefix to absolute path %s\n", prefix)
+			if !re.MatchString(prefix) {
+				wd, err := os.Getwd()
+				if err != nil {
+					return fmt.Errorf("cannot determine working directory: %w", err)
+				}
+				prefix = wd + "/" + prefix
+				log.Debugf("Convered prefix to absolute path %s\n", prefix)
+			}
 		}
 
 		return nil
 	}
 	rootCmd.PersistentFlags().StringVarP(&logLevel, "log-level", "l", log.WarnLevel.String(), "Log level (trace, debug, info, warning, error)")
 	// TODO: Add flags --trace and --debug (make mutually exclusive)
-	rootCmd.PersistentFlags().StringVarP(&prefix, "prefix", "p", "/", "Prefix for installation")
+	rootCmd.PersistentFlags().StringVarP(&prefix, "prefix", "p", "", "Prefix for installation")
 	rootCmd.PersistentFlags().StringVarP(&target, "target", "t", "usr/local", "Target directory for installation")
 	rootCmd.PersistentFlags().StringVarP(&cacheDirectory, "cache-directory", "C", "var/cache/docker-setup", "Cache directory relative to PREFIX")
 	rootCmd.PersistentFlags().StringVarP(&libDirectory, "lib-directory", "L", "var/lib/docker-setup", "Library directory relative to PREFIX")
