@@ -29,7 +29,8 @@ var postinstallCmd = &cobra.Command{
 
 func postinstall() error {
 	if len(prefix) > 0 {
-		return fmt.Errorf("prefix cannot be set for postinstall scripts to run")
+		log.Warningf("prefix cannot be set for postinstall scripts to run")
+		return nil
 	}
 
 	if directoryExists("/" + libDirectory + "/post_install") {
