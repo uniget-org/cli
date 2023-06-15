@@ -39,6 +39,7 @@ func init() {
 	initInspectCmd()
 	initInstallCmd()
 	initListCmd()
+	initPostinstallCmd()
 	initSearchCmd()
 	initTagsCmd()
 	initUninstallCmd()
