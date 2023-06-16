@@ -21,7 +21,15 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3.3.0
 
+    - name: Restore cached Primes
+      id: cache-primes-restore
+      uses: actions/cache/restore@v3
+      with:
+        path: /tmp/renovate/cache
+        key: renovate-cache
+
     - name: Self-hosted Renovate
+      # Cache: /tmp/renovate/cache
       env:
         LOG_LEVEL: debug
         RENOVATE_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
@@ -29,5 +37,13 @@ jobs:
         docker run --interactive --rm \
             --env LOG_LEVEL \
             --env RENOVATE_TOKEN \
+            --volume /tmp/renovate/cache:/tmp/renovate/cache \
             renovate/renovate:slim \
                 ${GITHUB_REPOSITORY}
+
+    - name: Save Primes
+      id: cache-primes-save
+      uses: actions/cache/save@v3
+      with:
+        path: /tmp/renovate/cache
+        key: ${{ steps.cache-primes-restore.outputs.cache-primary-key }}
