@@ -42,7 +42,7 @@ jobs:
             --env RENOVATE_TOKEN \
             --volume $PWD/cache:/tmp/renovate/cache \
             renovate/renovate:slim \
-                ${GITHUB_REPOSITORY}
+                bash -c "echo ${GITHUB_REPOSITORY}; ls -al /tmp/renovate"
 
     - name: Save cache
       id: cache-save
