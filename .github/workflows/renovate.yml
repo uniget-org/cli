@@ -36,6 +36,7 @@ jobs:
         LOG_LEVEL: debug
         RENOVATE_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
       run: |
+        mkdir -p cache
         docker run --interactive --rm \
             --env LOG_LEVEL \
             --env RENOVATE_TOKEN \
