@@ -38,16 +38,19 @@ jobs:
         path: renovate/cache
         key: renovate-cache
 
-    - name: Self-hosted Renovate
-      env:
-        LOG_LEVEL: debug
-        RENOVATE_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
+    - name: Prepare permissions
       run: |
         mkdir -p renovate/cache
         docker run --rm \
             --volume $PWD/renovate:/tmp/renovate \
             ubuntu:22.04 \
                 chown -R 1000:0 /tmp/renovate
+
+    - name: Self-hosted Renovate
+      env:
+        LOG_LEVEL: debug
+        RENOVATE_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
+      run: |
         docker run --interactive --rm \
             --env LOG_LEVEL \
             --env RENOVATE_TOKEN \
