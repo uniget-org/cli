@@ -2,6 +2,9 @@ name: Renovate
 on:
   schedule:
   - cron: '13 */2 * * *'
+  pull_request:
+    branches:
+    - "renovate/*"
   push:
     branches:
     - main
