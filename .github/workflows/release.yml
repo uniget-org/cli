@@ -26,21 +26,14 @@ jobs:
         ref: ${{ needs.prepare.outputs.tag }}
 
     - name: Install docker-setup
-      run: |
-        mkdir -p helper/usr/local/bin
-        curl --url "https://github.com/nicholasdille/docker-setup/releases/latest/download/docker-setup" \
-            --silent \
-            --location \
-            --fail \
-            --output helper/usr/local/bin/docker-setup
-        chmod +x helper/usr/local/bin/docker-setup
+      uses: nicholasdille/docker-setup-action@main
+      with:
+        prefix: helper
+        tools: semver
 
     - name: Get version
       id: get_version
       run: |
-        mkdir -p helper helper/var/cache helper/var/lib
-        helper/usr/local/bin/docker-setup --prefix "$PWD/helper" update
-        helper/usr/local/bin/docker-setup --prefix "$PWD/helper" install semver
         TAG="${GITHUB_REF#refs/tags/}"
         echo "::set-output name=tag::${TAG}"
         echo "::set-output name=version::${TAG#v}"
@@ -135,20 +128,13 @@ jobs:
         password: ${{ secrets.PACKAGES_TOKEN }}
 
     - name: Install docker-setup
-      run: |
-        mkdir -p helper/usr/local/bin
-        curl \
-            --silent \
-            --location \
-            --url https://github.com/nicholasdille/docker-setup/releases/latest/download/docker-setup \
-            --output helper/usr/local/bin/docker-setup
-        chmod +x helper/usr/local/bin/docker-setup
+      uses: nicholasdille/docker-setup-action@main
+      with:
+        prefix: helper
+        tools: gojq regclient
 
     - name: Update manifest
       run: |
-        mkdir -p helper/usr/local helper/var/cache helper/var/lib
-        helper/usr/local/bin/docker-setup --prefix "$PWD/helper" update
-        helper/usr/local/bin/docker-setup --prefix "$PWD/helper" install yq
         VERSION=${{ needs.prepare.outputs.version }} \
             helper/usr/local/bin/yq eval --inplace '.version = env(VERSION)' tools/docker-setup/manifest.yaml
 
