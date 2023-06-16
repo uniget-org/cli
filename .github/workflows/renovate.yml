@@ -44,13 +44,16 @@ jobs:
         RENOVATE_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
       run: |
         mkdir -p renovate/cache
+        docker run --rm \
+            --volume $PWD/renovate:/tmp/renovate \
+            ubuntu:22.04 \
+                chown -R 1000:0 /tmp/renovate
         docker run --interactive --rm \
             --env LOG_LEVEL \
             --env RENOVATE_TOKEN \
             --volume $PWD/renovate:/tmp/renovate \
             renovate/renovate:slim \
-                "${GITHUB_REPOSITORY}" \
-        || ls -al renovate/cache
+                "${GITHUB_REPOSITORY}"
 
     - name: Save cache
       id: cache-save
