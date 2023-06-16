@@ -2,16 +2,6 @@ name: Renovate
 on:
   schedule:
   - cron: '13 */2 * * *'
-  pull_request:
-    types:
-    - edited
-    - labeled
-    - unlabeled
-    - ready_for_review
-    - synchronize
-    - reopened
-    branches:
-    - "main"
   push:
     branches:
     - main
