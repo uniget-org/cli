@@ -131,7 +131,7 @@ jobs:
       uses: nicholasdille/docker-setup-action@main
       with:
         prefix: helper
-        tools: gojq regclient
+        tools: gojq regclient yq
 
     - name: Update manifest
       run: |
