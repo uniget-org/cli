@@ -64,4 +64,4 @@ jobs:
       uses: actions/cache/save@v3
       with:
         path: renovate/cache
-        key: ${{ steps.cache-restore.outputs.cache-primary-key }}
+        key: renovate-cache
