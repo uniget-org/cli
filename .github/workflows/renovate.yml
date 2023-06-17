@@ -9,10 +9,10 @@ on:
     - .github/workflows/renovate.yml
   workflow_dispatch:
     inputs:
-      recreate-cache:
-        description: 'Recreate cache'
-        required: false
-        default: false
+      #recreate-cache:
+      #  description: 'Recreate cache'
+      #  required: false
+      #  default: false
       dry-run:
         description: 'Dry run'
         required: false
@@ -30,13 +30,13 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3.3.0
 
-    - name: Restore cache
-      if: ${{ inputs.recreate-cache != 'true' }}
-      id: cache-restore
-      uses: actions/cache/restore@v3
-      with:
-        path: renovate/cache
-        key: renovate-cache
+    #- name: Restore cache
+    #  if: ${{ inputs.recreate-cache != 'true' }}
+    #  id: cache-restore
+    #  uses: actions/cache/restore@v3
+    #  with:
+    #    path: renovate/cache
+    #    key: renovate-cache
 
     - name: Prepare permissions
       run: |
@@ -59,9 +59,9 @@ jobs:
                 --dry-run=${{ inputs.dry-run }} \
                 "${GITHUB_REPOSITORY}"
 
-    - name: Save cache
-      id: cache-save
-      uses: actions/cache/save@v3
-      with:
-        path: renovate/cache
-        key: renovate-cache
+    #- name: Save cache
+    #  id: cache-save
+    #  uses: actions/cache/save@v3
+    #  with:
+    #    path: renovate/cache
+    #    key: renovate-cache
