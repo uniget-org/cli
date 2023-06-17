@@ -7,6 +7,11 @@ on:
     - main
     paths:
     - .github/workflows/renovate.yml
+  workflow_run:
+    workflows:
+    - Test-Linux
+    types:
+    - completed
   workflow_dispatch:
     inputs:
       dry-run:
