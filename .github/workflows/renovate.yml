@@ -8,6 +8,15 @@ on:
     paths:
     - .github/workflows/renovate.yml
   workflow_dispatch:
+    inputs:
+      recreate-cache:
+        description: 'Recreate cache'
+        required: false
+        default: false
+      dry-run:
+        description: 'Dry run'
+        required: false
+        default: false
 
 concurrency:
   group: renovate
@@ -22,6 +31,7 @@ jobs:
       uses: actions/checkout@v3.3.0
 
     - name: Restore cache
+      if: ${{ !inputs.recreate-cache }}
       id: cache-restore
       uses: actions/cache/restore@v3
       with:
@@ -46,6 +56,7 @@ jobs:
             --env RENOVATE_TOKEN \
             --volume $PWD/renovate:/tmp/renovate \
             renovate/renovate:slim \
+                --dry-run=${{ inputs.dry-run }} \
                 "${GITHUB_REPOSITORY}"
 
     - name: Save cache
