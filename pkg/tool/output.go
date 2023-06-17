@@ -57,7 +57,6 @@ func (tools *Tools) ListWithStatus() {
 
 func (tool *Tool) Print() {
 	fmt.Printf("Name: %s\n", tool.Name)
-	fmt.Printf("  %+v", tool)
 	fmt.Printf("  Description: %s\n", tool.Description)
 	fmt.Printf("  Homepage: %s\n", tool.Homepage)
 	fmt.Printf("  Version: %s\n", tool.Version)
