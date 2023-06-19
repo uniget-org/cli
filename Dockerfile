@@ -17,7 +17,7 @@ COPY --link --from=binary /go/src/github.com/nicholasdille/docker-setup/bin/dock
 FROM ubuntu:22.04 AS ubuntu
 COPY --from=docker-setup /usr/local/bin/docker-setup /usr/local/bin/docker-setup
 
-FROM debian:11.7@sha256:1e5f2d70c9441c971607727f56d0776fb9eecf23cd37b595b26db7a974b2301d AS debian
+FROM debian:12.0@sha256:d568e251e460295a8743e9d5ef7de673c5a8f9027db11f4e666e96fb5bed708e AS debian
 COPY --from=docker-setup /usr/local/bin/docker-setup /usr/local/bin/docker-setup
 
 FROM alpine:3.18@sha256:82d1e9d7ed48a7523bdebc18cf6290bdb97b82302a8a9c27d4fe885949ea94d1 AS alpine
