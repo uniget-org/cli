@@ -60,10 +60,10 @@ var installCmd = &cobra.Command{
 			requestedTools = tools.GetByTags(args)
 
 		} else if installedMode {
-			pterm.Debug.Printf("Collecting installed tools\n")
+			pterm.Debug.Println("Collecting installed tools")
 			spinnerInstalledTools, _ := pterm.DefaultSpinner.Start("Collecting installed tools...")
 			for index, tool := range tools.Tools {
-				pterm.Debug.Printf("Getting status for requested tool %s\n", tool.Name)
+				pterm.Debug.Printfln("Getting status for requested tool %s", tool.Name)
 				tools.Tools[index].ReplaceVariables(prefix+"/"+target, arch, altArch)
 
 				err := tools.Tools[index].GetBinaryStatus()
@@ -77,7 +77,7 @@ var installCmd = &cobra.Command{
 				}
 
 				if tools.Tools[index].Status.MarkerFilePresent && tools.Tools[index].Status.BinaryPresent {
-					pterm.Debug.Printf("Adding %s to requested tools\n", tool.Name)
+					pterm.Debug.Printfln("Adding %s to requested tools", tool.Name)
 					requestedTools.Tools = append(requestedTools.Tools, tool)
 				}
 			}
@@ -89,7 +89,7 @@ var installCmd = &cobra.Command{
 		} else {
 			requestedTools = tools.GetByNames(args)
 		}
-		pterm.Debug.Printf("Requested %d tool(s)\n", len(requestedTools.Tools))
+		pterm.Debug.Printfln("Requested %d tool(s)", len(requestedTools.Tools))
 
 		// Add dependencies of requested tools
 		// Set installation order
@@ -100,13 +100,13 @@ var installCmd = &cobra.Command{
 				return fmt.Errorf("unable to resolve dependencies for %s: %s", tool.Name, err)
 			}
 		}
-		pterm.Debug.Printf("Planned %d tool(s)\n", len(plannedTools.Tools))
+		pterm.Debug.Printfln("Planned %d tool(s)", len(plannedTools.Tools))
 		spinnerResolveDeps.Info()
 
 		// Populate status of planned tools
 		spinnerGetStatus, _ := pterm.DefaultSpinner.Start("Getting status of requested tools...")
 		for index, tool := range plannedTools.Tools {
-			pterm.Debug.Printf("Getting status for requested tool %s\n", tool.Name)
+			pterm.Debug.Printfln("Getting status for requested tool %s", tool.Name)
 			plannedTools.Tools[index].ReplaceVariables(prefix+"/"+target, arch, altArch)
 
 			err := plannedTools.Tools[index].GetBinaryStatus()
@@ -161,16 +161,16 @@ var installCmd = &cobra.Command{
 			plannedTools.ListWithStatus()
 		}
 		if len(conflictsWithInstalled.Tools) > 0 {
-			pterm.Error.Printf("Conflicts with installed tools:\n")
+			pterm.Error.Printfln("Conflicts with installed tools:")
 			for _, conflict := range conflictsWithInstalled.Tools {
-				pterm.Error.Printf("  %s conflicts with %s\n", conflict.Name, strings.Join(conflict.ConflictsWith, ", "))
+				pterm.Error.Printfln("  %s conflicts with %s", conflict.Name, strings.Join(conflict.ConflictsWith, ", "))
 			}
 			conflictsDetected = true
 		}
 		if len(conflictsBetweenPlanned.Tools) > 0 {
-			pterm.Error.Printf("Conflicts between planned tools:\n")
+			pterm.Error.Printfln("Conflicts between planned tools:")
 			for _, conflict := range conflictsBetweenPlanned.Tools {
-				pterm.Error.Printf("  %s conflicts with %s\n", conflict.Name, strings.Join(conflict.ConflictsWith, ", "))
+				pterm.Error.Printfln("  %s conflicts with %s", conflict.Name, strings.Join(conflict.ConflictsWith, ", "))
 			}
 			conflictsDetected = true
 		}
@@ -203,15 +203,15 @@ var installCmd = &cobra.Command{
 		assertLibDirectory()
 		for _, tool := range plannedTools.Tools {
 			if tool.Status.MarkerFilePresent && tool.Status.VersionMatches && !reinstall {
-				fmt.Printf("Skipping %s %s because it is already installed.\n", tool.Name, tool.Version)
+				pterm.Info.Printfln("Skipping %s %s because it is already installed.", tool.Name, tool.Version)
 				continue
 			}
 			if tool.Status.SkipDueToConflicts {
-				fmt.Printf("Skipping %s because it conflicts with another tool.\n", tool.Name)
+				pterm.Info.Printfln("Skipping %s because it conflicts with another tool.", tool.Name)
 				continue
 			}
 			if skipDependencies && tool.Status.IsDependency {
-				fmt.Printf("Skipping %s because it is a dependency (--skip-deps was specified)\n", tool.Name)
+				pterm.Info.Printfln("Skipping %s because it is a dependency (--skip-deps was specified)", tool.Name)
 				continue
 			}
 
