@@ -37,6 +37,9 @@ jobs:
       with:
         path: renovate/cache
         key: renovate-cache
+        restore_keys: |
+          renovate-cache-${{ github.sha }}
+          renovate-cache-
 
     - name: Prepare permissions
       run: |
@@ -64,4 +67,4 @@ jobs:
       uses: actions/cache/save@v3
       with:
         path: renovate/cache
-        key: ${{ steps.cache-restore.outputs.cache-primary-key }}
+        key: ${{ steps.cache-restore.outputs.cache-primary-key }}-${{ github.sha }}
