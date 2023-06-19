@@ -20,6 +20,8 @@ var header string = `
                                                                 |_|
 `
 var logLevel string
+var debug bool
+var trace bool
 
 var (
 	rootCmd = &cobra.Command{
@@ -49,6 +51,12 @@ func init() {
 
 func main() {
 	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
+		if debug {
+			logLevel = "debug"
+		} else if trace {
+			logLevel = "trace"
+		}
+
 		log.SetOutput(os.Stdout)
 		level, err := log.ParseLevel(logLevel)
 		if err != nil {
@@ -88,7 +96,8 @@ func main() {
 		return nil
 	}
 	rootCmd.PersistentFlags().StringVarP(&logLevel, "log-level", "l", log.WarnLevel.String(), "Log level (trace, debug, info, warning, error)")
-	// TODO: Add flags --trace and --debug (make mutually exclusive)
+	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "d", false, "Set log level to debug")
+	rootCmd.PersistentFlags().BoolVar(&trace, "trace", false, "Set log level to trace")
 	rootCmd.PersistentFlags().StringVarP(&prefix, "prefix", "p", "", "Prefix for installation")
 	rootCmd.PersistentFlags().StringVarP(&target, "target", "t", "usr/local", "Target directory for installation")
 	rootCmd.PersistentFlags().StringVarP(&cacheDirectory, "cache-directory", "C", "var/cache/docker-setup", "Cache directory relative to PREFIX")
