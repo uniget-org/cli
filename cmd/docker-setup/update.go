@@ -23,6 +23,13 @@ var updateCmd = &cobra.Command{
 	Short: "Update tool manifest",
 	Long:  header + "\nUpdate tool manifest",
 	Args:  cobra.NoArgs,
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		if fileExists(prefix + "/" + metadataFile) {
+			return loadMetadata()
+		}
+
+		return nil
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		assertCacheDirectory()
 		err := containers.GetManifest(registryImagePrefix+"metadata:main", altArch, func(blob blob.Reader) error {
@@ -44,18 +51,41 @@ var updateCmd = &cobra.Command{
 			return fmt.Errorf("error getting manifest: %s", err)
 		}
 
+		oldTools := tools
 		err = loadMetadata()
 		if err != nil {
 			return fmt.Errorf("error loading metadata: %s", err)
 		}
 
-		// TODO: Display commit and changes for metadata
+		if len(oldTools.Tools) > 0 {
+			for _, tool := range tools.Tools {
+				oldTool, _ := oldTools.GetByName(tool.Name)
+				log.Tracef("Got tool for %s: %v\n", tool.Name, oldTool)
+
+				if oldTool == nil {
+					fmt.Printf("New %s v%s\n", tool.Name, tool.Version)
+
+				} else if tool.Version != oldTool.Version {
+					fmt.Printf("Update %s %s -> %s\n", tool.Name, oldTool.Version, tool.Version)
+				}
+			}
+		}
 
 		return nil
 	},
 }
 
 func loadMetadata() error {
+	var err error
+	tools, err = tool.LoadFromFile(prefix + "/" + metadataFile)
+	if err != nil {
+		return fmt.Errorf("failed to load metadata from file %s: %s", prefix+"/"+metadataFile, err)
+	}
+
+	return nil
+}
+
+func assertLoadMetadata() error {
 	if !fileExists(prefix + "/" + metadataFile) {
 		return fmt.Errorf("metadata file %s does not exist", prefix+"/"+metadataFile)
 	}

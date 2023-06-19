@@ -15,7 +15,7 @@ var listCmd = &cobra.Command{
 	Long:    header + "\nList tools",
 	Args:    cobra.NoArgs,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		return loadMetadata()
+		return assertLoadMetadata()
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		assertMetadataFileExists()

@@ -25,7 +25,7 @@ var searchCmd = &cobra.Command{
 	Args:      cobra.ExactArgs(1),
 	ValidArgs: tools.GetNames(),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		return loadMetadata()
+		return assertLoadMetadata()
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		assertMetadataFileExists()
