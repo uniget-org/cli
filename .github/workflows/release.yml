@@ -35,9 +35,9 @@ jobs:
       id: get_version
       run: |
         TAG="${GITHUB_REF#refs/tags/}"
-        echo "::set-output name=tag::${TAG}"
-        echo "::set-output name=version::${TAG#v}"
-        echo "::set-output name=prerelease::$(if test "$(helper/usr/local/bin/semver get prerel "${TAG#v}")" == ""; then echo "false"; else echo "true"; fi)"
+        echo "tag=${TAG}" >>"${GITHUB_OUTPUT}"
+        echo "version=${TAG#v}" >>"${GITHUB_OUTPUT}"
+        echo "prerelease=$(if test "$(helper/usr/local/bin/semver get prerel "${TAG#v}")" == ""; then echo "false"; else echo "true"; fi)" >>"${GITHUB_OUTPUT}"
 
   release:
     name: Release
