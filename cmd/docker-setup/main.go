@@ -100,8 +100,10 @@ func main() {
 	rootCmd.PersistentFlags().BoolVar(&trace, "trace", false, "Set log level to trace")
 	rootCmd.PersistentFlags().StringVarP(&prefix, "prefix", "p", "", "Prefix for installation")
 	rootCmd.PersistentFlags().StringVarP(&target, "target", "t", "usr/local", "Target directory for installation")
-	rootCmd.PersistentFlags().StringVarP(&cacheDirectory, "cache-directory", "C", "var/cache/docker-setup", "Cache directory relative to PREFIX")
-	rootCmd.PersistentFlags().StringVarP(&libDirectory, "lib-directory", "L", "var/lib/docker-setup", "Library directory relative to PREFIX")
+	rootCmd.PersistentFlags().StringVarP(&cacheRoot, "cache-root", "C", "var/cache", "Cache root directory relative to PREFIX")
+	rootCmd.PersistentFlags().StringVar(&cacheDirectory, "cache-directory", "docker-setup", "Cache directory relative to CACHE-ROOT")
+	rootCmd.PersistentFlags().StringVarP(&libRoot, "lib-root", "L", "var/lib", "Library root directory relative to PREFIX")
+	rootCmd.PersistentFlags().StringVar(&libDirectory, "lib-directory", "docker-setup", "Library directory relative to LIB-ROOT")
 	rootCmd.PersistentFlags().BoolVarP(&user, "user", "u", false, "Install in user context")
 	rootCmd.PersistentFlags().StringVarP(&metadataFileName, "metadata-file", "f", "metadata.json", "Metadata file")
 
