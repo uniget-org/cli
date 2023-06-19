@@ -72,6 +72,19 @@ func main() {
 			}
 		}
 
+		if user {
+			log.Debugf("Installing in user context")
+			target = os.Getenv("HOME") + "/.local/bin"
+			cacheRoot = os.Getenv("HOME") + "/.cache"
+			cacheDirectory = cacheRoot + "/docker-setup"
+			libRoot = os.Getenv("HOME") + "/.local/state"
+			libDirectory = libRoot + "/docker-setup"
+
+		} else {
+			cacheDirectory = cacheRoot + "/" + cacheDirectory
+			libDirectory = libRoot + "/" + libDirectory
+		}
+
 		return nil
 	}
 	rootCmd.PersistentFlags().StringVarP(&logLevel, "log-level", "l", log.WarnLevel.String(), "Log level (trace, debug, info, warning, error)")
@@ -80,7 +93,13 @@ func main() {
 	rootCmd.PersistentFlags().StringVarP(&target, "target", "t", "usr/local", "Target directory for installation")
 	rootCmd.PersistentFlags().StringVarP(&cacheDirectory, "cache-directory", "C", "var/cache/docker-setup", "Cache directory relative to PREFIX")
 	rootCmd.PersistentFlags().StringVarP(&libDirectory, "lib-directory", "L", "var/lib/docker-setup", "Library directory relative to PREFIX")
+	rootCmd.PersistentFlags().BoolVarP(&user, "user", "u", false, "Install in user context")
 	rootCmd.PersistentFlags().StringVarP(&metadataFileName, "metadata-file", "f", "metadata.json", "Metadata file")
+
+	rootCmd.MarkFlagsMutuallyExclusive("prefix", "user")
+	rootCmd.MarkFlagsMutuallyExclusive("target", "user")
+	rootCmd.MarkFlagsMutuallyExclusive("cache-directory", "user")
+	rootCmd.MarkFlagsMutuallyExclusive("lib-directory", "user")
 
 	err := rootCmd.Execute()
 	if err != nil {

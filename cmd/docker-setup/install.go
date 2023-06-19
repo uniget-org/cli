@@ -47,8 +47,6 @@ var installCmd = &cobra.Command{
 		return assertLoadMetadata()
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		// TODO: Introduce --user and adjust libRoot and cacheRoot when set
-
 		assertMetadataFileExists()
 		assertMetadataIsLoaded()
 

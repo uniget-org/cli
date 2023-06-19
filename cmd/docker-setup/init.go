@@ -21,6 +21,7 @@ var cacheRoot = "var/cache"
 var cacheDirectory = cacheRoot + "/docker-setup"
 var libRoot = "var/lib"
 var libDirectory = libRoot + "/docker-setup"
+var user = false
 var metadataFileName = "metadata.json"
 var metadataFile = cacheDirectory + "/" + metadataFileName
 var registry = "ghcr.io"
