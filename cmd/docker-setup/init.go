@@ -30,6 +30,7 @@ var registryImagePrefix = registry + "/" + repository + toolSeparator
 var tools tool.Tools
 
 var emojiTool = "\U0001F528"
+var emojiRun = "\U0001FE0F"
 
 func directoryExists(directory string) bool {
 	log.Tracef("Checking if directory %s exists", directory)

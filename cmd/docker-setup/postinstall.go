@@ -16,12 +16,10 @@ func initPostinstallCmd() {
 }
 
 var postinstallCmd = &cobra.Command{
-	Use:       "install [tool...]",
-	Aliases:   []string{"i"},
-	Short:     "Install tools",
-	Long:      header + "\nInstall and update tools",
-	Args:      cobra.OnlyValidArgs,
-	ValidArgs: tools.GetNames(),
+	Use:   "postinstall",
+	Short: "Run postinstall for tools",
+	Long:  header + "\nRun postinstall for tools",
+	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return postinstall()
 	},
@@ -50,13 +48,14 @@ func postinstall() error {
 			if !file.IsDir() && strings.HasSuffix(file.Name(), ".sh") {
 				fmt.Printf("Running post_install script %s\n", file.Name())
 
-				log.Tracef("Running post_install script %s", "/"+libDirectory+"/post_install/"+file.Name())
+				log.Tracef("%s Running post_install script %s", emojiRun, "/"+libDirectory+"/post_install/"+file.Name())
 				cmd := exec.Command("/bin/bash", "/"+libDirectory+"/post_install/"+file.Name())
 				cmd.Env = append(os.Environ(),
 					"prefix=",
 					"target=/"+target,
 					"arch="+arch,
 					"alt_arch="+altArch,
+					"docker_setup_contrib=/"+libDirectory+"/contrib",
 				)
 				output, err := cmd.CombinedOutput()
 				if err != nil {
