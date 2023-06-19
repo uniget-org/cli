@@ -9,7 +9,7 @@ jobs:
 
   prepare:
     name: Prepare
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     outputs:
       tag: ${{ steps.get_version.output.tag }}
       version: ${{ steps.get_version.outputs.version }}
@@ -43,7 +43,7 @@ jobs:
     name: Release
     needs:
     - prepare
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
 
     - name: Checkout code
@@ -108,7 +108,7 @@ jobs:
     needs:
     - prepare
     - release
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
 
     - name: Checkout code
