@@ -37,7 +37,7 @@ jobs:
       with:
         path: renovate/cache
         key: renovate-cache
-        restore_keys: |
+        restore-keys: |
           renovate-cache-${{ github.sha }}
           renovate-cache-
 
