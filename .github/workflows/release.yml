@@ -11,7 +11,7 @@ jobs:
     name: Prepare
     runs-on: ubuntu-22.04
     outputs:
-      tag: ${{ steps.get_version.output.tag }}
+      tag: ${{ steps.get_version.outputs.tag }}
       version: ${{ steps.get_version.outputs.version }}
       prerelease: ${{ steps.get_version.outputs.prerelease }}
     steps:
