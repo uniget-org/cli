@@ -13,6 +13,7 @@ import (
 var defaultMode bool
 var tagsMode bool
 var installedMode bool
+var allMode bool
 var skipDependencies bool
 var skipConflicts bool
 var check bool
@@ -27,12 +28,13 @@ func initInstallCmd() {
 	installCmd.Flags().BoolVar(&defaultMode, "default", false, "Install default tools")
 	installCmd.Flags().BoolVar(&tagsMode, "tags", false, "Install tool(s) matching tag")
 	installCmd.Flags().BoolVarP(&installedMode, "installed", "i", false, "Update installed tool(s)")
+	installCmd.Flags().BoolVarP(&allMode, "all", "a", false, "Install all tools")
 	installCmd.Flags().BoolVar(&plan, "plan", false, "Show tool(s) planned installation")
 	installCmd.Flags().BoolVar(&skipDependencies, "skip-deps", false, "Skip dependencies")
 	installCmd.Flags().BoolVar(&skipConflicts, "skip-conflicts", false, "Skip conflicting tools")
 	installCmd.Flags().BoolVarP(&check, "check", "c", false, "Abort after checking versions")
 	installCmd.Flags().BoolVarP(&reinstall, "reinstall", "r", false, "Reinstall tool(s)")
-	installCmd.MarkFlagsMutuallyExclusive("default", "tags", "installed")
+	installCmd.MarkFlagsMutuallyExclusive("default", "tags", "installed", "all")
 	installCmd.MarkFlagsMutuallyExclusive("check", "plan")
 }
 
@@ -51,7 +53,6 @@ var installCmd = &cobra.Command{
 		assertMetadataIsLoaded()
 
 		// Collect requested tools based on mode
-		// TODO: Add --all flag
 		if defaultMode {
 			requestedTools = tools.GetByTags([]string{"category/default"})
 
@@ -79,6 +80,9 @@ var installCmd = &cobra.Command{
 					requestedTools.Tools = append(requestedTools.Tools, tool)
 				}
 			}
+
+		} else if allMode {
+			requestedTools = tools
 
 		} else {
 			requestedTools = tools.GetByNames(args)
