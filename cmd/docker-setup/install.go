@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 
 	"github.com/nicholasdille/docker-setup/pkg/tool"
@@ -60,9 +60,10 @@ var installCmd = &cobra.Command{
 			requestedTools = tools.GetByTags(args)
 
 		} else if installedMode {
-			log.Debugf("Collecting installed tools")
+			pterm.Debug.Printf("Collecting installed tools\n")
+			spinnerInstalledTools, _ := pterm.DefaultSpinner.Start("Collecting installed tools...")
 			for index, tool := range tools.Tools {
-				log.Tracef("Getting status for requested tool %s", tool.Name)
+				pterm.Debug.Printf("Getting status for requested tool %s\n", tool.Name)
 				tools.Tools[index].ReplaceVariables(prefix+"/"+target, arch, altArch)
 
 				err := tools.Tools[index].GetBinaryStatus()
@@ -76,10 +77,11 @@ var installCmd = &cobra.Command{
 				}
 
 				if tools.Tools[index].Status.MarkerFilePresent && tools.Tools[index].Status.BinaryPresent {
-					log.Tracef("Adding %s to requested tools", tool.Name)
+					pterm.Debug.Printf("Adding %s to requested tools\n", tool.Name)
 					requestedTools.Tools = append(requestedTools.Tools, tool)
 				}
 			}
+			spinnerInstalledTools.Info()
 
 		} else if allMode {
 			requestedTools = tools
@@ -87,22 +89,24 @@ var installCmd = &cobra.Command{
 		} else {
 			requestedTools = tools.GetByNames(args)
 		}
-		log.Debugf("Requested %d tool(s)", len(requestedTools.Tools))
+		pterm.Debug.Printf("Requested %d tool(s)\n", len(requestedTools.Tools))
 
 		// Add dependencies of requested tools
 		// Set installation order
+		spinnerResolveDeps, _ := pterm.DefaultSpinner.Start("Resolving dependencies...")
 		for _, tool := range requestedTools.Tools {
 			err := tools.ResolveDependencies(&plannedTools, tool.Name)
 			if err != nil {
 				return fmt.Errorf("unable to resolve dependencies for %s: %s", tool.Name, err)
 			}
 		}
-		log.Debugf("Planned %d tool(s)", len(plannedTools.Tools))
+		pterm.Debug.Printf("Planned %d tool(s)\n", len(plannedTools.Tools))
+		spinnerResolveDeps.Info()
 
 		// Populate status of planned tools
-		// TODO: Display spinner
+		spinnerGetStatus, _ := pterm.DefaultSpinner.Start("Getting status of requested tools...")
 		for index, tool := range plannedTools.Tools {
-			log.Tracef("Getting status for requested tool %s", tool.Name)
+			pterm.Debug.Printf("Getting status for requested tool %s\n", tool.Name)
 			plannedTools.Tools[index].ReplaceVariables(prefix+"/"+target, arch, altArch)
 
 			err := plannedTools.Tools[index].GetBinaryStatus()
@@ -123,11 +127,13 @@ var installCmd = &cobra.Command{
 				}
 			}
 		}
+		spinnerGetStatus.Info()
 
 		// Check for conflicts
 		var conflictsDetected = false
 		var conflictsWithInstalled tool.Tools
 		var conflictsBetweenPlanned tool.Tools
+		spinnerConclicts, _ := pterm.DefaultSpinner.Start("Checking for conflicts...")
 		for index, tool := range plannedTools.Tools {
 			if !tool.Status.BinaryPresent && len(tool.ConflictsWith) > 0 {
 				for _, conflict := range tool.ConflictsWith {
@@ -150,20 +156,21 @@ var installCmd = &cobra.Command{
 				}
 			}
 		}
+		spinnerConclicts.Info()
 		if conflictsDetected {
 			plannedTools.ListWithStatus()
 		}
 		if len(conflictsWithInstalled.Tools) > 0 {
-			log.Errorf("Conflicts with installed tools:")
+			pterm.Error.Printf("Conflicts with installed tools:\n")
 			for _, conflict := range conflictsWithInstalled.Tools {
-				log.Errorf("  %s conflicts with %s", conflict.Name, strings.Join(conflict.ConflictsWith, ", "))
+				pterm.Error.Printf("  %s conflicts with %s\n", conflict.Name, strings.Join(conflict.ConflictsWith, ", "))
 			}
 			conflictsDetected = true
 		}
 		if len(conflictsBetweenPlanned.Tools) > 0 {
-			log.Errorf("Conflicts between planned tools:")
+			pterm.Error.Printf("Conflicts between planned tools:\n")
 			for _, conflict := range conflictsBetweenPlanned.Tools {
-				log.Errorf("  %s conflicts with %s", conflict.Name, strings.Join(conflict.ConflictsWith, ", "))
+				pterm.Error.Printf("  %s conflicts with %s\n", conflict.Name, strings.Join(conflict.ConflictsWith, ", "))
 			}
 			conflictsDetected = true
 		}
