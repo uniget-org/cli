@@ -64,13 +64,45 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
         TAG: ${{ needs.prepare.outputs.tag }}
       run: |
-        LATEST_RELEASE_PUBLISHED="$(
-            curl "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/releases/latest" \
+        LATEST_RELEASE_TAG="$(
+            curl --url "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/releases/latest" \
                 --silent \
                 --user "github-ci-token:${GITHUB_TOKEN}" \
-            | jq --raw-output '.published_at'
+            | jq --raw-output '.tag_name'
         )"
-        echo "Latest release was published at ${LATEST_RELEASE_PUBLISHED}."
+        TAG_URL="$(
+            curl --url ${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/git/ref/tags/${LATEST_RELEASE_TAG}" \
+                --silent \
+                --user "github-ci-token:${GITHUB_TOKEN}" \
+            | jq --raw-output '.object.url'
+        )"
+
+        # TAG_URL points to a commit (lightweight tag)
+        if grep -q '/git/commits/' <<<"${TAG_URL}"; then
+            LATEST_RELEASE_COMMIT_DATE="$(
+                curl --url "${TAG_URL}" \
+                    --silent \
+                    --user "github-ci-token:${GITHUB_TOKEN}" \
+                | jq --raw-output '.committer.date'
+            )"
+
+        # TAG_URL points to a tag (annotated tag)
+        else
+            COMMIT_URL="$(
+                curl --url "${TAG_URL}" \
+                    --silent \
+                    --user "github-ci-token:${GITHUB_TOKEN}" \
+                | jq --raw-output '.object.url'
+            )"
+            LATEST_RELEASE_COMMIT_DATE="$(
+                curl --url "${COMMIT_URL}" \
+                    --silent \
+                    --user "github-ci-token:${GITHUB_TOKEN}" \
+                | jq --raw-output '.committer.date'
+            )"
+        fi
+        echo "Latest release was published at ${LATEST_RELEASE_COMMIT_DATE}."
+
         echo "## Installation instructions" >>body.txt
         echo >>body.txt
         echo '```bash' >>body.txt
@@ -79,14 +111,30 @@ jobs:
         echo "docker-setup install --plan" >>body.txt
         echo '```' >>body.txt
         echo >>body.txt
-        echo "## Closed issues and pull requests" >>body.txt
+
+        echo "## CLI" >>body.txt
         echo >>body.txt
-        hub issue \
-            --state closed \
-            --include-pulls \
-            --since "${LATEST_RELEASE_PUBLISHED}" \
-            --format "- %t ([%i](%U))%n" \
-            --milestone "${TAG}" \
+        git log --since="$(date -d '${LATEST_RELEASE_COMMIT_DATE} + 1 seconds' --iso-8601=s)" --pretty=format:'%h %s' -- *.go \
+        | tee body.txt || true
+
+        echo "## Documentation" >>body.txt
+        echo >>body.txt
+        git log --since="$(date -d '${LATEST_RELEASE_COMMIT_DATE} + 1 seconds' --iso-8601=s)" --pretty=format:'%h %s' -- 'README.md' 'docs/**' \
+        | tee body.txt || true
+
+        echo "## Tooling" >>body.txt
+        echo >>body.txt
+        git log --since="$(date -d '${LATEST_RELEASE_COMMIT_DATE} + 1 seconds' --iso-8601=s)" --pretty=format:'%h %s' -- '.github/workflows/**' 'scripts/**' \
+        | tee body.txt || true
+
+        echo "## Site" >>body.txt
+        echo >>body.txt
+        git log --since="$(date -d '${LATEST_RELEASE_COMMIT_DATE} + 1 seconds' --iso-8601=s)" --pretty=format:'%h %s' -- 'site/**' \
+        | tee body.txt || true
+
+        echo "## Tools" >>body.txt
+        echo >>body.txt
+        git log --since="$(date -d '${LATEST_RELEASE_COMMIT_DATE} + 1 seconds' --iso-8601=s)" --pretty=format:'%h %s' -- 'tools/**' \
         | tee body.txt || true
 
     - name: Create release
