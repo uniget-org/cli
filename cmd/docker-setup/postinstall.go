@@ -26,11 +26,6 @@ var postinstallCmd = &cobra.Command{
 }
 
 func postinstall() error {
-	if len(prefix) > 0 {
-		log.Warningf("prefix cannot be set for postinstall scripts to run")
-		return nil
-	}
-
 	if directoryExists("/" + libDirectory + "/post_install") {
 		entries, err := os.ReadDir("/" + libDirectory + "/post_install")
 		if err != nil {
@@ -42,31 +37,35 @@ func postinstall() error {
 			if err != nil {
 				return fmt.Errorf("unable to get info for %s: %s", entry.Name(), err)
 			}
-			infos = append(infos, info)
+			if !info.IsDir() && strings.HasSuffix(info.Name(), ".sh") {
+				infos = append(infos, info)
+			}
+		}
+		if len(infos) > 0 && len(prefix) > 0 {
+			log.Warningf("prefix cannot be set for postinstall scripts to run")
+			return nil
 		}
 		for _, file := range infos {
-			if !file.IsDir() && strings.HasSuffix(file.Name(), ".sh") {
-				fmt.Printf("Running post_install script %s\n", file.Name())
+			fmt.Printf("Running post_install script %s\n", file.Name())
 
-				log.Tracef("%s Running post_install script %s", emojiRun, "/"+libDirectory+"/post_install/"+file.Name())
-				cmd := exec.Command("/bin/bash", "/"+libDirectory+"/post_install/"+file.Name())
-				cmd.Env = append(os.Environ(),
-					"prefix=",
-					"target=/"+target,
-					"arch="+arch,
-					"alt_arch="+altArch,
-					"docker_setup_contrib=/"+libDirectory+"/contrib",
-				)
-				output, err := cmd.CombinedOutput()
-				if err != nil {
-					return fmt.Errorf("unable to execute post_install script %s: %s", file.Name(), err)
-				}
-				fmt.Printf("%s\n", output)
+			log.Tracef("%s Running post_install script %s", emojiRun, "/"+libDirectory+"/post_install/"+file.Name())
+			cmd := exec.Command("/bin/bash", "/"+libDirectory+"/post_install/"+file.Name())
+			cmd.Env = append(os.Environ(),
+				"prefix=",
+				"target=/"+target,
+				"arch="+arch,
+				"alt_arch="+altArch,
+				"docker_setup_contrib=/"+libDirectory+"/contrib",
+			)
+			output, err := cmd.CombinedOutput()
+			if err != nil {
+				return fmt.Errorf("unable to execute post_install script %s: %s", file.Name(), err)
+			}
+			fmt.Printf("%s\n", output)
 
-				err = os.Remove("/" + libDirectory + "/post_install/" + file.Name())
-				if err != nil {
-					return fmt.Errorf("unable to remove post_install script %s: %s", file.Name(), err)
-				}
+			err = os.Remove("/" + libDirectory + "/post_install/" + file.Name())
+			if err != nil {
+				return fmt.Errorf("unable to remove post_install script %s: %s", file.Name(), err)
 			}
 		}
 	}
