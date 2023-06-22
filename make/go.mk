@@ -6,27 +6,36 @@ GO         = go
 go-info:
 	@echo "GO_VERSION: $(GO_VERSION)"
 
-coverage.out.tmp: $(GO_SOURCES)
+coverage.out.tmp: \
+		$(GO_SOURCES)
 	@$(GO) test -v -buildvcs -coverprofile ./coverage.out.tmp ./...
 
 coverage.out: coverage.out.tmp
 	@cat ./coverage.out.tmp | grep -v '.pb.go' | grep -v 'mock_' > ./coverage.out
 
 .PHONY:
-test: $(GO_SOURCES) ; $(info $(M) Running unit tests...)
+test: \
+		$(GO_SOURCES) \
+		; $(info $(M) Running unit tests...)
 	@$(GO) test ./...
 
 .PHONY:
-cover: coverage.out
+cover: \
+		coverage.out
 	@echo ""
 	@$(GO) tool cover -func ./coverage.out
 
-bin/docker-setup: bin/docker-setup-linux-$(ALT_ARCH)
+bin/docker-setup: \
+		bin/docker-setup-linux-$(ALT_ARCH)
 	@\
 	cp bin/docker-setup-linux-$(ALT_ARCH) bin/docker-setup; \
 	cp bin/docker-setup-linux-$(ALT_ARCH) docker-setup
 
-bin/docker-setup-linux-$(ALT_ARCH):bin/docker-setup-linux-%: make/go.mk $(GO_SOURCES) test ; $(info $(M) Building docker-setup version $(GO_VERSION) for $(ALT_ARCH)...)
+bin/docker-setup-linux-$(ALT_ARCH):bin/docker-setup-linux-%: \
+		make/go.mk \
+		$(GO_SOURCES) \
+		test \
+		; $(info $(M) Building docker-setup version $(GO_VERSION) for $(ALT_ARCH)...)
 	@\
 	export GOOS=linux; \
 	export GOARCH=$*; \
