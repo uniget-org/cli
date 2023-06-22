@@ -17,7 +17,7 @@ builds:
 
 sboms:
 - id: foo
-  cmd: syft
+  cmd: helper/usr/local/bin/syft
   args: [ "${artifact}", "--output", "cyclonedx-json", "--file", "$document" ]
   documents:
   - ${artifact}.cyclonedx.json
