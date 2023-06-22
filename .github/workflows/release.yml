@@ -55,6 +55,8 @@ jobs:
         | tar --extract --gzip --directory=helper/usr/local/bin/ goreleaser
 
     - name: Build binary
+      env:
+        GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
       run: |
         helper/usr/local/bin/goreleaser release
 
