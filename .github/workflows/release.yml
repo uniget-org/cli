@@ -13,7 +13,6 @@ jobs:
     outputs:
       tag: ${{ steps.get_version.outputs.tag }}
       version: ${{ steps.get_version.outputs.version }}
-      prerelease: ${{ steps.get_version.outputs.prerelease }}
     steps:
 
     - name: printenv
@@ -37,7 +36,6 @@ jobs:
         TAG="${GITHUB_REF#refs/tags/}"
         echo "tag=${TAG}" >>"${GITHUB_OUTPUT}"
         echo "version=${TAG#v}" >>"${GITHUB_OUTPUT}"
-        echo "prerelease=$(if test "$(helper/usr/local/bin/semver get prerel "${TAG#v}")" == ""; then echo "false"; else echo "true"; fi)" >>"${GITHUB_OUTPUT}"
 
   release:
     name: Release
@@ -53,103 +51,7 @@ jobs:
 
     - name: Build binary
       run: |
-        make bin/docker-setup
-
-    - name: Create checksum
-      run: |
-        sha256sum bin/docker-setup >bin/docker-setup.sha256
-
-    - name: Create changelog
-      env:
-        GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
-        TAG: ${{ needs.prepare.outputs.tag }}
-      run: |
-        LATEST_RELEASE_TAG="$(
-            curl --url "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/releases/latest" \
-                --silent \
-                --user "github-ci-token:${GITHUB_TOKEN}" \
-            | jq --raw-output '.tag_name'
-        )"
-        TAG_URL="$(
-            curl --url "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/git/ref/tags/${LATEST_RELEASE_TAG}" \
-                --silent \
-                --user "github-ci-token:${GITHUB_TOKEN}" \
-            | jq --raw-output '.object.url'
-        )"
-
-        # TAG_URL points to a commit (lightweight tag)
-        if grep -q '/git/commits/' <<<"${TAG_URL}"; then
-            LATEST_RELEASE_COMMIT_DATE="$(
-                curl --url "${TAG_URL}" \
-                    --silent \
-                    --user "github-ci-token:${GITHUB_TOKEN}" \
-                | jq --raw-output '.committer.date'
-            )"
-
-        # TAG_URL points to a tag (annotated tag)
-        else
-            COMMIT_URL="$(
-                curl --url "${TAG_URL}" \
-                    --silent \
-                    --user "github-ci-token:${GITHUB_TOKEN}" \
-                | jq --raw-output '.object.url'
-            )"
-            LATEST_RELEASE_COMMIT_DATE="$(
-                curl --url "${COMMIT_URL}" \
-                    --silent \
-                    --user "github-ci-token:${GITHUB_TOKEN}" \
-                | jq --raw-output '.committer.date'
-            )"
-        fi
-        echo "Latest release was published at ${LATEST_RELEASE_COMMIT_DATE}."
-
-        echo "## Installation instructions" >>body.txt
-        echo >>body.txt
-        echo '```bash' >>body.txt
-        echo "curl --silent --location --output /usr/local/bin/docker-setup https://github.com/${GITHUB_REPOSITORY}/releases/download/${{ needs.prepare.outputs.tag }}/docker-setup" >>body.txt
-        echo "chmod +x /usr/local/bin/docker-setup" >>body.txt
-        echo "docker-setup install --plan" >>body.txt
-        echo '```' >>body.txt
-        echo >>body.txt
-
-        echo "## CLI" >>body.txt
-        echo >>body.txt
-        git log --since="$(date -d '${LATEST_RELEASE_COMMIT_DATE} + 1 seconds' --iso-8601=s)" --pretty=format:'%h %s' -- *.go \
-        | tee body.txt || true
-
-        echo "## Documentation" >>body.txt
-        echo >>body.txt
-        git log --since="$(date -d '${LATEST_RELEASE_COMMIT_DATE} + 1 seconds' --iso-8601=s)" --pretty=format:'%h %s' -- 'README.md' 'docs/**' \
-        | tee body.txt || true
-
-        echo "## Tooling" >>body.txt
-        echo >>body.txt
-        git log --since="$(date -d '${LATEST_RELEASE_COMMIT_DATE} + 1 seconds' --iso-8601=s)" --pretty=format:'%h %s' -- '.github/workflows/**' 'scripts/**' \
-        | tee body.txt || true
-
-        echo "## Site" >>body.txt
-        echo >>body.txt
-        git log --since="$(date -d '${LATEST_RELEASE_COMMIT_DATE} + 1 seconds' --iso-8601=s)" --pretty=format:'%h %s' -- 'site/**' \
-        | tee body.txt || true
-
-        echo "## Tools" >>body.txt
-        echo >>body.txt
-        git log --since="$(date -d '${LATEST_RELEASE_COMMIT_DATE} + 1 seconds' --iso-8601=s)" --pretty=format:'%h %s' -- 'tools/**' \
-        | tee body.txt || true
-
-    - name: Create release
-      id: create_release
-      uses: ncipollo/release-action@v1
-      with:
-        token: ${{ secrets.BOT_GITHUB_TOKEN }}
-        allowUpdates: true
-        name: "Version ${{ needs.prepare.outputs.version }}"
-        tag: ${{ needs.prepare.outputs.tag }}
-        draft: false
-        bodyFile: body.txt
-        prerelease: ${{ needs.prepare.outputs.prerelease }}
-        replacesArtifacts: true
-        artifacts: "bin/docker-setup,bin/docker-setup.sha256"
+        goreleaser release
 
   build:
     name: Build
