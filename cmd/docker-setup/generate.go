@@ -21,9 +21,6 @@ var generateCmd = &cobra.Command{
 	Long:      header + "\nGenerate Dockerfile for a tool",
 	Args:      cobra.MinimumNArgs(1),
 	ValidArgs: tools.GetNames(),
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		return assertLoadMetadata()
-	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var result []string
 

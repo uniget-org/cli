@@ -23,32 +23,10 @@ var updateCmd = &cobra.Command{
 	Short: "Update tool manifest",
 	Long:  header + "\nUpdate tool manifest",
 	Args:  cobra.NoArgs,
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if fileExists(prefix + "/" + metadataFile) {
-			return loadMetadata()
-		}
-
-		return nil
-	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		assertCacheDirectory()
-		err := containers.GetManifest(registryImagePrefix+"metadata:main", altArch, func(blob blob.Reader) error {
-			log.Tracef("Changing directory to %s", prefix+"/"+cacheDirectory)
-			err := os.Chdir(prefix + "/" + cacheDirectory)
-			if err != nil {
-				return fmt.Errorf("error changing directory to %s: %s", prefix+"/"+cacheDirectory, err)
-			}
-
-			log.Tracef("Extracting archive to %s", prefix+"/"+cacheDirectory)
-			err = archive.ExtractTarGz(blob)
-			if err != nil {
-				return fmt.Errorf("error extracting archive: %s", err)
-			}
-
-			return nil
-		})
+		err := downloadMetadata()
 		if err != nil {
-			return fmt.Errorf("error getting manifest: %s", err)
+			return fmt.Errorf("error downloading metadata: %s", err)
 		}
 
 		oldTools := tools
@@ -75,21 +53,31 @@ var updateCmd = &cobra.Command{
 	},
 }
 
-func loadMetadata() error {
-	var err error
-	tools, err = tool.LoadFromFile(prefix + "/" + metadataFile)
+func downloadMetadata() error {
+	assertCacheDirectory()
+	err := containers.GetManifest(registryImagePrefix+"metadata:main", altArch, func(blob blob.Reader) error {
+		log.Tracef("Changing directory to %s", prefix+"/"+cacheDirectory)
+		err := os.Chdir(prefix + "/" + cacheDirectory)
+		if err != nil {
+			return fmt.Errorf("error changing directory to %s: %s", prefix+"/"+cacheDirectory, err)
+		}
+
+		log.Tracef("Extracting archive to %s", prefix+"/"+cacheDirectory)
+		err = archive.ExtractTarGz(blob)
+		if err != nil {
+			return fmt.Errorf("error extracting archive: %s", err)
+		}
+
+		return nil
+	})
 	if err != nil {
-		return fmt.Errorf("failed to load metadata from file %s: %s", prefix+"/"+metadataFile, err)
+		return fmt.Errorf("error getting manifest: %s", err)
 	}
 
 	return nil
 }
 
-func assertLoadMetadata() error {
-	if !fileExists(prefix + "/" + metadataFile) {
-		return fmt.Errorf("metadata file %s does not exist", prefix+"/"+metadataFile)
-	}
-
+func loadMetadata() error {
 	var err error
 	tools, err = tool.LoadFromFile(prefix + "/" + metadataFile)
 	if err != nil {

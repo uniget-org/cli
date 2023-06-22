@@ -18,9 +18,6 @@ var tagsCmd = &cobra.Command{
 	Short:   "List tags",
 	Long:    header + "\nList tags",
 	Args:    cobra.NoArgs,
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		return assertLoadMetadata()
-	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		assertMetadataFileExists()
 		assertMetadataIsLoaded()

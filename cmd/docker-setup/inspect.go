@@ -16,9 +16,6 @@ var inspectCmd = &cobra.Command{
 	Long:      header + "\nInspect tools",
 	Args:      cobra.ExactArgs(1),
 	ValidArgs: tools.GetNames(),
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		return assertLoadMetadata()
-	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		assertMetadataFileExists()
 		assertMetadataIsLoaded()

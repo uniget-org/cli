@@ -93,6 +93,17 @@ func main() {
 			libDirectory = libRoot + "/" + libDirectory
 		}
 
+		if !fileExists(prefix + "/" + metadataFile) {
+			err := downloadMetadata()
+			if err != nil {
+				return fmt.Errorf("error downloading metadata: %s", err)
+			}
+		}
+		err = loadMetadata()
+		if err != nil {
+			return fmt.Errorf("error loading metadata: %s", err)
+		}
+
 		return nil
 	}
 	rootCmd.PersistentFlags().StringVarP(&logLevel, "log-level", "l", log.WarnLevel.String(), "Log level (trace, debug, info, warning, error)")
