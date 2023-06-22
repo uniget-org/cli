@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -102,6 +103,16 @@ func main() {
 		err = loadMetadata()
 		if err != nil {
 			return fmt.Errorf("error loading metadata: %s", err)
+		}
+
+		file, err := os.Stat(prefix + "/" + metadataFile)
+		if err != nil {
+			return fmt.Errorf("error stating metadata file: %s", err)
+		}
+		now := time.Now()
+		modifiedtime := file.ModTime()
+		if now.Sub(modifiedtime).Hours() > 24 {
+			fmt.Printf("Metadata file is older than 24 hours\n")
 		}
 
 		return nil
