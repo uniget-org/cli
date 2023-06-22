@@ -1,0 +1,45 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+project_name: docker-setup
+
+before:
+  hooks:
+  - go mod tidy
+
+builds:
+- main: ./cmd/docker-setup
+  binary: docker-setup
+  env:
+  - CGO_ENABLED=0
+  ldflags:
+  - -s -w -X main.version={{.Version}}
+  goos:
+  - linux
+  goarch:
+  - amd64
+  - arm64
+
+sboms:
+- id: foo
+  cmd: syft
+  args: [ "${artifact}", "--output", "cyclonedx-json", "--file", "$document" ]
+  documents:
+  - ${artifact}.cyclonedx.json
+
+archives:
+- format: tar.gz
+  name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+  files:
+  - LICENSE
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - '^docs:'
+    - '^test:'
+
+release:
+  draft: true

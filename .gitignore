@@ -11,3 +11,4 @@ report.txt
 /docker-setup
 /bin/docker-setup*
 coverage.*
+dist/
