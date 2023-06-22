@@ -47,7 +47,7 @@ jobs:
       uses: nicholasdille/docker-setup-action@main
       with:
         prefix: helper
-        tools: go goreleaser
+        tools: go goreleaser syft
 
     - name: Workaround
       run: |
