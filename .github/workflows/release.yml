@@ -47,7 +47,7 @@ jobs:
       uses: nicholasdille/docker-setup-action@main
       with:
         prefix: helper
-        tools: goreleaser
+        tools: go goreleaser
 
     - name: Build binary
       run: |

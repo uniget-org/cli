@@ -8,6 +8,7 @@ before:
 builds:
 - main: ./cmd/docker-setup
   binary: docker-setup
+  gobinary: helper/usr/local/bin/go
   env:
   - CGO_ENABLED=0
   ldflags:
