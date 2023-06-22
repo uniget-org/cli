@@ -75,14 +75,14 @@ func createCron() error {
 
 	// Write cronUpdateScript to /etc/cron.daily/docker-setup-update
 	updateScript := []byte(cronUpdateScript)
-	err = os.WriteFile(fmt.Sprintf("%s/docker-setup-update", cronWeeklyPath), updateScript, 0755)
+	err = os.WriteFile(fmt.Sprintf("%s/docker-setup-update", cronDailyPath), updateScript, 0755)
 	if err != nil {
 		return fmt.Errorf("cannot write cron update script: %w", err)
 	}
 
 	// Write cronUpgradeScript to /etc/cron.weekly/docker-setup-upgrade
 	upgradeScript := []byte(cronUpgradeScript)
-	err = os.WriteFile(fmt.Sprintf("%s/docker-setup-upgrade", cronDailyPath), upgradeScript, 0755)
+	err = os.WriteFile(fmt.Sprintf("%s/docker-setup-upgrade", cronWeeklyPath), upgradeScript, 0755)
 	if err != nil {
 		return fmt.Errorf("cannot write cron upgrade script: %w", err)
 	}
