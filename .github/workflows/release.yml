@@ -24,12 +24,6 @@ jobs:
       with:
         ref: ${{ needs.prepare.outputs.tag }}
 
-    - name: Install docker-setup
-      uses: nicholasdille/docker-setup-action@main
-      with:
-        prefix: helper
-        tools: semver
-
     - name: Get version
       id: get_version
       run: |
@@ -48,6 +42,12 @@ jobs:
       uses: actions/checkout@v3
       with:
         ref: ${{ needs.prepare.outputs.tag }}
+
+    - name: Install docker-setup
+      uses: nicholasdille/docker-setup-action@main
+      with:
+        prefix: helper
+        tools: goreleaser
 
     - name: Build binary
       run: |
