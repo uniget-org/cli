@@ -33,7 +33,7 @@ var describeCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("error getting tool %s", args[0])
 		}
-		tool.ReplaceVariables(prefix+target, arch, altArch)
+		tool.ReplaceVariables(prefix+"/"+target, arch, altArch)
 
 		if describeOutput == "pretty" {
 			tool.Print()
