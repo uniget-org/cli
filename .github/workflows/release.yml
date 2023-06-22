@@ -71,7 +71,7 @@ jobs:
             | jq --raw-output '.tag_name'
         )"
         TAG_URL="$(
-            curl --url ${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/git/ref/tags/${LATEST_RELEASE_TAG}" \
+            curl --url "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/git/ref/tags/${LATEST_RELEASE_TAG}" \
                 --silent \
                 --user "github-ci-token:${GITHUB_TOKEN}" \
             | jq --raw-output '.object.url'
