@@ -1,10 +1,6 @@
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 project_name: docker-setup
 
-before:
-  hooks:
-  - go mod tidy
-
 builds:
 - main: ./cmd/docker-setup
   binary: docker-setup
