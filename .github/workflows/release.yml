@@ -51,7 +51,7 @@ jobs:
 
     - name: Build binary
       run: |
-        goreleaser release
+        helper/usr/local/bin/goreleaser release
 
   build:
     name: Build
