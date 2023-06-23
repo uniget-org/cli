@@ -25,11 +25,20 @@ cover: \
 	@echo ""
 	@$(GO) tool cover -func ./coverage.out
 
-bin/docker-setup: \
-		bin/docker-setup-linux-$(ALT_ARCH)
+snapshot: \
+		$(HELPER)/var/lib/docker-setup/manifests/go.json \
+		$(HELPER)/var/lib/docker-setup/manifests/goreleaser.json \
+		$(HELPER)/var/lib/docker-setup/manifests/syft.json \
+		make/go.mk \
+		$(GO_SOURCES) \
+		; $(info $(M) Building snapshot of docker-setup...)
 	@\
-	cp bin/docker-setup-linux-$(ALT_ARCH) bin/docker-setup; \
-	cp bin/docker-setup-linux-$(ALT_ARCH) docker-setup
+	CGO_ENABLED=0 \
+		$(GO) build \
+			-buildvcs=false \
+			-ldflags "-w -s -X main.version=$(GO_VERSION)" \
+			-o docker-setup \
+			./cmd/docker-setup
 
 release: \
 		$(HELPER)/var/lib/docker-setup/manifests/go.json \
