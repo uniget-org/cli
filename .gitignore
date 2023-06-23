@@ -2,12 +2,7 @@
 .env.mk
 /helper
 metadata.json
-manifest.json
-tools/*/Dockerfile
-build.log
 cosign.key
-tools/*/sbom.json
-report.txt
 /docker-setup
 coverage.*
 dist/
