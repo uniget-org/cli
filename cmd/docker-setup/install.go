@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/pterm/pterm"
@@ -30,7 +31,7 @@ func initInstallCmd() {
 	installCmd.Flags().BoolVar(&tagsMode, "tags", false, "Install tool(s) matching tag")
 	installCmd.Flags().BoolVarP(&installedMode, "installed", "i", false, "Update installed tool(s)")
 	installCmd.Flags().BoolVarP(&allMode, "all", "a", false, "Install all tools")
-	installCmd.Flags().StringVarP(&filename, "file", "f", "", "Read tools from file")
+	installCmd.Flags().StringVar(&filename, "file", "", "Read tools from file")
 	installCmd.Flags().BoolVar(&plan, "plan", false, "Show tool(s) planned installation")
 	installCmd.Flags().BoolVar(&skipDependencies, "skip-deps", false, "Skip dependencies")
 	installCmd.Flags().BoolVar(&skipConflicts, "skip-conflicts", false, "Skip conflicting tools")
@@ -86,7 +87,23 @@ var installCmd = &cobra.Command{
 			requestedTools = tools
 
 		} else if filename != "" {
-			// TODO: Implement
+			data, err := os.ReadFile(filename)
+			if err != nil {
+				return fmt.Errorf("unable to read file %s: %s", filename, err)
+			}
+			for _, line := range strings.Split(string(data), "\n") {
+				if len(line) == 0 {
+					continue
+				} else if strings.HasPrefix(line, "#") {
+					continue
+				}
+				tool, err := tools.GetByName(line)
+				if err != nil {
+					pterm.Warning.Printfln("Unable to find tool %s: %s", line, err)
+					continue
+				}
+				requestedTools.Tools = append(requestedTools.Tools, *tool)
+			}
 
 		} else {
 			requestedTools = tools.GetByNames(args)
