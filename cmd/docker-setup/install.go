@@ -121,7 +121,7 @@ var installCmd = &cobra.Command{
 				return fmt.Errorf("unable to determine marker file status of %s: %s", tool.Name, err)
 			}
 
-			if plannedTools.Tools[index].Status.BinaryPresent && plannedTools.Tools[index].Status.MarkerFilePresent {
+			if plannedTools.Tools[index].Status.BinaryPresent {
 				// TODO: Run version check in parallel
 				err := plannedTools.Tools[index].GetVersionStatus()
 				if err != nil {
