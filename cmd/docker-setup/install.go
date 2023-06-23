@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -53,7 +54,27 @@ var installCmd = &cobra.Command{
 		assertMetadataIsLoaded()
 
 		// Collect requested tools based on mode
-		if defaultMode {
+		fi, _ := os.Stdin.Stat()
+		if (fi.Mode() & os.ModeCharDevice) == 0 {
+			data, err := io.ReadAll(os.Stdin)
+			if err != nil {
+				return fmt.Errorf("unable to read from stdin: %s", err)
+			}
+			for _, line := range strings.Split(string(data), "\n") {
+				if len(line) == 0 {
+					continue
+				} else if strings.HasPrefix(line, "#") {
+					continue
+				}
+				tool, err := tools.GetByName(line)
+				if err != nil {
+					pterm.Warning.Printfln("Unable to find tool %s: %s", line, err)
+					continue
+				}
+				requestedTools.Tools = append(requestedTools.Tools, *tool)
+			}
+
+		} else if defaultMode {
 			requestedTools = tools.GetByTags([]string{"category/default"})
 
 		} else if tagsMode {
