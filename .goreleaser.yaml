@@ -15,6 +15,12 @@ builds:
   - amd64
   - arm64
 
+snapshot:
+  name_template: "{{ incpatch .Version }}-dev"
+
+checksum:
+  name_template: '{{ .ProjectName }}_{{ .Version }}_checksums.txt'
+
 sboms:
 - id: foo
   cmd: helper/usr/local/bin/syft
@@ -24,16 +30,15 @@ sboms:
 
 archives:
 - format: tar.gz
-  name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+  name_template: >-
+    {{ .ProjectName }}_
+    {{- title .Os }}_
+    {{- if eq .Arch "amd64" }}x86_64
+    {{- else if eq .Arch "arm64" }}aarch64
+    {{- else }}{{ .Arch }}{{ end }}
   files:
   - LICENSE
-checksum:
-  name_template: 'checksums.txt'
-snapshot:
-  name_template: "{{ incpatch .Version }}-next"
+
 changelog:
+  use: github
   sort: asc
-  filters:
-    exclude:
-    - '^docs:'
-    - '^test:'
