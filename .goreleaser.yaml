@@ -19,7 +19,7 @@ snapshot:
   name_template: "{{ incpatch .Version }}-dev"
 
 checksum:
-  name_template: '{{ .ProjectName }}_{{ .Version }}_checksums.txt'
+  name_template: '{{ .ProjectName }}_v{{ .Version }}_checksums.txt'
 
 sboms:
 - id: sbom
@@ -50,5 +50,5 @@ release:
     name: docker-setup
   ids:
   - docker-setup
-  name_template: "{{ .ProjectName }} v{{ .Version }}"
+  name_template: "{{ .Version }}"
   mode: replace
