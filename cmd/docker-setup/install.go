@@ -75,10 +75,10 @@ var installCmd = &cobra.Command{
 			}
 
 		} else if defaultMode {
-			requestedTools = tools.GetByTags([]string{"category/default"})
+			requestedTools = *tools.GetByTags([]string{"category/default"})
 
 		} else if tagsMode {
-			requestedTools = tools.GetByTags(args)
+			requestedTools = *tools.GetByTags(args)
 
 		} else if installedMode {
 			pterm.Debug.Println("Collecting installed tools")
@@ -127,7 +127,7 @@ var installCmd = &cobra.Command{
 			}
 
 		} else {
-			requestedTools = tools.GetByNames(args)
+			requestedTools = *tools.GetByNames(args)
 		}
 		pterm.Debug.Printfln("Requested %d tool(s)", len(requestedTools.Tools))
 
@@ -255,11 +255,27 @@ var installCmd = &cobra.Command{
 				continue
 			}
 
+			if !skipDependencies {
+				for _, toolName := range tool.RuntimeDependencies {
+					tool, err := plannedTools.GetByName(toolName)
+					if err != nil {
+						pterm.Error.Printfln("Unable to find dependency %s", toolName)
+						return fmt.Errorf("unable to find dependency %s", toolName)
+					}
+					if tool.Status.BinaryPresent {
+						continue
+					}
+					pterm.Error.Printfln("Dependency %s is missing", toolName)
+					return fmt.Errorf("dependency %s is missing", toolName)
+				}
+			}
+
 			fmt.Printf("%s Installing %s %s", emojiTool, tool.Name, tool.Version)
 			err := tool.Install(registryImagePrefix, prefix+"/", altArch)
 			fmt.Printf("\n")
 			if err != nil {
-				return fmt.Errorf("unable to install %s: %s", tool.Name, err)
+				pterm.Warning.Printfln("Unable to install %s: %s", tool.Name, err)
+				continue
 			}
 			tool.CreateMarkerFile(prefix + "/" + cacheDirectory)
 		}
