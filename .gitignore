@@ -3,6 +3,7 @@
 /helper
 metadata.json
 cosign.key
+/@base/build.log
 /docker-setup
 coverage.*
 dist/
