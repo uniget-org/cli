@@ -22,14 +22,15 @@ checksum:
   name_template: '{{ .ProjectName }}_{{ .Version }}_checksums.txt'
 
 sboms:
-- id: foo
+- id: sbom
   cmd: helper/usr/local/bin/syft
   args: [ "${artifact}", "--output", "cyclonedx-json", "--file", "$document" ]
   documents:
   - ${artifact}.cyclonedx.json
 
 archives:
-- format: tar.gz
+- id: docker-setup
+  format: tar.gz
   name_template: >-
     {{ .ProjectName }}_
     {{- title .Os }}_
@@ -42,3 +43,12 @@ archives:
 changelog:
   use: github
   sort: asc
+
+release:
+  github:
+    owner: nicholasdille
+    name: docker-setup
+  ids:
+  - docker-setup
+  name_template: "{{ .ProjectName }} v{{ .Version }}"
+  mode: replace
