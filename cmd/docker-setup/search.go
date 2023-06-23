@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 )
 
@@ -76,7 +77,7 @@ var searchCmd = &cobra.Command{
 			!noSearchInDeps && !onlySearchInName && !onlySearchInTags,
 		)
 		if len(results.Tools) == 0 {
-			fmt.Printf("No tools found for term %s\n", args[0])
+			pterm.Info.Printfln("No tools found for term %s", args[0])
 
 		} else {
 			results.List()

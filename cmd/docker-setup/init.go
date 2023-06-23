@@ -1,12 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"runtime"
 
 	"golang.org/x/sys/unix"
 
+	"github.com/pterm/pterm"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/nicholasdille/docker-setup/pkg/tool"
@@ -68,7 +68,7 @@ func assertDirectory(directory string) {
 	log.Tracef("Creating directory %s", directory)
 	err := os.MkdirAll(directory, 0755)
 	if err != nil {
-		fmt.Printf("Error creating directory %s: %s\n", directory, err)
+		pterm.Error.Printfln("Error creating directory %s: %s", directory, err)
 		os.Exit(1)
 	}
 }
@@ -92,14 +92,14 @@ func assertCacheDirectory() {
 func assertMetadataFileExists() {
 	_, err := os.Stat(prefix + "/" + metadataFile)
 	if err != nil {
-		fmt.Printf("Metadata file %s does not exist: %s\n", prefix+"/"+metadataFile, err)
+		pterm.Error.Printfln("Metadata file %s does not exist: %s", prefix+"/"+metadataFile, err)
 		os.Exit(1)
 	}
 }
 
 func assertMetadataIsLoaded() {
 	if len(tools.Tools) == 0 {
-		fmt.Printf("Metadata is not loaded\n")
+		pterm.Error.Printfln("Metadata is not loaded")
 		os.Exit(1)
 	}
 }
@@ -112,7 +112,7 @@ func initDockerSetup() {
 		arch = "aarch64"
 
 	} else {
-		log.Errorf("Unsupported architecture: %s", arch)
+		pterm.Error.Printfln("Unsupported architecture: %s", arch)
 		os.Exit(1)
 	}
 }

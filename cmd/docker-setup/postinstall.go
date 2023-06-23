@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/pterm/pterm"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -46,7 +47,7 @@ func postinstall() error {
 			return nil
 		}
 		for _, file := range infos {
-			fmt.Printf("Running post_install script %s\n", file.Name())
+			pterm.Info.Printfln("Running post_install script %s", file.Name())
 
 			log.Tracef("%s Running post_install script %s", emojiRun, "/"+libDirectory+"/post_install/"+file.Name())
 			cmd := exec.Command("/bin/bash", "/"+libDirectory+"/post_install/"+file.Name())

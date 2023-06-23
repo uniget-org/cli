@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/pterm/pterm"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
@@ -41,10 +42,10 @@ var updateCmd = &cobra.Command{
 				log.Tracef("Got tool for %s: %v\n", tool.Name, oldTool)
 
 				if oldTool == nil {
-					fmt.Printf("New %s v%s\n", tool.Name, tool.Version)
+					pterm.Info.Printfln("New %s v%s", tool.Name, tool.Version)
 
 				} else if tool.Version != oldTool.Version {
-					fmt.Printf("Update %s %s -> %s\n", tool.Name, oldTool.Version, tool.Version)
+					pterm.Info.Printfln("Update %s %s -> %s", tool.Name, oldTool.Version, tool.Version)
 				}
 			}
 		}

@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/pterm/pterm"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -112,7 +113,7 @@ func main() {
 		now := time.Now()
 		modifiedtime := file.ModTime()
 		if now.Sub(modifiedtime).Hours() > 24 {
-			fmt.Printf("Metadata file is older than 24 hours\n")
+			pterm.Warning.Println("Metadata file is older than 24 hours")
 		}
 
 		return nil
