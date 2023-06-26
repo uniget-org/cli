@@ -22,3 +22,7 @@ tag-%: ; $(info $(M) Creating tag v$*...)
 	fi
 	@git tag -a -m $* v$*
 	@git push origin v$*
+
+retag-%: ; $(info $(M) Creating tag v$*...)
+	@git tag -a -m $* -f v$*
+	@git push origin v$* -f
