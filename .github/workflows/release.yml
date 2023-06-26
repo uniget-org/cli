@@ -48,6 +48,7 @@ jobs:
       with:
         prefix: helper
         tools: go goreleaser syft
+        log-level: trace
 
     - name: Workaround
       run: |
@@ -89,6 +90,7 @@ jobs:
       with:
         prefix: helper
         tools: gojq regclient yq
+        log-level: trace
 
     - name: Update manifest
       run: |
