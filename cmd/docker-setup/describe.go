@@ -34,6 +34,9 @@ var describeCmd = &cobra.Command{
 			return fmt.Errorf("error getting tool %s", args[0])
 		}
 		tool.ReplaceVariables(prefix+"/"+target, arch, altArch)
+		tool.GetMarkerFileStatus(prefix + "/" + cacheDirectory)
+		tool.GetBinaryStatus()
+		tool.GetVersionStatus()
 
 		if describeOutput == "pretty" {
 			tool.Print()
