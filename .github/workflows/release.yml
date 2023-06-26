@@ -48,7 +48,7 @@ jobs:
       with:
         prefix: helper
         tools: go goreleaser syft
-        log-level: trace
+        log-level: debug
         plan: true
 
     - name: Workaround

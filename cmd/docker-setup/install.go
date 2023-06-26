@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/pterm/pterm"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/nicholasdille/docker-setup/pkg/tool"
@@ -66,6 +67,8 @@ var installCmd = &cobra.Command{
 				} else if strings.HasPrefix(line, "#") {
 					continue
 				}
+
+				log.Debugf("Adding %s to requested tools", line)
 				tool, err := tools.GetByName(line)
 				if err != nil {
 					pterm.Warning.Printfln("Unable to find tool %s: %s", line, err)
@@ -118,6 +121,8 @@ var installCmd = &cobra.Command{
 				} else if strings.HasPrefix(line, "#") {
 					continue
 				}
+
+				log.Debugf("Adding %s to requested tools", line)
 				tool, err := tools.GetByName(line)
 				if err != nil {
 					pterm.Warning.Printfln("Unable to find tool %s: %s", line, err)
@@ -127,6 +132,7 @@ var installCmd = &cobra.Command{
 			}
 
 		} else {
+			log.Debugf("Adding %s to requested tools", strings.Join(args, ","))
 			requestedTools = tools.GetByNames(args)
 		}
 		pterm.Debug.Printfln("Requested %d tool(s)", len(requestedTools.Tools))
