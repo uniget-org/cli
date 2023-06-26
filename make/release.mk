@@ -15,7 +15,7 @@ minor: ; $(info $(M) Creating minor release...)
 major: ; $(info $(M) Creating major release...)
 	@make tag-$$(semver bump major $(LATEST_VERSION))
 
-tag-%: ; $(info $(M) Creating tag v$*...)
+tag--%: ; $(info $(M) Creating tag v$*...)
 	@if git show-ref --tags refs/tags/v$* >/dev/null 2>&1; then \
 		echo "Tag v$* already exists"; \
 		exit 1; \
@@ -23,6 +23,6 @@ tag-%: ; $(info $(M) Creating tag v$*...)
 	@git tag -a -m $* v$*
 	@git push origin v$*
 
-retag-%: ; $(info $(M) Creating tag v$*...)
+retag--%: ; $(info $(M) Creating tag v$*...)
 	@git tag -a -m $* -f v$*
 	@git push origin v$* -f
