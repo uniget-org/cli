@@ -27,8 +27,6 @@ cover: \
 
 snapshot: \
 		$(HELPER)/var/lib/docker-setup/manifests/go.json \
-		$(HELPER)/var/lib/docker-setup/manifests/goreleaser.json \
-		$(HELPER)/var/lib/docker-setup/manifests/syft.json \
 		make/go.mk \
 		$(GO_SOURCES) \
 		; $(info $(M) Building snapshot of docker-setup...)
