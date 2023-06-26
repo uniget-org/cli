@@ -38,7 +38,7 @@ func (tools *Tools) GetByTag(tagName string) *Tools {
 	return &toolList
 }
 
-func (tools *Tools) GetByNames(names []string) *Tools {
+func (tools *Tools) GetByNames(names []string) Tools {
 	var toolList Tools
 
 	for _, tool := range tools.Tools {
@@ -49,10 +49,10 @@ func (tools *Tools) GetByNames(names []string) *Tools {
 		}
 	}
 
-	return &toolList
+	return toolList
 }
 
-func (tools *Tools) GetByTags(tagNames []string) *Tools {
+func (tools *Tools) GetByTags(tagNames []string) Tools {
 	var toolList Tools
 
 	for _, tool := range tools.Tools {
@@ -63,10 +63,10 @@ func (tools *Tools) GetByTags(tagNames []string) *Tools {
 		}
 	}
 
-	return &toolList
+	return toolList
 }
 
-func (tools *Tools) Find(term string, searchInName bool, searchInTags bool, searchInDeps bool) *Tools {
+func (tools *Tools) Find(term string, searchInName bool, searchInTags bool, searchInDeps bool) Tools {
 	var results = Tools{}
 
 	for _, tool := range tools.Tools {
@@ -95,7 +95,7 @@ func (tools *Tools) Find(term string, searchInName bool, searchInTags bool, sear
 		}
 	}
 
-	return &results
+	return results
 }
 
 func (tools *Tools) GetNames() []string {

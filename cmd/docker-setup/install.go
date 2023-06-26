@@ -75,10 +75,10 @@ var installCmd = &cobra.Command{
 			}
 
 		} else if defaultMode {
-			requestedTools = *tools.GetByTags([]string{"category/default"})
+			requestedTools = tools.GetByTags([]string{"category/default"})
 
 		} else if tagsMode {
-			requestedTools = *tools.GetByTags(args)
+			requestedTools = tools.GetByTags(args)
 
 		} else if installedMode {
 			pterm.Debug.Println("Collecting installed tools")
@@ -127,7 +127,7 @@ var installCmd = &cobra.Command{
 			}
 
 		} else {
-			requestedTools = *tools.GetByNames(args)
+			requestedTools = tools.GetByNames(args)
 		}
 		pterm.Debug.Printfln("Requested %d tool(s)", len(requestedTools.Tools))
 
