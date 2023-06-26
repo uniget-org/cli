@@ -49,6 +49,7 @@ jobs:
         prefix: helper
         tools: go goreleaser syft
         log-level: trace
+        plan: true
 
     - name: Workaround
       run: |
@@ -91,6 +92,7 @@ jobs:
         prefix: helper
         tools: gojq regclient yq
         log-level: trace
+        plan: true
 
     - name: Update manifest
       run: |
