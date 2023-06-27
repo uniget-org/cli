@@ -56,6 +56,9 @@ var installCmd = &cobra.Command{
 
 		// Collect requested tools based on mode
 		fi, _ := os.Stdin.Stat()
+		log.Debugf("Stdin mode: %v", fi.Mode())
+		log.Debugf("Stdin mode & named pipe: %v", (fi.Mode()&os.ModeNamedPipe) != 0)
+		log.Debugf("Stdin mode & char device: %v", (fi.Mode()&os.ModeCharDevice) != 0)
 		if (fi.Mode() & os.ModeNamedPipe) != 0 {
 			log.Debugf("Reading from stdin")
 			data, err := io.ReadAll(os.Stdin)
