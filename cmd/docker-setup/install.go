@@ -57,6 +57,7 @@ var installCmd = &cobra.Command{
 		// Collect requested tools based on mode
 		fi, _ := os.Stdin.Stat()
 		if (fi.Mode() & os.ModeCharDevice) == 0 {
+			log.Debugf("Reading from stdin")
 			data, err := io.ReadAll(os.Stdin)
 			if err != nil {
 				return fmt.Errorf("unable to read from stdin: %s", err)
@@ -78,9 +79,11 @@ var installCmd = &cobra.Command{
 			}
 
 		} else if defaultMode {
+			log.Debugf("Adding default tools to requested tools")
 			requestedTools = tools.GetByTags([]string{"category/default"})
 
 		} else if tagsMode {
+			log.Debugf("Adding tools matching tags to requested tools")
 			requestedTools = tools.GetByTags(args)
 
 		} else if installedMode {
@@ -108,9 +111,11 @@ var installCmd = &cobra.Command{
 			spinnerInstalledTools.Info()
 
 		} else if allMode {
+			log.Debugf("Adding all tools to requested tools")
 			requestedTools = tools
 
 		} else if filename != "" {
+			log.Debugf("Adding tools from file %s to requested tools", filename)
 			data, err := os.ReadFile(filename)
 			if err != nil {
 				return fmt.Errorf("unable to read file %s: %s", filename, err)
