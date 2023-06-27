@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"strings"
 
@@ -55,33 +54,7 @@ var installCmd = &cobra.Command{
 		assertMetadataIsLoaded()
 
 		// Collect requested tools based on mode
-		fi, _ := os.Stdin.Stat()
-		log.Debugf("Stdin mode: %v", fi.Mode())
-		log.Debugf("Stdin mode & named pipe: %v", (fi.Mode()&os.ModeNamedPipe) != 0)
-		log.Debugf("Stdin mode & char device: %v", (fi.Mode()&os.ModeCharDevice) != 0)
-		if (fi.Mode() & os.ModeNamedPipe) != 0 {
-			log.Debugf("Reading from stdin")
-			data, err := io.ReadAll(os.Stdin)
-			if err != nil {
-				return fmt.Errorf("unable to read from stdin: %s", err)
-			}
-			for _, line := range strings.Split(string(data), "\n") {
-				if len(line) == 0 {
-					continue
-				} else if strings.HasPrefix(line, "#") {
-					continue
-				}
-
-				log.Debugf("Adding %s to requested tools", line)
-				tool, err := tools.GetByName(line)
-				if err != nil {
-					pterm.Warning.Printfln("Unable to find tool %s: %s", line, err)
-					continue
-				}
-				requestedTools.Tools = append(requestedTools.Tools, *tool)
-			}
-
-		} else if defaultMode {
+		if defaultMode {
 			log.Debugf("Adding default tools to requested tools")
 			requestedTools = tools.GetByTags([]string{"category/default"})
 
