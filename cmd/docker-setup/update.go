@@ -39,7 +39,7 @@ var updateCmd = &cobra.Command{
 		if len(oldTools.Tools) > 0 {
 			for _, tool := range tools.Tools {
 				oldTool, _ := oldTools.GetByName(tool.Name)
-				log.Tracef("Got tool for %s: %v\n", tool.Name, oldTool)
+				//log.Tracef("Got tool for %s: %v\n", tool.Name, oldTool)
 
 				if oldTool == nil {
 					pterm.Info.Printfln("New %s v%s", tool.Name, tool.Version)
