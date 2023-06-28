@@ -253,6 +253,8 @@ var installCmd = &cobra.Command{
 				continue
 			}
 
+			fmt.Printf("%s Installing %s %s\n", emojiTool, tool.Name, tool.Version)
+
 			if !skipDependencies {
 				for _, toolName := range tool.RuntimeDependencies {
 					tool, err := plannedTools.GetByName(toolName)
@@ -260,6 +262,7 @@ var installCmd = &cobra.Command{
 						pterm.Error.Printfln("Unable to find dependency %s", toolName)
 						return fmt.Errorf("unable to find dependency %s", toolName)
 					}
+					tool.GetBinaryStatus()
 					if tool.Status.BinaryPresent {
 						continue
 					}
@@ -268,9 +271,7 @@ var installCmd = &cobra.Command{
 				}
 			}
 
-			fmt.Printf("%s Installing %s %s", emojiTool, tool.Name, tool.Version)
 			err := tool.Install(registryImagePrefix, prefix+"/", altArch)
-			fmt.Printf("\n")
 			if err != nil {
 				pterm.Warning.Printfln("Unable to install %s: %s", tool.Name, err)
 				continue
