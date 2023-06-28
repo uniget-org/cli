@@ -53,8 +53,13 @@ jobs:
 
     - name: Workaround
       run: |
-        curl --silent --location --fail https://github.com/goreleaser/goreleaser/releases/latest/download/goreleaser_Linux_x86_64.tar.gz \
-        | tar --extract --gzip --directory=helper/usr/local/bin/ goreleaser
+        if file helper/usr/local/bin/goreleaser | grep -q amd64; then
+            echo "goreleaser is already installed"
+
+        else
+            curl --silent --location --fail https://github.com/goreleaser/goreleaser/releases/latest/download/goreleaser_Linux_x86_64.tar.gz \
+            | tar --extract --gzip --directory=helper/usr/local/bin/ goreleaser
+        fi
 
     - name: Build and release binaries
       env:
