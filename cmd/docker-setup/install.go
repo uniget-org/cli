@@ -157,6 +157,8 @@ var installCmd = &cobra.Command{
 				return fmt.Errorf("unable to determine marker file status of %s: %s", tool.Name, err)
 			}
 
+			// TODO: Determine installed version from marker file
+
 			if plannedTools.Tools[index].Status.BinaryPresent {
 				// TODO: Run version check in parallel
 				err := plannedTools.Tools[index].GetVersionStatus()
@@ -276,6 +278,7 @@ var installCmd = &cobra.Command{
 				pterm.Warning.Printfln("Unable to install %s: %s", tool.Name, err)
 				continue
 			}
+			// TODO: Remove all marker files
 			tool.CreateMarkerFile(prefix + "/" + cacheDirectory)
 		}
 
