@@ -44,11 +44,11 @@ func (tools *Tools) ListWithStatus() {
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
 
-	t.AppendHeader(table.Row{"#", "Name", "Version", "Binary?", "Installed", "Matches?", "Skip?", "IsDep?"})
+	t.AppendHeader(table.Row{"#", "Name", "Version", "Binary?", "Installed", "Matches?", "Skip?", "IsReq?"})
 
 	for index, tool := range tools.Tools {
 		t.AppendRows([]table.Row{
-			{index + 1, tool.Name, tool.Version, tool.Status.BinaryPresent, tool.Status.Version, tool.Status.VersionMatches, tool.Status.SkipDueToConflicts, tool.Status.IsDependency},
+			{index + 1, tool.Name, tool.Version, tool.Status.BinaryPresent, tool.Status.Version, tool.Status.VersionMatches, tool.Status.SkipDueToConflicts || !tool.Status.IsRequested, tool.Status.IsRequested},
 		})
 	}
 
@@ -120,8 +120,8 @@ func (tool *Tool) Print() {
 		fmt.Printf("    Version: %s\n", tool.Status.Version)
 		fmt.Printf("    Version matches: %t\n", tool.Status.VersionMatches)
 	}
-	fmt.Printf("    Skip: %t\n", tool.Status.SkipDueToConflicts)
-	fmt.Printf("    Is dependency: %t\n", tool.Status.IsDependency)
+	fmt.Printf("    Skip: %t\n", tool.Status.SkipDueToConflicts || !tool.Status.IsRequested)
+	fmt.Printf("    Is requested: %t\n", tool.Status.IsRequested)
 }
 
 func (tools *Tools) Describe(name string) error {

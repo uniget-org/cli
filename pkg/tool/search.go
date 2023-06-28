@@ -17,9 +17,10 @@ func (tools *Tools) Contains(name string) bool {
 }
 
 func (tools *Tools) GetByName(name string) (*Tool, error) {
-	for _, tool := range tools.Tools {
+	for index := range tools.Tools {
+		tool := &tools.Tools[index]
 		if tool.Name == name {
-			return &tool, nil
+			return tool, nil
 		}
 	}
 
@@ -123,24 +124,23 @@ func (tools *Tools) ResolveDependencies(queue *Tools, toolName string) error {
 
 	tool, err := tools.GetByName(toolName)
 	if err != nil {
-		log.Errorf("Error resolving dependencies for %s", toolName)
+		log.Errorf("Error getting tool %s", toolName)
 		return err
 	}
+	log.Tracef("Tool %s is requested? %t", toolName, tool.Status.IsRequested)
 
 	for _, depName := range tool.RuntimeDependencies {
-		log.Tracef("Recursing for dependency %s", depName)
-
 		dep, err := tools.GetByName(depName)
 		if err != nil {
 			log.Errorf("Unable to find dependency called %s for %s", depName, toolName)
 		}
+		log.Tracef("Dep %s is requested? %t", depName, dep.Status.IsRequested)
 
 		err = tools.ResolveDependencies(queue, depName)
 		if err != nil {
 			return err
 		}
 
-		dep.Status.IsDependency = true
 		queue.AddIfMissing(dep)
 	}
 

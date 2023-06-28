@@ -127,12 +127,23 @@ var installCmd = &cobra.Command{
 				return fmt.Errorf("unable to resolve dependencies for %s: %s", tool.Name, err)
 			}
 		}
+		for _, requestedTool := range requestedTools.Tools {
+			tool, err := plannedTools.GetByName(requestedTool.Name)
+			if err != nil {
+				return fmt.Errorf("unable to find %s in planned tools", requestedTool.Name)
+			}
+			tool.Status.IsRequested = true
+		}
 		pterm.Debug.Printfln("Planned %d tool(s)", len(plannedTools.Tools))
 		spinnerResolveDeps.Info()
 
 		// Populate status of planned tools
 		spinnerGetStatus, _ := pterm.DefaultSpinner.Start("Getting status of requested tools...")
 		for index, tool := range plannedTools.Tools {
+			if skipDependencies && !tool.Status.IsRequested {
+				continue
+			}
+
 			pterm.Debug.Printfln("Getting status for requested tool %s", tool.Name)
 			plannedTools.Tools[index].ReplaceVariables(prefix+"/"+target, arch, altArch)
 
@@ -237,7 +248,7 @@ var installCmd = &cobra.Command{
 				pterm.Info.Printfln("Skipping %s because it conflicts with another tool.", tool.Name)
 				continue
 			}
-			if skipDependencies && tool.Status.IsDependency {
+			if skipDependencies && !tool.Status.IsRequested {
 				pterm.Info.Printfln("Skipping %s because it is a dependency (--skip-deps was specified)", tool.Name)
 				continue
 			}
