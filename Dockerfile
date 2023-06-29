@@ -1,6 +1,6 @@
 #syntax=docker/dockerfile:1.5.2
 
-FROM --platform=${BUILDPLATFORM} golang:1.17-alpine AS base
+FROM --platform=${BUILDPLATFORM} golang:1.20.5 AS base
 WORKDIR /src
 ENV CGO_ENABLED=0
 COPY go.* .
@@ -37,7 +37,7 @@ go test \
     ./...
 EOF
 
-FROM golangci/golangci-lint:v1.43-alpine AS lint-base
+FROM golangci/golangci-lint:v1.53.3 AS lint-base
 
 FROM base AS lint
 RUN --mount=target=. \

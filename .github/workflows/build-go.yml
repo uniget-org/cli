@@ -24,4 +24,8 @@ jobs:
 
     - name: Build binary
       run: |
-        make bin/docker-setup
+        docker buildx bake binary
+
+    - name: Smoke test
+      run: |
+        ./docker-setup --version
