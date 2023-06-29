@@ -1,24 +1,63 @@
 #syntax=docker/dockerfile:1.5.2
 
-ARG base=ubuntu-22.04
-FROM ghcr.io/nicholasdille/docker-setup/docker-setup:main AS docker-setup
-
-FROM golang:1.20.5 AS binary
-ARG version=dev
-WORKDIR /go/src/github.com/nicholasdille/docker-setup
+FROM --platform=${BUILDPLATFORM} golang:1.17-alpine AS base
+WORKDIR /src
+ENV CGO_ENABLED=0
 COPY go.* .
-RUN go mod download
-COPY . .
-RUN make bin/docker-setup GO_VERSION=${version}
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go mod download
 
-FROM ubuntu:22.04 AS ubuntu-test
-COPY --link --from=binary /go/src/github.com/nicholasdille/docker-setup/bin/docker-setup /usr/local/bin/docker-setup
+FROM base AS build
+ARG TARGETOS
+ARG TARGETARCH
+WORKDIR /go/src/github.com/nicholasdille/docker-setup
+ARG version=dev
+ENV CGO_ENABLED=0
+RUN --mount=target=. \
+    --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build <<EOF
+mkdir -p /out
+GOOS=${TARGETOS} \
+GOARCH=${TARGETARCH} \
+    go build \
+        -buildvcs=false \
+        -ldflags "-w -s -X main.version=${version}" \
+        -o /out/docker-setup \
+        ./cmd/docker-setup
+EOF
 
-FROM ubuntu:22.04 AS ubuntu
-COPY --from=docker-setup /usr/local/bin/docker-setup /usr/local/bin/docker-setup
+FROM base AS unit-test
+RUN --mount=target=. \
+    --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build <<EOF
+mkdir -p /out
+go test \
+    -v \
+    -coverprofile=/out/cover.out \
+    ./...
+EOF
 
-FROM debian:12.0@sha256:d568e251e460295a8743e9d5ef7de673c5a8f9027db11f4e666e96fb5bed708e AS debian
-COPY --from=docker-setup /usr/local/bin/docker-setup /usr/local/bin/docker-setup
+FROM golangci/golangci-lint:v1.43-alpine AS lint-base
 
-FROM alpine:3.18@sha256:82d1e9d7ed48a7523bdebc18cf6290bdb97b82302a8a9c27d4fe885949ea94d1 AS alpine
-COPY --from=docker-setup /usr/local/bin/docker-setup /usr/local/bin/docker-setup
+FROM base AS lint
+RUN --mount=target=. \
+    --mount=from=lint-base,src=/usr/bin/golangci-lint,target=/usr/bin/golangci-lint \
+    --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    --mount=type=cache,target=/root/.cache/golangci-lint <<EOF
+golangci-lint run --timeout 10m0s ./...
+EOF
+
+FROM scratch AS unit-test-coverage
+COPY --from=unit-test /out/cover.out /cover.out
+
+FROM scratch AS bin-unix
+COPY --from=build /out/docker-setup /
+
+FROM bin-unix AS bin-linux
+FROM bin-unix AS bin-darwin
+
+FROM scratch AS bin-windows
+COPY --from=build /out/docker-setup /docker-setup.exe
+
+FROM bin-${TARGETOS} as bin
