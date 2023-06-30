@@ -251,7 +251,17 @@ var installCmd = &cobra.Command{
 				continue
 			}
 
-			fmt.Printf("%s Installing %s %s\n", emojiTool, tool.Name, tool.Version)
+			if reinstall {
+				pterm.Info.Printfln("Reinstalling %s %s", tool.Name, tool.Version)
+				uninstallTool(tool.Name)
+
+			} else if tool.Status.BinaryPresent || tool.Status.MarkerFilePresent {
+				pterm.Info.Printfln("Updating %s %s", tool.Name, tool.Version)
+				uninstallTool(tool.Name)
+
+			} else {
+				pterm.Info.Printfln("Installing %s %s", tool.Name, tool.Version)
+			}
 
 			if !skipDependencies {
 				for _, toolName := range tool.RuntimeDependencies {
