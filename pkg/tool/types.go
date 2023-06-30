@@ -7,6 +7,11 @@ type Renovate struct {
 	Versioning     string `json:"versioning,omitempty"`
 }
 
+type Messages struct {
+	Internals string `json:"internals"`
+	Usage     string `json:"usage"`
+}
+
 type Tool struct {
 	Name                string   `json:"name"`
 	Version             string   `json:"version"`
@@ -19,6 +24,7 @@ type Tool struct {
 	ConflictsWith       []string `json:"conflicts_with,omitempty"`
 	Homepage            string   `json:"homepage"`
 	Description         string   `json:"description"`
+	Messages            Messages `json:"messages,omitempty"`
 	Renovate            Renovate `json:"renovate,omitempty"`
 	Status              ToolStatus
 }

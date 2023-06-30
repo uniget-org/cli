@@ -3,6 +3,7 @@ package tool
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/jedib0t/go-pretty/v6/table"
 )
@@ -55,6 +56,30 @@ func (tools *Tools) ListWithStatus() {
 	t.Render()
 }
 
+func (tool *Tool) ShowInternals(indentation int) string {
+	result := ""
+	for _, line := range strings.Split(tool.Messages.Internals, "\n") {
+		if line == "" {
+			continue
+		}
+		result += fmt.Sprintf("%s%s\n", strings.Repeat(" ", indentation), line)
+	}
+
+	return result
+}
+
+func (tool *Tool) ShowUsage(indentation int) string {
+	result := ""
+	for _, line := range strings.Split(tool.Messages.Usage, "\n") {
+		if line == "" {
+			continue
+		}
+		result += fmt.Sprintf("%s%s\n", strings.Repeat(" ", indentation), line)
+	}
+
+	return result
+}
+
 func (tool *Tool) Print() {
 	fmt.Printf("Name: %s\n", tool.Name)
 	fmt.Printf("  Description: %s\n", tool.Description)
@@ -100,6 +125,16 @@ func (tool *Tool) Print() {
 		for _, dep := range tool.Platforms {
 			fmt.Printf("    %s\n", dep)
 		}
+	}
+
+	fmt.Printf("  Messages:\n")
+	if tool.Messages.Internals != "" {
+		fmt.Println("    Internals:")
+		fmt.Print(tool.ShowInternals(6))
+	}
+	if tool.Messages.Usage != "" {
+		fmt.Println("    Usage:")
+		fmt.Print(tool.ShowUsage(6))
 	}
 
 	if tool.Renovate.Datasource != "" {

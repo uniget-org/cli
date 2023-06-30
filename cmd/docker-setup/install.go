@@ -250,6 +250,7 @@ var installCmd = &cobra.Command{
 				continue
 			}
 
+			fmt.Println()
 			if reinstall {
 				pterm.Info.Printfln("Reinstalling %s %s", tool.Name, tool.Version)
 				uninstallTool(tool.Name)
@@ -283,7 +284,11 @@ var installCmd = &cobra.Command{
 				pterm.Warning.Printfln("Unable to install %s: %s", tool.Name, err)
 				continue
 			}
-			// TODO: Remove all marker files
+
+			fmt.Println()
+			printToolUsage(tool.Name)
+			fmt.Println()
+
 			tool.CreateMarkerFile(prefix + "/" + cacheDirectory)
 		}
 
