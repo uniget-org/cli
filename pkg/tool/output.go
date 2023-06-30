@@ -116,10 +116,10 @@ func (tool *Tool) Print() {
 
 	fmt.Printf("  Status\n")
 	fmt.Printf("    Binary present: %t\n", tool.Status.BinaryPresent)
-	if tool.Status.Version != "" {
-		fmt.Printf("    Version: %s\n", tool.Status.Version)
-		fmt.Printf("    Version matches: %t\n", tool.Status.VersionMatches)
-	}
+	fmt.Printf("    Version: %s\n", tool.Status.Version)
+	fmt.Printf("    Version matches: %t\n", tool.Status.VersionMatches)
+	fmt.Printf("    Marker file present: %t\n", tool.Status.MarkerFilePresent)
+	fmt.Printf("    Marker file version: %s\n", tool.Status.MarkerFileVersion)
 	fmt.Printf("    Skip: %t\n", tool.Status.SkipDueToConflicts || !tool.Status.IsRequested)
 	fmt.Printf("    Is requested: %t\n", tool.Status.IsRequested)
 }

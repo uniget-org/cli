@@ -123,17 +123,34 @@ func (tool *Tool) GetBinaryStatus() error {
 }
 
 func (tool *Tool) GetMarkerFileStatus(markerFileDirectory string) error {
-	_, err := os.Stat(fmt.Sprintf("%s/%s/%s", markerFileDirectory, tool.Name, tool.Version))
-	if err == nil {
-		log.Debugf("Marker file for tool %s is present", tool.Name)
+	log.Tracef("Finding latest marker file for %s in %s", tool.Name, markerFileDirectory)
+
+	_, err := os.Stat(fmt.Sprintf("%s/%s", markerFileDirectory, tool.Name))
+	if err != nil {
+		log.Tracef("Marker file directory %s/%s does not exist", markerFileDirectory, tool.Name)
+		return nil
+	}
+
+	version := ""
+	entries, err := os.ReadDir(fmt.Sprintf("%s/%s", markerFileDirectory, tool.Name))
+	if err != nil {
+		return fmt.Errorf("failed to read marker file directory: %s", err)
+	}
+	for _, entry := range entries {
+		info, err := entry.Info()
+		if err != nil {
+			return fmt.Errorf("unable to get info for %s: %s", info.Name(), err)
+		}
+
+		log.Tracef("comparing marker file for version %s with known version %s", info.Name(), version)
+		if !info.IsDir() && info.Name() > version {
+			version = info.Name()
+		}
+	}
+
+	if version != "" {
 		tool.Status.MarkerFilePresent = true
-
-	} else if errors.Is(err, os.ErrNotExist) {
-		log.Debugf("Marker file for tool %s is not present", tool.Name)
-		tool.Status.MarkerFilePresent = false
-
-	} else {
-		return fmt.Errorf("unable to check marker file status for %s: %s", tool.Name, err)
+		tool.Status.MarkerFileVersion = version
 	}
 
 	return nil
@@ -167,7 +184,11 @@ func (tool *Tool) RemoveMarkerFile(markerFileDirectory string) error {
 }
 
 func (tool *Tool) GetVersionStatus() error {
-	if tool.Status.BinaryPresent && len(tool.Check) > 0 {
+	if tool.Status.MarkerFilePresent {
+		log.Tracef("Using marker file version for %s: %s", tool.Name, tool.Status.MarkerFileVersion)
+		tool.Status.Version = tool.Status.MarkerFileVersion
+
+	} else if tool.Status.BinaryPresent && len(tool.Check) > 0 {
 		log.Tracef("Running version check for %s: %s", tool.Name, tool.Check)
 		cmd := exec.Command("/bin/bash", "-c", tool.Check+" | tr -d '\n'")
 		version, err := cmd.Output()
@@ -178,7 +199,7 @@ func (tool *Tool) GetVersionStatus() error {
 	}
 
 	log.Tracef("Comparing requested version <%s> with installed version <%s>.", tool.Version, tool.Status.Version)
-	tool.Status.VersionMatches = tool.Status.Version == tool.Version
+	tool.Status.VersionMatches = (tool.Status.Version == tool.Version)
 
 	return nil
 }

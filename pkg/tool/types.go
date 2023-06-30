@@ -32,6 +32,7 @@ type ToolStatus struct {
 	Version            string
 	VersionMatches     bool
 	MarkerFilePresent  bool
+	MarkerFileVersion  string
 	SkipDueToConflicts bool
 	IsRequested        bool
 }

@@ -145,6 +145,7 @@ var installCmd = &cobra.Command{
 			}
 
 			pterm.Debug.Printfln("Getting status for requested tool %s", tool.Name)
+
 			plannedTools.Tools[index].ReplaceVariables(prefix+"/"+target, arch, altArch)
 
 			err := plannedTools.Tools[index].GetBinaryStatus()
@@ -157,14 +158,9 @@ var installCmd = &cobra.Command{
 				return fmt.Errorf("unable to determine marker file status of %s: %s", tool.Name, err)
 			}
 
-			// TODO: Determine installed version from marker file
-
-			if plannedTools.Tools[index].Status.BinaryPresent {
-				// TODO: Run version check in parallel
-				err := plannedTools.Tools[index].GetVersionStatus()
-				if err != nil {
-					return fmt.Errorf("unable to determine version status of %s: %s", tool.Name, err)
-				}
+			err = plannedTools.Tools[index].GetVersionStatus()
+			if err != nil {
+				return fmt.Errorf("unable to determine version status of %s: %s", tool.Name, err)
 			}
 		}
 		spinnerGetStatus.Info()
