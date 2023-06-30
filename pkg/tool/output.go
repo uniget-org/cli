@@ -80,6 +80,18 @@ func (tool *Tool) ShowUsage(indentation int) string {
 	return result
 }
 
+func (tool *Tool) ShowUpdate(indentation int) string {
+	result := ""
+	for _, line := range strings.Split(tool.Messages.Update, "\n") {
+		if line == "" {
+			continue
+		}
+		result += fmt.Sprintf("%s%s\n", strings.Repeat(" ", indentation), line)
+	}
+
+	return result
+}
+
 func (tool *Tool) Print() {
 	fmt.Printf("Name: %s\n", tool.Name)
 	fmt.Printf("  Description: %s\n", tool.Description)
@@ -135,6 +147,10 @@ func (tool *Tool) Print() {
 	if tool.Messages.Usage != "" {
 		fmt.Println("    Usage:")
 		fmt.Print(tool.ShowUsage(6))
+	}
+	if tool.Messages.Update != "" {
+		fmt.Println("    Update:")
+		fmt.Print(tool.ShowUpdate(6))
 	}
 
 	if tool.Renovate.Datasource != "" {

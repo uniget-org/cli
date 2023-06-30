@@ -9,15 +9,11 @@ import (
 
 var find bool
 var list bool
-var internals bool
-var usage bool
 
 func initMessageCmd() {
 	messageCmd.Flags().BoolVar(&find, "find", false, "Find tools with messages")
 	messageCmd.Flags().BoolVar(&list, "list", false, "List available messages for a tool")
-	messageCmd.Flags().BoolVar(&internals, "internals", false, "Show internals for a tool")
-	messageCmd.Flags().BoolVar(&usage, "usage", false, "Show usage message for a tool")
-	messageCmd.MarkFlagsMutuallyExclusive("find", "list", "usage")
+	messageCmd.MarkFlagsMutuallyExclusive("find", "list")
 
 	rootCmd.AddCommand(messageCmd)
 }
@@ -34,42 +30,36 @@ var messageCmd = &cobra.Command{
 			return nil
 		}
 
+		toolName := args[0]
+
 		if list {
-			tool, err := tools.GetByName(args[0])
+			tool, err := tools.GetByName(toolName)
 			if err != nil {
 				return fmt.Errorf("failed to get tool: %s", err)
 			}
 
-			pterm.Info.Printfln("Messages for %s:", args[0])
+			pterm.Info.Printfln("Messages for %s:", toolName)
 			if tool.Messages.Internals != "" {
 				fmt.Println("Internals")
 			}
 			if tool.Messages.Usage != "" {
 				fmt.Println("Usage")
 			}
+			if tool.Messages.Update != "" {
+				fmt.Println("Update")
+			}
 
 		} else if find {
 			for _, tool := range tools.Tools {
-				if tool.Messages.Internals != "" || tool.Messages.Usage != "" {
+				if tool.Messages.Internals != "" || tool.Messages.Usage != "" || tool.Messages.Update != "" {
 					fmt.Println(tool.Name)
 				}
 			}
 
-		} else if internals {
-			fmt.Println()
-			printToolInternals(args[0])
-			fmt.Println()
-
-		} else if usage {
-			fmt.Println()
-			printToolUsage(args[0])
-			fmt.Println()
-
 		} else {
-			fmt.Println()
-			printToolInternals(args[0])
-			fmt.Println()
-			printToolUsage(args[0])
+			printToolInternals(toolName)
+			printToolUsage(toolName)
+			printToolUpdate(toolName)
 			fmt.Println()
 		}
 
@@ -87,9 +77,10 @@ func printToolInternalsWithIndentation(toolName string, indentation int) error {
 		return fmt.Errorf("failed to get tool: %s", err)
 	}
 
-	if tool.Messages.Usage != "" {
+	if tool.Messages.Internals != "" {
 		prefix := pterm.NewStyle(pterm.FgWhite, pterm.BgBlue, pterm.Bold)
-		suffix := pterm.NewStyle()
+		suffix := pterm.NewStyle(pterm.FgWhite)
+		prefix.Println()
 		prefix.Print(" Internals ")
 		suffix.Printfln(" for %s:", tool.Name)
 		fmt.Print(tool.ShowInternals(indentation))
@@ -110,10 +101,33 @@ func printToolUsageWithIndentation(toolName string, indentation int) error {
 
 	if tool.Messages.Usage != "" {
 		prefix := pterm.NewStyle(pterm.FgWhite, pterm.BgGreen, pterm.Bold)
-		suffix := pterm.NewStyle()
+		suffix := pterm.NewStyle(pterm.FgWhite)
+		prefix.Println()
 		prefix.Print(" Usage ")
 		suffix.Printfln(" for %s:", tool.Name)
 		fmt.Print(tool.ShowUsage(indentation))
+	}
+
+	return nil
+}
+
+func printToolUpdate(toolName string) error {
+	return printToolUpdateWithIndentation(toolName, 2)
+}
+
+func printToolUpdateWithIndentation(toolName string, indentation int) error {
+	tool, err := tools.GetByName(toolName)
+	if err != nil {
+		return fmt.Errorf("failed to get tool: %s", err)
+	}
+
+	if tool.Messages.Update != "" {
+		prefix := pterm.NewStyle(pterm.FgWhite, pterm.BgYellow, pterm.Bold)
+		suffix := pterm.NewStyle(pterm.FgWhite)
+		prefix.Println()
+		prefix.Print(" Update ")
+		suffix.Printfln(" for %s:", tool.Name)
+		fmt.Print(tool.ShowUpdate(indentation))
 	}
 
 	return nil

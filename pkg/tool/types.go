@@ -10,6 +10,7 @@ type Renovate struct {
 type Messages struct {
 	Internals string `json:"internals"`
 	Usage     string `json:"usage"`
+	Update    string `json:"update"`
 }
 
 type Tool struct {

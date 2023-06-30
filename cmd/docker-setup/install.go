@@ -258,6 +258,7 @@ var installCmd = &cobra.Command{
 			} else if tool.Status.BinaryPresent || tool.Status.MarkerFilePresent {
 				pterm.Info.Printfln("Updating %s %s", tool.Name, tool.Version)
 				uninstallTool(tool.Name)
+				printToolUpdate(tool.Name)
 
 			} else {
 				pterm.Info.Printfln("Installing %s %s", tool.Name, tool.Version)
