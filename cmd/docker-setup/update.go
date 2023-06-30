@@ -15,7 +15,11 @@ import (
 	"github.com/regclient/regclient/types/blob"
 )
 
+var quiet bool
+
 func initUpdateCmd() {
+	updateCmd.Flags().BoolVarP(&quiet, "quiet", "q", false, "Do not print new tools")
+
 	rootCmd.AddCommand(updateCmd)
 }
 
@@ -36,7 +40,7 @@ var updateCmd = &cobra.Command{
 			return fmt.Errorf("error loading metadata: %s", err)
 		}
 
-		if len(oldTools.Tools) > 0 {
+		if !quiet && len(oldTools.Tools) > 0 {
 			for _, tool := range tools.Tools {
 				oldTool, _ := oldTools.GetByName(tool.Name)
 				//log.Tracef("Got tool for %s: %v\n", tool.Name, oldTool)
