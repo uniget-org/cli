@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 )
 
@@ -26,7 +27,7 @@ var inspectCmd = &cobra.Command{
 		}
 		tool.ReplaceVariables(prefix+target, arch, altArch)
 
-		fmt.Printf("%s Inspecting %s %s\n", emojiTool, tool.Name, tool.Version)
+		pterm.Info.Printfln("Inspecting %s %s\n", tool.Name, tool.Version)
 		err = tool.Inspect(registryImagePrefix, altArch)
 		if err != nil {
 			return fmt.Errorf("unable to inspect %s: %s", tool.Name, err)

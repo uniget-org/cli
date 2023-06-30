@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/pterm/pterm"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/nicholasdille/docker-setup/pkg/archive"
@@ -43,7 +42,6 @@ var updateCmd = &cobra.Command{
 		if !quiet && len(oldTools.Tools) > 0 {
 			for _, tool := range tools.Tools {
 				oldTool, _ := oldTools.GetByName(tool.Name)
-				//log.Tracef("Got tool for %s: %v\n", tool.Name, oldTool)
 
 				if oldTool == nil {
 					pterm.Info.Printfln("New %s v%s", tool.Name, tool.Version)
@@ -61,13 +59,13 @@ var updateCmd = &cobra.Command{
 func downloadMetadata() error {
 	assertCacheDirectory()
 	err := containers.GetManifest(registryImagePrefix+"metadata:main", altArch, func(blob blob.Reader) error {
-		log.Tracef("Changing directory to %s", prefix+"/"+cacheDirectory)
+		pterm.Debug.Printfln("Changing directory to %s", prefix+"/"+cacheDirectory)
 		err := os.Chdir(prefix + "/" + cacheDirectory)
 		if err != nil {
 			return fmt.Errorf("error changing directory to %s: %s", prefix+"/"+cacheDirectory, err)
 		}
 
-		log.Tracef("Extracting archive to %s", prefix+"/"+cacheDirectory)
+		pterm.Debug.Printfln("Extracting archive to %s", prefix+"/"+cacheDirectory)
 		err = archive.ExtractTarGz(blob)
 		if err != nil {
 			return fmt.Errorf("error extracting archive: %s", err)

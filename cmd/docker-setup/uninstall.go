@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/pterm/pterm"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -69,12 +68,12 @@ func uninstallTool(toolName string) error {
 			}
 
 			prefixedLine := prefix + "/" + line
-			log.Debugf("processing %s", prefixedLine)
+			pterm.Debug.Printfln("processing %s", prefixedLine)
 
 			_, err = os.Stat(prefixedLine)
 			if err != nil {
 				if os.IsNotExist(err) {
-					log.Debugf("%s does not exist", prefixedLine)
+					pterm.Debug.Printfln("%s does not exist", prefixedLine)
 					continue
 				}
 				return fmt.Errorf("unable to stat %s: %s", prefixedLine, err)

@@ -7,7 +7,6 @@ import (
 	"golang.org/x/sys/unix"
 
 	"github.com/pterm/pterm"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/nicholasdille/docker-setup/pkg/tool"
 )
@@ -30,23 +29,20 @@ var toolSeparator = "/"
 var registryImagePrefix = registry + "/" + repository + toolSeparator
 var tools tool.Tools
 
-var emojiTool = "\U0001F528"
-var emojiRun = "\U0001FE0F"
-
 func directoryExists(directory string) bool {
-	log.Tracef("Checking if directory %s exists", directory)
+	pterm.Debug.Printfln("Checking if directory %s exists", directory)
 	_, err := os.Stat(directory)
 	return err == nil
 }
 
 func fileExists(file string) bool {
-	log.Tracef("Checking if file %s exists", file)
+	pterm.Debug.Printfln("Checking if file %s exists", file)
 	_, err := os.Stat(file)
 	return err == nil
 }
 
 func directoryIsWritable(directory string) bool {
-	log.Tracef("Checking if directory %s is writable", directory)
+	pterm.Debug.Printfln("Checking if directory %s is writable", directory)
 	return unix.Access(directory, unix.W_OK) == nil
 }
 
@@ -55,7 +51,7 @@ func assertWritableDirectory(directory string) {
 		assertDirectory(directory)
 	}
 	if !directoryIsWritable(directory) {
-		log.Errorf("Directory %s is not writable", directory)
+		pterm.Error.Printfln("Directory %s is not writable", directory)
 		os.Exit(1)
 	}
 }
@@ -65,7 +61,7 @@ func assertWritableTarget() {
 }
 
 func assertDirectory(directory string) {
-	log.Tracef("Creating directory %s", directory)
+	pterm.Debug.Printfln("Creating directory %s", directory)
 	err := os.MkdirAll(directory, 0755)
 	if err != nil {
 		pterm.Error.Printfln("Error creating directory %s: %s", directory, err)

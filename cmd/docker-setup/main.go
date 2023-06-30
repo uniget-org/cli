@@ -54,18 +54,15 @@ func init() {
 func main() {
 	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
 		if debug {
-			logLevel = "debug"
-		} else if trace {
-			logLevel = "trace"
-		}
+			pterm.EnableDebugMessages()
 
-		log.SetOutput(os.Stdout)
-		level, err := log.ParseLevel(logLevel)
-		if err != nil {
-			return err
+		} else if trace {
+			pterm.EnableDebugMessages()
+			log.SetLevel(log.TraceLevel)
+
+		} else {
+			log.SetLevel(log.WarnLevel)
 		}
-		log.SetLevel(level)
-		log.Debugf("Log level is now %s\n", logLevel)
 
 		if len(prefix) > 0 {
 			re, err := regexp.Compile(`^\/`)
@@ -78,12 +75,12 @@ func main() {
 					return fmt.Errorf("cannot determine working directory: %w", err)
 				}
 				prefix = wd + "/" + prefix
-				log.Debugf("Convered prefix to absolute path %s\n", prefix)
+				log.Debugf("Converted prefix to absolute path %s\n", prefix)
 			}
 		}
 
 		if user {
-			log.Debugf("Installing in user context")
+			pterm.Debug.Println("Installing in user context")
 			target = os.Getenv("HOME") + "/.local/bin"
 			cacheRoot = os.Getenv("HOME") + "/.cache"
 			cacheDirectory = cacheRoot + "/docker-setup"
@@ -101,7 +98,7 @@ func main() {
 				return fmt.Errorf("error downloading metadata: %s", err)
 			}
 		}
-		err = loadMetadata()
+		err := loadMetadata()
 		if err != nil {
 			return fmt.Errorf("error loading metadata: %s", err)
 		}

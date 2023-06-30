@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/pterm/pterm"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/nicholasdille/docker-setup/pkg/tool"
@@ -55,11 +54,11 @@ var installCmd = &cobra.Command{
 
 		// Collect requested tools based on mode
 		if defaultMode {
-			log.Debugf("Adding default tools to requested tools")
+			pterm.Debug.Printfln("Adding default tools to requested tools")
 			requestedTools = tools.GetByTags([]string{"category/default"})
 
 		} else if tagsMode {
-			log.Debugf("Adding tools matching tags to requested tools")
+			pterm.Debug.Printfln("Adding tools matching tags to requested tools")
 			requestedTools = tools.GetByTags(args)
 
 		} else if installedMode {
@@ -87,11 +86,11 @@ var installCmd = &cobra.Command{
 			spinnerInstalledTools.Info()
 
 		} else if allMode {
-			log.Debugf("Adding all tools to requested tools")
+			pterm.Debug.Printfln("Adding all tools to requested tools")
 			requestedTools = tools
 
 		} else if filename != "" {
-			log.Debugf("Adding tools from file %s to requested tools", filename)
+			pterm.Debug.Printfln("Adding tools from file %s to requested tools", filename)
 			data, err := os.ReadFile(filename)
 			if err != nil {
 				return fmt.Errorf("unable to read file %s: %s", filename, err)
@@ -103,7 +102,7 @@ var installCmd = &cobra.Command{
 					continue
 				}
 
-				log.Debugf("Adding %s to requested tools", line)
+				pterm.Debug.Printfln("Adding %s to requested tools", line)
 				tool, err := tools.GetByName(line)
 				if err != nil {
 					pterm.Warning.Printfln("Unable to find tool %s: %s", line, err)
@@ -113,7 +112,7 @@ var installCmd = &cobra.Command{
 			}
 
 		} else {
-			log.Debugf("Adding %s to requested tools", strings.Join(args, ","))
+			pterm.Debug.Printfln("Adding %s to requested tools", strings.Join(args, ","))
 			requestedTools = tools.GetByNames(args)
 		}
 		pterm.Debug.Printfln("Requested %d tool(s)", len(requestedTools.Tools))

@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/pterm/pterm"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -43,13 +42,13 @@ func postinstall() error {
 			}
 		}
 		if len(infos) > 0 && len(prefix) > 0 {
-			log.Warningf("prefix cannot be set for postinstall scripts to run")
+			pterm.Warning.Printfln("prefix cannot be set for postinstall scripts to run")
 			return nil
 		}
 		for _, file := range infos {
 			pterm.Info.Printfln("Running post_install script %s", file.Name())
 
-			log.Tracef("%s Running post_install script %s", emojiRun, "/"+libDirectory+"/post_install/"+file.Name())
+			pterm.Debug.Printfln("Running pre_install script %s", "/"+libDirectory+"/pre_install/"+file.Name())
 			cmd := exec.Command("/bin/bash", "/"+libDirectory+"/post_install/"+file.Name())
 			cmd.Env = append(os.Environ(),
 				"prefix=",
