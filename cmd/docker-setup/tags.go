@@ -41,6 +41,11 @@ var tagsCmd = &cobra.Command{
 
 		t := table.NewWriter()
 		t.SetOutputMirror(os.Stdout)
+		t.Style().Options.DrawBorder = false
+		t.Style().Options.SeparateColumns = false
+		t.Style().Options.SeparateFooter = false
+		t.Style().Options.SeparateHeader = false
+		t.Style().Options.SeparateRows = false
 
 		t.AppendHeader(table.Row{"#", "Name", "# Tools"})
 
