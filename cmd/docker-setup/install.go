@@ -238,7 +238,7 @@ var installCmd = &cobra.Command{
 		assertWritableTarget()
 		assertLibDirectory()
 		for _, tool := range plannedTools.Tools {
-			if (tool.Status.MarkerFilePresent || tool.Status.VersionMatches) && !reinstall {
+			if tool.Status.VersionMatches && !reinstall {
 				pterm.Info.Printfln("Skipping %s %s because it is already installed.", tool.Name, tool.Version)
 				continue
 			}
@@ -261,7 +261,7 @@ var installCmd = &cobra.Command{
 						return fmt.Errorf("unable to find dependency %s", toolName)
 					}
 					tool.GetBinaryStatus()
-					if tool.Status.BinaryPresent {
+					if tool.Status.BinaryPresent || tool.Status.MarkerFilePresent {
 						continue
 					}
 					pterm.Error.Printfln("Dependency %s is missing", toolName)

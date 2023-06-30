@@ -151,6 +151,8 @@ func (tool *Tool) GetMarkerFileStatus(markerFileDirectory string) error {
 	if version != "" {
 		tool.Status.MarkerFilePresent = true
 		tool.Status.MarkerFileVersion = version
+
+		tool.Status.VersionMatches = (tool.Version == tool.Status.MarkerFileVersion)
 	}
 
 	return nil
