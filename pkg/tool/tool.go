@@ -183,19 +183,28 @@ func (tool *Tool) RemoveMarkerFile(markerFileDirectory string) error {
 	return nil
 }
 
+func (tool *Tool) RunVersionCheck() (string, error) {
+	log.Tracef("Running version check for %s: %s", tool.Name, tool.Check)
+	cmd := exec.Command("/bin/bash", "-c", tool.Check+" | tr -d '\n'")
+	version, err := cmd.Output()
+	if err != nil {
+		return "", fmt.Errorf("unable to execute version check (%s): %s", tool.Check, err)
+	}
+
+	return string(version), nil
+}
+
 func (tool *Tool) GetVersionStatus() error {
 	if tool.Status.MarkerFilePresent {
 		log.Tracef("Using marker file version for %s: %s", tool.Name, tool.Status.MarkerFileVersion)
 		tool.Status.Version = tool.Status.MarkerFileVersion
 
 	} else if tool.Status.BinaryPresent && len(tool.Check) > 0 {
-		log.Tracef("Running version check for %s: %s", tool.Name, tool.Check)
-		cmd := exec.Command("/bin/bash", "-c", tool.Check+" | tr -d '\n'")
-		version, err := cmd.Output()
+		version, err := tool.RunVersionCheck()
 		if err != nil {
-			return fmt.Errorf("unable to execute version check (%s): %s", tool.Check, err)
+			return fmt.Errorf("unable to run version check: %s", err)
 		}
-		tool.Status.Version = string(version)
+		tool.Status.Version = version
 	}
 
 	log.Tracef("Comparing requested version <%s> with installed version <%s>.", tool.Version, tool.Status.Version)

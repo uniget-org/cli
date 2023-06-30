@@ -135,6 +135,7 @@ func main() {
 	rootCmd.MarkFlagsMutuallyExclusive("cache-directory", "user")
 	rootCmd.MarkFlagsMutuallyExclusive("lib-directory", "user")
 
+	rootCmd.SilenceErrors = true
 	err := rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
