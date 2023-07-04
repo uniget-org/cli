@@ -8,3 +8,4 @@ cosign.key
 /docker-setup
 coverage.*
 dist/
+.task
