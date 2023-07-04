@@ -127,6 +127,7 @@ func main() {
 	rootCmd.PersistentFlags().StringVar(&libDirectory, "lib-directory", "docker-setup", "Library directory relative to LIB-ROOT")
 	rootCmd.PersistentFlags().BoolVarP(&user, "user", "u", false, "Install in user context")
 	rootCmd.PersistentFlags().StringVarP(&metadataFileName, "metadata-file", "f", "metadata.json", "Metadata file")
+	rootCmd.PersistentFlags().BoolVar(&noInteractive, "no-interactive", false, "Disable interactive prompts")
 
 	rootCmd.MarkFlagsMutuallyExclusive("prefix", "user")
 	rootCmd.MarkFlagsMutuallyExclusive("target", "user")

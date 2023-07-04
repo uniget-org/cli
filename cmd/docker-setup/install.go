@@ -20,8 +20,6 @@ var skipDependencies bool
 var skipConflicts bool
 var check bool
 var plan bool
-var requestedTools tool.Tools
-var plannedTools tool.Tools
 var reinstall bool
 
 func initInstallCmd() {
@@ -51,6 +49,8 @@ var installCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		assertMetadataFileExists()
 		assertMetadataIsLoaded()
+
+		var requestedTools tool.Tools
 
 		// Collect requested tools based on mode
 		if defaultMode {
@@ -117,182 +117,193 @@ var installCmd = &cobra.Command{
 		}
 		pterm.Debug.Printfln("Requested %d tool(s)", len(requestedTools.Tools))
 
-		// Add dependencies of requested tools
-		// Set installation order
-		spinnerResolveDeps, _ := pterm.DefaultSpinner.Start("Resolving dependencies...")
-		for _, tool := range requestedTools.Tools {
-			err := tools.ResolveDependencies(&plannedTools, tool.Name)
-			if err != nil {
-				return fmt.Errorf("unable to resolve dependencies for %s: %s", tool.Name, err)
-			}
+		return installTools(requestedTools, check, plan, reinstall, skipDependencies, skipConflicts)
+	},
+}
+
+func installToolsByName(toolNames []string, check bool, plan bool, reinstall bool, skipDependencies bool, skipConflicts bool) error {
+	requestedTools := tools.GetByNames(toolNames)
+	return installTools(requestedTools, check, plan, reinstall, skipDependencies, skipConflicts)
+}
+
+func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bool, skipDependencies bool, skipConflicts bool) error {
+	var plannedTools tool.Tools
+
+	// Add dependencies of requested tools
+	// Set installation order
+	spinnerResolveDeps, _ := pterm.DefaultSpinner.Start("Resolving dependencies...")
+	for _, tool := range requestedTools.Tools {
+		err := tools.ResolveDependencies(&plannedTools, tool.Name)
+		if err != nil {
+			return fmt.Errorf("unable to resolve dependencies for %s: %s", tool.Name, err)
 		}
-		for _, requestedTool := range requestedTools.Tools {
-			tool, err := plannedTools.GetByName(requestedTool.Name)
-			if err != nil {
-				return fmt.Errorf("unable to find %s in planned tools", requestedTool.Name)
-			}
-			tool.Status.IsRequested = true
+	}
+	for _, requestedTool := range requestedTools.Tools {
+		tool, err := plannedTools.GetByName(requestedTool.Name)
+		if err != nil {
+			return fmt.Errorf("unable to find %s in planned tools", requestedTool.Name)
 		}
-		pterm.Debug.Printfln("Planned %d tool(s)", len(plannedTools.Tools))
-		spinnerResolveDeps.Info()
+		tool.Status.IsRequested = true
+	}
+	pterm.Debug.Printfln("Planned %d tool(s)", len(plannedTools.Tools))
+	spinnerResolveDeps.Info()
 
-		// Populate status of planned tools
-		spinnerGetStatus, _ := pterm.DefaultSpinner.Start("Getting status of requested tools...")
-		for index, tool := range plannedTools.Tools {
-			if skipDependencies && !tool.Status.IsRequested {
-				continue
-			}
-
-			pterm.Debug.Printfln("Getting status for requested tool %s", tool.Name)
-
-			plannedTools.Tools[index].ReplaceVariables(prefix+"/"+target, arch, altArch)
-
-			err := plannedTools.Tools[index].GetBinaryStatus()
-			if err != nil {
-				return fmt.Errorf("unable to determine binary status of %s: %s", tool.Name, err)
-			}
-
-			err = plannedTools.Tools[index].GetMarkerFileStatus(prefix + "/" + cacheDirectory)
-			if err != nil {
-				return fmt.Errorf("unable to determine marker file status of %s: %s", tool.Name, err)
-			}
-
-			err = plannedTools.Tools[index].GetVersionStatus()
-			if err != nil {
-				return fmt.Errorf("unable to determine version status of %s: %s", tool.Name, err)
-			}
+	// Populate status of planned tools
+	spinnerGetStatus, _ := pterm.DefaultSpinner.Start("Getting status of requested tools...")
+	for index, tool := range plannedTools.Tools {
+		if skipDependencies && !tool.Status.IsRequested {
+			continue
 		}
-		spinnerGetStatus.Info()
 
-		// Check for conflicts
-		var conflictsDetected = false
-		var conflictsWithInstalled tool.Tools
-		var conflictsBetweenPlanned tool.Tools
-		spinnerConclicts, _ := pterm.DefaultSpinner.Start("Checking for conflicts...")
-		for index, tool := range plannedTools.Tools {
-			if !tool.Status.BinaryPresent && len(tool.ConflictsWith) > 0 {
-				for _, conflict := range tool.ConflictsWith {
-					conflictTool, err := plannedTools.GetByName(conflict)
-					if err != nil {
-						continue
+		pterm.Debug.Printfln("Getting status for requested tool %s", tool.Name)
+
+		plannedTools.Tools[index].ReplaceVariables(prefix+"/"+target, arch, altArch)
+
+		err := plannedTools.Tools[index].GetBinaryStatus()
+		if err != nil {
+			return fmt.Errorf("unable to determine binary status of %s: %s", tool.Name, err)
+		}
+
+		err = plannedTools.Tools[index].GetMarkerFileStatus(prefix + "/" + cacheDirectory)
+		if err != nil {
+			return fmt.Errorf("unable to determine marker file status of %s: %s", tool.Name, err)
+		}
+
+		err = plannedTools.Tools[index].GetVersionStatus()
+		if err != nil {
+			return fmt.Errorf("unable to determine version status of %s: %s", tool.Name, err)
+		}
+	}
+	spinnerGetStatus.Info()
+
+	// Check for conflicts
+	var conflictsDetected = false
+	var conflictsWithInstalled tool.Tools
+	var conflictsBetweenPlanned tool.Tools
+	spinnerConclicts, _ := pterm.DefaultSpinner.Start("Checking for conflicts...")
+	for index, tool := range plannedTools.Tools {
+		if !tool.Status.BinaryPresent && len(tool.ConflictsWith) > 0 {
+			for _, conflict := range tool.ConflictsWith {
+				conflictTool, err := plannedTools.GetByName(conflict)
+				if err != nil {
+					continue
+				}
+				if plannedTools.Contains(conflict) {
+					if conflictTool.Status.BinaryPresent {
+						conflictsWithInstalled.Tools = append(conflictsWithInstalled.Tools, tool)
+					} else {
+						conflictsBetweenPlanned.Tools = append(conflictsBetweenPlanned.Tools, tool)
 					}
-					if plannedTools.Contains(conflict) {
-						if conflictTool.Status.BinaryPresent {
-							conflictsWithInstalled.Tools = append(conflictsWithInstalled.Tools, tool)
-						} else {
-							conflictsBetweenPlanned.Tools = append(conflictsBetweenPlanned.Tools, tool)
-						}
-						conflictsDetected = true
+					conflictsDetected = true
 
-						if skipConflicts {
-							plannedTools.Tools[index].Status.SkipDueToConflicts = true
-						}
+					if skipConflicts {
+						plannedTools.Tools[index].Status.SkipDueToConflicts = true
 					}
 				}
 			}
 		}
-		spinnerConclicts.Info()
-		if conflictsDetected {
+	}
+	spinnerConclicts.Info()
+	if conflictsDetected {
+		plannedTools.ListWithStatus()
+	}
+	if len(conflictsWithInstalled.Tools) > 0 {
+		pterm.Error.Printfln("Conflicts with installed tools:")
+		for _, conflict := range conflictsWithInstalled.Tools {
+			pterm.Error.Printfln("  %s conflicts with %s", conflict.Name, strings.Join(conflict.ConflictsWith, ", "))
+		}
+		conflictsDetected = true
+	}
+	if len(conflictsBetweenPlanned.Tools) > 0 {
+		pterm.Error.Printfln("Conflicts between planned tools:")
+		for _, conflict := range conflictsBetweenPlanned.Tools {
+			pterm.Error.Printfln("  %s conflicts with %s", conflict.Name, strings.Join(conflict.ConflictsWith, ", "))
+		}
+		conflictsDetected = true
+	}
+	if conflictsDetected && !skipConflicts {
+		return fmt.Errorf("conflicts detected")
+	}
+
+	// Terminate if checking or planning
+	if plan || check {
+		// TODO: Improve output
+		//       - Show version status (installed, outdated, missing)
+		//       - Use color and emoji
+		if !conflictsDetected {
 			plannedTools.ListWithStatus()
 		}
-		if len(conflictsWithInstalled.Tools) > 0 {
-			pterm.Error.Printfln("Conflicts with installed tools:")
-			for _, conflict := range conflictsWithInstalled.Tools {
-				pterm.Error.Printfln("  %s conflicts with %s", conflict.Name, strings.Join(conflict.ConflictsWith, ", "))
-			}
-			conflictsDetected = true
-		}
-		if len(conflictsBetweenPlanned.Tools) > 0 {
-			pterm.Error.Printfln("Conflicts between planned tools:")
-			for _, conflict := range conflictsBetweenPlanned.Tools {
-				pterm.Error.Printfln("  %s conflicts with %s", conflict.Name, strings.Join(conflict.ConflictsWith, ", "))
-			}
-			conflictsDetected = true
-		}
-		if conflictsDetected && !skipConflicts {
-			return fmt.Errorf("conflicts detected")
-		}
-
-		// Terminate if checking or planning
-		if plan || check {
-			// TODO: Improve output
-			//       - Show version status (installed, outdated, missing)
-			//       - Use color and emoji
-			if !conflictsDetected {
-				plannedTools.ListWithStatus()
-			}
-		}
-		if check {
-			for _, tool := range plannedTools.Tools {
-				if !tool.Status.BinaryPresent || !tool.Status.VersionMatches {
-					return fmt.Errorf("found missing or outdated tool")
-				}
-			}
-		}
-		if plan || check {
-			return nil
-		}
-
-		// Install
-		assertWritableTarget()
-		assertLibDirectory()
+	}
+	if check {
 		for _, tool := range plannedTools.Tools {
-			if tool.Status.VersionMatches && !reinstall {
-				pterm.Info.Printfln("Skipping %s %s because it is already installed.", tool.Name, tool.Version)
-				continue
+			if !tool.Status.BinaryPresent || !tool.Status.VersionMatches {
+				return fmt.Errorf("found missing or outdated tool")
 			}
-			if tool.Status.SkipDueToConflicts {
-				pterm.Info.Printfln("Skipping %s because it conflicts with another tool.", tool.Name)
-				continue
-			}
-			if skipDependencies && !tool.Status.IsRequested {
-				pterm.Info.Printfln("Skipping %s because it is a dependency (--skip-deps was specified)", tool.Name)
-				continue
-			}
+		}
+	}
+	if plan || check {
+		return nil
+	}
 
-			fmt.Println()
-			if reinstall {
-				pterm.Info.Printfln("Reinstalling %s %s", tool.Name, tool.Version)
-				uninstallTool(tool.Name)
-
-			} else if tool.Status.BinaryPresent || tool.Status.MarkerFilePresent {
-				pterm.Info.Printfln("Updating %s %s", tool.Name, tool.Version)
-				uninstallTool(tool.Name)
-				printToolUpdate(tool.Name)
-
-			} else {
-				pterm.Info.Printfln("Installing %s %s", tool.Name, tool.Version)
-			}
-
-			if !skipDependencies {
-				for _, toolName := range tool.RuntimeDependencies {
-					tool, err := plannedTools.GetByName(toolName)
-					if err != nil {
-						pterm.Error.Printfln("Unable to find dependency %s", toolName)
-						return fmt.Errorf("unable to find dependency %s", toolName)
-					}
-					tool.GetBinaryStatus()
-					if tool.Status.BinaryPresent || tool.Status.MarkerFilePresent {
-						continue
-					}
-					pterm.Error.Printfln("Dependency %s is missing", toolName)
-					return fmt.Errorf("dependency %s is missing", toolName)
-				}
-			}
-
-			err := tool.Install(registryImagePrefix, prefix+"/", altArch)
-			if err != nil {
-				pterm.Warning.Printfln("Unable to install %s: %s", tool.Name, err)
-				continue
-			}
-
-			fmt.Println()
-			printToolUsage(tool.Name)
-			fmt.Println()
-
-			tool.CreateMarkerFile(prefix + "/" + cacheDirectory)
+	// Install
+	assertWritableTarget()
+	assertLibDirectory()
+	for _, tool := range plannedTools.Tools {
+		if tool.Status.VersionMatches && !reinstall {
+			pterm.Info.Printfln("Skipping %s %s because it is already installed.", tool.Name, tool.Version)
+			continue
+		}
+		if tool.Status.SkipDueToConflicts {
+			pterm.Info.Printfln("Skipping %s because it conflicts with another tool.", tool.Name)
+			continue
+		}
+		if skipDependencies && !tool.Status.IsRequested {
+			pterm.Info.Printfln("Skipping %s because it is a dependency (--skip-deps was specified)", tool.Name)
+			continue
 		}
 
-		return postinstall()
-	},
+		fmt.Println()
+		if reinstall {
+			pterm.Info.Printfln("Reinstalling %s %s", tool.Name, tool.Version)
+			uninstallTool(tool.Name)
+
+		} else if tool.Status.BinaryPresent || tool.Status.MarkerFilePresent {
+			pterm.Info.Printfln("Updating %s %s", tool.Name, tool.Version)
+			uninstallTool(tool.Name)
+			printToolUpdate(tool.Name)
+
+		} else {
+			pterm.Info.Printfln("Installing %s %s", tool.Name, tool.Version)
+		}
+
+		if !skipDependencies {
+			for _, toolName := range tool.RuntimeDependencies {
+				tool, err := plannedTools.GetByName(toolName)
+				if err != nil {
+					pterm.Error.Printfln("Unable to find dependency %s", toolName)
+					return fmt.Errorf("unable to find dependency %s", toolName)
+				}
+				tool.GetBinaryStatus()
+				if tool.Status.BinaryPresent || tool.Status.MarkerFilePresent {
+					continue
+				}
+				pterm.Error.Printfln("Dependency %s is missing", toolName)
+				return fmt.Errorf("dependency %s is missing", toolName)
+			}
+		}
+
+		err := tool.Install(registryImagePrefix, prefix+"/", altArch)
+		if err != nil {
+			pterm.Warning.Printfln("Unable to install %s: %s", tool.Name, err)
+			continue
+		}
+
+		fmt.Println()
+		printToolUsage(tool.Name)
+		fmt.Println()
+
+		tool.CreateMarkerFile(prefix + "/" + cacheDirectory)
+	}
+
+	return postinstall()
 }

@@ -28,6 +28,7 @@ var repository = "nicholasdille/docker-setup"
 var toolSeparator = "/"
 var registryImagePrefix = registry + "/" + repository + toolSeparator
 var tools tool.Tools
+var noInteractive bool
 
 func directoryExists(directory string) bool {
 	pterm.Debug.Printfln("Checking if directory %s exists", directory)

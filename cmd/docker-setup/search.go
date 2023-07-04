@@ -2,9 +2,12 @@ package main
 
 import (
 	"fmt"
+	"os"
 
+	"atomicgo.dev/keyboard/keys"
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 )
 
 func initSearchCmd() {
@@ -78,9 +81,29 @@ var searchCmd = &cobra.Command{
 		)
 		if len(results.Tools) == 0 {
 			pterm.Info.Printfln("No tools found for term %s", args[0])
+			return nil
+		}
 
-		} else {
-			results.List()
+		results.List()
+
+		if noInteractive || !term.IsTerminal(int(os.Stdin.Fd())) || !term.IsTerminal(int(os.Stdout.Fd())) {
+			return nil
+		}
+
+		fmt.Println()
+		var options []string
+		for _, tool := range results.Tools {
+			options = append(options, tool.Name)
+		}
+		printer := pterm.DefaultInteractiveMultiselect.WithOptions(options)
+		printer.DefaultText = "Select tools to install"
+		printer.Filter = false
+		printer.KeyConfirm = keys.Enter
+		printer.KeySelect = keys.Space
+		printer.Checkmark = &pterm.Checkmark{Checked: "✓", Unchecked: " "}
+		selectedOptions, _ := printer.Show()
+		if len(selectedOptions) > 0 {
+			installToolsByName(selectedOptions, false, false, false, false, false)
 		}
 
 		return nil

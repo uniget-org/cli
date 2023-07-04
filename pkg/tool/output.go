@@ -24,17 +24,23 @@ func (tool *Tool) List() {
 func (tools *Tools) List() {
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
+	t.SetColumnConfigs([]table.ColumnConfig{
+		{
+			Number:   4,
+			WidthMax: 80,
+		},
+	})
 	t.Style().Options.DrawBorder = false
 	t.Style().Options.SeparateColumns = false
 	t.Style().Options.SeparateFooter = false
 	t.Style().Options.SeparateHeader = false
 	t.Style().Options.SeparateRows = false
 
-	t.AppendHeader(table.Row{"Name", "Version"})
+	t.AppendHeader(table.Row{"Name", "Version", "Description"})
 
 	for index, tool := range tools.Tools {
 		t.AppendRows([]table.Row{
-			{index + 1, tool.Name, tool.Version},
+			{index + 1, tool.Name, tool.Version, tool.Description},
 		})
 	}
 

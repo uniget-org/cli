@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"os"
 
+	"golang.org/x/term"
 	"gopkg.in/yaml.v3"
 
+	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 )
 
@@ -29,9 +31,10 @@ var describeCmd = &cobra.Command{
 		assertMetadataFileExists()
 		assertMetadataIsLoaded()
 
-		tool, err := tools.GetByName(args[0])
+		toolName := args[0]
+		tool, err := tools.GetByName(toolName)
 		if err != nil {
-			return fmt.Errorf("error getting tool %s", args[0])
+			return fmt.Errorf("error getting tool %s", toolName)
 		}
 		tool.ReplaceVariables(prefix+"/"+target, arch, altArch)
 		tool.GetMarkerFileStatus(prefix + "/" + cacheDirectory)
@@ -59,6 +62,35 @@ var describeCmd = &cobra.Command{
 
 		} else {
 			return fmt.Errorf("invalid output format: %s", describeOutput)
+		}
+
+		if noInteractive || !term.IsTerminal(int(os.Stdin.Fd())) || !term.IsTerminal(int(os.Stdout.Fd())) {
+			return nil
+		}
+
+		fmt.Println()
+		primaryOptions := []string{"Abort", "Plan", "Install", "Uninstall"}
+		printer := pterm.DefaultInteractiveSelect.WithOptions(primaryOptions)
+		printer.DefaultText = "What do you want to do?"
+		selectedOption, _ := printer.Show()
+		switch selectedOption {
+		case "Abort":
+			return nil
+		case "Plan":
+			err := installToolsByName([]string{toolName}, false, true, false, false, false)
+			if err != nil {
+				return err
+			}
+			continueWithInstall, _ := pterm.DefaultInteractiveConfirm.Show()
+			if continueWithInstall {
+				return installToolsByName([]string{toolName}, false, false, false, false, false)
+			}
+		case "Install":
+			return installToolsByName([]string{toolName}, false, false, false, false, false)
+		case "Uninstall":
+			return uninstallTool(toolName)
+		default:
+			return fmt.Errorf("invalid option: %s", selectedOption)
 		}
 
 		return nil
