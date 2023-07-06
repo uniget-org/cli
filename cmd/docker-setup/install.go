@@ -277,18 +277,20 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 		}
 
 		if !skipDependencies {
-			for _, toolName := range tool.RuntimeDependencies {
-				tool, err := plannedTools.GetByName(toolName)
+			for _, depName := range tool.RuntimeDependencies {
+				dep, err := plannedTools.GetByName(depName)
 				if err != nil {
-					pterm.Error.Printfln("Unable to find dependency %s", toolName)
-					return fmt.Errorf("unable to find dependency %s", toolName)
+					pterm.Error.Printfln("Unable to find dependency %s", depName)
+					return fmt.Errorf("unable to find dependency %s", depName)
 				}
-				tool.GetBinaryStatus()
-				if tool.Status.BinaryPresent || tool.Status.MarkerFilePresent {
+				dep.GetBinaryStatus()
+				dep.GetMarkerFileStatus(prefix + "/" + cacheDirectory)
+				dep.GetVersionStatus()
+				if dep.Status.BinaryPresent || dep.Status.MarkerFilePresent {
 					continue
 				}
-				pterm.Error.Printfln("Dependency %s is missing", toolName)
-				return fmt.Errorf("dependency %s is missing", toolName)
+				pterm.Error.Printfln("Dependency %s is missing", depName)
+				return fmt.Errorf("dependency %s is missing", depName)
 			}
 		}
 
