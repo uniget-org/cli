@@ -262,7 +262,6 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 			continue
 		}
 
-		fmt.Println()
 		if reinstall {
 			pterm.Info.Printfln("Reinstalling %s %s", tool.Name, tool.Version)
 			uninstallTool(tool.Name)
@@ -300,9 +299,7 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 			continue
 		}
 
-		fmt.Println()
 		printToolUsage(tool.Name)
-		fmt.Println()
 
 		tool.CreateMarkerFile(prefix + "/" + cacheDirectory)
 	}
