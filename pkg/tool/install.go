@@ -7,11 +7,13 @@ import (
 	"github.com/nicholasdille/docker-setup/pkg/archive"
 	"github.com/nicholasdille/docker-setup/pkg/containers"
 
+	"github.com/pterm/pterm"
 	"github.com/regclient/regclient/types/blob"
 )
 
 func (tool *Tool) Install(registryImagePrefix string, prefix string, altArch string) error {
 	err := containers.GetManifest(fmt.Sprintf(registryImagePrefix+"%s:main", tool.Name), altArch, func(blob blob.Reader) error {
+		pterm.Debug.Printfln("Extracting to %s", prefix+"/")
 		err := os.Chdir(prefix + "/")
 		if err != nil {
 			return fmt.Errorf("error changing directory to %s: %s", prefix+"/", err)

@@ -87,17 +87,31 @@ func main() {
 			cacheDirectory = cacheRoot + "/docker-setup"
 			libRoot = os.Getenv("HOME") + "/.local/state"
 			libDirectory = libRoot + "/docker-setup"
+			metadataFile = cacheDirectory + "/" + metadataFileName
+			pterm.Error.Println("User context is not yet supported. Please check #6270.")
 
 		} else {
 			cacheDirectory = cacheRoot + "/" + cacheDirectory
 			libDirectory = libRoot + "/" + libDirectory
 		}
 
+		if debug {
+			pterm.Debug.Printfln("target: %s", target)
+			pterm.Debug.Printfln("cacheRoot: %s", cacheRoot)
+			pterm.Debug.Printfln("cacheDirectory: %s", cacheDirectory)
+			pterm.Debug.Printfln("libRoot: %s", libRoot)
+			pterm.Debug.Printfln("libDirectory: %s", libDirectory)
+			pterm.Debug.Printfln("metadataFile: %s", metadataFile)
+		}
+
 		if !fileExists(prefix + "/" + metadataFile) {
+			pterm.Debug.Printfln("Metadata file does not exist. Downloading...")
 			err := downloadMetadata()
 			if err != nil {
 				return fmt.Errorf("error downloading metadata: %s", err)
 			}
+		} else {
+			pterm.Debug.Printfln("Metadata file exists")
 		}
 		err := loadMetadata()
 		if err != nil {
