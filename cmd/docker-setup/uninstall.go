@@ -9,7 +9,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var force bool
+
 func initUninstallCmd() {
+	uninstallCmd.Flags().BoolVar(&force, "force", false, "Force uninstallation")
+
 	rootCmd.AddCommand(uninstallCmd)
 }
 
@@ -34,7 +38,7 @@ var uninstallCmd = &cobra.Command{
 		tool.GetBinaryStatus()
 		tool.GetMarkerFileStatus(prefix + "/" + cacheDirectory)
 		tool.GetVersionStatus()
-		if !tool.Status.MarkerFilePresent && !tool.Status.BinaryPresent {
+		if !force && !tool.Status.MarkerFilePresent && !tool.Status.BinaryPresent {
 			pterm.Warning.Printfln("Tool %s is not installed", args[0])
 			return nil
 		}
