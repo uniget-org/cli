@@ -26,17 +26,11 @@ cover: \
 	@$(GO) tool cover -func ./coverage.out
 
 snapshot: \
-		$(HELPER)/var/lib/docker-setup/manifests/go.json \
 		make/go.mk \
 		$(GO_SOURCES) \
-		; $(info $(M) Building snapshot of docker-setup...)
+		; $(info $(M) Building snapshot of docker-setup with version $(GO_VERSION)...)
 	@\
-	CGO_ENABLED=0 \
-		$(GO) build \
-			-buildvcs=false \
-			-ldflags "-w -s -X main.version=$(GO_VERSION)" \
-			-o docker-setup \
-			./cmd/docker-setup
+	docker buildx bake binary --set binary.args.version=$(GO_VERSION)
 
 release: \
 		$(HELPER)/var/lib/docker-setup/manifests/go.json \

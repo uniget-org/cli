@@ -11,7 +11,7 @@ FROM base AS build
 ARG TARGETOS
 ARG TARGETARCH
 WORKDIR /go/src/github.com/nicholasdille/docker-setup
-ARG version=dev
+ARG version=main
 ENV CGO_ENABLED=0
 RUN --mount=target=. \
     --mount=type=cache,target=/go/pkg/mod \
