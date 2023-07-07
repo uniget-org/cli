@@ -29,8 +29,7 @@ snapshot: \
 		make/go.mk \
 		$(GO_SOURCES) \
 		; $(info $(M) Building snapshot of docker-setup with version $(GO_VERSION)...)
-	@\
-	docker buildx bake binary --set binary.args.version=$(GO_VERSION)
+	@docker buildx bake binary --set binary.args.version=$(GO_VERSION)-dev
 
 release: \
 		$(HELPER)/var/lib/docker-setup/manifests/go.json \
