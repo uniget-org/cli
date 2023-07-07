@@ -2,16 +2,15 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
-
-	"github.com/pterm/pterm"
-	"github.com/spf13/cobra"
+	"runtime"
 
 	"github.com/nicholasdille/docker-setup/pkg/archive"
-	"github.com/nicholasdille/docker-setup/pkg/containers"
-	"github.com/regclient/regclient/types/blob"
+	"github.com/pterm/pterm"
+	"github.com/spf13/cobra"
 )
 
 func initUpgradeCmd() {
@@ -24,7 +23,7 @@ var upgradeCmd = &cobra.Command{
 	Long:  header + "\nUpgrade docker-setup to latest version",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		versionRegex := regexp.MustCompile(`\d+\.\d+\.\d+`)
+		versionRegex := regexp.MustCompile(`^\d+\.\d+\.\d+(-\w+)?$`)
 		if !versionRegex.MatchString(version) {
 			pterm.Warning.Printf("Version is %s and does not match a.b.c\n", version)
 			return nil
@@ -45,21 +44,37 @@ var upgradeCmd = &cobra.Command{
 		}
 		pterm.Info.Printfln("Replacing docker-setup in %s", selfDir)
 
-		err = containers.GetManifest(fmt.Sprintf("%s%s:main", registryImagePrefix, "docker-setup"), altArch, func(blob blob.Reader) error {
-			pterm.Debug.Printfln("Extracting to %s", selfDir)
-			err := os.Chdir(selfDir)
-			if err != nil {
-				return fmt.Errorf("error changing directory to %s: %s", selfDir, err)
-			}
-			err = archive.ExtractTarGz(blob)
-			if err != nil {
-				return fmt.Errorf("failed to extract layer: %s", err)
-			}
-
-			return nil
-		})
+		url := fmt.Sprintf("https://github.com/%s/releases/latest/download/docker-setup_%s_%s.tar.gz", repository, runtime.GOOS, arch)
+		pterm.Debug.Printfln("Downloading %s", url)
+		client := &http.Client{}
+		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
-			return fmt.Errorf("failed to get manifest: %s", err)
+			return fmt.Errorf("failed to create request: %s", err)
+		}
+		req.Header.Set("Accept", "application/octet-stream")
+		req.Header.Set("User-Agent", fmt.Sprintf("docker-setup/%s", version))
+		resp, err := client.Do(req)
+		if err != nil {
+			return fmt.Errorf("failed to download %s: %s", url, err)
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != 200 {
+			return fmt.Errorf("failed to download %s: %s", url, resp.Status)
+		}
+
+		pterm.Debug.Printfln("Extracting tar.gz")
+		err = os.Chdir(selfDir)
+		if err != nil {
+			return fmt.Errorf("error changing directory to %s: %s", selfDir, err)
+		}
+		err = os.Remove(selfExe)
+		if err != nil {
+			return fmt.Errorf("failed to remove %s: %s", selfExe, err)
+		}
+		err = archive.ExtractTarGz(resp.Body)
+		if err != nil {
+			return fmt.Errorf("failed to extract tar.gz: %s", err)
 		}
 
 		return nil
