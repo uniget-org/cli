@@ -49,6 +49,7 @@ func init() {
 	initTagsCmd()
 	initUninstallCmd()
 	initUpdateCmd()
+	initUpgradeCmd()
 	initVersionCmd()
 }
 
