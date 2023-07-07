@@ -57,14 +57,16 @@ func ExtractTarGz(gzipStream io.Reader) error {
 			log.Tracef("Untarring symlink %s\n", header.Name)
 			_, err := os.Stat(header.Name)
 			if err == nil {
-				log.Tracef("File/symlink %s already exists\n", header.Name)
+				log.Debugf("Symlink %s already exists\n", header.Name)
+			}
+			if os.IsNotExist(err) {
+				log.Debugf("Target of symlink %s does not exist\n", header.Name)
+				os.Remove(header.Name)
 
-			} else {
-				err := os.Symlink(header.Linkname, header.Name)
+				err = os.Symlink(header.Linkname, header.Name)
 				if err != nil {
 					return fmt.Errorf("ExtractTarGz: Symlink() failed: %s", err.Error())
 				}
-
 			}
 
 		default:
