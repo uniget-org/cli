@@ -57,6 +57,7 @@ func main() {
 	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
 		if debug {
 			pterm.EnableDebugMessages()
+			log.SetLevel(log.DebugLevel)
 
 		} else if trace {
 			pterm.EnableDebugMessages()
