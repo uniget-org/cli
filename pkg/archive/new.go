@@ -56,8 +56,9 @@ func ExtractTarGz(gzipStream io.Reader) error {
 		case tar.TypeSymlink:
 			log.Tracef("Untarring symlink %s\n", header.Name)
 			_, err := os.Stat(header.Name)
-			if err != nil {
+			if err == nil {
 				log.Tracef("File/symlink %s already exists\n", header.Name)
+
 			} else {
 				err := os.Symlink(header.Linkname, header.Name)
 				if err != nil {
