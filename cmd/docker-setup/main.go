@@ -55,6 +55,9 @@ func init() {
 
 func main() {
 	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
+		pterm.Error.Writer = os.Stderr
+		pterm.Warning.Writer = os.Stderr
+
 		if debug {
 			pterm.EnableDebugMessages()
 			log.SetLevel(log.DebugLevel)

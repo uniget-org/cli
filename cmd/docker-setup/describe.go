@@ -15,9 +15,9 @@ import (
 var describeOutput string
 
 func initDescribeCmd() {
-	rootCmd.AddCommand(describeCmd)
-
 	describeCmd.Flags().StringVarP(&describeOutput, "output", "o", "pretty", "Output options: pretty, json, yaml")
+
+	rootCmd.AddCommand(describeCmd)
 }
 
 var describeCmd = &cobra.Command{
