@@ -304,5 +304,11 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 		tool.CreateMarkerFile(prefix + "/" + cacheDirectory)
 	}
 
+	if len(prefix) > 0 {
+		pterm.Warning.Printfln("Post installation skipped because prefix is set to %s", prefix)
+		pterm.Warning.Printfln("Please run 'docker-setup postinstall' in the context of %s to complete the installation", prefix)
+		return nil
+	}
+
 	return postinstall()
 }
