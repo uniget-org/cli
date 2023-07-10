@@ -46,8 +46,10 @@ jobs:
     - name: Bootstrap uniget
       run: |
         make snapshot
-        ./uniget --prefix=helper update
-        ./uniget --prefix=helper install go goreleaser syft
+        mv uniget /tmp/
+        /tmp/uniget --prefix=helper update
+        /tmp/uniget --prefix=helper install go goreleaser syft
+        rm /tmp/uniget
 
     - name: Build and release binaries
       env:
