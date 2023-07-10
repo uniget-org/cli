@@ -28,4 +28,4 @@ jobs:
 
     - name: Smoke test
       run: |
-        ./docker-setup --version
+        ./uniget --version
