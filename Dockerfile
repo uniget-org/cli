@@ -10,7 +10,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 FROM base AS build
 ARG TARGETOS
 ARG TARGETARCH
-WORKDIR /go/src/github.com/uniget-org/uniget
+WORKDIR /go/src/github.com/uniget-org/cli
 ARG version=main
 ENV CGO_ENABLED=0
 RUN --mount=target=. \
