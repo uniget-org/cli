@@ -55,7 +55,7 @@ func postinstall() error {
 				"target=/"+target,
 				"arch="+arch,
 				"alt_arch="+altArch,
-				"docker_setup_contrib=/"+libDirectory+"/contrib",
+				"uniget_contrib=/"+libDirectory+"/contrib",
 			)
 			output, err := cmd.CombinedOutput()
 			if err != nil {

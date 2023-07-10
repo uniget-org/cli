@@ -61,7 +61,6 @@ func uninstallTool(toolName string) error {
 	}
 
 	if fileExists(prefix + "/" + libDirectory + "/manifests/" + tool.Name + ".txt") {
-		// TODO: Remove all files listes in /var/lib/docker-setup/manifests/<tool>.txt
 		data, err := os.ReadFile(prefix + "/" + libDirectory + "/manifests/" + tool.Name + ".txt")
 		if err != nil {
 			return fmt.Errorf("unable to read file %s: %s", filename, err)

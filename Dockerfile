@@ -10,7 +10,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 FROM base AS build
 ARG TARGETOS
 ARG TARGETARCH
-WORKDIR /go/src/github.com/nicholasdille/docker-setup
+WORKDIR /go/src/github.com/uniget-org/uniget
 ARG version=main
 ENV CGO_ENABLED=0
 RUN --mount=target=. \
@@ -22,8 +22,8 @@ GOARCH=${TARGETARCH} \
     go build \
         -buildvcs=false \
         -ldflags "-w -s -X main.version=${version}" \
-        -o /out/docker-setup \
-        ./cmd/docker-setup
+        -o /out/uniget \
+        ./cmd/uniget
 EOF
 
 FROM base AS unit-test
@@ -52,12 +52,12 @@ FROM scratch AS unit-test-coverage
 COPY --from=unit-test /out/cover.out /cover.out
 
 FROM scratch AS bin-unix
-COPY --from=build /out/docker-setup /
+COPY --from=build /out/uniget /
 
 FROM bin-unix AS bin-linux
 FROM bin-unix AS bin-darwin
 
 FROM scratch AS bin-windows
-COPY --from=build /out/docker-setup /docker-setup.exe
+COPY --from=build /out/uniget /uniget.exe
 
 FROM bin-${TARGETOS} as bin

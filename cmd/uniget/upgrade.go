@@ -8,9 +8,9 @@ import (
 	"regexp"
 	"runtime"
 
-	"github.com/nicholasdille/docker-setup/pkg/archive"
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
+	"github.com/uniget-org/cli/pkg/archive"
 )
 
 func initUpgradeCmd() {
@@ -19,8 +19,8 @@ func initUpgradeCmd() {
 
 var upgradeCmd = &cobra.Command{
 	Use:   "upgrade",
-	Short: "Upgrade docker-setup",
-	Long:  header + "\nUpgrade docker-setup to latest version",
+	Short: "Upgrade " + projectName,
+	Long:  header + "\nUpgrade " + projectName + " to latest version",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		versionRegex := regexp.MustCompile(`^\d+\.\d+\.\d+(-\w+)?$`)
@@ -33,8 +33,8 @@ var upgradeCmd = &cobra.Command{
 		if selfExe == "." {
 			return fmt.Errorf("failed to get base name for %s", os.Args[0])
 		}
-		if selfExe != "docker-setup" {
-			pterm.Warning.Printf("Binary must be called docker-setup but is %s\n", selfExe)
+		if selfExe != "uniget" {
+			pterm.Warning.Printf("Binary must be called uniget but is %s\n", selfExe)
 			return nil
 		}
 
@@ -42,9 +42,9 @@ var upgradeCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("failed to get absolute path: %s", err)
 		}
-		pterm.Info.Printfln("Replacing docker-setup in %s", selfDir)
+		pterm.Info.Printfln("Replacing uniget in %s", selfDir)
 
-		url := fmt.Sprintf("https://github.com/%s/releases/latest/download/docker-setup_%s_%s.tar.gz", repository, runtime.GOOS, arch)
+		url := fmt.Sprintf("https://github.com/%s/releases/latest/download/uniget_%s_%s.tar.gz", projectRepository, runtime.GOOS, arch)
 		pterm.Debug.Printfln("Downloading %s", url)
 		client := &http.Client{}
 		req, err := http.NewRequest("GET", url, nil)
@@ -52,7 +52,7 @@ var upgradeCmd = &cobra.Command{
 			return fmt.Errorf("failed to create request: %s", err)
 		}
 		req.Header.Set("Accept", "application/octet-stream")
-		req.Header.Set("User-Agent", fmt.Sprintf("docker-setup/%s", version))
+		req.Header.Set("User-Agent", fmt.Sprintf("%s/%s", projectName, version))
 		resp, err := client.Do(req)
 		if err != nil {
 			return fmt.Errorf("failed to download %s: %s", url, err)

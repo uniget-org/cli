@@ -1,9 +1,9 @@
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
-project_name: docker-setup
+project_name: uniget
 
 builds:
-- main: ./cmd/docker-setup
-  binary: docker-setup
+- main: ./cmd/uniget
+  binary: uniget
   gobinary: helper/usr/local/bin/go
   env:
   - CGO_ENABLED=0
@@ -29,7 +29,7 @@ sboms:
   - ${artifact}.cyclonedx.json
 
 archives:
-- id: docker-setup
+- id: uniget
   format: tar.gz
   name_template: >-
     {{ .ProjectName }}_
@@ -47,8 +47,8 @@ changelog:
 release:
   github:
     owner: nicholasdille
-    name: docker-setup
+    name: uniget
   ids:
-  - docker-setup
+  - uniget
   name_template: "{{ .Version }}"
   mode: replace

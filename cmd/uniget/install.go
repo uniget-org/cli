@@ -8,7 +8,7 @@ import (
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 
-	"github.com/nicholasdille/docker-setup/pkg/tool"
+	"github.com/uniget-org/cli/pkg/tool"
 )
 
 var defaultMode bool
@@ -33,7 +33,7 @@ func initInstallCmd() {
 	installCmd.Flags().BoolVar(&plan, "plan", false, "Show tool(s) planned installation")
 	installCmd.Flags().BoolVar(&skipDependencies, "skip-deps", false, "Skip dependencies")
 	installCmd.Flags().BoolVar(&skipConflicts, "skip-conflicts", false, "Skip conflicting tools")
-	installCmd.Flags().BoolVarP(&check, "check", "c", false, "Abort after checking versions")
+	installCmd.Flags().BoolVar(&check, "check", false, "Abort after checking versions")
 	installCmd.Flags().BoolVarP(&reinstall, "reinstall", "r", false, "Reinstall tool(s)")
 	installCmd.MarkFlagsMutuallyExclusive("default", "tags", "installed", "all", "file")
 	installCmd.MarkFlagsMutuallyExclusive("check", "plan")
@@ -306,7 +306,7 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 
 	if len(prefix) > 0 {
 		pterm.Warning.Printfln("Post installation skipped because prefix is set to %s", prefix)
-		pterm.Warning.Printfln("Please run 'docker-setup postinstall' in the context of %s to complete the installation", prefix)
+		pterm.Warning.Printfln("Please run 'uniget postinstall' in the context of %s to complete the installation", prefix)
 		return nil
 	}
 

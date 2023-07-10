@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/nicholasdille/docker-setup/pkg/archive"
-	"github.com/nicholasdille/docker-setup/pkg/containers"
+	"github.com/uniget-org/cli/pkg/archive"
+	"github.com/uniget-org/cli/pkg/containers"
 
 	"github.com/pterm/pterm"
 	"github.com/regclient/regclient/types/blob"

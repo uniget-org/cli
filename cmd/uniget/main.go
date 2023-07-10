@@ -11,25 +11,24 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var projectName = "uniget"
 var version string = "main"
-var header string = `
-     _             _
-    | |           | |                                  _
-  __| | ___   ____| |  _ _____  ____ _____ ___ _____ _| |_ _   _ ____
- / _  |/ _ \ / ___) |_/ ) ___ |/ ___|_____)___) ___ (_   _) | | |  _ \
-( (_| | |_| ( (___|  _ (| ____| |        |___ | ____| | |_| |_| | |_| |
- \____|\___/ \____)_| \_)_____)_|        (___/|_____)  \__)____/|  __/
-                                                                |_|
-`
+var header string = "" +
+	"             _            _\n" +
+	" _   _ _ __ (_) __ _  ___| |_\n" +
+	"| | | | '_ \\| |/ _` |/ _ \\ __|\n" +
+	"| |_| | | | | | (_| |  __/ |_\n" +
+	" \\__,_|_| |_|_|\\__, |\\___|\\__|\n" +
+	"               |___/\n"
 var logLevel string
 var debug bool
 var trace bool
 
 var (
 	rootCmd = &cobra.Command{
-		Use:          "docker-setup",
+		Use:          projectName,
 		Version:      version,
-		Short:        header + "The container tools installer and updater",
+		Short:        header + "The universal installer and updater to (container) tools",
 		SilenceUsage: true,
 	}
 )
@@ -89,9 +88,9 @@ func main() {
 			pterm.Debug.Println("Installing in user context")
 			target = os.Getenv("HOME") + "/.local/bin"
 			cacheRoot = os.Getenv("HOME") + "/.cache"
-			cacheDirectory = cacheRoot + "/docker-setup"
+			cacheDirectory = cacheRoot + "/" + projectName
 			libRoot = os.Getenv("HOME") + "/.local/state"
-			libDirectory = libRoot + "/docker-setup"
+			libDirectory = libRoot + "/" + projectName
 			metadataFile = cacheDirectory + "/" + metadataFileName
 			pterm.Error.Println("User context is not yet supported. Please check #6270.")
 
@@ -141,9 +140,9 @@ func main() {
 	rootCmd.PersistentFlags().StringVarP(&prefix, "prefix", "p", "", "Prefix for installation")
 	rootCmd.PersistentFlags().StringVarP(&target, "target", "t", "usr/local", "Target directory for installation")
 	rootCmd.PersistentFlags().StringVarP(&cacheRoot, "cache-root", "C", "var/cache", "Cache root directory relative to PREFIX")
-	rootCmd.PersistentFlags().StringVar(&cacheDirectory, "cache-directory", "docker-setup", "Cache directory relative to CACHE-ROOT")
+	rootCmd.PersistentFlags().StringVarP(&cacheDirectory, "cache-directory", "c", projectName, "Cache directory relative to CACHE-ROOT")
 	rootCmd.PersistentFlags().StringVarP(&libRoot, "lib-root", "L", "var/lib", "Library root directory relative to PREFIX")
-	rootCmd.PersistentFlags().StringVar(&libDirectory, "lib-directory", "docker-setup", "Library directory relative to LIB-ROOT")
+	rootCmd.PersistentFlags().StringVar(&libDirectory, "lib-directory", projectName, "Library directory relative to LIB-ROOT")
 	rootCmd.PersistentFlags().BoolVarP(&user, "user", "u", false, "Install in user context")
 	rootCmd.PersistentFlags().StringVarP(&metadataFileName, "metadata-file", "f", "metadata.json", "Metadata file")
 	rootCmd.PersistentFlags().BoolVar(&noInteractive, "no-interactive", false, "Disable interactive prompts")

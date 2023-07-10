@@ -8,7 +8,7 @@ import (
 
 	"github.com/pterm/pterm"
 
-	"github.com/nicholasdille/docker-setup/pkg/tool"
+	"github.com/uniget-org/cli/pkg/tool"
 )
 
 var altArch string = runtime.GOARCH
@@ -17,13 +17,14 @@ var arch string
 var prefix = ""
 var target = "usr/local"
 var cacheRoot = "var/cache"
-var cacheDirectory = cacheRoot + "/docker-setup"
+var cacheDirectory = cacheRoot + "/uniget"
 var libRoot = "var/lib"
-var libDirectory = libRoot + "/docker-setup"
+var libDirectory = libRoot + "/uniget"
 var user = false
 var metadataFileName = "metadata.json"
 var metadataFile = cacheDirectory + "/" + metadataFileName
 var registry = "ghcr.io"
+var projectRepository = "uniget-org/uniget"
 var repository = "nicholasdille/docker-setup"
 var toolSeparator = "/"
 var registryImagePrefix = registry + "/" + repository + toolSeparator

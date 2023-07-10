@@ -3,7 +3,7 @@ LATEST_VERSION := $(shell echo $(LATEST_TAG) | tr -d v)
 
 .PHONY:
 patch: \
-		$(HELPER)/var/lib/docker-setup/manifests/semver.json \
+		$(HELPER)/var/lib/uniget/manifests/semver.json \
 		; $(info $(M) Creating patch release...)
 	@make tag--$$(semver bump patch $(LATEST_VERSION))
 

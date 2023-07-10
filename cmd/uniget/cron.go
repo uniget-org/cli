@@ -6,20 +6,20 @@ import (
 
 	"github.com/spf13/cobra"
 
-	myos "github.com/nicholasdille/docker-setup/pkg/os"
+	myos "github.com/uniget-org/cli/pkg/os"
 )
 
 var cronUpdateScript = `#!/bin/bash
 set -o errexit
 
-docker-setup update
-docker-setup install --installed
+uniget update
+uniget install --installed
 `
 var cronUpgradeScript = `#!/bin/bash
 set -o errexit
 
-outputPath="$(which docker-setup)"
-curl https://github.com/nicholasdille/docker-setup/releases/latest/download/docker-setup \
+outputPath="$(which uniget)"
+curl https://github.com/uniget-org/cli/releases/latest/download/uniget \
 	--location \
 	--fail \
 	--output "${outputPath}"
@@ -73,16 +73,16 @@ func createCron() error {
 		return fmt.Errorf("unsupported OS: %s", osVendor)
 	}
 
-	// Write cronUpdateScript to /etc/cron.daily/docker-setup-update
+	// Write cronUpdateScript to /etc/cron.daily/uniget-update
 	updateScript := []byte(cronUpdateScript)
-	err = os.WriteFile(fmt.Sprintf("%s/docker-setup-update", cronDailyPath), updateScript, 0755)
+	err = os.WriteFile(fmt.Sprintf("%s/uniget-update", cronDailyPath), updateScript, 0755)
 	if err != nil {
 		return fmt.Errorf("cannot write cron update script: %w", err)
 	}
 
-	// Write cronUpgradeScript to /etc/cron.weekly/docker-setup-upgrade
+	// Write cronUpgradeScript to /etc/cron.weekly/uniget-upgrade
 	upgradeScript := []byte(cronUpgradeScript)
-	err = os.WriteFile(fmt.Sprintf("%s/docker-setup-upgrade", cronWeeklyPath), upgradeScript, 0755)
+	err = os.WriteFile(fmt.Sprintf("%s/uniget-upgrade", cronWeeklyPath), upgradeScript, 0755)
 	if err != nil {
 		return fmt.Errorf("cannot write cron upgrade script: %w", err)
 	}
@@ -91,19 +91,19 @@ func createCron() error {
 }
 
 func removeCron() error {
-	// Check if exists /etc/cron.daily/docker-setup-update
-	if fileExists(prefix + "/etc/cron.weekly/docker-setup-update") {
-		// Remove /etc/cron.daily/docker-setup-update
-		err := os.Remove(prefix + "/etc/cron.weekly/docker-setup-update")
+	// Check if exists /etc/cron.daily/uniget-update
+	if fileExists(prefix + "/etc/cron.weekly/uniget-update") {
+		// Remove /etc/cron.daily/uniget-update
+		err := os.Remove(prefix + "/etc/cron.weekly/uniget-update")
 		if err != nil {
 			return fmt.Errorf("cannot remove cron update script: %w", err)
 		}
 	}
 
-	// Check if exists /etc/cron.weekly/docker-setup-upgrade
-	if fileExists(prefix + "/etc/cron.daily/docker-setup-upgrade") {
-		// Remove /etc/cron.weekly/docker-setup-upgrade
-		err := os.Remove(prefix + "/etc/cron.daily/docker-setup-upgrade")
+	// Check if exists /etc/cron.weekly/uniget-upgrade
+	if fileExists(prefix + "/etc/cron.daily/uniget-upgrade") {
+		// Remove /etc/cron.weekly/uniget-upgrade
+		err := os.Remove(prefix + "/etc/cron.daily/uniget-upgrade")
 		if err != nil {
 			return fmt.Errorf("cannot remove cron upgrade script: %w", err)
 		}

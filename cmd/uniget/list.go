@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/nicholasdille/docker-setup/pkg/tool"
 	"github.com/spf13/cobra"
+	"github.com/uniget-org/cli/pkg/tool"
 	"gopkg.in/yaml.v3"
 )
 

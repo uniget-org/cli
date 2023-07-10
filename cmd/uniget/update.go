@@ -7,9 +7,9 @@ import (
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 
-	"github.com/nicholasdille/docker-setup/pkg/archive"
-	"github.com/nicholasdille/docker-setup/pkg/containers"
-	"github.com/nicholasdille/docker-setup/pkg/tool"
+	"github.com/uniget-org/cli/pkg/archive"
+	"github.com/uniget-org/cli/pkg/containers"
+	"github.com/uniget-org/cli/pkg/tool"
 
 	"github.com/regclient/regclient/types/blob"
 )
