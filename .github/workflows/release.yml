@@ -43,13 +43,11 @@ jobs:
       with:
         ref: ${{ needs.prepare.outputs.tag }}
 
-    - name: Install docker-setup
-      uses: uniget-org/uniget-action@main
-      with:
-        prefix: helper
-        tools: go goreleaser syft
-        log-level: debug
-        plan: true
+    - name: Bootstrap uniget
+      run: |
+        make snapshot
+        ./uniget --prefix=helper update
+        ./uniget --prefix=helper install go goreleaser syft
 
     - name: Build and release binaries
       env:
