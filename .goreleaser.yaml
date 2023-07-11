@@ -47,7 +47,7 @@ changelog:
 release:
   github:
     owner: uniget-org
-    name: uniget
+    name: cli
   ids:
   - uniget
   name_template: "{{ .Version }}"
