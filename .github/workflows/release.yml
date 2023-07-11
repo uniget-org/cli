@@ -46,14 +46,8 @@ jobs:
     - name: Bootstrap uniget
       run: |
         make snapshot
-        mv uniget /tmp/
-        /tmp/uniget --prefix=helper update
-        /tmp/uniget --prefix=helper install go goreleaser syft
-        rm /tmp/uniget
-
-    - name: Check for dirty working directory
-      run: |
-        git status
+        ./uniget --prefix=helper update
+        ./uniget --prefix=helper install go goreleaser syft
 
     - name: Build and release binaries
       env:
