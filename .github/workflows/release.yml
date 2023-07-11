@@ -17,14 +17,8 @@ jobs:
       with:
         ref: ${{ needs.prepare.outputs.tag }}
 
-    - name: Bootstrap uniget
-      run: |
-        make snapshot
-        ./uniget --prefix=helper update
-        ./uniget --prefix=helper install go goreleaser syft
-
     - name: Build and release binaries
       env:
         GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
       run: |
-        helper/usr/local/bin/goreleaser release --skip-sbom
+        docker buildx build --target publish --build-arg GITHUB_TOKEN .
