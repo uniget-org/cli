@@ -27,15 +27,16 @@ GOARCH=${TARGETARCH} \
 EOF
 
 FROM base AS publish
-ARG TARGETOS
-ARG TARGETARCH
 WORKDIR /go/src/github.com/uniget-org/cli
-ARG version=main
-ENV CGO_ENABLED=0
 RUN --mount=target=. \
     --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build <<EOF
 go install github.com/goreleaser/goreleaser@latest
+EOF
+ARG GITHUB_TOKEN
+RUN --mount=target=. \
+    --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build <<EOF
 goreleaser --skip-sbom
 EOF
 
