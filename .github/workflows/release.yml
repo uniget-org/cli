@@ -51,6 +51,10 @@ jobs:
         /tmp/uniget --prefix=helper install go goreleaser syft
         rm /tmp/uniget
 
+    - name: Check for dirty working directory
+      run: |
+        git status
+
     - name: Build and release binaries
       env:
         GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
