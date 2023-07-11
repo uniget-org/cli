@@ -134,7 +134,7 @@ func main() {
 
 		return nil
 	}
-	rootCmd.PersistentFlags().StringVarP(&logLevel, "log-level", "l", log.WarnLevel.String(), "Log level (trace, debug, info, warning, error)")
+	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", log.WarnLevel.String(), "Log level (trace, debug, info, warning, error)")
 	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "d", false, "Set log level to debug")
 	rootCmd.PersistentFlags().BoolVar(&trace, "trace", false, "Set log level to trace")
 	rootCmd.PersistentFlags().StringVarP(&prefix, "prefix", "p", "", "Prefix for installation")
@@ -142,7 +142,7 @@ func main() {
 	rootCmd.PersistentFlags().StringVarP(&cacheRoot, "cache-root", "C", "var/cache", "Cache root directory relative to PREFIX")
 	rootCmd.PersistentFlags().StringVarP(&cacheDirectory, "cache-directory", "c", projectName, "Cache directory relative to CACHE-ROOT")
 	rootCmd.PersistentFlags().StringVarP(&libRoot, "lib-root", "L", "var/lib", "Library root directory relative to PREFIX")
-	rootCmd.PersistentFlags().StringVar(&libDirectory, "lib-directory", projectName, "Library directory relative to LIB-ROOT")
+	rootCmd.PersistentFlags().StringVarP(&libDirectory, "lib-directory", "l", projectName, "Library directory relative to LIB-ROOT")
 	rootCmd.PersistentFlags().BoolVarP(&user, "user", "u", false, "Install in user context")
 	rootCmd.PersistentFlags().StringVarP(&metadataFileName, "metadata-file", "f", "metadata.json", "Metadata file")
 	rootCmd.PersistentFlags().BoolVar(&noInteractive, "no-interactive", false, "Disable interactive prompts")
