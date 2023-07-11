@@ -33,19 +33,24 @@ var arch string
 var prefix = ""
 var target = "usr/local"
 var cacheRoot = "var/cache"
-var cacheDirectory = cacheRoot + "/uniget"
+var cacheDirectory = cacheRoot + "/" + projectName
+var cacheDirectoryCompatibility = cacheRoot + "/" + "docker-setup"
 var libRoot = "var/lib"
-var libDirectory = libRoot + "/uniget"
+var libDirectory = libRoot + "/" + projectName
+var libDirectoryCompatibility = libRoot + "/" + "docker-setup"
 var user = false
 var metadataFileName = "metadata.json"
 var metadataFile = cacheDirectory + "/" + metadataFileName
+var metadataFileCompatibility = cacheDirectoryCompatibility + "/" + metadataFileName
 var registry = "ghcr.io"
-var projectRepository = "uniget-org/uniget"
-var repository = "nicholasdille/docker-setup"
+var projectRepository = "uniget-org/cli"
+var imageRepository = "nicholasdille/docker-setup"
 var toolSeparator = "/"
-var registryImagePrefix = registry + "/" + repository + toolSeparator
+var registryImagePrefix = registry + "/" + imageRepository + toolSeparator
 var tools tool.Tools
 var noInteractive bool
+var ignoreDockerSetup bool
+var migrateDockerSetup bool
 
 var (
 	rootCmd = &cobra.Command{
@@ -192,14 +197,26 @@ func main() {
 			target = os.Getenv("HOME") + "/.local/bin"
 			cacheRoot = os.Getenv("HOME") + "/.cache"
 			cacheDirectory = cacheRoot + "/" + projectName
+			cacheDirectoryCompatibility = cacheRoot + "/" + "docker-setup"
 			libRoot = os.Getenv("HOME") + "/.local/state"
 			libDirectory = libRoot + "/" + projectName
+			libDirectoryCompatibility = libRoot + "/" + "docker-setup"
 			metadataFile = cacheDirectory + "/" + metadataFileName
+			metadataFileCompatibility = cacheDirectoryCompatibility + "/" + metadataFileName
 			pterm.Error.Println("User context is not yet supported. Please check #6270.")
 
 		} else {
 			cacheDirectory = cacheRoot + "/" + cacheDirectory
+			cacheDirectoryCompatibility = cacheRoot + "/" + "docker-setup"
 			libDirectory = libRoot + "/" + libDirectory
+			libDirectoryCompatibility = libRoot + "/" + "docker-setup"
+			metadataFile = cacheDirectory + "/" + metadataFileName
+			metadataFileCompatibility = cacheDirectoryCompatibility + "/" + metadataFileName
+		}
+
+		err := migrateDockerSetupData()
+		if err != nil {
+			return fmt.Errorf("error migrating data from docker-setup: %s", err)
 		}
 
 		if debug {
@@ -220,7 +237,7 @@ func main() {
 		} else {
 			pterm.Debug.Printfln("Metadata file exists")
 		}
-		err := loadMetadata()
+		err = loadMetadata()
 		if err != nil {
 			return fmt.Errorf("error loading metadata: %s", err)
 		}
@@ -249,6 +266,8 @@ func main() {
 	rootCmd.PersistentFlags().BoolVarP(&user, "user", "u", false, "Install in user context")
 	rootCmd.PersistentFlags().StringVarP(&metadataFileName, "metadata-file", "f", "metadata.json", "Metadata file")
 	rootCmd.PersistentFlags().BoolVar(&noInteractive, "no-interactive", false, "Disable interactive prompts")
+	rootCmd.PersistentFlags().BoolVar(&ignoreDockerSetup, "ignore-docker-setup", false, "Ignore existing data from docker-setup")
+	rootCmd.PersistentFlags().BoolVar(&migrateDockerSetup, "migrate-docker-setup", false, "Force migration of existing data from docker-setup")
 
 	rootCmd.MarkFlagsMutuallyExclusive("prefix", "user")
 	rootCmd.MarkFlagsMutuallyExclusive("target", "user")
@@ -259,4 +278,67 @@ func main() {
 	if err != nil {
 		os.Exit(1)
 	}
+}
+
+func migrateDockerSetupData() error {
+	if directoryExists(prefix+"/"+cacheDirectoryCompatibility) ||
+		directoryExists(prefix+"/"+libDirectoryCompatibility) ||
+		fileExists(prefix+"/"+metadataFileCompatibility) {
+		pterm.Warning.Println("Found existing data from docker-setup")
+
+		if directoryExists(prefix+"/"+cacheDirectory) ||
+			directoryExists(prefix+"/"+libDirectory) ||
+			fileExists(prefix+"/"+metadataFile) {
+			pterm.Warning.Println("Found existing data from uniget. Cannot migrate from docker-setup.")
+
+		} else {
+			if migrateDockerSetup {
+				err := os.Remove(prefix + "/" + cacheDirectory + "/docker-setup-data")
+				if err != nil {
+					return fmt.Errorf("error removing file: %s", err)
+				}
+			}
+
+			if !ignoreDockerSetup && !fileExists(prefix+"/"+cacheDirectory+"/docker-setup-data") {
+
+				fmt.Println()
+				primaryOptions := []string{"Abort", "Ignore", "Migrate", "Delete"}
+				printer := pterm.DefaultInteractiveSelect.WithOptions(primaryOptions)
+				printer.DefaultText = "What do you want to do?"
+				selectedOption, _ := printer.Show()
+				switch selectedOption {
+				case "Abort":
+					os.Exit(0)
+				case "Migrate":
+					pterm.Info.Println("Migrating data from docker-setup")
+					err := os.Rename(prefix+"/"+cacheDirectoryCompatibility, prefix+"/"+cacheDirectory)
+					if err != nil {
+						return fmt.Errorf("error renaming directory: %s", err)
+					}
+					err = os.Rename(prefix+"/"+libDirectoryCompatibility, prefix+"/"+libDirectory)
+					if err != nil {
+						return fmt.Errorf("error renaming directory: %s", err)
+					}
+				case "Delete":
+					pterm.Info.Println("Deleting data from docker-setup")
+					err := os.RemoveAll(prefix + "/" + cacheDirectoryCompatibility)
+					if err != nil {
+						return fmt.Errorf("error removing directory: %s", err)
+					}
+					err = os.RemoveAll(prefix + "/" + libDirectoryCompatibility)
+					if err != nil {
+						return fmt.Errorf("error removing directory: %s", err)
+					}
+				}
+
+				assertWritableDirectory(prefix + "/" + cacheDirectory)
+				_, err := os.Create(prefix + "/" + cacheDirectory + "/docker-setup-data")
+				if err != nil {
+					return fmt.Errorf("error creating file: %s", err)
+				}
+			}
+		}
+	}
+
+	return nil
 }
