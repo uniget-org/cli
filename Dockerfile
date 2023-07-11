@@ -26,6 +26,19 @@ GOARCH=${TARGETARCH} \
         ./cmd/uniget
 EOF
 
+FROM base AS publish
+ARG TARGETOS
+ARG TARGETARCH
+WORKDIR /go/src/github.com/uniget-org/cli
+ARG version=main
+ENV CGO_ENABLED=0
+RUN --mount=target=. \
+    --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build <<EOF
+go install github.com/goreleaser/goreleaser@latest
+goreleaser --skip-sbom
+EOF
+
 FROM base AS unit-test
 RUN --mount=target=. \
     --mount=type=cache,target=/go/pkg/mod \
