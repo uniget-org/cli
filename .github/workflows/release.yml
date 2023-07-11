@@ -7,34 +7,8 @@ on:
 
 jobs:
 
-  prepare:
-    name: Prepare
-    runs-on: ubuntu-22.04
-    outputs:
-      tag: ${{ steps.get_version.outputs.tag }}
-      version: ${{ steps.get_version.outputs.version }}
-    steps:
-
-    - name: printenv
-      run: |
-        printenv | sort
-
-    - name: Checkout code
-      uses: actions/checkout@v3
-      with:
-        ref: ${{ needs.prepare.outputs.tag }}
-
-    - name: Get version
-      id: get_version
-      run: |
-        TAG="${GITHUB_REF#refs/tags/}"
-        echo "tag=${TAG}" >>"${GITHUB_OUTPUT}"
-        echo "version=${TAG#v}" >>"${GITHUB_OUTPUT}"
-
   release:
     name: Release
-    needs:
-    - prepare
     runs-on: ubuntu-22.04
     steps:
 
