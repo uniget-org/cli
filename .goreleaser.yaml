@@ -2,9 +2,9 @@
 project_name: uniget
 
 builds:
-- main: ./cmd/uniget
+- id: default
+  main: ./cmd/uniget
   binary: uniget
-  gobinary: helper/usr/local/bin/go
   env:
   - CGO_ENABLED=0
   ldflags:
@@ -23,7 +23,7 @@ checksum:
 
 sboms:
 - id: sbom
-  cmd: helper/usr/local/bin/syft
+  cmd: syft
   args: [ "${artifact}", "--output", "cyclonedx-json", "--file", "$document" ]
   documents:
   - ${artifact}.cyclonedx.json
