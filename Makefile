@@ -32,5 +32,6 @@ __check_defined = \
     $(if $(value $1),, \
       $(error Undefined $1$(if $2, ($2))))
 
+include make/helper.mk
 include make/go.mk
 include make/release.mk
