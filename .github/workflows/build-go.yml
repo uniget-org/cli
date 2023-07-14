@@ -2,8 +2,6 @@ name: build-go
 
 on:
   push:
-    tags-ignore:
-    - "v*"
     paths:
     - "**/*.go"
     - "go.mod"
