@@ -18,6 +18,7 @@
   "timezone": "Europe/Berlin",
   "prConcurrentLimit": 0,
   "prHourlyLimit": 0,
+  "automerge": true,
   "useBaseBranchConfig": "merge",
   "platformAutomerge": true,
   "rebaseWhen": "conflicted",
