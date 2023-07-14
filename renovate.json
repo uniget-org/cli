@@ -1,0 +1,39 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    ":dependencyDashboard",
+    ":semanticPrefixFixDepsChoreOthers",
+    ":ignoreModulesAndTests",
+    ":docker",
+    "docker:enableMajor",
+    "docker:pinDigests",
+    ":ignoreUnstable",
+    ":pinVersions",
+    ":separateMajorReleases",
+    ":separatePatchReleases",
+    ":automergePr",
+    ":automergeRequireAllStatusChecks",
+    ":semanticCommits"
+  ],
+  "timezone": "Europe/Berlin",
+  "prConcurrentLimit": 0,
+  "prHourlyLimit": 0,
+  "useBaseBranchConfig": "merge",
+  "platformAutomerge": true,
+  "rebaseWhen": "conflicted",
+  "rebaseLabel": "renovate/rebase",
+  "stopUpdatingLabel": "renovate/stop-updating",
+  "major":  { "labels": [ "bump/major", "type/renovate" ] },
+  "minor":  { "labels": [ "bump/minor", "type/renovate" ] },
+  "patch":  { "labels": [ "bump/patch", "type/renovate" ] },
+  "pin":    { "labels": [ "bump/pin",   "type/renovate" ] },
+  "digest": { "labels": [ "bump/digest", "type/renovate" ] },
+  "regexManagers": [
+    {
+      "fileMatch":          [ "(^|/|\\.)Dockerfile[^/]*$" ],
+      "matchStrings":       [ "#syntax=(?<depName>.*?):(?<currentValue>.*?)\\n" ],
+      "datasourceTemplate":   "docker",
+      "depNameTemplate":      "docker/dockerfile"
+    }
+  ]
+}
