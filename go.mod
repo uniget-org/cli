@@ -6,7 +6,7 @@ require (
 	atomicgo.dev/keyboard v0.2.9
 	github.com/jedib0t/go-pretty/v6 v6.4.6
 	github.com/opencontainers/go-digest v1.0.0
-	github.com/pterm/pterm v0.12.62
+	github.com/pterm/pterm v0.12.63
 	github.com/regclient/regclient v0.5.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.7.0
@@ -16,7 +16,7 @@ require (
 )
 
 require (
-	atomicgo.dev/cursor v0.1.2 // indirect
+	atomicgo.dev/cursor v0.1.3 // indirect
 	atomicgo.dev/schedule v0.0.2 // indirect
 	github.com/containerd/console v1.0.3 // indirect
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7 // indirect
