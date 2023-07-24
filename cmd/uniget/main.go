@@ -10,6 +10,7 @@ import (
 	"github.com/pterm/pterm"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/uniget-org/cli/pkg/logging"
 	"github.com/uniget-org/cli/pkg/tool"
 	"golang.org/x/sys/unix"
 )
@@ -62,19 +63,19 @@ var (
 )
 
 func directoryExists(directory string) bool {
-	pterm.Debug.Printfln("Checking if directory %s exists", directory)
+	logging.Debug.Printfln("Checking if directory %s exists", directory)
 	_, err := os.Stat(directory)
 	return err == nil
 }
 
 func fileExists(file string) bool {
-	pterm.Debug.Printfln("Checking if file %s exists", file)
+	logging.Debug.Printfln("Checking if file %s exists", file)
 	_, err := os.Stat(file)
 	return err == nil
 }
 
 func directoryIsWritable(directory string) bool {
-	pterm.Debug.Printfln("Checking if directory %s is writable", directory)
+	logging.Debug.Printfln("Checking if directory %s is writable", directory)
 	return unix.Access(directory, unix.W_OK) == nil
 }
 
@@ -83,7 +84,7 @@ func assertWritableDirectory(directory string) {
 		assertDirectory(directory)
 	}
 	if !directoryIsWritable(directory) {
-		pterm.Error.Printfln("Directory %s is not writable", directory)
+		logging.Error.Printfln("Directory %s is not writable", directory)
 		os.Exit(1)
 	}
 }
@@ -93,10 +94,10 @@ func assertWritableTarget() {
 }
 
 func assertDirectory(directory string) {
-	pterm.Debug.Printfln("Creating directory %s", directory)
+	logging.Debug.Printfln("Creating directory %s", directory)
 	err := os.MkdirAll(directory, 0755)
 	if err != nil {
-		pterm.Error.Printfln("Error creating directory %s: %s", directory, err)
+		logging.Error.Printfln("Error creating directory %s: %s", directory, err)
 		os.Exit(1)
 	}
 }
@@ -120,14 +121,14 @@ func assertCacheDirectory() {
 func assertMetadataFileExists() {
 	_, err := os.Stat(prefix + "/" + metadataFile)
 	if err != nil {
-		pterm.Error.Printfln("Metadata file %s does not exist: %s", prefix+"/"+metadataFile, err)
+		logging.Error.Printfln("Metadata file %s does not exist: %s", prefix+"/"+metadataFile, err)
 		os.Exit(1)
 	}
 }
 
 func assertMetadataIsLoaded() {
 	if len(tools.Tools) == 0 {
-		pterm.Error.Printfln("Metadata is not loaded")
+		logging.Error.Printfln("Metadata is not loaded")
 		os.Exit(1)
 	}
 }
@@ -140,7 +141,7 @@ func init() {
 		arch = "aarch64"
 
 	} else {
-		pterm.Error.Printfln("Unsupported architecture: %s", arch)
+		logging.Error.Printfln("Unsupported architecture: %s", arch)
 		os.Exit(1)
 	}
 
@@ -162,7 +163,7 @@ func init() {
 
 func main() {
 	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
-		pterm.Error.Writer = os.Stderr
+		logging.Error.Writer = os.Stderr
 		pterm.Warning.Writer = os.Stderr
 
 		if debug {
@@ -193,7 +194,7 @@ func main() {
 		}
 
 		if user {
-			pterm.Debug.Println("Installing in user context")
+			logging.Debug.Println("Installing in user context")
 			target = os.Getenv("HOME") + "/.local/bin"
 			cacheRoot = os.Getenv("HOME") + "/.cache"
 			cacheDirectory = cacheRoot + "/" + projectName
@@ -203,7 +204,7 @@ func main() {
 			libDirectoryCompatibility = libRoot + "/" + "docker-setup"
 			metadataFile = cacheDirectory + "/" + metadataFileName
 			metadataFileCompatibility = cacheDirectoryCompatibility + "/" + metadataFileName
-			pterm.Error.Println("User context is not yet supported. Please check #6270.")
+			logging.Error.Println("User context is not yet supported. Please check #6270.")
 
 		} else {
 			cacheDirectory = cacheRoot + "/" + cacheDirectory
@@ -220,22 +221,22 @@ func main() {
 		}
 
 		if debug {
-			pterm.Debug.Printfln("target: %s", target)
-			pterm.Debug.Printfln("cacheRoot: %s", cacheRoot)
-			pterm.Debug.Printfln("cacheDirectory: %s", cacheDirectory)
-			pterm.Debug.Printfln("libRoot: %s", libRoot)
-			pterm.Debug.Printfln("libDirectory: %s", libDirectory)
-			pterm.Debug.Printfln("metadataFile: %s", metadataFile)
+			logging.Debug.Printfln("target: %s", target)
+			logging.Debug.Printfln("cacheRoot: %s", cacheRoot)
+			logging.Debug.Printfln("cacheDirectory: %s", cacheDirectory)
+			logging.Debug.Printfln("libRoot: %s", libRoot)
+			logging.Debug.Printfln("libDirectory: %s", libDirectory)
+			logging.Debug.Printfln("metadataFile: %s", metadataFile)
 		}
 
 		if !fileExists(prefix + "/" + metadataFile) {
-			pterm.Debug.Printfln("Metadata file does not exist. Downloading...")
+			logging.Debug.Printfln("Metadata file does not exist. Downloading...")
 			err := downloadMetadata()
 			if err != nil {
 				return fmt.Errorf("error downloading metadata: %s", err)
 			}
 		} else {
-			pterm.Debug.Printfln("Metadata file exists")
+			logging.Debug.Printfln("Metadata file exists")
 		}
 		err = loadMetadata()
 		if err != nil {
@@ -310,7 +311,7 @@ func migrateDockerSetupData() error {
 				case "Abort":
 					os.Exit(0)
 				case "Migrate":
-					pterm.Info.Println("Migrating data from docker-setup")
+					logging.Info.Println("Migrating data from docker-setup")
 					err := os.Rename(prefix+"/"+cacheDirectoryCompatibility, prefix+"/"+cacheDirectory)
 					if err != nil {
 						return fmt.Errorf("error renaming directory: %s", err)
@@ -320,7 +321,7 @@ func migrateDockerSetupData() error {
 						return fmt.Errorf("error renaming directory: %s", err)
 					}
 				case "Delete":
-					pterm.Info.Println("Deleting data from docker-setup")
+					logging.Info.Println("Deleting data from docker-setup")
 					err := os.RemoveAll(prefix + "/" + cacheDirectoryCompatibility)
 					if err != nil {
 						return fmt.Errorf("error removing directory: %s", err)

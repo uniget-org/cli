@@ -7,6 +7,7 @@ import (
 
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
+	"github.com/uniget-org/cli/pkg/logging"
 )
 
 var force bool
@@ -48,7 +49,7 @@ var uninstallCmd = &cobra.Command{
 			return fmt.Errorf("unable to uninstall tool %s: %s", args[0], err)
 		}
 
-		pterm.Info.Printfln("Uninstalled tool %s", args[0])
+		logging.Info.Printfln("Uninstalled tool %s", args[0])
 
 		return nil
 	},
@@ -71,12 +72,12 @@ func uninstallTool(toolName string) error {
 			}
 
 			prefixedLine := prefix + "/" + line
-			pterm.Debug.Printfln("processing %s", prefixedLine)
+			logging.Debug.Printfln("processing %s", prefixedLine)
 
 			_, err = os.Stat(prefixedLine)
 			if err != nil {
 				if os.IsNotExist(err) {
-					pterm.Debug.Printfln("%s does not exist", prefixedLine)
+					logging.Debug.Printfln("%s does not exist", prefixedLine)
 					continue
 				}
 				return fmt.Errorf("unable to stat %s: %s", prefixedLine, err)

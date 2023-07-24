@@ -9,6 +9,7 @@ import (
 
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
+	"github.com/uniget-org/cli/pkg/logging"
 )
 
 func initPostinstallCmd() {
@@ -46,9 +47,9 @@ func postinstall() error {
 			return nil
 		}
 		for _, file := range infos {
-			pterm.Info.Printfln("Running post_install script %s", file.Name())
+			logging.Info.Printfln("Running post_install script %s", file.Name())
 
-			pterm.Debug.Printfln("Running pre_install script %s", "/"+libDirectory+"/pre_install/"+file.Name())
+			logging.Debug.Printfln("Running pre_install script %s", "/"+libDirectory+"/pre_install/"+file.Name())
 			cmd := exec.Command("/bin/bash", "/"+libDirectory+"/post_install/"+file.Name())
 			cmd.Env = append(os.Environ(),
 				"prefix=",

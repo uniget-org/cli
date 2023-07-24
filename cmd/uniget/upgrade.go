@@ -11,6 +11,7 @@ import (
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 	"github.com/uniget-org/cli/pkg/archive"
+	"github.com/uniget-org/cli/pkg/logging"
 )
 
 func initUpgradeCmd() {
@@ -42,10 +43,10 @@ var upgradeCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("failed to get absolute path: %s", err)
 		}
-		pterm.Info.Printfln("Replacing uniget in %s", selfDir)
+		logging.Info.Printfln("Replacing uniget in %s", selfDir)
 
 		url := fmt.Sprintf("https://github.com/%s/releases/latest/download/uniget_%s_%s.tar.gz", projectRepository, runtime.GOOS, arch)
-		pterm.Debug.Printfln("Downloading %s", url)
+		logging.Debug.Printfln("Downloading %s", url)
 		client := &http.Client{}
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
@@ -63,7 +64,7 @@ var upgradeCmd = &cobra.Command{
 			return fmt.Errorf("failed to download %s: %s", url, resp.Status)
 		}
 
-		pterm.Debug.Printfln("Extracting tar.gz")
+		logging.Debug.Printfln("Extracting tar.gz")
 		err = os.Chdir(selfDir)
 		if err != nil {
 			return fmt.Errorf("error changing directory to %s: %s", selfDir, err)

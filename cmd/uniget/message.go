@@ -5,6 +5,7 @@ import (
 
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
+	"github.com/uniget-org/cli/pkg/logging"
 )
 
 var find bool
@@ -38,7 +39,7 @@ var messageCmd = &cobra.Command{
 				return fmt.Errorf("failed to get tool: %s", err)
 			}
 
-			pterm.Info.Printfln("Messages for %s:", toolName)
+			logging.Info.Printfln("Messages for %s:", toolName)
 			if tool.Messages.Internals != "" {
 				fmt.Println("Internals")
 			}
