@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
+	"github.com/uniget-org/cli/pkg/logging"
 )
 
 func initInspectCmd() {
@@ -27,7 +27,7 @@ var inspectCmd = &cobra.Command{
 		}
 		tool.ReplaceVariables(prefix+target, arch, altArch)
 
-		pterm.Info.Printfln("Inspecting %s %s\n", tool.Name, tool.Version)
+		logging.Info.Printfln("Inspecting %s %s\n", tool.Name, tool.Version)
 		err = tool.Inspect(registryImagePrefix, altArch)
 		if err != nil {
 			return fmt.Errorf("unable to inspect %s: %s", tool.Name, err)

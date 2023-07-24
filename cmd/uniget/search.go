@@ -7,6 +7,7 @@ import (
 	"atomicgo.dev/keyboard/keys"
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
+	"github.com/uniget-org/cli/pkg/logging"
 	"golang.org/x/term"
 )
 
@@ -80,7 +81,7 @@ var searchCmd = &cobra.Command{
 			!noSearchInDeps && !onlySearchInName && !onlySearchInTags,
 		)
 		if len(results.Tools) == 0 {
-			pterm.Info.Printfln("No tools found for term %s", args[0])
+			logging.Info.Printfln("No tools found for term %s", args[0])
 			return nil
 		}
 

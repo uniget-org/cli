@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 
 	"github.com/uniget-org/cli/pkg/archive"
 	"github.com/uniget-org/cli/pkg/containers"
+	"github.com/uniget-org/cli/pkg/logging"
 	"github.com/uniget-org/cli/pkg/tool"
 
 	"github.com/regclient/regclient/types/blob"
@@ -44,10 +44,10 @@ var updateCmd = &cobra.Command{
 				oldTool, _ := oldTools.GetByName(tool.Name)
 
 				if oldTool == nil {
-					pterm.Info.Printfln("New %s v%s", tool.Name, tool.Version)
+					logging.Info.Printfln("New %s v%s", tool.Name, tool.Version)
 
 				} else if tool.Version != oldTool.Version {
-					pterm.Info.Printfln("Update %s %s -> %s", tool.Name, oldTool.Version, tool.Version)
+					logging.Info.Printfln("Update %s %s -> %s", tool.Name, oldTool.Version, tool.Version)
 				}
 			}
 		}
@@ -59,13 +59,13 @@ var updateCmd = &cobra.Command{
 func downloadMetadata() error {
 	assertCacheDirectory()
 	err := containers.GetManifest(registryImagePrefix+"metadata:main", altArch, func(blob blob.Reader) error {
-		pterm.Debug.Printfln("Changing directory to %s", prefix+"/"+cacheDirectory)
+		logging.Debug.Printfln("Changing directory to %s", prefix+"/"+cacheDirectory)
 		err := os.Chdir(prefix + "/" + cacheDirectory)
 		if err != nil {
 			return fmt.Errorf("error changing directory to %s: %s", prefix+"/"+cacheDirectory, err)
 		}
 
-		pterm.Debug.Printfln("Extracting archive to %s", prefix+"/"+cacheDirectory)
+		logging.Debug.Printfln("Extracting archive to %s", prefix+"/"+cacheDirectory)
 		err = archive.ExtractTarGz(blob)
 		if err != nil {
 			return fmt.Errorf("error extracting archive: %s", err)

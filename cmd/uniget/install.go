@@ -8,6 +8,7 @@ import (
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 
+	"github.com/uniget-org/cli/pkg/logging"
 	"github.com/uniget-org/cli/pkg/tool"
 )
 
@@ -54,18 +55,18 @@ var installCmd = &cobra.Command{
 
 		// Collect requested tools based on mode
 		if defaultMode {
-			pterm.Debug.Printfln("Adding default tools to requested tools")
+			logging.Debug.Printfln("Adding default tools to requested tools")
 			requestedTools = tools.GetByTags([]string{"category/default"})
 
 		} else if tagsMode {
-			pterm.Debug.Printfln("Adding tools matching tags to requested tools")
+			logging.Debug.Printfln("Adding tools matching tags to requested tools")
 			requestedTools = tools.GetByTags(args)
 
 		} else if installedMode {
-			pterm.Debug.Println("Collecting installed tools")
+			logging.Debug.Println("Collecting installed tools")
 			spinnerInstalledTools, _ := pterm.DefaultSpinner.Start("Collecting installed tools...")
 			for index, tool := range tools.Tools {
-				pterm.Debug.Printfln("Getting status for requested tool %s", tool.Name)
+				logging.Debug.Printfln("Getting status for requested tool %s", tool.Name)
 				tools.Tools[index].ReplaceVariables(prefix+"/"+target, arch, altArch)
 
 				err := tools.Tools[index].GetBinaryStatus()
@@ -79,18 +80,18 @@ var installCmd = &cobra.Command{
 				}
 
 				if tools.Tools[index].Status.MarkerFilePresent && tools.Tools[index].Status.BinaryPresent {
-					pterm.Debug.Printfln("Adding %s to requested tools", tool.Name)
+					logging.Debug.Printfln("Adding %s to requested tools", tool.Name)
 					requestedTools.Tools = append(requestedTools.Tools, tool)
 				}
 			}
 			spinnerInstalledTools.Info()
 
 		} else if allMode {
-			pterm.Debug.Printfln("Adding all tools to requested tools")
+			logging.Debug.Printfln("Adding all tools to requested tools")
 			requestedTools = tools
 
 		} else if filename != "" {
-			pterm.Debug.Printfln("Adding tools from file %s to requested tools", filename)
+			logging.Debug.Printfln("Adding tools from file %s to requested tools", filename)
 			data, err := os.ReadFile(filename)
 			if err != nil {
 				return fmt.Errorf("unable to read file %s: %s", filename, err)
@@ -102,7 +103,7 @@ var installCmd = &cobra.Command{
 					continue
 				}
 
-				pterm.Debug.Printfln("Adding %s to requested tools", line)
+				logging.Debug.Printfln("Adding %s to requested tools", line)
 				tool, err := tools.GetByName(line)
 				if err != nil {
 					pterm.Warning.Printfln("Unable to find tool %s: %s", line, err)
@@ -112,10 +113,10 @@ var installCmd = &cobra.Command{
 			}
 
 		} else {
-			pterm.Debug.Printfln("Adding %s to requested tools", strings.Join(args, ","))
+			logging.Debug.Printfln("Adding %s to requested tools", strings.Join(args, ","))
 			requestedTools = tools.GetByNames(args)
 		}
-		pterm.Debug.Printfln("Requested %d tool(s)", len(requestedTools.Tools))
+		logging.Debug.Printfln("Requested %d tool(s)", len(requestedTools.Tools))
 
 		return installTools(requestedTools, check, plan, reinstall, skipDependencies, skipConflicts)
 	},
@@ -145,7 +146,7 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 		}
 		tool.Status.IsRequested = true
 	}
-	pterm.Debug.Printfln("Planned %d tool(s)", len(plannedTools.Tools))
+	logging.Debug.Printfln("Planned %d tool(s)", len(plannedTools.Tools))
 	spinnerResolveDeps.Info()
 
 	// Populate status of planned tools
@@ -155,7 +156,7 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 			continue
 		}
 
-		pterm.Debug.Printfln("Getting status for requested tool %s", tool.Name)
+		logging.Debug.Printfln("Getting status for requested tool %s", tool.Name)
 
 		plannedTools.Tools[index].ReplaceVariables(prefix+"/"+target, arch, altArch)
 
@@ -208,16 +209,16 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 		plannedTools.ListWithStatus()
 	}
 	if len(conflictsWithInstalled.Tools) > 0 {
-		pterm.Error.Printfln("Conflicts with installed tools:")
+		logging.Error.Printfln("Conflicts with installed tools:")
 		for _, conflict := range conflictsWithInstalled.Tools {
-			pterm.Error.Printfln("  %s conflicts with %s", conflict.Name, strings.Join(conflict.ConflictsWith, ", "))
+			logging.Error.Printfln("  %s conflicts with %s", conflict.Name, strings.Join(conflict.ConflictsWith, ", "))
 		}
 		conflictsDetected = true
 	}
 	if len(conflictsBetweenPlanned.Tools) > 0 {
-		pterm.Error.Printfln("Conflicts between planned tools:")
+		logging.Error.Printfln("Conflicts between planned tools:")
 		for _, conflict := range conflictsBetweenPlanned.Tools {
-			pterm.Error.Printfln("  %s conflicts with %s", conflict.Name, strings.Join(conflict.ConflictsWith, ", "))
+			logging.Error.Printfln("  %s conflicts with %s", conflict.Name, strings.Join(conflict.ConflictsWith, ", "))
 		}
 		conflictsDetected = true
 	}
@@ -250,36 +251,36 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 	assertLibDirectory()
 	for _, tool := range plannedTools.Tools {
 		if tool.Status.VersionMatches && !reinstall {
-			pterm.Info.Printfln("Skipping %s %s because it is already installed.", tool.Name, tool.Version)
+			logging.Skip.Printfln("Skipping %s %s because it is already installed.", tool.Name, tool.Version)
 			continue
 		}
 		if tool.Status.SkipDueToConflicts {
-			pterm.Info.Printfln("Skipping %s because it conflicts with another tool.", tool.Name)
+			logging.Skip.Printfln("Skipping %s because it conflicts with another tool.", tool.Name)
 			continue
 		}
 		if skipDependencies && !tool.Status.IsRequested {
-			pterm.Info.Printfln("Skipping %s because it is a dependency (--skip-deps was specified)", tool.Name)
+			logging.Skip.Printfln("Skipping %s because it is a dependency (--skip-deps was specified)", tool.Name)
 			continue
 		}
 
 		if reinstall {
-			pterm.Info.Printfln("Reinstalling %s %s", tool.Name, tool.Version)
+			logging.Info.Printfln("Reinstalling %s %s", tool.Name, tool.Version)
 			uninstallTool(tool.Name)
 
 		} else if tool.Status.BinaryPresent || tool.Status.MarkerFilePresent {
-			pterm.Info.Printfln("Updating %s %s", tool.Name, tool.Version)
+			logging.Info.Printfln("Updating %s %s", tool.Name, tool.Version)
 			uninstallTool(tool.Name)
 			printToolUpdate(tool.Name)
 
 		} else {
-			pterm.Info.Printfln("Installing %s %s", tool.Name, tool.Version)
+			logging.Info.Printfln("Installing %s %s", tool.Name, tool.Version)
 		}
 
 		if !skipDependencies {
 			for _, depName := range tool.RuntimeDependencies {
 				dep, err := plannedTools.GetByName(depName)
 				if err != nil {
-					pterm.Error.Printfln("Unable to find dependency %s", depName)
+					logging.Error.Printfln("Unable to find dependency %s", depName)
 					return fmt.Errorf("unable to find dependency %s", depName)
 				}
 				dep.GetBinaryStatus()
@@ -288,7 +289,7 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 				if dep.Status.BinaryPresent || dep.Status.MarkerFilePresent {
 					continue
 				}
-				pterm.Error.Printfln("Dependency %s is missing", depName)
+				logging.Error.Printfln("Dependency %s is missing", depName)
 				return fmt.Errorf("dependency %s is missing", depName)
 			}
 		}
