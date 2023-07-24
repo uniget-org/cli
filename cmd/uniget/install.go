@@ -106,7 +106,7 @@ var installCmd = &cobra.Command{
 				logging.Debug.Printfln("Adding %s to requested tools", line)
 				tool, err := tools.GetByName(line)
 				if err != nil {
-					pterm.Warning.Printfln("Unable to find tool %s: %s", line, err)
+					logging.Warning.Printfln("Unable to find tool %s: %s", line, err)
 					continue
 				}
 				requestedTools.Tools = append(requestedTools.Tools, *tool)
@@ -296,7 +296,7 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 
 		err := tool.Install(registryImagePrefix, prefix+"/", altArch)
 		if err != nil {
-			pterm.Warning.Printfln("Unable to install %s: %s", tool.Name, err)
+			logging.Warning.Printfln("Unable to install %s: %s", tool.Name, err)
 			continue
 		}
 
@@ -306,8 +306,8 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 	}
 
 	if len(prefix) > 0 {
-		pterm.Warning.Printfln("Post installation skipped because prefix is set to %s", prefix)
-		pterm.Warning.Printfln("Please run 'uniget postinstall' in the context of %s to complete the installation", prefix)
+		logging.Warning.Printfln("Post installation skipped because prefix is set to %s", prefix)
+		logging.Warning.Printfln("Please run 'uniget postinstall' in the context of %s to complete the installation", prefix)
 		return nil
 	}
 
