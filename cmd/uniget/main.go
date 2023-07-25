@@ -154,6 +154,7 @@ func init() {
 	initMessageCmd()
 	initPostinstallCmd()
 	initSearchCmd()
+	initSelfUpgradeCmd()
 	initTagsCmd()
 	initUninstallCmd()
 	initUpdateCmd()
