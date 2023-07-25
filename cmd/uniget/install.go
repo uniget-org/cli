@@ -24,8 +24,6 @@ var plan bool
 var reinstall bool
 
 func initInstallCmd() {
-	rootCmd.AddCommand(installCmd)
-
 	installCmd.Flags().BoolVar(&defaultMode, "default", false, "Install default tools")
 	installCmd.Flags().BoolVar(&tagsMode, "tags", false, "Install tool(s) matching tag")
 	installCmd.Flags().BoolVarP(&installedMode, "installed", "i", false, "Update installed tool(s)")
@@ -38,6 +36,8 @@ func initInstallCmd() {
 	installCmd.Flags().BoolVarP(&reinstall, "reinstall", "r", false, "Reinstall tool(s)")
 	installCmd.MarkFlagsMutuallyExclusive("default", "tags", "installed", "all", "file")
 	installCmd.MarkFlagsMutuallyExclusive("check", "plan")
+
+	rootCmd.AddCommand(installCmd)
 }
 
 var installCmd = &cobra.Command{
@@ -65,24 +65,10 @@ var installCmd = &cobra.Command{
 		} else if installedMode {
 			logging.Debug.Println("Collecting installed tools")
 			spinnerInstalledTools, _ := pterm.DefaultSpinner.Start("Collecting installed tools...")
-			for index, tool := range tools.Tools {
-				logging.Debug.Printfln("Getting status for requested tool %s", tool.Name)
-				tools.Tools[index].ReplaceVariables(prefix+"/"+target, arch, altArch)
-
-				err := tools.Tools[index].GetBinaryStatus()
-				if err != nil {
-					return fmt.Errorf("unable to determine binary status of %s: %s", tool.Name, err)
-				}
-
-				err = tools.Tools[index].GetMarkerFileStatus(prefix + "/" + cacheDirectory)
-				if err != nil {
-					return fmt.Errorf("unable to determine marker file status of %s: %s", tool.Name, err)
-				}
-
-				if tools.Tools[index].Status.MarkerFilePresent && tools.Tools[index].Status.BinaryPresent {
-					logging.Debug.Printfln("Adding %s to requested tools", tool.Name)
-					requestedTools.Tools = append(requestedTools.Tools, tool)
-				}
+			var err error
+			requestedTools, err = findInstalledTools(tools)
+			if err != nil {
+				return fmt.Errorf("unable to find installed tools: %s", err)
 			}
 			spinnerInstalledTools.Info()
 
@@ -120,6 +106,31 @@ var installCmd = &cobra.Command{
 
 		return installTools(requestedTools, check, plan, reinstall, skipDependencies, skipConflicts)
 	},
+}
+
+func findInstalledTools(tools tool.Tools) (tool.Tools, error) {
+	var requestedTools tool.Tools
+	for index, tool := range tools.Tools {
+		logging.Debug.Printfln("Getting status for requested tool %s", tool.Name)
+		tools.Tools[index].ReplaceVariables(prefix+"/"+target, arch, altArch)
+
+		err := tools.Tools[index].GetBinaryStatus()
+		if err != nil {
+			return requestedTools, fmt.Errorf("unable to determine binary status of %s: %s", tool.Name, err)
+		}
+
+		err = tools.Tools[index].GetMarkerFileStatus(prefix + "/" + cacheDirectory)
+		if err != nil {
+			return requestedTools, fmt.Errorf("unable to determine marker file status of %s: %s", tool.Name, err)
+		}
+
+		if tools.Tools[index].Status.MarkerFilePresent && tools.Tools[index].Status.BinaryPresent {
+			logging.Debug.Printfln("Adding %s to requested tools", tool.Name)
+			requestedTools.Tools = append(requestedTools.Tools, tool)
+		}
+	}
+
+	return requestedTools, nil
 }
 
 func installToolsByName(toolNames []string, check bool, plan bool, reinstall bool, skipDependencies bool, skipConflicts bool) error {
