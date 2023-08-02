@@ -65,8 +65,11 @@ func GetPlatformManifest(ctx context.Context, rc *regclient.RegClient, r ref.Ref
 }
 
 func GetManifest(image string, altArch string, callback func(blob blob.Reader) error) error {
-	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(60*time.Second))
-	defer cancel()
+	//old
+	//ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(60*time.Second))
+	//defer cancel()
+	//new
+	ctx := context.Background()
 
 	r, err := ref.New(image)
 	if err != nil {
@@ -79,10 +82,21 @@ func GetManifest(image string, altArch string, callback func(blob blob.Reader) e
 	rc := regclient.New(rcOpts...)
 	defer rc.Close(ctx, r)
 
-	m, err := GetPlatformManifest(ctx, rc, r, altArch)
+	//old
+	//m, err := GetPlatformManifest(ctx, rc, r, altArch)
+	//new
+	manifestCtx, manifestCancel := context.WithTimeout(ctx, 60*time.Second)
+	defer manifestCancel()
+	m, err := GetPlatformManifest(manifestCtx, rc, r, altArch)
 	if err != nil {
 		return fmt.Errorf("failed to get manifest: %s", err)
 	}
+
+	//old
+	//err = ProcessLayersCallback(ctx, rc, m, r, callback)
+	//new
+	//layerCtx, layerCancel := context.WithTimeout(ctx, 120*time.Second)
+	//defer layerCancel()
 	err = ProcessLayersCallback(ctx, rc, m, r, callback)
 	if err != nil {
 		return fmt.Errorf("failed to process layers with callback: %s", err)
@@ -122,7 +136,9 @@ func ProcessLayersCallback(ctx context.Context, rc *regclient.RegClient, m manif
 			return fmt.Errorf("failed to parse digest %s: %s", layer.Digest, err)
 		}
 
-		blob, err := rc.BlobGet(ctx, r, types.Descriptor{Digest: d})
+		layerCtx, layerCancel := context.WithTimeout(ctx, 180*time.Second)
+		defer layerCancel()
+		blob, err := rc.BlobGet(layerCtx, r, types.Descriptor{Digest: d})
 		if err != nil {
 			return fmt.Errorf("failed to get blob for digest %s: %s", layer.Digest, err)
 		}
