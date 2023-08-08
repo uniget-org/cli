@@ -45,7 +45,7 @@ var metadataFile = cacheDirectory + "/" + metadataFileName
 var metadataFileCompatibility = cacheDirectoryCompatibility + "/" + metadataFileName
 var registry = "ghcr.io"
 var projectRepository = "uniget-org/cli"
-var imageRepository = "nicholasdille/docker-setup"
+var imageRepository = "uniget-org/tools"
 var toolSeparator = "/"
 var registryImagePrefix = registry + "/" + imageRepository + toolSeparator
 var tools tool.Tools
