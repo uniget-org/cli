@@ -262,7 +262,7 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 	assertLibDirectory()
 	for _, tool := range plannedTools.Tools {
 		if tool.Status.VersionMatches && !reinstall {
-			logging.Skip.Printfln("Skipping %s %s because it is already installed.", tool.Name, tool.Version)
+			//logging.Skip.Printfln("Skipping %s %s because it is already installed.", tool.Name, tool.Version)
 			continue
 		}
 		if tool.Status.SkipDueToConflicts {

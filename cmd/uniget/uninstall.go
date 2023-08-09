@@ -105,8 +105,6 @@ func uninstallTool(toolName string) error {
 		err = os.Remove(prefix + "/" + cacheDirectory + "/" + tool.Name + "/" + info.Name())
 		if err != nil {
 			return fmt.Errorf("unable to remove %s: %s", info.Name(), err)
-		} else {
-			pterm.Warning.Printfln("Removed unexpected marker file for %s: %s", tool.Name, info.Name())
 		}
 	}
 
