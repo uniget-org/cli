@@ -24,11 +24,15 @@ Tools are downloaded, installed and updated automatically.
 Download and run `uniget`:
 
 ```bash
-curl -sLf https://github.com/uniget-org/uniget/releases/latest/download/uniget_linux_$(uname -m).tar.gz | \
-sudo tar -xzC /usr/local/bin uniget
+curl -sLf https://github.com/uniget-org/cli/releases/latest/download/uniget_linux_$(uname -m).tar.gz \
+| sudo tar -xzC /usr/local/bin uniget
 ```
 
-## Usage
+## Docs
+
+See the [documentation site](https://docs.uniget.dev).
+
+## Quickstart
 
 The `uniget` CLI comes with help included. The following scenarios are meant as quickstart tutorials.
 
