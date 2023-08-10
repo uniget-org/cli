@@ -1,19 +1,19 @@
-% docker-setup
+% uniget
 
-$ tool: docker-setup list --- --column 2 --delimiter '\s+'
-$ tag: docker-setup tags --- column 2 --delimiter '\s+'
+$ tool: uniget list --- --column 2 --delimiter '\s+'
+$ tag: uniget tags --- column 2 --delimiter '\s+'
 
 # Show available tools
-sudo docker-setup list
+sudo uniget list
 
 # Show information about a specific tool
-sudo docker-setup describe <tool>
+sudo uniget describe <tool>
 
 # Install default tools
-sudo docker-setup install --default
+sudo uniget install --default
 
 # Install specific tool
-sudo docker-setup install <tool>
+sudo uniget install <tool>
 
 # Show status of installed tools
-sudo docker-setup install --installed --plan
+sudo uniget install --installed --plan
