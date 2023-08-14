@@ -26,7 +26,9 @@ var describeCmd = &cobra.Command{
 	Short:     "Show detailed information about tools",
 	Long:      header + "\nShow detailed information about tools",
 	Args:      cobra.ExactArgs(1),
-	ValidArgs: tools.GetNames(),
+	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		assertMetadataFileExists()
 		assertMetadataIsLoaded()

@@ -46,7 +46,9 @@ var installCmd = &cobra.Command{
 	Short:     "Install tools",
 	Long:      header + "\nInstall and update tools",
 	Args:      cobra.OnlyValidArgs,
-	ValidArgs: tools.GetNames(),
+	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		assertMetadataFileExists()
 		assertMetadataIsLoaded()
