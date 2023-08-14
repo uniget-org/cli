@@ -17,6 +17,9 @@ var versionCmd = &cobra.Command{
 	Short:   "Show version of installed tool",
 	Long:    header + "\nShow version of installed tool",
 	Args:    cobra.ExactArgs(1),
+	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		assertMetadataFileExists()
 		assertMetadataIsLoaded()

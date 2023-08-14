@@ -25,7 +25,9 @@ var messageCmd = &cobra.Command{
 	Short:     "Show messages for a tool",
 	Long:      header + "\nShow messages for a tool",
 	Args:      cobra.OnlyValidArgs,
-	ValidArgs: tools.GetNames(),
+	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 && !find && !list {
 			return nil
