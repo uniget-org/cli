@@ -3,6 +3,7 @@ package tool
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/uniget-org/cli/pkg/archive"
 	"github.com/uniget-org/cli/pkg/containers"
@@ -12,7 +13,7 @@ import (
 )
 
 func (tool *Tool) Install(registryImagePrefix string, prefix string, altArch string) error {
-	err := containers.GetManifest(fmt.Sprintf(registryImagePrefix+"%s:main", tool.Name), altArch, func(blob blob.Reader) error {
+	err := containers.GetManifest(fmt.Sprintf(registryImagePrefix+"%s:%s", tool.Name, strings.Replace(tool.Version, "+", "-", -1)), altArch, func(blob blob.Reader) error {
 		pterm.Debug.Printfln("Extracting to %s", prefix+"/")
 		err := os.Chdir(prefix + "/")
 		if err != nil {
@@ -33,7 +34,7 @@ func (tool *Tool) Install(registryImagePrefix string, prefix string, altArch str
 }
 
 func (tool *Tool) Inspect(registryImagePrefix string, altArch string) error {
-	err := containers.GetManifest(fmt.Sprintf(registryImagePrefix+"%s:main", tool.Name), altArch, func(blob blob.Reader) error {
+	err := containers.GetManifest(fmt.Sprintf(registryImagePrefix+"%s:%s", tool.Name, strings.Replace(tool.Version, "+", "-", -1)), altArch, func(blob blob.Reader) error {
 		result, err := archive.ListTarGz(blob)
 		if err != nil {
 			return fmt.Errorf("failed to extract layer: %s", err)
