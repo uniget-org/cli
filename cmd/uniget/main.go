@@ -35,7 +35,6 @@ var prefix = ""
 var target = "usr/local"
 var cacheRoot = "var/cache"
 var cacheDirectory = cacheRoot + "/" + projectName
-var cacheDirectoryCompatibility = cacheRoot + "/" + "docker-setup"
 var libRoot = "var/lib"
 var libDirectory = libRoot + "/" + projectName
 var user = false
@@ -195,7 +194,6 @@ func main() {
 			target = os.Getenv("HOME") + "/.local/bin"
 			cacheRoot = os.Getenv("HOME") + "/.cache"
 			cacheDirectory = cacheRoot + "/" + projectName
-			cacheDirectoryCompatibility = cacheRoot + "/" + "docker-setup"
 			libRoot = os.Getenv("HOME") + "/.local/state"
 			libDirectory = libRoot + "/" + projectName
 			metadataFile = cacheDirectory + "/" + metadataFileName
@@ -203,7 +201,6 @@ func main() {
 
 		} else {
 			cacheDirectory = cacheRoot + "/" + cacheDirectory
-			cacheDirectoryCompatibility = cacheRoot + "/" + "docker-setup"
 			libDirectory = libRoot + "/" + libDirectory
 			metadataFile = cacheDirectory + "/" + metadataFileName
 		}
