@@ -42,7 +42,7 @@ archives:
 
 changelog:
   use: github
-  sort: asc
+  sort: desc
 
 release:
   github:
@@ -52,3 +52,10 @@ release:
   - uniget
   name_template: "{{ .Version }}"
   mode: replace
+  header: |
+    ## Installation
+
+    ```
+    curl -sLf https://github.com/uniget-org/cli/releases/download/v{{ .Tag }}/uniget_linux_$(uname -m).tar.gz \
+    | sudo tar -xzC /usr/local/bin uniget
+    ```
