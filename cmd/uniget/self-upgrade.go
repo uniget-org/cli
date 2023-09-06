@@ -48,9 +48,22 @@ var selfUpgradeCmd = &cobra.Command{
 		fmt.Printf("%s is available at %s\n", selfExe, path)
 		selfDir := filepath.Dir(path)
 
-		url := fmt.Sprintf("https://github.com/%s/releases/latest/download/uniget_%s_%s.tar.gz", projectRepository, runtime.GOOS, arch)
+		tag := "latest"
+		url := fmt.Sprintf("https://github.com/%s/releases/%s/download/uniget_%s_%s.tar.gz", projectRepository, tag, runtime.GOOS, arch)
 		logging.Debug.Printfln("Downloading %s", url)
-		client := &http.Client{}
+		client := &http.Client{
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				re, err := regexp.Compile(`\/uniget-org\/cli\/releases\/download\/(v\d+\.\d+\.\d+)\/`)
+				if err != nil {
+					return fmt.Errorf("cannot compile regexp: %w", err)
+				}
+
+				if re.MatchString(req.URL.Path) {
+					tag = re.FindStringSubmatch(req.URL.Path)[1]
+				}
+				return nil
+			},
+		}
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
 			return fmt.Errorf("failed to create request: %s", err)
@@ -65,6 +78,11 @@ var selfUpgradeCmd = &cobra.Command{
 
 		if resp.StatusCode != 200 {
 			return fmt.Errorf("failed to download %s: %s", url, resp.Status)
+		}
+
+		if fmt.Sprintf("v%s", version) == tag {
+			pterm.Info.Printf("Already at latest version %s\n", version)
+			return nil
 		}
 
 		logging.Debug.Printfln("Extracting tar.gz")
