@@ -8,6 +8,7 @@ on:
     - "go.sum"
     - "make/go.mk"
     - ".github/workflows/build-go.yml"
+    - "Dockerfile"
   workflow_dispatch:
 
 jobs:
