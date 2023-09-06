@@ -77,7 +77,7 @@ func GetManifest(image string, altArch string, callback func(blob blob.Reader) e
 	}
 
 	rcOpts := []regclient.Opt{}
-	rcOpts = append(rcOpts, regclient.WithUserAgent("docker-setup"))
+	rcOpts = append(rcOpts, regclient.WithUserAgent("uniget"))
 	rcOpts = append(rcOpts, regclient.WithDockerCreds())
 	rc := regclient.New(rcOpts...)
 	defer rc.Close(ctx, r)
