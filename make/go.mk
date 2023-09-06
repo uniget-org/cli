@@ -28,16 +28,16 @@ cover: \
 snapshot: \
 		make/go.mk \
 		$(GO_SOURCES) \
-		; $(info $(M) Building snapshot of docker-setup with version $(GO_VERSION)...)
+		; $(info $(M) Building snapshot of uniget with version $(GO_VERSION)...)
 	@docker buildx bake binary --set binary.args.version=$(GO_VERSION)-dev
 
 release: \
 		$(HELPER)/var/lib/uniget/manifests/go.json \
 		$(HELPER)/var/lib/uniget/manifests/goreleaser.json \
 		$(HELPER)/var/lib/uniget/manifests/syft.json \
-		; $(info $(M) Building docker-setup...)
+		; $(info $(M) Building uniget...)
 	@helper/usr/local/bin/goreleaser release --clean --snapshot --skip-sbom --skip-publish
-	@cp dist/docker-setup_$$(go env GOOS)_$$(go env GOARCH)/docker-setup docker-setup
+	@cp dist/uniget_$$(go env GOOS)_$$(go env GOARCH)/uniget uniget
 
 .PHONY:
 deps:
@@ -47,7 +47,7 @@ deps:
 .PHONY:
 clean:
 	@rm -rf dist
-	@rm docker-setup
+	@rm uniget
 	@rm coverage.out
 
 ,PHONY:

@@ -57,9 +57,9 @@ esac
 # XXX
 #
 echo "Populating variables"
-NAME_BASE=nicholasdille/docker-setup
+NAME_BASE=uniget-org/tools
 NAME_SOURCE="${NAME_BASE}/base:latest"
-TOOLS_IMAGE_PREFIX="ghcr.io/nicholasdille/docker-setup/"
+TOOLS_IMAGE_PREFIX="ghcr.io/uniget-org/tools/"
 TOOLS_IMAGE_SUFFIX=":main"
 TOOLS=(
     "dotnet"
