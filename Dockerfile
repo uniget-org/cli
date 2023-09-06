@@ -50,7 +50,7 @@ go test \
     ./...
 EOF
 
-FROM golangci/golangci-lint:v1.54.1@sha256:0029334ac23281a0519b6d263aa95fd92f06d20fde5bcf8a1754e5c30d18949c AS lint-base
+FROM golangci/golangci-lint:v1.54.2@sha256:2082f5379c48c46e447bc1b890512f3aa9339db5eeed1a483a34aae9476ba6ee AS lint-base
 
 FROM base AS lint
 RUN --mount=target=. \
