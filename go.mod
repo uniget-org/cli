@@ -1,12 +1,14 @@
 module github.com/uniget-org/cli
 
-go 1.20
+go 1.21
+
+toolchain go1.21.1
 
 require (
 	atomicgo.dev/keyboard v0.2.9
 	github.com/jedib0t/go-pretty/v6 v6.4.7
 	github.com/opencontainers/go-digest v1.0.0
-	github.com/pterm/pterm v0.12.67
+	github.com/pterm/pterm v0.12.68
 	github.com/regclient/regclient v0.5.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.7.0
