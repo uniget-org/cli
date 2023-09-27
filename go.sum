@@ -90,6 +90,8 @@ github.com/regclient/regclient v0.5.0 h1:CpRwqSBuaQnYWrQ2o1I4yzscOYRy55Tzdg0Bmix
 github.com/regclient/regclient v0.5.0/go.mod h1:/zzoVs4fqG1wJUqU3FJLN4hMMM3SuO3ACl5GD6EKmO0=
 github.com/regclient/regclient v0.5.1 h1:fAcQn+9HhdsRN+snecUG2cCxx4+eQygpxuJyRP0SkoE=
 github.com/regclient/regclient v0.5.1/go.mod h1:zR5zvU2KYuYiFI0lZRhw5S3bqxvamCPRte9tXqp+WXs=
+github.com/regclient/regclient v0.5.2 h1:8iLMsMIbI0/5iNwWUOHn463g3NSy9beLSpmFx/VfXAQ=
+github.com/regclient/regclient v0.5.2/go.mod h1:2iTgEKbcEEa2tJr3gWs0s1nkRm4V72XbPVDxmF4biX4=
 github.com/rivo/uniseg v0.2.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=
 github.com/rivo/uniseg v0.4.4 h1:8TfxU8dW6PdqD27gjM8MVNuicgxIjxpm4K7x4jp8sis=
 github.com/rivo/uniseg v0.4.4/go.mod h1:FN3SvrM+Zdj16jyLfmOkMNblXMcoc8DfTHruCPUcx88=
@@ -110,6 +112,8 @@ github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/
 github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.7.4/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO+kdMU+MU=
 github.com/stretchr/testify v1.8.0 h1:pSgiaMZlXftHpm5L7V1+rVB+AZJydKsMxsQBIJw4PKk=
+github.com/ulikunitz/xz v0.5.11 h1:kpFauv27b6ynzBNT/Xy+1k+fK4WswhN/6PN5WhFAGw8=
+github.com/ulikunitz/xz v0.5.11/go.mod h1:nbz6k7qbPmH4IRqmfOplQw/tblSgqTqBwxkY0oWt/14=
 github.com/xo/terminfo v0.0.0-20210125001918-ca9a967f8778/go.mod h1:2MuV+tbUrU1zIOPMxZ5EncGwgmMJsa+9ucAQZXxsObs=
 github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e h1:JVG44RsyaB9T2KIHavMF/ppJZNG9ZpyihvCd0w101no=
 github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e/go.mod h1:RbqR21r5mrJuqunuUZ/Dhy/avygyECGrLceyNeo4LiM=
