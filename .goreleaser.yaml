@@ -24,7 +24,12 @@ checksum:
 sboms:
 - id: sbom
   cmd: syft
-  args: [ "${artifact}", "--output", "cyclonedx-json", "--file", "$document" ]
+  args:
+  - ${artifact}
+  - --output
+  - cyclonedx-json
+  - --file
+  - $document
   documents:
   - ${artifact}.cyclonedx.json
 
@@ -40,6 +45,21 @@ archives:
   files:
   - LICENSE
 
+signs:
+- cmd: cosign
+  signature: "${artifact}.sig"
+  certificate: "${artifact}.pem"
+  env:
+  - COSIGN_EXPERIMENTAL=1
+  args:
+  - sign-blob
+  - ${artifact}
+  - --output-certificate=${certificate}
+  - --output-signature=${signature}
+  - --oidc-provider=github-actions
+  - --yes
+  artifacts: all
+
 changelog:
   use: github
   sort: desc
@@ -50,6 +70,7 @@ release:
     name: cli
   ids:
   - uniget
+  - sbom
   name_template: "{{ .Version }}"
   mode: replace
   header: |
