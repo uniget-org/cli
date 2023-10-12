@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -28,6 +29,10 @@ func ExtractTarGz(gzipStream io.Reader) error {
 
 		if err != nil {
 			return fmt.Errorf("ExtractTarGz: Next() failed: %s", err.Error())
+		}
+
+		if strings.Contains(header.Name, "..") {
+			return fmt.Errorf("ExtractTarGz: filename contains '..': %s", header.Name)
 		}
 
 		switch header.Typeflag {
@@ -55,6 +60,9 @@ func ExtractTarGz(gzipStream io.Reader) error {
 
 		case tar.TypeSymlink:
 			log.Tracef("Untarring symlink %s\n", header.Name)
+			if strings.Contains(header.Linkname, "..") {
+				return fmt.Errorf("ExtractTarGz: symlink target contains '..': %s", header.Linkname)
+			}
 			_, err := os.Stat(header.Name)
 			if err == nil {
 				log.Debugf("Symlink %s already exists\n", header.Name)
