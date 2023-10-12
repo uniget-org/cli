@@ -26,15 +26,18 @@ GOARCH=${TARGETARCH} \
         ./cmd/uniget
 EOF
 
+FROM ghcr.io/uniget-org/tools/goreleaser:latest AS goreleaser
+FROM ghcr.io/uniget-org/tools/cosign:latest AS cosign
+FROM ghcr.io/uniget-org/tools/syft:latest AS syft
+
 FROM base AS publish
 WORKDIR /go/src/github.com/uniget-org/cli
-RUN --mount=type=cache,target=/go/pkg/mod \
-    --mount=type=cache,target=/root/.cache/go-build <<EOF
-go install github.com/goreleaser/goreleaser@latest
-EOF
 COPY . .
 ARG GITHUB_TOKEN
-RUN --mount=type=cache,target=/go/pkg/mod \
+RUN --mount=from=goreleaser,src=/usr/local/bin/goreleaser,target=/usr/local/bin/goreleaser \
+    --mount=from=cosign,src=/usr/local/bin/cosign,target=/usr/local/bin/cosign \
+    --mount=from=syft,src=/usr/local/bin/syft,target=/usr/local/bin/syft \
+    --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build <<EOF
 goreleaser
 EOF
