@@ -1,3 +1,5 @@
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/7946/badge)](https://www.bestpractices.dev/projects/7946) [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/uniget-org/cli/badge)](https://securityscorecards.dev/viewer/?uri=github.com/uniget-org/cli)
+
 # uniget
 
 ```plaintext
