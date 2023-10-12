@@ -57,7 +57,6 @@ signs:
   - ${artifact}
   - --output-certificate=${certificate}
   - --output-signature=${signature}
-  - --oidc-provider=github-actions
   - --yes
   artifacts: all
 
