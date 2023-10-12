@@ -7,12 +7,15 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
 )
 
 func ExtractTarGz(gzipStream io.Reader) error {
+	target := "."
+
 	uncompressedStream, err := gzip.NewReader(gzipStream)
 	if err != nil {
 		return fmt.Errorf("ExtractTarGz: NewReader failed")
@@ -60,9 +63,6 @@ func ExtractTarGz(gzipStream io.Reader) error {
 
 		case tar.TypeSymlink:
 			log.Tracef("Untarring symlink %s\n", header.Name)
-			if strings.Contains(header.Linkname, "..") {
-				return fmt.Errorf("ExtractTarGz: symlink target contains '..': %s", header.Linkname)
-			}
 			_, err := os.Stat(header.Name)
 			if err == nil {
 				log.Debugf("Symlink %s already exists\n", header.Name)
@@ -70,6 +70,18 @@ func ExtractTarGz(gzipStream io.Reader) error {
 			if os.IsNotExist(err) {
 				log.Debugf("Target of symlink %s does not exist\n", header.Name)
 				os.Remove(header.Name)
+
+				realpath, err := filepath.EvalSymlinks(filepath.Join(target, header.Name))
+				if err != nil {
+					return fmt.Errorf("ExtractTarGz: EvalSymlinks() failed: %s", err.Error())
+				}
+				relpath, err := filepath.Rel(target, realpath)
+				if err != nil {
+					return fmt.Errorf("ExtractTarGz: Rel() failed: %s", err.Error())
+				}
+				if strings.Contains(relpath, "..") {
+					return fmt.Errorf("ExtractTarGz: symlink target contains '..': %s", relpath)
+				}
 
 				err = os.Symlink(header.Linkname, header.Name)
 				if err != nil {
