@@ -34,4 +34,9 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
       run: |
-        docker buildx build --target publish --build-arg GITHUB_TOKEN .
+        docker buildx build \
+            --target publish \
+            --build-arg GITHUB_TOKEN \
+            --build-arg ACTIONS_ID_TOKEN_REQUEST_URL \
+            --build-arg ACTIONS_ID_TOKEN_REQUEST_TOKEN \
+            .
