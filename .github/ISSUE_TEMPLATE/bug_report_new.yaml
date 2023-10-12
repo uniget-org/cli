@@ -19,7 +19,7 @@ body:
     validations:
       required: true
 
-  - type: dropdown
+  - type: textarea
     id: version
     attributes:
       label: Version
@@ -27,17 +27,17 @@ body:
     validations:
       required: true
 
-  - type: dropdown
+  - type: textarea
     id: distro
     attributes:
       label: What distribution are you seeing the problem on?
       description: If you're not sure, you can run `cat /etc/os-release` to find out.
-    validations:
-      required: true
 
   - type: textarea
     id: logs
     attributes:
       label: Relevant output
       description: Please copy and paste any relevant output including the command you have executed. This will be automatically formatted into code, so no need for backticks.
-      render: shell
+      render: Shell
+    validations:
+      required: true
