@@ -13,6 +13,22 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+func pathIsInsideTarget(target string, candidate string) error {
+	realpath, err := filepath.EvalSymlinks(filepath.Join(target, candidate))
+	if err != nil {
+		return fmt.Errorf("ExtractTarGz: EvalSymlinks() failed: %s", err.Error())
+	}
+	relpath, err := filepath.Rel(target, realpath)
+	if err != nil {
+		return fmt.Errorf("ExtractTarGz: Rel() failed: %s", err.Error())
+	}
+	if strings.Contains(relpath, "..") {
+		return fmt.Errorf("ExtractTarGz: symlink target contains '..': %s", relpath)
+	}
+
+	return nil
+}
+
 func ExtractTarGz(gzipStream io.Reader) error {
 	target := "."
 
@@ -71,16 +87,13 @@ func ExtractTarGz(gzipStream io.Reader) error {
 				log.Debugf("Target of symlink %s does not exist\n", header.Name)
 				os.Remove(header.Name)
 
-				realpath, err := filepath.EvalSymlinks(filepath.Join(target, header.Name))
+				err = pathIsInsideTarget(target, header.Linkname)
 				if err != nil {
-					return fmt.Errorf("ExtractTarGz: EvalSymlinks() failed: %s", err.Error())
+					return fmt.Errorf("ExtractTarGz: pathIsInsideTarget() failed for %s: %s", header.Linkname, err.Error())
 				}
-				relpath, err := filepath.Rel(target, realpath)
+				err = pathIsInsideTarget(target, header.Name)
 				if err != nil {
-					return fmt.Errorf("ExtractTarGz: Rel() failed: %s", err.Error())
-				}
-				if strings.Contains(relpath, "..") {
-					return fmt.Errorf("ExtractTarGz: symlink target contains '..': %s", relpath)
+					return fmt.Errorf("ExtractTarGz: pathIsInsideTarget() failed for %s: %s", header.Name, err.Error())
 				}
 
 				err = os.Symlink(header.Linkname, header.Name)
