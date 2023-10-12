@@ -1,12 +1,14 @@
-name: Bug Report
+name: Bug Report (NEW)
 description: File a bug report
 title: "[Bug]: "
-labels: ["bug"]
+labels:
+- bug
 body:
+
   - type: markdown
     attributes:
-      value: |
-        Thanks for taking the time to fill out this bug report!
+      value: Thanks for taking the time to fill out this bug report!
+
   - type: textarea
     id: what-happened
     attributes:
@@ -16,6 +18,7 @@ body:
       value: "A bug happened!"
     validations:
       required: true
+
   - type: dropdown
     id: version
     attributes:
@@ -23,6 +26,7 @@ body:
       description: What version of our software are you running?
     validations:
       required: true
+
   - type: dropdown
     id: distro
     attributes:
@@ -30,6 +34,7 @@ body:
       description: If you're not sure, you can run `cat /etc/os-release` to find out.
     validations:
       required: true
+
   - type: textarea
     id: logs
     attributes:
