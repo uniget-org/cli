@@ -41,11 +41,11 @@ func initInstallCmd() {
 }
 
 var installCmd = &cobra.Command{
-	Use:       "install [tool...]",
-	Aliases:   []string{"i"},
-	Short:     "Install tools",
-	Long:      header + "\nInstall and update tools",
-	Args:      cobra.OnlyValidArgs,
+	Use:     "install [tool...]",
+	Aliases: []string{"i"},
+	Short:   "Install tools",
+	Long:    header + "\nInstall and update tools",
+	Args:    cobra.OnlyValidArgs,
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},

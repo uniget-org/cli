@@ -19,11 +19,11 @@ func initUninstallCmd() {
 }
 
 var uninstallCmd = &cobra.Command{
-	Use:       "uninstall",
-	Aliases:   []string{"u"},
-	Short:     "Uninstall tool",
-	Long:      header + "\nUninstall tools",
-	Args:      cobra.ExactArgs(1),
+	Use:     "uninstall",
+	Aliases: []string{"u"},
+	Short:   "Uninstall tool",
+	Long:    header + "\nUninstall tools",
+	Args:    cobra.ExactArgs(1),
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},

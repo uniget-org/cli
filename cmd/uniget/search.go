@@ -23,11 +23,11 @@ func initSearchCmd() {
 }
 
 var searchCmd = &cobra.Command{
-	Use:       "search <term>",
-	Aliases:   []string{"s"},
-	Short:     "Search for tools",
-	Long:      header + "\nSearch for tools",
-	Args:      cobra.ExactArgs(1),
+	Use:     "search <term>",
+	Aliases: []string{"s"},
+	Short:   "Search for tools",
+	Long:    header + "\nSearch for tools",
+	Args:    cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		assertMetadataFileExists()
 		assertMetadataIsLoaded()

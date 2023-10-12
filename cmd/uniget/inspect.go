@@ -12,10 +12,10 @@ func initInspectCmd() {
 }
 
 var inspectCmd = &cobra.Command{
-	Use:       "inspect",
-	Short:     "Inspect tool",
-	Long:      header + "\nInspect tools",
-	Args:      cobra.ExactArgs(1),
+	Use:   "inspect",
+	Short: "Inspect tool",
+	Long:  header + "\nInspect tools",
+	Args:  cobra.ExactArgs(1),
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},
