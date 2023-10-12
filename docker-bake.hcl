@@ -7,3 +7,11 @@ target "binary" {
         "type=local,dest=."
     ]
 }
+
+target "lint" {
+    target = "lint"
+}
+
+target "vet" {
+    target = "vet"
+}

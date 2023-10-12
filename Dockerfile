@@ -50,6 +50,15 @@ go test \
     ./...
 EOF
 
+FROM base AS vet
+RUN --mount=target=. \
+    --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build <<EOF
+mkdir -p /out
+go vet \
+    ./...
+EOF
+
 FROM golangci/golangci-lint:v1.54.2@sha256:2082f5379c48c46e447bc1b890512f3aa9339db5eeed1a483a34aae9476ba6ee AS lint-base
 
 FROM base AS lint

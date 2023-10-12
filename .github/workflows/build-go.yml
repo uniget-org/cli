@@ -26,6 +26,14 @@ jobs:
       with:
         ref: ${{ needs.prepare.outputs.tag }}
 
+    - name: Lint
+      run: |
+        docker buildx bake lint
+
+    - name: Vet
+      run: |
+        docker buildx bake vet
+
     - name: Build binary
       run: |
         docker buildx bake binary
