@@ -71,13 +71,18 @@ var describeCmd = &cobra.Command{
 		}
 
 		fmt.Println()
-		primaryOptions := []string{"Abort", "Plan", "Install", "Uninstall"}
+		primaryOptions := []string{"Abort", "Inspect", "Plan", "Install", "Uninstall"}
 		printer := pterm.DefaultInteractiveSelect.WithOptions(primaryOptions)
 		printer.DefaultText = "What do you want to do?"
 		selectedOption, _ := printer.Show()
 		switch selectedOption {
 		case "Abort":
 			return nil
+		case "Inspect":
+			err = tool.Inspect(registryImagePrefix, altArch)
+			if err != nil {
+				return fmt.Errorf("unable to inspect %s: %s", tool.Name, err)
+			}
 		case "Plan":
 			err := installToolsByName([]string{toolName}, false, true, false, false, false)
 			if err != nil {
