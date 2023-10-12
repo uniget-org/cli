@@ -39,9 +39,18 @@ var describeCmd = &cobra.Command{
 			return fmt.Errorf("error getting tool %s", toolName)
 		}
 		tool.ReplaceVariables(prefix+"/"+target, arch, altArch)
-		tool.GetMarkerFileStatus(prefix + "/" + cacheDirectory)
-		tool.GetBinaryStatus()
-		tool.GetVersionStatus()
+		err = tool.GetMarkerFileStatus(prefix + "/" + cacheDirectory)
+		if err != nil {
+			return fmt.Errorf("error getting marker file status: %s", err)
+		}
+		err = tool.GetBinaryStatus()
+		if err != nil {
+			return fmt.Errorf("error getting binary status: %s", err)
+		}
+		err = tool.GetVersionStatus()
+		if err != nil {
+			return fmt.Errorf("error getting version status: %s", err)
+		}
 
 		if describeOutput == "pretty" {
 			tool.Print()

@@ -74,7 +74,11 @@ func ExtractTarGz(gzipStream io.Reader) error {
 			if _, err := io.Copy(outFile, tarReader); err != nil {
 				return fmt.Errorf("ExtractTarGz: Copy() failed: %s", err.Error())
 			}
-			outFile.Chmod(os.FileMode(header.Mode))
+			mode := os.FileMode(header.Mode)
+			err = outFile.Chmod(mode)
+			if err != nil {
+				return fmt.Errorf("ExtractTarGz: Chmod() failed: %s", err.Error())
+			}
 			outFile.Close()
 
 		case tar.TypeSymlink:

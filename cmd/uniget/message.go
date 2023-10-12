@@ -60,9 +60,19 @@ var messageCmd = &cobra.Command{
 			}
 
 		} else {
-			printToolInternals(toolName)
-			printToolUsage(toolName)
-			printToolUpdate(toolName)
+			err := printToolInternals(toolName)
+			if err != nil {
+				return fmt.Errorf("failed to print tool internals: %s", err)
+			}
+			err = printToolUsage(toolName)
+			if err != nil {
+				return fmt.Errorf("failed to print tool usage: %s", err)
+			}
+			err = printToolUpdate(toolName)
+			if err != nil {
+				return fmt.Errorf("failed to print tool update: %s", err)
+			}
+
 			fmt.Println()
 		}
 

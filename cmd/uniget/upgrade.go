@@ -23,7 +23,10 @@ var upgradeCmd = &cobra.Command{
 			return fmt.Errorf("failed to find installed tools: %s", err)
 		}
 
-		installTools(requestdTools, false, plan, false, false, false)
+		err = installTools(requestdTools, false, plan, false, false, false)
+		if err != nil {
+			return fmt.Errorf("failed to install tools: %s", err)
+		}
 
 		return nil
 	},

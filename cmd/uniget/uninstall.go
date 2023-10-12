@@ -38,9 +38,20 @@ var uninstallCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("unable to find tool %s: %s", args[0], err)
 		}
-		tool.GetBinaryStatus()
-		tool.GetMarkerFileStatus(prefix + "/" + cacheDirectory)
-		tool.GetVersionStatus()
+
+		err = tool.GetBinaryStatus()
+		if err != nil {
+			return fmt.Errorf("unable to get binary status: %s", err)
+		}
+		err = tool.GetMarkerFileStatus(prefix + "/" + cacheDirectory)
+		if err != nil {
+			return fmt.Errorf("unable to get marker file status: %s", err)
+		}
+		err = tool.GetVersionStatus()
+		if err != nil {
+			return fmt.Errorf("unable to get version status: %s", err)
+		}
+
 		if !force && !tool.Status.MarkerFilePresent && !tool.Status.BinaryPresent {
 			pterm.Warning.Printfln("Tool %s is not installed", args[0])
 			return nil
@@ -92,7 +103,10 @@ func uninstallTool(toolName string) error {
 		}
 	}
 
-	tool.RemoveMarkerFile(prefix + "/" + cacheDirectory)
+	err = tool.RemoveMarkerFile(prefix + "/" + cacheDirectory)
+	if err != nil {
+		return fmt.Errorf("unable to remove marker file: %s", err)
+	}
 
 	entries, err := os.ReadDir(prefix + "/" + cacheDirectory + "/" + tool.Name)
 	if err != nil {

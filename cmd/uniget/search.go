@@ -103,7 +103,10 @@ var searchCmd = &cobra.Command{
 		printer.Checkmark = &pterm.Checkmark{Checked: "✓", Unchecked: " "}
 		selectedOptions, _ := printer.Show()
 		if len(selectedOptions) > 0 {
-			installToolsByName(selectedOptions, false, false, false, false, false)
+			err := installToolsByName(selectedOptions, false, false, false, false, false)
+			if err != nil {
+				return err
+			}
 		}
 
 		return nil

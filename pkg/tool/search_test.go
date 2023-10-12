@@ -191,7 +191,10 @@ func TestResolveDependencies(t *testing.T) {
 	}
 
 	var plannedTools Tools
-	tools.ResolveDependencies(&plannedTools, "foo")
+	err = tools.ResolveDependencies(&plannedTools, "foo")
+	if err != nil {
+		t.Errorf("Error resolving dependencies: %s\n", err)
+	}
 	if len(plannedTools.Tools) != 2 {
 		t.Errorf("Expected 2 tools, got %d: %s", len(plannedTools.Tools), strings.Join(plannedTools.GetNames(), ","))
 	}

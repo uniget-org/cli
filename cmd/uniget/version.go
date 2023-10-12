@@ -29,9 +29,18 @@ var versionCmd = &cobra.Command{
 			return fmt.Errorf("failed to get tool: %s", err)
 		}
 		tool.ReplaceVariables(prefix+"/"+target, arch, altArch)
-		tool.GetMarkerFileStatus(prefix + "/" + cacheDirectory)
-		tool.GetBinaryStatus()
-		tool.GetVersionStatus()
+		err = tool.GetMarkerFileStatus(prefix + "/" + cacheDirectory)
+		if err != nil {
+			return fmt.Errorf("failed to get marker file status: %s", err)
+		}
+		err = tool.GetBinaryStatus()
+		if err != nil {
+			return fmt.Errorf("failed to get binary status: %s", err)
+		}
+		err = tool.GetVersionStatus()
+		if err != nil {
+			return fmt.Errorf("failed to get version status: %s", err)
+		}
 
 		if !tool.Status.MarkerFilePresent && !tool.Status.BinaryPresent {
 			pterm.Warning.Printfln("Tool %s is not installed", tool.Name)

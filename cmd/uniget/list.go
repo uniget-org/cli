@@ -36,9 +36,18 @@ var listCmd = &cobra.Command{
 			var installedTools tool.Tools
 			for index := range tools.Tools {
 				tools.Tools[index].ReplaceVariables(prefix+"/"+target, arch, altArch)
-				tools.Tools[index].GetMarkerFileStatus(prefix + "/" + cacheDirectory)
-				tools.Tools[index].GetBinaryStatus()
-				tools.Tools[index].GetVersionStatus()
+				err := tools.Tools[index].GetMarkerFileStatus(prefix + "/" + cacheDirectory)
+				if err != nil {
+					return fmt.Errorf("error getting marker file status: %s", err)
+				}
+				err = tools.Tools[index].GetBinaryStatus()
+				if err != nil {
+					return fmt.Errorf("error getting binary status: %s", err)
+				}
+				err = tools.Tools[index].GetVersionStatus()
+				if err != nil {
+					return fmt.Errorf("error getting version status: %s", err)
+				}
 
 				if tools.Tools[index].Status.VersionMatches {
 					installedTools.Tools = append(installedTools.Tools, tools.Tools[index])

@@ -278,12 +278,24 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 
 		if reinstall {
 			logging.Info.Printfln("Reinstalling %s %s", tool.Name, tool.Version)
-			uninstallTool(tool.Name)
+			err := uninstallTool(tool.Name)
+			if err != nil {
+				logging.Warning.Printfln("Unable to uninstall %s: %s", tool.Name, err)
+				continue
+			}
 
 		} else if tool.Status.BinaryPresent || tool.Status.MarkerFilePresent {
 			logging.Info.Printfln("Updating %s %s", tool.Name, tool.Version)
-			uninstallTool(tool.Name)
-			printToolUpdate(tool.Name)
+			err := uninstallTool(tool.Name)
+			if err != nil {
+				logging.Warning.Printfln("Unable to uninstall %s: %s", tool.Name, err)
+				continue
+			}
+			err = printToolUpdate(tool.Name)
+			if err != nil {
+				logging.Warning.Printfln("Unable to print tool update: %s", err)
+				continue
+			}
 
 		} else {
 			logging.Info.Printfln("Installing %s %s", tool.Name, tool.Version)
@@ -296,9 +308,23 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 					logging.Error.Printfln("Unable to find dependency %s", depName)
 					return fmt.Errorf("unable to find dependency %s", depName)
 				}
-				dep.GetBinaryStatus()
-				dep.GetMarkerFileStatus(prefix + "/" + cacheDirectory)
-				dep.GetVersionStatus()
+
+				err = dep.GetBinaryStatus()
+				if err != nil {
+					logging.Error.Printfln("Unable to get binary status of dependency %s: %s", depName, err)
+					return fmt.Errorf("unable to get binary status of dependency %s: %s", depName, err)
+				}
+				err = dep.GetMarkerFileStatus(prefix + "/" + cacheDirectory)
+				if err != nil {
+					logging.Error.Printfln("Unable to get marker file status of dependency %s: %s", depName, err)
+					return fmt.Errorf("unable to get marker file status of dependency %s: %s", depName, err)
+				}
+				err = dep.GetVersionStatus()
+				if err != nil {
+					logging.Error.Printfln("Unable to get version status of dependency %s: %s", depName, err)
+					return fmt.Errorf("unable to get version status of dependency %s: %s", depName, err)
+				}
+
 				if dep.Status.BinaryPresent || dep.Status.MarkerFilePresent {
 					continue
 				}
@@ -313,9 +339,17 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 			continue
 		}
 
-		printToolUsage(tool.Name)
+		err = printToolUsage(tool.Name)
+		if err != nil {
+			logging.Warning.Printfln("Unable to print tool usage: %s", err)
+			continue
+		}
 
-		tool.CreateMarkerFile(prefix + "/" + cacheDirectory)
+		err = tool.CreateMarkerFile(prefix + "/" + cacheDirectory)
+		if err != nil {
+			logging.Warning.Printfln("Unable to create marker file: %s", err)
+			continue
+		}
 	}
 
 	if len(prefix) > 0 {
