@@ -143,6 +143,7 @@ func init() {
 	initCronCmd()
 	initDescribeCmd()
 	initGenerateCmd()
+	initHealthcheckCmd()
 	initInspectCmd()
 	initInstallCmd()
 	initListCmd()
