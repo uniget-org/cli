@@ -60,10 +60,9 @@ func ExtractTarGz(gzipStream io.Reader) error {
 			return fmt.Errorf("ExtractTarGz: Next() failed: %s", err.Error())
 		}
 
-		// TODO: Check if this is really necessary
-		//if strings.Contains(header.Name, "..") {
-		//	return fmt.Errorf("ExtractTarGz: filename contains '..': %s", header.Name)
-		//}
+		if strings.Contains(header.Name, "..") {
+			return fmt.Errorf("ExtractTarGz: filename contains '..': %s", header.Name)
+		}
 
 		switch header.Typeflag {
 		case tar.TypeDir:
