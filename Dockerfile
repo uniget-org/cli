@@ -29,6 +29,7 @@ EOF
 FROM ghcr.io/uniget-org/tools/goreleaser:latest AS goreleaser
 FROM ghcr.io/uniget-org/tools/cosign:latest AS cosign
 FROM ghcr.io/uniget-org/tools/syft:latest AS syft
+FROM ghcr.io/uniget-org/tools/gh:latest AS gh
 
 FROM base AS publish
 WORKDIR /go/src/github.com/uniget-org/cli
@@ -39,14 +40,13 @@ ARG ACTIONS_ID_TOKEN_REQUEST_TOKEN
 RUN --mount=from=goreleaser,src=/usr/local/bin/goreleaser,target=/usr/local/bin/goreleaser \
     --mount=from=cosign,src=/usr/local/bin/cosign,target=/usr/local/bin/cosign \
     --mount=from=syft,src=/usr/local/bin/syft,target=/usr/local/bin/syft \
+    --mount=from=gh,src=/usr/local/bin/gh,target=/usr/local/bin/gh \
     --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build <<EOF
-bash scripts/release-notes.sh >/tmp/release-notes.md
 goreleaser healthcheck
-goreleaser release --parallelism=2 \
-    --release-header-tmpl=scripts/goreleaser/header.md.tmpl \
-    --release-footer-tmpl=scripts/goreleaser/footer.md.tmpl \
-    --release-notes=/tmp/release-notes.md
+goreleaser release
+bash scripts/release-notes.sh >/tmp/release-notes.md
+gh release edit --notes-file /tmp/release-notes.md
 EOF
 
 FROM base AS unit-test
