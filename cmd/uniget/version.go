@@ -47,6 +47,12 @@ var versionCmd = &cobra.Command{
 			return fmt.Errorf("tool %s is not installed", tool.Name)
 		}
 
+		if tool.Check == "" {
+			pterm.Warning.Printfln("Tool %s does not support version check", tool.Name)
+			fmt.Println(tool.Version)
+			return nil
+		}
+
 		tool.ReplaceVariables(prefix+"/"+target, arch, altArch)
 		version, err := tool.RunVersionCheck()
 		if err != nil {
