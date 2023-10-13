@@ -26,6 +26,7 @@ func pathIsInsideTarget(target string, candidate string) error {
 	realPath, err := filepath.EvalSymlinks(cleanPath)
 	if os.IsNotExist(err) {
 		log.Tracef("Path does not exist (yet): %s\n", cleanPath)
+		realPath = cleanPath
 
 	} else if err != nil {
 		return fmt.Errorf("ExtractTarGz: EvalSymlinks() failed: %s", err.Error())
