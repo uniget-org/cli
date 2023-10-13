@@ -14,14 +14,24 @@ import (
 )
 
 func pathIsInsideTarget(target string, candidate string) error {
-	realpath, err := filepath.EvalSymlinks(filepath.Join(target, candidate))
+	absTarget, err := filepath.Abs(target)
 	if err != nil {
-		return fmt.Errorf("ExtractTarGz: EvalSymlinks() failed: %s", err.Error())
+		return fmt.Errorf("ExtractTarGz: Abs() failed: %s", err.Error())
 	}
-	relpath, err := filepath.Rel(target, realpath)
+
+	log.Debugf("Checking if %s is inside %s\n", candidate, absTarget)
+	realpath, err := filepath.Abs(filepath.Join(absTarget, candidate))
+	if err != nil {
+		return fmt.Errorf("ExtractTarGz: Abs() failed: %s", err.Error())
+	}
+	log.Debugf("Realpath of %s is %s\n", candidate, realpath)
+
+	relpath, err := filepath.Rel(absTarget, realpath)
 	if err != nil {
 		return fmt.Errorf("ExtractTarGz: Rel() failed: %s", err.Error())
 	}
+	log.Debugf("Relpath of %s is %s\n", realpath, relpath)
+
 	if strings.Contains(relpath, "..") {
 		return fmt.Errorf("ExtractTarGz: symlink target contains '..': %s", relpath)
 	}
@@ -50,9 +60,10 @@ func ExtractTarGz(gzipStream io.Reader) error {
 			return fmt.Errorf("ExtractTarGz: Next() failed: %s", err.Error())
 		}
 
-		if strings.Contains(header.Name, "..") {
-			return fmt.Errorf("ExtractTarGz: filename contains '..': %s", header.Name)
-		}
+		// TODO: Check if this is really necessary
+		//if strings.Contains(header.Name, "..") {
+		//	return fmt.Errorf("ExtractTarGz: filename contains '..': %s", header.Name)
+		//}
 
 		switch header.Typeflag {
 		case tar.TypeDir:
@@ -88,16 +99,21 @@ func ExtractTarGz(gzipStream io.Reader) error {
 				log.Debugf("Symlink %s already exists\n", header.Name)
 			}
 			if os.IsNotExist(err) {
-				log.Debugf("Target of symlink %s does not exist\n", header.Name)
-				os.Remove(header.Name)
+				log.Debugf("Symlink %s does not exist\n", header.Name)
 
-				err = pathIsInsideTarget(target, header.Linkname)
-				if err != nil {
-					return fmt.Errorf("ExtractTarGz: pathIsInsideTarget() failed for %s: %s", header.Linkname, err.Error())
-				}
 				err = pathIsInsideTarget(target, header.Name)
 				if err != nil {
 					return fmt.Errorf("ExtractTarGz: pathIsInsideTarget() failed for %s: %s", header.Name, err.Error())
+				}
+
+				absHeaderLinkname := header.Linkname
+				if !filepath.IsAbs(header.Linkname) {
+					absHeaderLinkname = filepath.Join(filepath.Dir(header.Name), header.Linkname)
+				}
+				log.Tracef("Absolute symlink target is %s\n", absHeaderLinkname)
+				err = pathIsInsideTarget(target, absHeaderLinkname)
+				if err != nil {
+					return fmt.Errorf("ExtractTarGz: pathIsInsideTarget() failed for %s: %s", absHeaderLinkname, err.Error())
 				}
 
 				err = os.Symlink(header.Linkname, header.Name)
