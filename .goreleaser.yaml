@@ -77,7 +77,20 @@ release:
   header: |
     ## Installation
 
-    ```
-    curl -sLf https://github.com/uniget-org/cli/releases/download/v{{ .Tag }}/uniget_linux_$(uname -m).tar.gz \
+    ```bash
+    curl -sSLf https://github.com/uniget-org/cli/releases/download/{{ .Tag }}/uniget_linux_$(uname -m).tar.gz \
     | sudo tar -xzC /usr/local/bin uniget
+    ```
+
+    ### Signature verification
+
+    ```bash
+    curl -sSLfO https://github.com/uniget-org/cli/releases/download/{{ .Tag }}/uniget_linux_$(uname -m).tar.gz
+    curl -sSLfO https://github.com/uniget-org/cli/releases/download/{{ .Tag }}/uniget_linux_$(uname -m).tar.gz.pem
+    curl -sSLfO https://github.com/uniget-org/cli/releases/download/{{ .Tag }}/uniget_linux_$(uname -m).tar.gz.sig
+    cosign verify-blob uniget_linux_$(uname -m).tar.gz \
+        --certificate uniget_linux_$(uname -m).tar.gz.pem \
+        --signature uniget_linux_$(uname -m).tar.gz.sig \
+        --certificate-identity 'https://github.com/uniget-org/cli/.github/workflows/release.yml@refs/tags/{{ .Tag }}' \
+        --certificate-oidc-issuer https://token.actions.githubusercontent.com
     ```
