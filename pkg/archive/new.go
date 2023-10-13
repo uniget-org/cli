@@ -19,21 +19,27 @@ func pathIsInsideTarget(target string, candidate string) error {
 		return fmt.Errorf("ExtractTarGz: Abs() failed: %s", err.Error())
 	}
 
-	log.Debugf("Checking if %s is inside %s\n", candidate, absTarget)
-	realpath, err := filepath.Abs(filepath.Join(absTarget, candidate))
-	if err != nil {
-		return fmt.Errorf("ExtractTarGz: Abs() failed: %s", err.Error())
-	}
-	log.Debugf("Realpath of %s is %s\n", candidate, realpath)
+	log.Debugf("Checking if %s works\n", filepath.Join(absTarget, candidate))
+	cleanPath := filepath.Clean(filepath.Join(absTarget, candidate))
+	log.Debugf("Cleaned path is %s\n", cleanPath)
 
-	relpath, err := filepath.Rel(absTarget, realpath)
+	realPath, err := filepath.EvalSymlinks(cleanPath)
+	if os.IsNotExist(err) {
+		log.Tracef("Path does not exist (yet): %s\n", cleanPath)
+
+	} else if err != nil {
+		return fmt.Errorf("ExtractTarGz: EvalSymlinks() failed: %s", err.Error())
+	}
+	log.Debugf("Realpath of %s is %s\n", candidate, realPath)
+
+	relPath, err := filepath.Rel(absTarget, realPath)
 	if err != nil {
 		return fmt.Errorf("ExtractTarGz: Rel() failed: %s", err.Error())
 	}
-	log.Debugf("Relpath of %s is %s\n", realpath, relpath)
+	log.Debugf("Relative path of %s is %s\n", realPath, relPath)
 
-	if strings.Contains(relpath, "..") {
-		return fmt.Errorf("ExtractTarGz: symlink target contains '..': %s", relpath)
+	if strings.Contains(relPath, "..") {
+		return fmt.Errorf("ExtractTarGz: symlink target contains '..': %s", relPath)
 	}
 
 	return nil
@@ -100,11 +106,6 @@ func ExtractTarGz(gzipStream io.Reader) error {
 			if os.IsNotExist(err) {
 				log.Debugf("Symlink %s does not exist\n", header.Name)
 
-				err = pathIsInsideTarget(target, header.Name)
-				if err != nil {
-					return fmt.Errorf("ExtractTarGz: pathIsInsideTarget() failed for %s: %s", header.Name, err.Error())
-				}
-
 				absHeaderLinkname := header.Linkname
 				if !filepath.IsAbs(header.Linkname) {
 					absHeaderLinkname = filepath.Join(filepath.Dir(header.Name), header.Linkname)
@@ -113,6 +114,11 @@ func ExtractTarGz(gzipStream io.Reader) error {
 				err = pathIsInsideTarget(target, absHeaderLinkname)
 				if err != nil {
 					return fmt.Errorf("ExtractTarGz: pathIsInsideTarget() failed for %s: %s", absHeaderLinkname, err.Error())
+				}
+
+				err = pathIsInsideTarget(target, header.Name)
+				if err != nil {
+					return fmt.Errorf("ExtractTarGz: pathIsInsideTarget() failed for %s: %s", header.Name, err.Error())
 				}
 
 				err = os.Symlink(header.Linkname, header.Name)
