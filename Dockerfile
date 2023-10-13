@@ -42,6 +42,7 @@ RUN --mount=from=goreleaser,src=/usr/local/bin/goreleaser,target=/usr/local/bin/
     --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build <<EOF
 goreleaser healthcheck
+git tag
 goreleaser
 EOF
 
