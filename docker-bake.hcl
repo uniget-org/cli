@@ -15,3 +15,7 @@ target "lint" {
 target "vet" {
     target = "vet"
 }
+
+target "test" {
+    target = "unit-test"
+}
