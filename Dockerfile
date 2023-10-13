@@ -42,8 +42,10 @@ RUN --mount=from=goreleaser,src=/usr/local/bin/goreleaser,target=/usr/local/bin/
     --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build <<EOF
 goreleaser healthcheck
-git tag
-goreleaser
+goreleaser release --parallelism=2 \
+    --release-header-tmpl=scripts/goreleaser/header.md.tmpl \
+    --release-footer-tmpl=scripts/goreleaser/footer.md.tmpl \
+    --release-notes=/tmp/release-notes.md
 EOF
 
 FROM base AS unit-test
