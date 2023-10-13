@@ -178,7 +178,9 @@ func (tool *Tool) RemoveMarkerFile(markerFileDirectory string) error {
 	log.Tracef("Removing marker file for %s", tool.Name)
 
 	err := os.Remove(fmt.Sprintf("%s/%s/%s", markerFileDirectory, tool.Name, tool.Version))
-	if err != nil {
+	if os.IsNotExist(err) {
+		log.Tracef("Marker file for %s does not exist", tool.Name)
+	} else if err != nil {
 		return fmt.Errorf("unable to remove marker file for %s: %s", tool.Name, err)
 	}
 

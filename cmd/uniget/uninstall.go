@@ -104,7 +104,9 @@ func uninstallTool(toolName string) error {
 	}
 
 	err = tool.RemoveMarkerFile(prefix + "/" + cacheDirectory)
-	if err != nil {
+	if os.IsNotExist(err) {
+		logging.Debug.Printfln("unable to remove marker file because it does not exist")
+	} else if err != nil {
 		return fmt.Errorf("unable to remove marker file: %s", err)
 	}
 
