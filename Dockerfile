@@ -69,7 +69,7 @@ go vet \
     ./...
 EOF
 
-FROM golangci/golangci-lint:v1.54.2@sha256:2082f5379c48c46e447bc1b890512f3aa9339db5eeed1a483a34aae9476ba6ee AS lint-base
+FROM golangci/golangci-lint:v1.55.1@sha256:c4e67eb904109ade78e2f38d98a424502f016db5676409390469bcdafea0f57d AS lint-base
 
 FROM base AS lint
 RUN --mount=target=. \
