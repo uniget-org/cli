@@ -6,7 +6,7 @@ toolchain go1.21.1
 
 require (
 	atomicgo.dev/keyboard v0.2.9
-	github.com/jedib0t/go-pretty/v6 v6.4.8
+	github.com/jedib0t/go-pretty/v6 v6.4.9
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/pterm/pterm v0.12.69
 	github.com/regclient/regclient v0.5.3
