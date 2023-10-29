@@ -9,6 +9,14 @@ on:
     - "make/go.mk"
     - ".github/workflows/build-go.yml"
     - "Dockerfile"
+  pull_request:
+    paths:
+    - "**/*.go"
+    - "go.mod"
+    - "go.sum"
+    - "make/go.mk"
+    - ".github/workflows/build-go.yml"
+    - "Dockerfile"
   workflow_dispatch:
 
 permissions:
@@ -23,8 +31,6 @@ jobs:
 
     - name: Checkout code
       uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
-      with:
-        ref: ${{ needs.prepare.outputs.tag }}
 
     - name: Lint
       run: |
@@ -45,3 +51,9 @@ jobs:
     - name: Smoke test
       run: |
         ./uniget --version
+
+    - name: Test install
+      run: |
+        ./uniget --prefix=helper install yq gojq
+        ./helper/usr/local/bin/yq --version
+        ./helper/usr/local/bin/gojq --version
