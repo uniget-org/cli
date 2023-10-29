@@ -29,8 +29,9 @@
   "patch":  { "labels": [ "bump/patch", "type/renovate" ] },
   "pin":    { "labels": [ "bump/pin",   "type/renovate" ] },
   "digest": { "labels": [ "bump/digest", "type/renovate" ] },
-  "regexManagers": [
+  "customManagers": [
     {
+      "customType":           "regex",
       "fileMatch":          [ "(^|/|\\.)Dockerfile[^/]*$" ],
       "matchStrings":       [ "#syntax=(?<depName>.*?):(?<currentValue>.*?)\\n" ],
       "datasourceTemplate":   "docker",
