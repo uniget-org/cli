@@ -12,17 +12,13 @@ import (
 	"github.com/uniget-org/cli/pkg/logging"
 )
 
-var postinstallProfileDScript = `#!/bin/bash
-set -o errexit
-
+var postinstallProfileDScript = `
 SCRIPTS="$( find "${target}/etc/profile.d" -type f )"
 for SCRIPT in ${SCRIPTS}; do
 	source "${SCRIPT}"
 done
 `
-var postinstallCompletionScript = `#!/bin/bash
-set -o errexit
-
+var postinstallCompletionScript = `
 SCRIPTS="$( find "${target}/share/bash-completion/completions/" -type f )"
 for SCRIPT in ${SCRIPTS}; do
 	source "${SCRIPT}"
@@ -93,7 +89,7 @@ func postinstall() error {
 	err := os.WriteFile(
 		prefix + "/etc/profile.d/uniget-profile.d.sh",
 		[]byte(profileDScript),
-		0755,
+		0644,
 	)
 	if err != nil {
 		return fmt.Errorf("cannot write profile.d shim: %w", err)
@@ -104,7 +100,7 @@ func postinstall() error {
 	err = os.WriteFile(
 		prefix + "/etc/profile.d/uniget-completion.sh",
 		[]byte(completionScript),
-		0755,
+		0644,
 	)
 	if err != nil {
 		return fmt.Errorf("cannot write completion shim: %w", err)
