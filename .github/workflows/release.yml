@@ -19,7 +19,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
       with:
-        ref: ${{ needs.prepare.outputs.tag }}
         fetch-depth: 0
 
     - name: Lint
