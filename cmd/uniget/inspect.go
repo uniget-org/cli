@@ -5,9 +5,15 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/uniget-org/cli/pkg/logging"
+	
+	"github.com/uniget-org/cli/pkg/tool"
 )
 
+var toolVersion string
+
 func initInspectCmd() {
+	inspectCmd.Flags().StringVar(&toolVersion, "version", "", "Inspect a specific version of the tool")
+
 	rootCmd.AddCommand(inspectCmd)
 }
 
@@ -20,19 +26,30 @@ var inspectCmd = &cobra.Command{
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		assertMetadataFileExists()
-		assertMetadataIsLoaded()
+		var err error
+		var inspectTool *tool.Tool
 
-		tool, err := tools.GetByName(args[0])
-		if err != nil {
-			return fmt.Errorf("error getting tool %s", args[0])
+		if len(toolVersion) == 0 {
+			assertMetadataFileExists()
+			assertMetadataIsLoaded()
+	
+			inspectTool, err = tools.GetByName(args[0])
+			if err != nil {
+				return fmt.Errorf("error getting tool %s", args[0])
+			}
+			inspectTool.ReplaceVariables(prefix+target, arch, altArch)
+
+		} else {
+			inspectTool = &tool.Tool{
+				Name:        args[0],
+				Version:     toolVersion,
+			}
 		}
-		tool.ReplaceVariables(prefix+target, arch, altArch)
 
-		logging.Info.Printfln("Inspecting %s %s\n", tool.Name, tool.Version)
-		err = tool.Inspect(registryImagePrefix, altArch)
+		logging.Info.Printfln("Inspecting %s %s\n", inspectTool.Name, inspectTool.Version)
+		err = inspectTool.Inspect(registryImagePrefix, altArch)
 		if err != nil {
-			return fmt.Errorf("unable to inspect %s: %s", tool.Name, err)
+			return fmt.Errorf("unable to inspect %s: %s", inspectTool.Name, err)
 		}
 
 		return nil
