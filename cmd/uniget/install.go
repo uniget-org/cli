@@ -145,7 +145,6 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 
 	// Add dependencies of requested tools
 	// Set installation order
-	spinnerResolveDeps, _ := pterm.DefaultSpinner.Start("Resolving dependencies...")
 	for _, tool := range requestedTools.Tools {
 		err := tools.ResolveDependencies(&plannedTools, tool.Name)
 		if err != nil {
@@ -160,10 +159,8 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 		tool.Status.IsRequested = true
 	}
 	logging.Debug.Printfln("Planned %d tool(s)", len(plannedTools.Tools))
-	spinnerResolveDeps.Info()
 
 	// Populate status of planned tools
-	spinnerGetStatus, _ := pterm.DefaultSpinner.Start("Getting status of requested tools...")
 	for index, tool := range plannedTools.Tools {
 		if skipDependencies && !tool.Status.IsRequested {
 			continue
@@ -188,13 +185,11 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 			return fmt.Errorf("unable to determine version status of %s: %s", tool.Name, err)
 		}
 	}
-	spinnerGetStatus.Info()
 
 	// Check for conflicts
 	var conflictsDetected = false
 	var conflictsWithInstalled tool.Tools
 	var conflictsBetweenPlanned tool.Tools
-	spinnerConclicts, _ := pterm.DefaultSpinner.Start("Checking for conflicts...")
 	for index, tool := range plannedTools.Tools {
 		if !tool.Status.BinaryPresent && len(tool.ConflictsWith) > 0 {
 			for _, conflict := range tool.ConflictsWith {
@@ -217,7 +212,6 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 			}
 		}
 	}
-	spinnerConclicts.Info()
 	if conflictsDetected {
 		plannedTools.ListWithStatus()
 	}
