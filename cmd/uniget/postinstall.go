@@ -63,7 +63,7 @@ func postinstall() error {
 			logging.Info.Printfln("Running post_install script %s", file.Name())
 
 			logging.Debug.Printfln("Running pre_install script %s", "/"+libDirectory+"/pre_install/"+file.Name())
-			cmd := exec.Command("/bin/bash", "/"+libDirectory+"/post_install/"+file.Name())
+			cmd := exec.Command("/bin/bash", "/"+libDirectory+"/post_install/"+file.Name()) // #nosec G204 -- Tool images are a trusted source
 			cmd.Env = append(os.Environ(),
 				"prefix=",
 				"target=/"+target,
@@ -87,10 +87,10 @@ func postinstall() error {
 	// Add shim for profile.d
 	profileDScript := strings.Replace(postinstallProfileDScript, "${target}", "/"+target, -1)
 	err := os.WriteFile(
-		prefix + "/etc/profile.d/uniget-profile.d.sh",
+		prefix+"/etc/profile.d/uniget-profile.d.sh",
 		[]byte(profileDScript),
 		0644,
-	)
+	) // #nosec G306 -- File must be executable
 	if err != nil {
 		return fmt.Errorf("cannot write profile.d shim: %w", err)
 	}
@@ -98,10 +98,10 @@ func postinstall() error {
 	// Add shim for completion
 	completionScript := strings.Replace(postinstallCompletionScript, "${target}", "/"+target, -1)
 	err = os.WriteFile(
-		prefix + "/etc/profile.d/uniget-completion.sh",
+		prefix+"/etc/profile.d/uniget-completion.sh",
 		[]byte(completionScript),
 		0644,
-	)
+	) // #nosec G306 -- File must be executable
 	if err != nil {
 		return fmt.Errorf("cannot write completion shim: %w", err)
 	}

@@ -75,14 +75,14 @@ func createCron() error {
 
 	// Write cronUpdateScript to /etc/cron.daily/uniget-update
 	updateScript := []byte(cronUpdateScript)
-	err = os.WriteFile(fmt.Sprintf("%s/uniget-update", cronDailyPath), updateScript, 0755)
+	err = os.WriteFile(fmt.Sprintf("%s/uniget-update", cronDailyPath), updateScript, 0755) // #nosec G306 -- File must be executable
 	if err != nil {
 		return fmt.Errorf("cannot write cron update script: %w", err)
 	}
 
 	// Write cronUpgradeScript to /etc/cron.weekly/uniget-upgrade
 	upgradeScript := []byte(cronUpgradeScript)
-	err = os.WriteFile(fmt.Sprintf("%s/uniget-upgrade", cronWeeklyPath), upgradeScript, 0755)
+	err = os.WriteFile(fmt.Sprintf("%s/uniget-upgrade", cronWeeklyPath), upgradeScript, 0755) // #nosec G306 -- File must be executable
 	if err != nil {
 		return fmt.Errorf("cannot write cron upgrade script: %w", err)
 	}

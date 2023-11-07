@@ -80,7 +80,7 @@ var installCmd = &cobra.Command{
 
 		} else if filename != "" {
 			logging.Debug.Printfln("Adding tools from file %s to requested tools", filename)
-			data, err := os.ReadFile(filename)
+			data, err := os.ReadFile(filename) // #nosec G304 -- Accept file from arbitrary location
 			if err != nil {
 				return fmt.Errorf("unable to read file %s: %s", filename, err)
 			}

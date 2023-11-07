@@ -9,7 +9,7 @@ import (
 )
 
 func GetOsVendor(prefix string) (string, error) {
-	f, err := os.Open(prefix + "/etc/os-release")
+	f, err := os.Open(prefix + "/etc/os-release") // #nosec G304 -- Prefix is the subdir uniget operates on
 	if err != nil {
 		return "", fmt.Errorf("cannot read /etc/os-release: %w", err)
 	}

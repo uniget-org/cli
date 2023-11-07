@@ -76,7 +76,7 @@ func ExtractTarGz(gzipStream io.Reader) error {
 			log.Tracef("Creating directory %s\n", header.Name)
 			_, err := os.Stat(header.Name)
 			if err != nil {
-				err := os.Mkdir(header.Name, 0755)
+				err := os.Mkdir(header.Name, 0755) // #nosec G301 -- Tools must be world readable
 				if err != nil {
 					return fmt.Errorf("ExtractTarGz: Mkdir() failed: %s", err.Error())
 				}
@@ -90,13 +90,16 @@ func ExtractTarGz(gzipStream io.Reader) error {
 			}
 			if _, err := io.Copy(outFile, tarReader); err != nil {
 				return fmt.Errorf("ExtractTarGz: Copy() failed: %s", err.Error())
-			}
+			} // #nosec G110 -- Tool images are a trusted source
 			mode := os.FileMode(header.Mode)
 			err = outFile.Chmod(mode)
 			if err != nil {
 				return fmt.Errorf("ExtractTarGz: Chmod() failed: %s", err.Error())
 			}
-			outFile.Close()
+			err = outFile.Close()
+			if err != nil {
+				return fmt.Errorf("ExtractTarGz: Failed to close %s: %s", header.Name, err.Error())
+			}
 
 		case tar.TypeSymlink:
 			log.Tracef("Untarring symlink %s\n", header.Name)
@@ -109,7 +112,7 @@ func ExtractTarGz(gzipStream io.Reader) error {
 
 				absHeaderLinkname := header.Linkname
 				if !filepath.IsAbs(header.Linkname) {
-					absHeaderLinkname = filepath.Join(filepath.Dir(header.Name), header.Linkname)
+					absHeaderLinkname = filepath.Join(filepath.Dir(header.Name), header.Linkname) // #nosec G305 -- Following code prevents traversal
 				}
 				log.Tracef("Absolute symlink target is %s\n", absHeaderLinkname)
 				err = pathIsInsideTarget(target, absHeaderLinkname)
@@ -136,7 +139,10 @@ func ExtractTarGz(gzipStream io.Reader) error {
 			}
 			if os.IsNotExist(err) {
 				log.Debugf("Target of link %s does not exist\n", header.Name)
-				os.Remove(header.Name)
+				err = os.Remove(header.Name)
+				if err != nil {
+					return fmt.Errorf("ExtractTarGz: Remove() failed for TypeLink: %s", err.Error())
+				}
 
 				err = os.Link(header.Linkname, header.Name)
 				if err != nil {

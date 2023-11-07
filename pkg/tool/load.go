@@ -7,7 +7,7 @@ import (
 )
 
 func LoadFromFile(filename string) (Tools, error) {
-	data, err := os.ReadFile(filename)
+	data, err := os.ReadFile(filename) // #nosec G304 -- filename is built when LoadFromFile is called
 	if err != nil {
 		return Tools{}, fmt.Errorf("error loading file contents: %s", err)
 	}

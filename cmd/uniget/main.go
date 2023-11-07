@@ -90,7 +90,7 @@ func assertWritableTarget() {
 
 func assertDirectory(directory string) {
 	logging.Debug.Printfln("Creating directory %s", directory)
-	err := os.MkdirAll(directory, 0755)
+	err := os.MkdirAll(directory, 0755) // #nosec G301 -- Directories will contain public information
 	if err != nil {
 		logging.Error.Printfln("Error creating directory %s: %s", directory, err)
 		os.Exit(1)

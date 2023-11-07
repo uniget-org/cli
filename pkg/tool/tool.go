@@ -161,7 +161,7 @@ func (tool *Tool) GetMarkerFileStatus(markerFileDirectory string) error {
 func (tool *Tool) CreateMarkerFile(markerFileDirectory string) error {
 	log.Tracef("Creating marker file for %s", tool.Name)
 
-	err := os.MkdirAll(fmt.Sprintf("%s/%s", markerFileDirectory, tool.Name), 0755)
+	err := os.MkdirAll(fmt.Sprintf("%s/%s", markerFileDirectory, tool.Name), 0755) // #nosec G301 -- Public information
 	if err != nil {
 		return fmt.Errorf("unable to create marker file directory for %s: %s", tool.Name, err)
 	}
@@ -189,7 +189,7 @@ func (tool *Tool) RemoveMarkerFile(markerFileDirectory string) error {
 
 func (tool *Tool) RunVersionCheck() (string, error) {
 	log.Tracef("Running version check for %s: %s", tool.Name, tool.Check)
-	cmd := exec.Command("/bin/bash", "-c", tool.Check+" | tr -d '\n'")
+	cmd := exec.Command("/bin/bash", "-c", tool.Check+" | tr -d '\n'") // #nosec G204 -- Tool images are a trusted source
 	version, err := cmd.Output()
 	if err != nil {
 		return "", fmt.Errorf("unable to execute version check (%s): %s", tool.Check, err)
