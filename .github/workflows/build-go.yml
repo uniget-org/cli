@@ -40,6 +40,10 @@ jobs:
       run: |
         docker buildx bake vet
 
+    - name: Gosec
+      run: |
+        docker buildx bake gosec
+
     - name: Unit tests
       run: |
         docker buildx bake test

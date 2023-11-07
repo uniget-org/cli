@@ -69,6 +69,16 @@ go vet \
     ./...
 EOF
 
+FROM ghcr.io/uniget-org/tools/gosec:latest AS gosec
+
+FROM base AS sec
+RUN --mount=target=. \
+    --mount=from=gosec,src=/usr/local/bin/gosec,target=/usr/local/bin/gosec \
+    --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build <<EOF
+gosec ./...
+EOF
+
 FROM golangci/golangci-lint:v1.55.1@sha256:c4e67eb904109ade78e2f38d98a424502f016db5676409390469bcdafea0f57d AS lint-base
 
 FROM base AS lint

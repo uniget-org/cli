@@ -19,3 +19,7 @@ target "vet" {
 target "test" {
     target = "unit-test"
 }
+
+target "gosec" {
+    target = "sec"
+}
