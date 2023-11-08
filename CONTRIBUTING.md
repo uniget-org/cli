@@ -1,4 +1,49 @@
-## How to contribute
+# Contributing to uniget
+
+Thank you for considering contributing to uniget! We welcome any contributions, whether it's bug fixes, new features, or improvements to the existing codebase.
+
+## Contribution Prerequisites
+
+Make sure that you have [Docker]() and [buildx]() installed. You can use a locally installed [Go]() but the containerized build environment enables you to use the same tooling as in CI.
+
+## Sending a Pull Request
+
+1. Create an issue in the repository outlining the fix or feature
+1. Fork the repository to your own GitHub account and clone it locally
+1. Complete and test the change
+1. Create a concise commit message and reference the issue(s) and pull request(s) adressed
+1. (Optionally) Sign off your commit
+1. Ensure that CI passes. If it fails, fix the failures
+1. Every pull request requires a review
+
+The following steps describe the build, linting and testing processes:
+
+### Building Cosign
+
+To build locally, run this command:
+
+```shell
+docker buildx bake binary
+```
+
+### Running tests
+
+To run the tests, execute the following commands:
+
+```shell
+docker buildx bake lint
+docker buildx bake vet
+docker buildx bake gosec
+docker buildx bake test
+```
+
+**Make sure all tests pass** without any failures or errors.
+
+### Sign DCO
+
+Make sure to sign the [Developer Certificate of Origin](https://git-scm.com/docs/git-commit#Documentation/git-commit.txt---signoff).
+
+## What to contribute
 
 ### Did one of the installed tools misbehave?
 
@@ -37,3 +82,8 @@
 * **Ensure the question was not already asked** by searching on GitHub under [Discussions](https://github.com/uniget-org/cli/discussions)
 
 * If you're unable to find an open question addressing the topics, [open a new one](https://github.com/uniget-org/cli/discussions)
+
+## Code of Conduct
+
+Sigstore adheres to and enforces the [Contributor Covenant](http://contributor-covenant.org/version/1/4/) Code of Conduct.
+Please take a moment to read the [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) document.
