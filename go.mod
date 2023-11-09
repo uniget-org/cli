@@ -9,11 +9,11 @@ require (
 	github.com/jedib0t/go-pretty/v6 v6.4.9
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/pterm/pterm v0.12.69
-	github.com/regclient/regclient v0.5.3
+	github.com/regclient/regclient v0.5.4
 	github.com/sirupsen/logrus v1.9.3
-	github.com/spf13/cobra v1.7.0
-	golang.org/x/sys v0.13.0
-	golang.org/x/term v0.13.0
+	github.com/spf13/cobra v1.8.0
+	golang.org/x/sys v0.14.0
+	golang.org/x/term v0.14.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
