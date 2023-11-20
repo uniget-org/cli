@@ -8,7 +8,7 @@ require (
 	atomicgo.dev/keyboard v0.2.9
 	github.com/jedib0t/go-pretty/v6 v6.4.9
 	github.com/opencontainers/go-digest v1.0.0
-	github.com/pterm/pterm v0.12.69
+	github.com/pterm/pterm v0.12.70
 	github.com/regclient/regclient v0.5.4
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.8.0
