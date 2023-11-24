@@ -73,6 +73,8 @@ github.com/regclient/regclient v0.5.3 h1:5wooqJUC1XtZxVHWwWlFbSXCXzBUnZG4ExbNmbU
 github.com/regclient/regclient v0.5.3/go.mod h1:70mhq9v2ITfx80hR8EhkARiOkgN2UxyWEan33KMqOks=
 github.com/regclient/regclient v0.5.4 h1:oJLY/M18jo+Lzg+6KH29ZjzZ8XX5uIybAOTcAqP8hwU=
 github.com/regclient/regclient v0.5.4/go.mod h1:604ymXFhwbmWjyfGFp3uF91gfCXIcjWBxJhBg94s9cM=
+github.com/regclient/regclient v0.5.5 h1:fDh5afBCRbeSU71vcvbN0fI88D1fTfp2m39BPqki7EU=
+github.com/regclient/regclient v0.5.5/go.mod h1:604ymXFhwbmWjyfGFp3uF91gfCXIcjWBxJhBg94s9cM=
 github.com/rivo/uniseg v0.2.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=
 github.com/rivo/uniseg v0.4.4 h1:8TfxU8dW6PdqD27gjM8MVNuicgxIjxpm4K7x4jp8sis=
 github.com/rivo/uniseg v0.4.4/go.mod h1:FN3SvrM+Zdj16jyLfmOkMNblXMcoc8DfTHruCPUcx88=
