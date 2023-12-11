@@ -87,18 +87,15 @@ func uninstallTool(toolName string) error {
 			prefixedLine := prefix + "/" + line
 			logging.Debug.Printfln("processing %s", prefixedLine)
 
-			_, err = os.Stat(prefixedLine)
+			_, err := os.Lstat(prefixedLine)
 			if err != nil {
-				if os.IsNotExist(err) {
-					logging.Debug.Printfln("%s does not exist", prefixedLine)
-					continue
-				}
-				return fmt.Errorf("unable to stat %s: %s", prefixedLine, err)
+				pterm.Debug.Printfln("Unable to stat %s: %s", prefixedLine, err)
+				continue
 			}
 
 			err = os.Remove(prefixedLine)
 			if err != nil {
-				pterm.Warning.Printfln("unable to remove %s: %s", prefixedLine, err)
+				return fmt.Errorf("unable to remove %s: %s", prefixedLine, err)
 			}
 		}
 	}
