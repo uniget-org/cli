@@ -46,7 +46,7 @@ func pathIsInsideTarget(target string, candidate string) error {
 	return nil
 }
 
-func ExtractTarGz(gzipStream io.Reader, func patchPath(path string) string) error {
+func ExtractTarGz(gzipStream io.Reader, patchPath func(path string) string) error {
 	target := "."
 
 	uncompressedStream, err := gzip.NewReader(gzipStream)
@@ -72,27 +72,27 @@ func ExtractTarGz(gzipStream io.Reader, func patchPath(path string) string) erro
 		}
 
 		log.Tracef("Processing %s\n", header.Name)
-		strippedHeaderName := strings.TrimPrefix(header.Name, "usr/local/")
-		log.Tracef("  Stripped name is %s\n", strippedHeaderName)
-		if len(strippedHeaderName) == 0 {
+		fixedHeaderName := patchPath(header.Name)
+		log.Tracef("  Stripped name is %s\n", fixedHeaderName)
+		if len(fixedHeaderName) == 0 {
 			log.Tracef("  Skipping\n")
 			continue
 		}
 
 		switch header.Typeflag {
 		case tar.TypeDir:
-			log.Tracef("Creating directory %s\n", strippedHeaderName)
-			_, err := os.Stat(strippedHeaderName)
+			log.Tracef("Creating directory %s\n", fixedHeaderName)
+			_, err := os.Stat(fixedHeaderName)
 			if err != nil {
-				err := os.Mkdir(strippedHeaderName, 0755) // #nosec G301 -- Tools must be world readable
+				err := os.Mkdir(fixedHeaderName, 0755) // #nosec G301 -- Tools must be world readable
 				if err != nil {
 					return fmt.Errorf("ExtractTarGz: Mkdir() failed: %s", err.Error())
 				}
 			}
 
 		case tar.TypeReg:
-			log.Tracef("Untarring file %s\n", strippedHeaderName)
-			outFile, err := os.Create(strippedHeaderName)
+			log.Tracef("Untarring file %s\n", fixedHeaderName)
+			outFile, err := os.Create(fixedHeaderName)
 			if err != nil {
 				return fmt.Errorf("ExtractTarGz: Create() failed: %s", err.Error())
 			}
@@ -106,21 +106,21 @@ func ExtractTarGz(gzipStream io.Reader, func patchPath(path string) string) erro
 			}
 			err = outFile.Close()
 			if err != nil {
-				return fmt.Errorf("ExtractTarGz: Failed to close %s: %s", strippedHeaderName, err.Error())
+				return fmt.Errorf("ExtractTarGz: Failed to close %s: %s", fixedHeaderName, err.Error())
 			}
 
 		case tar.TypeSymlink:
-			log.Tracef("Untarring symlink %s\n", strippedHeaderName)
-			_, err := os.Stat(strippedHeaderName)
+			log.Tracef("Untarring symlink %s\n", fixedHeaderName)
+			_, err := os.Stat(fixedHeaderName)
 			if err == nil {
-				log.Debugf("Symlink %s already exists\n", strippedHeaderName)
+				log.Debugf("Symlink %s already exists\n", fixedHeaderName)
 			}
 			if os.IsNotExist(err) {
-				log.Debugf("Symlink %s does not exist\n", strippedHeaderName)
+				log.Debugf("Symlink %s does not exist\n", fixedHeaderName)
 
 				absHeaderLinkname := header.Linkname
 				if !filepath.IsAbs(header.Linkname) {
-					absHeaderLinkname = filepath.Join(filepath.Dir(strippedHeaderName), header.Linkname) // #nosec G305 -- Following code prevents traversal
+					absHeaderLinkname = filepath.Join(filepath.Dir(fixedHeaderName), header.Linkname) // #nosec G305 -- Following code prevents traversal
 				}
 				log.Tracef("Absolute symlink target is %s\n", absHeaderLinkname)
 				err = pathIsInsideTarget(target, absHeaderLinkname)
@@ -128,31 +128,31 @@ func ExtractTarGz(gzipStream io.Reader, func patchPath(path string) string) erro
 					return fmt.Errorf("ExtractTarGz: pathIsInsideTarget() failed for %s: %s", absHeaderLinkname, err.Error())
 				}
 
-				err = pathIsInsideTarget(target, strippedHeaderName)
+				err = pathIsInsideTarget(target, fixedHeaderName)
 				if err != nil {
-					return fmt.Errorf("ExtractTarGz: pathIsInsideTarget() failed for %s: %s", strippedHeaderName, err.Error())
+					return fmt.Errorf("ExtractTarGz: pathIsInsideTarget() failed for %s: %s", fixedHeaderName, err.Error())
 				}
 
-				err = os.Symlink(header.Linkname, strippedHeaderName)
+				err = os.Symlink(header.Linkname, fixedHeaderName)
 				if err != nil {
 					return fmt.Errorf("ExtractTarGz: Symlink() failed: %s", err.Error())
 				}
 			}
 
 		case tar.TypeLink:
-			log.Tracef("Untarring link %s\n", strippedHeaderName)
-			_, err := os.Stat(strippedHeaderName)
+			log.Tracef("Untarring link %s\n", fixedHeaderName)
+			_, err := os.Stat(fixedHeaderName)
 			if err == nil {
-				log.Debugf("Link %s already exists\n", strippedHeaderName)
+				log.Debugf("Link %s already exists\n", fixedHeaderName)
 			}
 			if os.IsNotExist(err) {
-				log.Debugf("Target of link %s does not exist\n", strippedHeaderName)
-				err = os.Remove(strippedHeaderName)
+				log.Debugf("Target of link %s does not exist\n", fixedHeaderName)
+				err = os.Remove(fixedHeaderName)
 				if err != nil {
 					return fmt.Errorf("ExtractTarGz: Remove() failed for TypeLink: %s", err.Error())
 				}
 
-				err = os.Link(header.Linkname, strippedHeaderName)
+				err = os.Link(header.Linkname, fixedHeaderName)
 				if err != nil {
 					return fmt.Errorf("ExtractTarGz: Link() failed: %s", err.Error())
 				}
@@ -167,7 +167,7 @@ func ExtractTarGz(gzipStream io.Reader, func patchPath(path string) string) erro
 	return nil
 }
 
-func ListTarGz(gzipStream io.Reader) ([]string, error) {
+func ListTarGz(gzipStream io.Reader, patchPath func(path string) string) ([]string, error) {
 	uncompressedStream, err := gzip.NewReader(gzipStream)
 	if err != nil {
 		return nil, fmt.Errorf("ListTarGz: NewReader failed")
@@ -187,47 +187,55 @@ func ListTarGz(gzipStream io.Reader) ([]string, error) {
 			return nil, fmt.Errorf("ListTarGz: Next() failed: %s", err.Error())
 		}
 
+		log.Tracef("Processing %s\n", header.Name)
+		fixedHeaderName := patchPath(header.Name)
+		log.Tracef("  Stripped name is %s\n", fixedHeaderName)
+		if len(fixedHeaderName) == 0 {
+			log.Tracef("  Skipping\n")
+			continue
+		}
+
 		switch header.Typeflag {
 		case tar.TypeDir:
 
 		case tar.TypeReg:
-			result = append(result, header.Name)
+			result = append(result, fixedHeaderName)
 
 		case tar.TypeSymlink:
-			result = append(result, header.Name+" -> "+header.Linkname)
+			result = append(result, fixedHeaderName+" -> "+header.Linkname)
 
 		case tar.TypeLink:
-			result = append(result, header.Name+" -> "+header.Linkname)
+			result = append(result, fixedHeaderName+" -> "+header.Linkname)
 
 		case tar.TypeChar:
-			return nil, fmt.Errorf("ListTarGz: unknown type in entry %s: TypeChar", header.Name)
+			return nil, fmt.Errorf("ListTarGz: unknown type in entry %s: TypeChar", fixedHeaderName)
 
 		case tar.TypeBlock:
-			return nil, fmt.Errorf("ListTarGz: unknown type in entry %s: TypeBlock", header.Name)
+			return nil, fmt.Errorf("ListTarGz: unknown type in entry %s: TypeBlock", fixedHeaderName)
 
 		case tar.TypeFifo:
-			return nil, fmt.Errorf("ListTarGz: unknown type in entry %s: TypeFifo", header.Name)
+			return nil, fmt.Errorf("ListTarGz: unknown type in entry %s: TypeFifo", fixedHeaderName)
 
 		case tar.TypeCont:
-			return nil, fmt.Errorf("ListTarGz: unknown type in entry %s: TypeCont", header.Name)
+			return nil, fmt.Errorf("ListTarGz: unknown type in entry %s: TypeCont", fixedHeaderName)
 
 		case tar.TypeXHeader:
-			return nil, fmt.Errorf("ListTarGz: unknown type in entry %s: TypeXHeader", header.Name)
+			return nil, fmt.Errorf("ListTarGz: unknown type in entry %s: TypeXHeader", fixedHeaderName)
 
 		case tar.TypeXGlobalHeader:
-			return nil, fmt.Errorf("ListTarGz: unknown type in entry %s: TypeXGlobalHeader", header.Name)
+			return nil, fmt.Errorf("ListTarGz: unknown type in entry %s: TypeXGlobalHeader", fixedHeaderName)
 
 		case tar.TypeGNULongLink:
-			return nil, fmt.Errorf("ListTarGz: unknown type in entry %s: TypeGNULongLink", header.Name)
+			return nil, fmt.Errorf("ListTarGz: unknown type in entry %s: TypeGNULongLink", fixedHeaderName)
 
 		case tar.TypeGNULongName:
-			return nil, fmt.Errorf("ListTarGz: unknown type in entry %s: TypeGNULongName", header.Name)
+			return nil, fmt.Errorf("ListTarGz: unknown type in entry %s: TypeGNULongName", fixedHeaderName)
 
 		case tar.TypeGNUSparse:
-			return nil, fmt.Errorf("ListTarGz: unknown type in entry %s: TypeGNUSparse", header.Name)
+			return nil, fmt.Errorf("ListTarGz: unknown type in entry %s: TypeGNUSparse", fixedHeaderName)
 
 		default:
-			return nil, fmt.Errorf("ListTarGz: unknown type in entry %s: %b", header.Name, header.Typeflag)
+			return nil, fmt.Errorf("ListTarGz: unknown type in entry %s: %b", fixedHeaderName, header.Typeflag)
 		}
 
 	}

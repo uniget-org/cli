@@ -191,14 +191,12 @@ func main() {
 		}
 
 		if user {
-			logging.Debug.Println("Installing in user context")
-			target = os.Getenv("HOME") + "/.local/bin"
+			target = os.Getenv("HOME") + "/.local"
 			cacheRoot = os.Getenv("HOME") + "/.cache"
 			cacheDirectory = cacheRoot + "/" + projectName
 			libRoot = os.Getenv("HOME") + "/.local/state"
 			libDirectory = libRoot + "/" + projectName
 			metadataFile = cacheDirectory + "/" + metadataFileName
-			logging.Error.Println("User context is not yet supported. Please check #6270.")
 
 		} else {
 			cacheDirectory = cacheRoot + "/" + cacheDirectory
