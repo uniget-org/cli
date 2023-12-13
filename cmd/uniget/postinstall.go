@@ -85,25 +85,31 @@ func postinstall() error {
 	}
 
 	// Add shim for profile.d
-	profileDScript := strings.Replace(postinstallProfileDScript, "${target}", "/"+target, -1)
-	err := os.WriteFile(
-		prefix+"/etc/profile.d/uniget-profile.d.sh",
-		[]byte(profileDScript),
-		0644,
-	) // #nosec G306 -- File must be executable
-	if err != nil {
-		return fmt.Errorf("cannot write profile.d shim: %w", err)
+	profileDShimFile := prefix + "/etc/profile.d/uniget-profile.d.sh"
+	if directoryIsWritable(profileDShimFile) {
+		profileDScript := strings.Replace(postinstallProfileDScript, "${target}", "/"+target, -1)
+		err := os.WriteFile(
+			profileDShimFile,
+			[]byte(profileDScript),
+			0644,
+		) // #nosec G306 -- File must be executable
+		if err != nil {
+			return fmt.Errorf("cannot write profile.d shim: %w", err)
+		}
 	}
 
 	// Add shim for completion
-	completionScript := strings.Replace(postinstallCompletionScript, "${target}", "/"+target, -1)
-	err = os.WriteFile(
-		prefix+"/etc/profile.d/uniget-completion.sh",
-		[]byte(completionScript),
-		0644,
-	) // #nosec G306 -- File must be executable
-	if err != nil {
-		return fmt.Errorf("cannot write completion shim: %w", err)
+	completionShimFile := prefix + "/etc/profile.d/uniget-completion.sh"
+	if directoryIsWritable(completionShimFile) {
+		completionScript := strings.Replace(postinstallCompletionScript, "${target}", "/"+target, -1)
+		err := os.WriteFile(
+			completionShimFile,
+			[]byte(completionScript),
+			0644,
+		) // #nosec G306 -- File must be executable
+		if err != nil {
+			return fmt.Errorf("cannot write completion shim: %w", err)
+		}
 	}
 
 	return nil

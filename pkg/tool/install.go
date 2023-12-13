@@ -14,10 +14,12 @@ import (
 
 func (tool *Tool) Install(registryImagePrefix string, prefix string, target string, altArch string) error {
 	err := containers.GetManifest(fmt.Sprintf(registryImagePrefix+"%s:%s", tool.Name, strings.Replace(tool.Version, "+", "-", -1)), altArch, func(blob blob.Reader) error {
-		pterm.Debug.Printfln("Extracting to %s", prefix)
-		err := os.Chdir(prefix)
-		if err != nil {
-			return fmt.Errorf("error changing directory to %s: %s", prefix, err)
+		pterm.Debug.Printfln("Extracting with prefix=%s and target=%s", prefix, target)
+		if len(prefix) > 0 {
+			err := os.Chdir(prefix)
+			if err != nil {
+				return fmt.Errorf("error changing directory to %s: %s", prefix, err)
+			}
 		}
 		dir, err := os.Getwd()
 		if err != nil {
