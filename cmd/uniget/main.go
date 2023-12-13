@@ -163,13 +163,13 @@ func main() {
 		logging.Error.Writer = os.Stderr
 		pterm.Warning.Writer = os.Stderr
 
-		if debug {
-			pterm.EnableDebugMessages()
-			log.SetLevel(log.DebugLevel)
-
-		} else if trace {
+		if trace {
 			pterm.EnableDebugMessages()
 			log.SetLevel(log.TraceLevel)
+
+		} else if debug {
+			pterm.EnableDebugMessages()
+			log.SetLevel(log.DebugLevel)
 
 		} else {
 			log.SetLevel(log.WarnLevel)

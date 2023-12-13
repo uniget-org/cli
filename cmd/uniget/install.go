@@ -327,7 +327,7 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 			}
 		}
 
-		err := tool.Install(registryImagePrefix, prefix+"/", altArch)
+		err := tool.Install(registryImagePrefix, prefix, target, altArch)
 		if err != nil {
 			logging.Warning.Printfln("Unable to install %s: %s", tool.Name, err)
 			continue
