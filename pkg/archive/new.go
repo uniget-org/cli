@@ -46,7 +46,7 @@ func pathIsInsideTarget(target string, candidate string) error {
 	return nil
 }
 
-func ExtractTarGz(gzipStream io.Reader) error {
+func ExtractTarGz(gzipStream io.Reader, func patchPath(path string) string) error {
 	target := "."
 
 	uncompressedStream, err := gzip.NewReader(gzipStream)
@@ -71,20 +71,28 @@ func ExtractTarGz(gzipStream io.Reader) error {
 			return fmt.Errorf("ExtractTarGz: filename contains '..': %s", header.Name)
 		}
 
+		log.Tracef("Processing %s\n", header.Name)
+		strippedHeaderName := strings.TrimPrefix(header.Name, "usr/local/")
+		log.Tracef("  Stripped name is %s\n", strippedHeaderName)
+		if len(strippedHeaderName) == 0 {
+			log.Tracef("  Skipping\n")
+			continue
+		}
+
 		switch header.Typeflag {
 		case tar.TypeDir:
-			log.Tracef("Creating directory %s\n", header.Name)
-			_, err := os.Stat(header.Name)
+			log.Tracef("Creating directory %s\n", strippedHeaderName)
+			_, err := os.Stat(strippedHeaderName)
 			if err != nil {
-				err := os.Mkdir(header.Name, 0755) // #nosec G301 -- Tools must be world readable
+				err := os.Mkdir(strippedHeaderName, 0755) // #nosec G301 -- Tools must be world readable
 				if err != nil {
 					return fmt.Errorf("ExtractTarGz: Mkdir() failed: %s", err.Error())
 				}
 			}
 
 		case tar.TypeReg:
-			log.Tracef("Untarring file %s\n", header.Name)
-			outFile, err := os.Create(header.Name)
+			log.Tracef("Untarring file %s\n", strippedHeaderName)
+			outFile, err := os.Create(strippedHeaderName)
 			if err != nil {
 				return fmt.Errorf("ExtractTarGz: Create() failed: %s", err.Error())
 			}
@@ -98,21 +106,21 @@ func ExtractTarGz(gzipStream io.Reader) error {
 			}
 			err = outFile.Close()
 			if err != nil {
-				return fmt.Errorf("ExtractTarGz: Failed to close %s: %s", header.Name, err.Error())
+				return fmt.Errorf("ExtractTarGz: Failed to close %s: %s", strippedHeaderName, err.Error())
 			}
 
 		case tar.TypeSymlink:
-			log.Tracef("Untarring symlink %s\n", header.Name)
-			_, err := os.Stat(header.Name)
+			log.Tracef("Untarring symlink %s\n", strippedHeaderName)
+			_, err := os.Stat(strippedHeaderName)
 			if err == nil {
-				log.Debugf("Symlink %s already exists\n", header.Name)
+				log.Debugf("Symlink %s already exists\n", strippedHeaderName)
 			}
 			if os.IsNotExist(err) {
-				log.Debugf("Symlink %s does not exist\n", header.Name)
+				log.Debugf("Symlink %s does not exist\n", strippedHeaderName)
 
 				absHeaderLinkname := header.Linkname
 				if !filepath.IsAbs(header.Linkname) {
-					absHeaderLinkname = filepath.Join(filepath.Dir(header.Name), header.Linkname) // #nosec G305 -- Following code prevents traversal
+					absHeaderLinkname = filepath.Join(filepath.Dir(strippedHeaderName), header.Linkname) // #nosec G305 -- Following code prevents traversal
 				}
 				log.Tracef("Absolute symlink target is %s\n", absHeaderLinkname)
 				err = pathIsInsideTarget(target, absHeaderLinkname)
@@ -120,31 +128,31 @@ func ExtractTarGz(gzipStream io.Reader) error {
 					return fmt.Errorf("ExtractTarGz: pathIsInsideTarget() failed for %s: %s", absHeaderLinkname, err.Error())
 				}
 
-				err = pathIsInsideTarget(target, header.Name)
+				err = pathIsInsideTarget(target, strippedHeaderName)
 				if err != nil {
-					return fmt.Errorf("ExtractTarGz: pathIsInsideTarget() failed for %s: %s", header.Name, err.Error())
+					return fmt.Errorf("ExtractTarGz: pathIsInsideTarget() failed for %s: %s", strippedHeaderName, err.Error())
 				}
 
-				err = os.Symlink(header.Linkname, header.Name)
+				err = os.Symlink(header.Linkname, strippedHeaderName)
 				if err != nil {
 					return fmt.Errorf("ExtractTarGz: Symlink() failed: %s", err.Error())
 				}
 			}
 
 		case tar.TypeLink:
-			log.Tracef("Untarring link %s\n", header.Name)
-			_, err := os.Stat(header.Name)
+			log.Tracef("Untarring link %s\n", strippedHeaderName)
+			_, err := os.Stat(strippedHeaderName)
 			if err == nil {
-				log.Debugf("Link %s already exists\n", header.Name)
+				log.Debugf("Link %s already exists\n", strippedHeaderName)
 			}
 			if os.IsNotExist(err) {
-				log.Debugf("Target of link %s does not exist\n", header.Name)
-				err = os.Remove(header.Name)
+				log.Debugf("Target of link %s does not exist\n", strippedHeaderName)
+				err = os.Remove(strippedHeaderName)
 				if err != nil {
 					return fmt.Errorf("ExtractTarGz: Remove() failed for TypeLink: %s", err.Error())
 				}
 
-				err = os.Link(header.Linkname, header.Name)
+				err = os.Link(header.Linkname, strippedHeaderName)
 				if err != nil {
 					return fmt.Errorf("ExtractTarGz: Link() failed: %s", err.Error())
 				}

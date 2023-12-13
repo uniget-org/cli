@@ -12,14 +12,16 @@ import (
 	"github.com/regclient/regclient/types/blob"
 )
 
-func (tool *Tool) Install(registryImagePrefix string, prefix string, altArch string) error {
+func (tool *Tool) Install(registryImagePrefix string, prefix string, target string, altArch string) error {
 	err := containers.GetManifest(fmt.Sprintf(registryImagePrefix+"%s:%s", tool.Name, strings.Replace(tool.Version, "+", "-", -1)), altArch, func(blob blob.Reader) error {
-		pterm.Debug.Printfln("Extracting to %s", prefix+"/")
-		err := os.Chdir(prefix + "/")
+		pterm.Debug.Printfln("Extracting to %s", prefix)
+		err := os.Chdir(prefix)
 		if err != nil {
-			return fmt.Errorf("error changing directory to %s: %s", prefix+"/", err)
+			return fmt.Errorf("error changing directory to %s: %s", prefix, err)
 		}
-		err = archive.ExtractTarGz(blob)
+		err = archive.ExtractTarGz(blob, func(path string) string {
+			return path
+		})
 		if err != nil {
 			return fmt.Errorf("failed to extract layer: %s", err)
 		}

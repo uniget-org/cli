@@ -38,6 +38,7 @@ var uninstallCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("unable to find tool %s: %s", args[0], err)
 		}
+		tool.ReplaceVariables(prefix+"/"+target, arch, altArch)
 
 		err = tool.GetBinaryStatus()
 		if err != nil {
@@ -80,11 +81,14 @@ func uninstallTool(toolName string) error {
 			return fmt.Errorf("unable to read file %s: %s", filename, err)
 		}
 		for _, line := range strings.Split(string(data), "\n") {
-			if line == "" {
+			logging.Debug.Printfln("processing %s", line)
+			strippedLine := strings.TrimPrefix(line, "usr/local/")
+			logging.Debug.Printfln("stripped line %s", strippedLine)
+			if strippedLine == "" {
 				continue
 			}
 
-			prefixedLine := prefix + "/" + line
+			prefixedLine := prefix + "/" + target + "/" + strippedLine
 			logging.Debug.Printfln("processing %s", prefixedLine)
 
 			_, err := os.Lstat(prefixedLine)
@@ -98,6 +102,9 @@ func uninstallTool(toolName string) error {
 				return fmt.Errorf("unable to remove %s: %s", prefixedLine, err)
 			}
 		}
+
+	} else {
+		logging.Warning.Printfln("Unable to find manifest for %s", tool.Name)
 	}
 
 	err = tool.RemoveMarkerFile(prefix + "/" + cacheDirectory)
