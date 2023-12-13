@@ -66,7 +66,7 @@ func downloadMetadata() error {
 		}
 
 		logging.Debug.Printfln("Extracting archive to %s", prefix+"/"+cacheDirectory)
-		err = archive.ExtractTarGz(blob)
+		err = archive.ExtractTarGz(blob, func(path string) string { return path })
 		if err != nil {
 			return fmt.Errorf("error extracting archive: %s", err)
 		}

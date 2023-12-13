@@ -82,14 +82,15 @@ func uninstallTool(toolName string) error {
 		}
 		for _, line := range strings.Split(string(data), "\n") {
 			logging.Debug.Printfln("processing %s", line)
-			strippedLine := strings.TrimPrefix(line, "usr/local/")
+			strippedLine := strings.TrimPrefix(line, "./")
+			strippedLine = strings.TrimPrefix(strippedLine, "usr/local/")
 			logging.Debug.Printfln("stripped line %s", strippedLine)
 			if strippedLine == "" {
 				continue
 			}
 
 			prefixedLine := prefix + "/" + target + "/" + strippedLine
-			logging.Debug.Printfln("processing %s", prefixedLine)
+			logging.Debug.Printfln("prefixed line %s", prefixedLine)
 
 			_, err := os.Lstat(prefixedLine)
 			if err != nil {
@@ -139,6 +140,12 @@ func uninstallTool(toolName string) error {
 		err = os.Remove(prefix + "/" + libDirectory + "/manifests/" + tool.Name + ".json")
 		if err != nil {
 			return fmt.Errorf("unable to remove %s: %s", prefix+"/"+libDirectory+"/manifests/"+tool.Name+".json", err)
+		}
+	}
+	if fileExists(prefix + "/" + libDirectory + "/manifests/" + tool.Name + ".txt") {
+		err = os.Remove(prefix + "/" + libDirectory + "/manifests/" + tool.Name + ".txt")
+		if err != nil {
+			return fmt.Errorf("unable to remove %s: %s", prefix+"/"+libDirectory+"/manifests/"+tool.Name+".txt", err)
 		}
 	}
 
