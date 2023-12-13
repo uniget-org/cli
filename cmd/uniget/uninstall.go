@@ -115,25 +115,27 @@ func uninstallTool(toolName string) error {
 		return fmt.Errorf("unable to remove marker file: %s", err)
 	}
 
-	entries, err := os.ReadDir(prefix + "/" + cacheDirectory + "/" + tool.Name)
-	if err != nil {
-		return fmt.Errorf("failed to read cache directory for %s: %s", tool.Name, err)
-	}
-	for _, entry := range entries {
-		info, err := entry.Info()
+	if directoryExists(prefix + "/" + cacheDirectory + "/" + tool.Name) {
+		entries, err := os.ReadDir(prefix + "/" + cacheDirectory + "/" + tool.Name)
 		if err != nil {
-			return fmt.Errorf("unable to get info for %s: %s", info.Name(), err)
+			return fmt.Errorf("failed to read cache directory for %s: %s", tool.Name, err)
+		}
+		for _, entry := range entries {
+			info, err := entry.Info()
+			if err != nil {
+				return fmt.Errorf("unable to get info for %s: %s", info.Name(), err)
+			}
+
+			err = os.Remove(prefix + "/" + cacheDirectory + "/" + tool.Name + "/" + info.Name())
+			if err != nil {
+				return fmt.Errorf("unable to remove %s: %s", info.Name(), err)
+			}
 		}
 
-		err = os.Remove(prefix + "/" + cacheDirectory + "/" + tool.Name + "/" + info.Name())
+		err = os.Remove(prefix + "/" + cacheDirectory + "/" + tool.Name)
 		if err != nil {
-			return fmt.Errorf("unable to remove %s: %s", info.Name(), err)
+			return fmt.Errorf("unable to remove %s: %s", prefix+"/"+cacheDirectory+"/"+tool.Name, err)
 		}
-	}
-
-	err = os.Remove(prefix + "/" + cacheDirectory + "/" + tool.Name)
-	if err != nil {
-		return fmt.Errorf("unable to remove %s: %s", prefix+"/"+cacheDirectory+"/"+tool.Name, err)
 	}
 
 	if fileExists(prefix + "/" + libDirectory + "/manifests/" + tool.Name + ".json") {
