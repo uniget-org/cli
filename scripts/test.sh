@@ -55,7 +55,7 @@ check_file "${TEMP_DIR}/var/lib/uniget/manifests/yq.json" "Manifest" || exit 1
 check_file "${TEMP_DIR}/var/lib/uniget/manifests/yq.txt" "File list" || exit 1
 go run ./cmd/uniget --prefix=${TEMP_DIR} --target=usr version yq || exit 1
 
-go run ./cmd/uniget inspect jq || exit 1
+go run ./cmd/uniget inspect jq | grep "bin/jq$" || exit 1
 
 echo "-----------------------------"
 echo "All tests passed successfully"
