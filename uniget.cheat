@@ -1,19 +1,53 @@
 % uniget
 
 $ tool: uniget list --- --column 2 --delimiter '\s+'
+$ installed: uniget list --installed --- --column 2 --delimiter '\s+'
 $ tag: uniget tags --- column 2 --delimiter '\s+'
 
+# Upgrade uniget
+sudo uniget self-upgrade
+
+# Download metadata
+sudo uniget update
+
 # Show available tools
-sudo uniget list
+uniget list
 
 # Show information about a specific tool
-sudo uniget describe <tool>
+uniget describe <tool>
 
 # Install default tools
 sudo uniget install --default
 
+# Show installed tools
+uniget list --installed
+
 # Install specific tool
 sudo uniget install <tool>
 
+# Uninstall specific tool
+sudo uniget uninstall <installed>
+
+# Upgrade all installed tools
+sudo uniget upgrade
+
 # Show status of installed tools
 sudo uniget install --installed --plan
+
+# Show tags
+uniget tags
+
+# Show tools for term sbom
+uniget search sbom
+
+# Show tools with tag sbom
+uniget search sbom --only-tags
+
+# Show installed version
+uniget version <installed>
+
+# Show files shipped with a tool
+uniget inspect <tool>
+
+# Generate Dockerfile for tools
+uniget generate <tool>
