@@ -60,6 +60,13 @@ go test \
     ./...
 EOF
 
+FROM base AS cli-test
+RUN --mount=target=. \
+    --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build <<EOF
+bash scripts/test.sh
+EOF
+
 FROM base AS vet
 RUN --mount=target=. \
     --mount=type=cache,target=/go/pkg/mod \
