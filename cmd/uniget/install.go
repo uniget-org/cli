@@ -328,7 +328,14 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 		}
 
 		assertDirectory(prefix + "/" + target)
-		err := tool.Install(registryImagePrefix, prefix, target, altArch)
+		var err error
+		if user {
+			logging.Debug.Printfln("Installing in user context")
+			err = tool.Install(registryImagePrefix, prefix+"/"+target, "", altArch)
+		} else {
+			logging.Debug.Printfln("Installing in system context")
+			err = tool.Install(registryImagePrefix, prefix, target, altArch)
+		}
 		if err != nil {
 			logging.Warning.Printfln("Unable to install %s: %s", tool.Name, err)
 			continue
@@ -347,6 +354,10 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 		}
 	}
 
+	if user {
+		logging.Warning.Printfln("Post installation is not yet support for user context")
+		return nil
+	}
 	if len(prefix) > 0 {
 		logging.Warning.Printfln("Post installation skipped because prefix is set to %s", prefix)
 		logging.Warning.Printfln("Please run 'uniget postinstall' in the context of %s to complete the installation", prefix)

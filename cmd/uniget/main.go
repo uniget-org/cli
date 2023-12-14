@@ -191,10 +191,11 @@ func main() {
 		}
 
 		if user {
-			target = os.Getenv("HOME") + "/.local"
-			cacheRoot = os.Getenv("HOME") + "/.cache"
+			prefix = os.Getenv("HOME")
+			target = ".local"
+			cacheRoot = ".cache"
 			cacheDirectory = cacheRoot + "/" + projectName
-			libRoot = os.Getenv("HOME") + "/.local/state"
+			libRoot = ".local/state"
 			libDirectory = libRoot + "/" + projectName
 			metadataFile = cacheDirectory + "/" + metadataFileName
 

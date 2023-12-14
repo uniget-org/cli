@@ -45,21 +45,21 @@ func postinstall() error {
 		if err != nil {
 			return fmt.Errorf("unable to read post_install directory: %s", err)
 		}
-		infos := make([]fs.FileInfo, 0, len(entries))
+		scripts := make([]fs.FileInfo, 0, len(entries))
 		for _, entry := range entries {
 			info, err := entry.Info()
 			if err != nil {
 				return fmt.Errorf("unable to get info for %s: %s", entry.Name(), err)
 			}
 			if !info.IsDir() && strings.HasSuffix(info.Name(), ".sh") {
-				infos = append(infos, info)
+				scripts = append(scripts, info)
 			}
 		}
-		if len(infos) > 0 && len(prefix) > 0 {
+		if len(scripts) > 0 && len(prefix) > 0 {
 			pterm.Warning.Printfln("prefix cannot be set for postinstall scripts to run")
 			return nil
 		}
-		for _, file := range infos {
+		for _, file := range scripts {
 			logging.Info.Printfln("Running post_install script %s", file.Name())
 
 			logging.Debug.Printfln("Running pre_install script %s", "/"+libDirectory+"/pre_install/"+file.Name())
