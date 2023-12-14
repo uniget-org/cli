@@ -73,3 +73,4 @@ release:
   - cosign
   name_template: "{{ .Version }}"
   mode: replace
+  prerelease: auto
