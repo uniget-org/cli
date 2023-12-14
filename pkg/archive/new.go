@@ -92,6 +92,10 @@ func ExtractTarGz(gzipStream io.Reader, patchPath func(path string) string) erro
 
 		case tar.TypeReg:
 			log.Tracef("Untarring file %s\n", fixedHeaderName)
+			cleanFixedHeaderName := filepath.Clean(fixedHeaderName)
+			if strings.HasPrefix(cleanFixedHeaderName, "/") {
+				return fmt.Errorf("ExtractTarGz: filename starts with '/': %s", cleanFixedHeaderName)
+			}
 			outFile, err := os.Create(fixedHeaderName)
 			if err != nil {
 				return fmt.Errorf("ExtractTarGz: Create() failed: %s", err.Error())
