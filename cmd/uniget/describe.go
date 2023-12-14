@@ -10,6 +10,7 @@ import (
 
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var describeOutput string
@@ -38,8 +39,8 @@ var describeCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("error getting tool %s", toolName)
 		}
-		tool.ReplaceVariables(prefix+"/"+target, arch, altArch)
-		err = tool.GetMarkerFileStatus(prefix + "/" + cacheDirectory)
+		tool.ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
+		err = tool.GetMarkerFileStatus(viper.GetString("prefix") + "/" + cacheDirectory)
 		if err != nil {
 			return fmt.Errorf("error getting marker file status: %s", err)
 		}
@@ -75,7 +76,7 @@ var describeCmd = &cobra.Command{
 			return fmt.Errorf("invalid output format: %s", describeOutput)
 		}
 
-		if noInteractive || !term.IsTerminal(int(os.Stdin.Fd())) || !term.IsTerminal(int(os.Stdout.Fd())) {
+		if viper.GetBool("no-interactive") || !term.IsTerminal(int(os.Stdin.Fd())) || !term.IsTerminal(int(os.Stdout.Fd())) {
 			return nil
 		}
 

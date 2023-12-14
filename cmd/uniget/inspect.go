@@ -4,8 +4,9 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/uniget-org/cli/pkg/logging"
-	
+
 	"github.com/uniget-org/cli/pkg/tool"
 )
 
@@ -32,17 +33,17 @@ var inspectCmd = &cobra.Command{
 		if len(toolVersion) == 0 {
 			assertMetadataFileExists()
 			assertMetadataIsLoaded()
-	
+
 			inspectTool, err = tools.GetByName(args[0])
 			if err != nil {
 				return fmt.Errorf("error getting tool %s", args[0])
 			}
-			inspectTool.ReplaceVariables(prefix+target, arch, altArch)
+			inspectTool.ReplaceVariables(viper.GetString("prefix")+viper.GetString("target"), arch, altArch)
 
 		} else {
 			inspectTool = &tool.Tool{
-				Name:        args[0],
-				Version:     toolVersion,
+				Name:    args[0],
+				Version: toolVersion,
 			}
 		}
 

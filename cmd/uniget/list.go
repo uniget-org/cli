@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/uniget-org/cli/pkg/tool"
 	"gopkg.in/yaml.v3"
 )
@@ -35,8 +36,8 @@ var listCmd = &cobra.Command{
 		if installedOnly {
 			var installedTools tool.Tools
 			for index := range tools.Tools {
-				tools.Tools[index].ReplaceVariables(prefix+"/"+target, arch, altArch)
-				err := tools.Tools[index].GetMarkerFileStatus(prefix + "/" + cacheDirectory)
+				tools.Tools[index].ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
+				err := tools.Tools[index].GetMarkerFileStatus(viper.GetString("prefix") + "/" + cacheDirectory)
 				if err != nil {
 					return fmt.Errorf("error getting marker file status: %s", err)
 				}

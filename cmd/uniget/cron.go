@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	myos "github.com/uniget-org/cli/pkg/os"
 )
@@ -55,7 +56,7 @@ var cronCmd = &cobra.Command{
 }
 
 func createCron() error {
-	osVendor, err := myos.GetOsVendor(prefix)
+	osVendor, err := myos.GetOsVendor(viper.GetString("prefix"))
 	if err != nil {
 		return fmt.Errorf("cannot determine OS: %w", err)
 	}
@@ -92,18 +93,18 @@ func createCron() error {
 
 func removeCron() error {
 	// Check if exists /etc/cron.daily/uniget-update
-	if fileExists(prefix + "/etc/cron.weekly/uniget-update") {
+	if fileExists(viper.GetString("prefix") + "/etc/cron.weekly/uniget-update") {
 		// Remove /etc/cron.daily/uniget-update
-		err := os.Remove(prefix + "/etc/cron.weekly/uniget-update")
+		err := os.Remove(viper.GetString("prefix") + "/etc/cron.weekly/uniget-update")
 		if err != nil {
 			return fmt.Errorf("cannot remove cron update script: %w", err)
 		}
 	}
 
 	// Check if exists /etc/cron.weekly/uniget-upgrade
-	if fileExists(prefix + "/etc/cron.daily/uniget-upgrade") {
+	if fileExists(viper.GetString("prefix") + "/etc/cron.daily/uniget-upgrade") {
 		// Remove /etc/cron.weekly/uniget-upgrade
-		err := os.Remove(prefix + "/etc/cron.daily/uniget-upgrade")
+		err := os.Remove(viper.GetString("prefix") + "/etc/cron.daily/uniget-upgrade")
 		if err != nil {
 			return fmt.Errorf("cannot remove cron upgrade script: %w", err)
 		}

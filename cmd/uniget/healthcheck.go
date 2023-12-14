@@ -5,6 +5,7 @@ import (
 
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 func initHealthcheckCmd() {
@@ -29,8 +30,8 @@ var healthcheckCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("error getting tool %s", toolName)
 		}
-		tool.ReplaceVariables(prefix+"/"+target, arch, altArch)
-		err = tool.GetMarkerFileStatus(prefix + "/" + cacheDirectory)
+		tool.ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
+		err = tool.GetMarkerFileStatus(viper.GetString("prefix") + "/" + cacheDirectory)
 		if err != nil {
 			return fmt.Errorf("error getting marker file status: %s", err)
 		}
@@ -66,7 +67,7 @@ var healthcheckCmd = &cobra.Command{
 			pterm.Warning.Printfln("%s: Tool does not support version check", tool.Name)
 			pterm.Info.Printfln("%s: Version is %s", tool.Name, tool.Version)
 		} else {
-			tool.ReplaceVariables(prefix+"/"+target, arch, altArch)
+			tool.ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
 			version, err := tool.RunVersionCheck()
 			if err != nil {
 				pterm.Error.Printfln("%s: Error getting version: %s", tool.Name, err)

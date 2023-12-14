@@ -10,6 +10,7 @@ import (
 	"github.com/pterm/pterm"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/uniget-org/cli/pkg/logging"
 	"github.com/uniget-org/cli/pkg/tool"
 	"golang.org/x/sys/unix"
@@ -24,20 +25,14 @@ var header string = "" +
 	"| |_| | | | | | (_| |  __/ |_\n" +
 	" \\__,_|_| |_|_|\\__, |\\___|\\__|\n" +
 	"               |___/\n"
-var logLevel string
-var debug bool
-var trace bool
 
 var altArch string = runtime.GOARCH
 var arch string
 
-var prefix = ""
-var target = "usr/local"
 var cacheRoot = "var/cache"
 var cacheDirectory = cacheRoot + "/" + projectName
 var libRoot = "var/lib"
 var libDirectory = libRoot + "/" + projectName
-var user = false
 var metadataFileName = "metadata.json"
 var metadataFile = cacheDirectory + "/" + metadataFileName
 var registry = "ghcr.io"
@@ -46,7 +41,6 @@ var imageRepository = "uniget-org/tools"
 var toolSeparator = "/"
 var registryImagePrefix = registry + "/" + imageRepository + toolSeparator
 var tools tool.Tools
-var noInteractive bool
 
 var (
 	rootCmd = &cobra.Command{
@@ -85,7 +79,7 @@ func assertWritableDirectory(directory string) {
 }
 
 func assertWritableTarget() {
-	assertWritableDirectory(prefix + "/" + target)
+	assertWritableDirectory(viper.GetString("prefix") + "/" + viper.GetString("target"))
 }
 
 func assertDirectory(directory string) {
@@ -98,25 +92,25 @@ func assertDirectory(directory string) {
 }
 
 func assertLibDirectory() {
-	if !directoryExists(prefix + "/" + libRoot) {
-		assertDirectory(prefix + "/" + libRoot)
+	if !directoryExists(viper.GetString("prefix") + "/" + libRoot) {
+		assertDirectory(viper.GetString("prefix") + "/" + libRoot)
 	}
-	assertWritableDirectory(prefix + "/" + libRoot)
-	assertDirectory(prefix + "/" + libDirectory)
+	assertWritableDirectory(viper.GetString("prefix") + "/" + libRoot)
+	assertDirectory(viper.GetString("prefix") + "/" + libDirectory)
 }
 
 func assertCacheDirectory() {
-	if !directoryExists(prefix + "/" + cacheRoot) {
-		assertDirectory(prefix + "/" + cacheRoot)
+	if !directoryExists(viper.GetString("prefix") + "/" + cacheRoot) {
+		assertDirectory(viper.GetString("prefix") + "/" + cacheRoot)
 	}
-	assertWritableDirectory(prefix + "/" + cacheRoot)
-	assertDirectory(prefix + "/" + cacheDirectory)
+	assertWritableDirectory(viper.GetString("prefix") + "/" + cacheRoot)
+	assertDirectory(viper.GetString("prefix") + "/" + cacheDirectory)
 }
 
 func assertMetadataFileExists() {
-	_, err := os.Stat(prefix + "/" + metadataFile)
+	_, err := os.Stat(viper.GetString("prefix") + "/" + metadataFile)
 	if err != nil {
-		logging.Error.Printfln("Metadata file %s does not exist: %s", prefix+"/"+metadataFile, err)
+		logging.Error.Printfln("Metadata file %s does not exist: %s", viper.GetString("prefix")+"/"+metadataFile, err)
 		os.Exit(1)
 	}
 }
@@ -163,11 +157,11 @@ func main() {
 		logging.Error.Writer = os.Stderr
 		pterm.Warning.Writer = os.Stderr
 
-		if trace {
+		if viper.GetBool("trace") {
 			pterm.EnableDebugMessages()
 			log.SetLevel(log.TraceLevel)
 
-		} else if debug {
+		} else if viper.GetBool("debug") {
 			pterm.EnableDebugMessages()
 			log.SetLevel(log.DebugLevel)
 
@@ -175,38 +169,33 @@ func main() {
 			log.SetLevel(log.WarnLevel)
 		}
 
-		if len(prefix) > 0 {
+		if len(viper.GetString("prefix")) > 0 {
 			re, err := regexp.Compile(`^\/`)
 			if err != nil {
 				return fmt.Errorf("cannot compile regexp: %w", err)
 			}
-			if !re.MatchString(prefix) {
+			if !re.MatchString(viper.GetString("prefix")) {
 				wd, err := os.Getwd()
 				if err != nil {
 					return fmt.Errorf("cannot determine working directory: %w", err)
 				}
-				prefix = wd + "/" + prefix
-				log.Debugf("Converted prefix to absolute path %s\n", prefix)
+				viper.Set("prefix", wd+"/"+viper.GetString("prefix"))
+				log.Debugf("Converted prefix to absolute path %s\n", viper.GetString("prefix"))
 			}
 		}
 
-		if user {
-			prefix = os.Getenv("HOME")
-			target = ".local"
+		if viper.GetBool("user") {
+			viper.Set("prefix", os.Getenv("HOME"))
+			viper.Set("target", ".local")
 			cacheRoot = ".cache"
 			cacheDirectory = cacheRoot + "/" + projectName
 			libRoot = ".local/state"
 			libDirectory = libRoot + "/" + projectName
 			metadataFile = cacheDirectory + "/" + metadataFileName
-
-		} else {
-			cacheDirectory = cacheRoot + "/" + cacheDirectory
-			libDirectory = libRoot + "/" + libDirectory
-			metadataFile = cacheDirectory + "/" + metadataFileName
 		}
 
-		if debug {
-			logging.Debug.Printfln("target: %s", target)
+		if viper.GetBool("debug") {
+			logging.Debug.Printfln("target: %s", viper.GetString("target"))
 			logging.Debug.Printfln("cacheRoot: %s", cacheRoot)
 			logging.Debug.Printfln("cacheDirectory: %s", cacheDirectory)
 			logging.Debug.Printfln("libRoot: %s", libRoot)
@@ -214,7 +203,7 @@ func main() {
 			logging.Debug.Printfln("metadataFile: %s", metadataFile)
 		}
 
-		if !fileExists(prefix + "/" + metadataFile) {
+		if !fileExists(viper.GetString("prefix") + "/" + metadataFile) {
 			logging.Debug.Printfln("Metadata file does not exist. Downloading...")
 			err := downloadMetadata()
 			if err != nil {
@@ -228,7 +217,7 @@ func main() {
 			return fmt.Errorf("error loading metadata: %s", err)
 		}
 
-		file, err := os.Stat(prefix + "/" + metadataFile)
+		file, err := os.Stat(viper.GetString("prefix") + "/" + metadataFile)
 		if err != nil {
 			return fmt.Errorf("error stating metadata file: %s", err)
 		}
@@ -240,23 +229,37 @@ func main() {
 
 		return nil
 	}
-	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", log.WarnLevel.String(), "Log level (trace, debug, info, warning, error)")
-	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "d", false, "Set log level to debug")
-	rootCmd.PersistentFlags().BoolVar(&trace, "trace", false, "Set log level to trace")
-	rootCmd.PersistentFlags().StringVarP(&prefix, "prefix", "p", "", "Base directory for the installation (useful when preparing a chroot environment)")
-	rootCmd.PersistentFlags().StringVarP(&target, "target", "t", "usr/local", "Target directory for installation relative to PREFIX")
-	rootCmd.PersistentFlags().StringVarP(&cacheRoot, "cache-root", "C", "var/cache", "Cache root directory relative to PREFIX")
-	rootCmd.PersistentFlags().StringVarP(&cacheDirectory, "cache-directory", "c", projectName, "Cache directory relative to CACHE-ROOT")
-	rootCmd.PersistentFlags().StringVarP(&libRoot, "lib-root", "L", "var/lib", "Library root directory relative to PREFIX")
-	rootCmd.PersistentFlags().StringVarP(&libDirectory, "lib-directory", "l", projectName, "Library directory relative to LIB-ROOT")
-	rootCmd.PersistentFlags().BoolVarP(&user, "user", "u", false, "Install in user context")
-	rootCmd.PersistentFlags().StringVarP(&metadataFileName, "metadata-file", "f", "metadata.json", "Metadata file")
-	rootCmd.PersistentFlags().BoolVar(&noInteractive, "no-interactive", false, "Disable interactive prompts")
+
+	viper.SetDefault("log-level", log.WarnLevel.String())
+	viper.SetDefault("debug", false)
+	viper.SetDefault("trace", false)
+	viper.SetDefault("prefix", "")
+	viper.SetDefault("target", "usr/local")
+	viper.SetDefault("user", false)
+	viper.SetDefault("no-interactive", false)
+
+	pf := rootCmd.PersistentFlags()
+
+	pf.String("log-level", viper.GetString("log-level"), "Log level (trace, debug, info, warning, error)")
+	pf.BoolP("debug", "d", viper.GetBool("debug"), "Set log level to debug")
+	pf.Bool("trace", viper.GetBool("trace"), "Set log level to trace")
+	pf.StringP("prefix", "p", viper.GetString("prefix"), "Base directory for the installation (useful when preparing a chroot environment)")
+	pf.StringP("target", "t", viper.GetString("target"), "Target directory for installation relative to PREFIX")
+	pf.BoolP("user", "u", viper.GetBool("user"), "Install in user context")
+	pf.Bool("no-interactive", viper.GetBool("no-interactive"), "Disable interactive prompts")
 
 	rootCmd.MarkFlagsMutuallyExclusive("prefix", "user")
 	rootCmd.MarkFlagsMutuallyExclusive("target", "user")
-	rootCmd.MarkFlagsMutuallyExclusive("cache-directory", "user")
-	rootCmd.MarkFlagsMutuallyExclusive("lib-directory", "user")
+
+	viper.AutomaticEnv()
+	viper.SetEnvPrefix("uniget")
+	viper.BindPFlag("log-level", pf.Lookup("log-level"))
+	viper.BindPFlag("debug", pf.Lookup("debug"))
+	viper.BindPFlag("trace", pf.Lookup("trace"))
+	viper.BindPFlag("prefix", pf.Lookup("prefix"))
+	viper.BindPFlag("target", pf.Lookup("target"))
+	viper.BindPFlag("user", pf.Lookup("user"))
+	viper.BindPFlag("no-interactive", pf.Lookup("no-interactive"))
 
 	err := rootCmd.Execute()
 	if err != nil {

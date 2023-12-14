@@ -7,6 +7,7 @@ import (
 	"atomicgo.dev/keyboard/keys"
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/uniget-org/cli/pkg/logging"
 	"golang.org/x/term"
 )
@@ -86,7 +87,7 @@ var searchCmd = &cobra.Command{
 
 		results.List()
 
-		if noInteractive || !term.IsTerminal(int(os.Stdin.Fd())) || !term.IsTerminal(int(os.Stdout.Fd())) {
+		if viper.GetBool("no-interactive") || !term.IsTerminal(int(os.Stdin.Fd())) || !term.IsTerminal(int(os.Stdout.Fd())) {
 			return nil
 		}
 

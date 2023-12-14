@@ -9,6 +9,7 @@ import (
 
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/uniget-org/cli/pkg/logging"
 )
 
@@ -55,7 +56,7 @@ func postinstall() error {
 				scripts = append(scripts, info)
 			}
 		}
-		if len(scripts) > 0 && len(prefix) > 0 {
+		if len(scripts) > 0 && len(viper.GetString("prefix")) > 0 {
 			pterm.Warning.Printfln("prefix cannot be set for postinstall scripts to run")
 			return nil
 		}
@@ -66,7 +67,7 @@ func postinstall() error {
 			cmd := exec.Command("/bin/bash", "/"+libDirectory+"/post_install/"+file.Name()) // #nosec G204 -- Tool images are a trusted source
 			cmd.Env = append(os.Environ(),
 				"prefix=",
-				"target=/"+target,
+				"target=/"+viper.GetString("target"),
 				"arch="+arch,
 				"alt_arch="+altArch,
 				"uniget_contrib=/"+libDirectory+"/contrib",
@@ -85,9 +86,9 @@ func postinstall() error {
 	}
 
 	// Add shim for profile.d
-	profileDShimFile := prefix + "/etc/profile.d/uniget-profile.d.sh"
+	profileDShimFile := viper.GetString("prefix") + "/etc/profile.d/uniget-profile.d.sh"
 	if directoryIsWritable(profileDShimFile) {
-		profileDScript := strings.Replace(postinstallProfileDScript, "${target}", "/"+target, -1)
+		profileDScript := strings.Replace(postinstallProfileDScript, "${target}", "/"+viper.GetString("target"), -1)
 		err := os.WriteFile(
 			profileDShimFile,
 			[]byte(profileDScript),
@@ -99,9 +100,9 @@ func postinstall() error {
 	}
 
 	// Add shim for completion
-	completionShimFile := prefix + "/etc/profile.d/uniget-completion.sh"
+	completionShimFile := viper.GetString("prefix") + "/etc/profile.d/uniget-completion.sh"
 	if directoryIsWritable(completionShimFile) {
-		completionScript := strings.Replace(postinstallCompletionScript, "${target}", "/"+target, -1)
+		completionScript := strings.Replace(postinstallCompletionScript, "${target}", "/"+viper.GetString("target"), -1)
 		err := os.WriteFile(
 			completionShimFile,
 			[]byte(completionScript),

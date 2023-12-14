@@ -7,6 +7,7 @@ import (
 
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	"github.com/uniget-org/cli/pkg/logging"
 	"github.com/uniget-org/cli/pkg/tool"
@@ -114,14 +115,14 @@ func findInstalledTools(tools tool.Tools) (tool.Tools, error) {
 	var requestedTools tool.Tools
 	for index, tool := range tools.Tools {
 		logging.Debug.Printfln("Getting status for requested tool %s", tool.Name)
-		tools.Tools[index].ReplaceVariables(prefix+"/"+target, arch, altArch)
+		tools.Tools[index].ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
 
 		err := tools.Tools[index].GetBinaryStatus()
 		if err != nil {
 			return requestedTools, fmt.Errorf("unable to determine binary status of %s: %s", tool.Name, err)
 		}
 
-		err = tools.Tools[index].GetMarkerFileStatus(prefix + "/" + cacheDirectory)
+		err = tools.Tools[index].GetMarkerFileStatus(viper.GetString("prefix") + "/" + cacheDirectory)
 		if err != nil {
 			return requestedTools, fmt.Errorf("unable to determine marker file status of %s: %s", tool.Name, err)
 		}
@@ -168,14 +169,14 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 
 		logging.Debug.Printfln("Getting status for requested tool %s", tool.Name)
 
-		plannedTools.Tools[index].ReplaceVariables(prefix+"/"+target, arch, altArch)
+		plannedTools.Tools[index].ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
 
 		err := plannedTools.Tools[index].GetBinaryStatus()
 		if err != nil {
 			return fmt.Errorf("unable to determine binary status of %s: %s", tool.Name, err)
 		}
 
-		err = plannedTools.Tools[index].GetMarkerFileStatus(prefix + "/" + cacheDirectory)
+		err = plannedTools.Tools[index].GetMarkerFileStatus(viper.GetString("prefix") + "/" + cacheDirectory)
 		if err != nil {
 			return fmt.Errorf("unable to determine marker file status of %s: %s", tool.Name, err)
 		}
@@ -308,7 +309,7 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 					logging.Error.Printfln("Unable to get binary status of dependency %s: %s", depName, err)
 					return fmt.Errorf("unable to get binary status of dependency %s: %s", depName, err)
 				}
-				err = dep.GetMarkerFileStatus(prefix + "/" + cacheDirectory)
+				err = dep.GetMarkerFileStatus(viper.GetString("prefix") + "/" + cacheDirectory)
 				if err != nil {
 					logging.Error.Printfln("Unable to get marker file status of dependency %s: %s", depName, err)
 					return fmt.Errorf("unable to get marker file status of dependency %s: %s", depName, err)
@@ -327,14 +328,14 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 			}
 		}
 
-		assertDirectory(prefix + "/" + target)
+		assertDirectory(viper.GetString("prefix") + "/" + viper.GetString("target"))
 		var err error
-		if user {
+		if viper.GetBool("user") {
 			logging.Debug.Printfln("Installing in user context")
-			err = tool.Install(registryImagePrefix, prefix+"/"+target, "", altArch)
+			err = tool.Install(registryImagePrefix, viper.GetString("prefix")+"/"+viper.GetString("target"), "", altArch)
 		} else {
 			logging.Debug.Printfln("Installing in system context")
-			err = tool.Install(registryImagePrefix, prefix, target, altArch)
+			err = tool.Install(registryImagePrefix, viper.GetString("prefix"), viper.GetString("target"), altArch)
 		}
 		if err != nil {
 			logging.Warning.Printfln("Unable to install %s: %s", tool.Name, err)
@@ -347,20 +348,20 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 			continue
 		}
 
-		err = tool.CreateMarkerFile(prefix + "/" + cacheDirectory)
+		err = tool.CreateMarkerFile(viper.GetString("prefix") + "/" + cacheDirectory)
 		if err != nil {
 			logging.Warning.Printfln("Unable to create marker file: %s", err)
 			continue
 		}
 	}
 
-	if user {
+	if viper.GetBool("user") {
 		logging.Warning.Printfln("Post installation is not yet support for user context")
 		return nil
 	}
-	if len(prefix) > 0 {
-		logging.Warning.Printfln("Post installation skipped because prefix is set to %s", prefix)
-		logging.Warning.Printfln("Please run 'uniget postinstall' in the context of %s to complete the installation", prefix)
+	if len(viper.GetString("prefix")) > 0 {
+		logging.Warning.Printfln("Post installation skipped because prefix is set to %s", viper.GetString("prefix"))
+		logging.Warning.Printfln("Please run 'uniget postinstall' in the context of %s to complete the installation", viper.GetString("prefix"))
 		return nil
 	}
 

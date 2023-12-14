@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	"github.com/uniget-org/cli/pkg/archive"
 	"github.com/uniget-org/cli/pkg/containers"
@@ -59,13 +60,13 @@ var updateCmd = &cobra.Command{
 func downloadMetadata() error {
 	assertCacheDirectory()
 	err := containers.GetManifest(registryImagePrefix+"metadata:main", altArch, func(blob blob.Reader) error {
-		logging.Debug.Printfln("Changing directory to %s", prefix+"/"+cacheDirectory)
-		err := os.Chdir(prefix + "/" + cacheDirectory)
+		logging.Debug.Printfln("Changing directory to %s", viper.GetString("prefix")+"/"+cacheDirectory)
+		err := os.Chdir(viper.GetString("prefix") + "/" + cacheDirectory)
 		if err != nil {
-			return fmt.Errorf("error changing directory to %s: %s", prefix+"/"+cacheDirectory, err)
+			return fmt.Errorf("error changing directory to %s: %s", viper.GetString("prefix")+"/"+cacheDirectory, err)
 		}
 
-		logging.Debug.Printfln("Extracting archive to %s", prefix+"/"+cacheDirectory)
+		logging.Debug.Printfln("Extracting archive to %s", viper.GetString("prefix")+"/"+cacheDirectory)
 		err = archive.ExtractTarGz(blob, func(path string) string { return path })
 		if err != nil {
 			return fmt.Errorf("error extracting archive: %s", err)
@@ -82,9 +83,9 @@ func downloadMetadata() error {
 
 func loadMetadata() error {
 	var err error
-	tools, err = tool.LoadFromFile(prefix + "/" + metadataFile)
+	tools, err = tool.LoadFromFile(viper.GetString("prefix") + "/" + metadataFile)
 	if err != nil {
-		return fmt.Errorf("failed to load metadata from file %s: %s", prefix+"/"+metadataFile, err)
+		return fmt.Errorf("failed to load metadata from file %s: %s", viper.GetString("prefix")+"/"+metadataFile, err)
 	}
 
 	return nil

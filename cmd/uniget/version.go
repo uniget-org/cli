@@ -5,6 +5,7 @@ import (
 
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 func initVersionCmd() {
@@ -28,8 +29,8 @@ var versionCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("failed to get tool: %s", err)
 		}
-		tool.ReplaceVariables(prefix+"/"+target, arch, altArch)
-		err = tool.GetMarkerFileStatus(prefix + "/" + cacheDirectory)
+		tool.ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
+		err = tool.GetMarkerFileStatus(viper.GetString("prefix") + "/" + cacheDirectory)
 		if err != nil {
 			return fmt.Errorf("failed to get marker file status: %s", err)
 		}
@@ -53,7 +54,7 @@ var versionCmd = &cobra.Command{
 			return nil
 		}
 
-		tool.ReplaceVariables(prefix+"/"+target, arch, altArch)
+		tool.ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
 		version, err := tool.RunVersionCheck()
 		if err != nil {
 			return fmt.Errorf("failed to get version: %s", err)
