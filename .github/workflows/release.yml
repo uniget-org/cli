@@ -37,6 +37,10 @@ jobs:
       run: |
         docker buildx bake test
 
+    - name: CLI tests
+      run: |
+        docker buildx bake cli-test
+
     - name: Build and release binaries
       env:
         GITHUB_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}

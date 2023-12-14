@@ -23,3 +23,7 @@ target "test" {
 target "gosec" {
     target = "sec"
 }
+
+target "cli-test" {
+    target = "cli-test"
+}

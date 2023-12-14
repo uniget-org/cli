@@ -48,6 +48,10 @@ jobs:
       run: |
         docker buildx bake test
 
+    - name: Run CLI tests
+      run: |
+        docker buildx bake cli-test
+
     - name: Build binary
       run: |
         docker buildx bake binary
@@ -55,9 +59,3 @@ jobs:
     - name: Smoke test
       run: |
         ./uniget --version
-
-    - name: Test install
-      run: |
-        ./uniget --prefix=helper install yq gojq
-        ./helper/usr/local/bin/yq --version
-        ./helper/usr/local/bin/gojq --version
