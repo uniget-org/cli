@@ -259,7 +259,7 @@ func main() {
 	viper.BindPFlag("prefix", pf.Lookup("prefix"))
 	viper.BindPFlag("target", pf.Lookup("target"))
 	viper.BindPFlag("user", pf.Lookup("user"))
-	viper.BindPFlag("no-interactive", pf.Lookup("no-interactive"))
+	viper.BindEnv("no-interactive", "UNIGET_NO_INTERACTIVE")
 
 	err := rootCmd.Execute()
 	if err != nil {
