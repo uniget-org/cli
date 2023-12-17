@@ -153,6 +153,8 @@ func init() {
 }
 
 func main() {
+	var err error
+
 	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
 		logging.Error.Writer = os.Stderr
 		pterm.Warning.Writer = os.Stderr
@@ -253,15 +255,43 @@ func main() {
 
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix("uniget")
-	viper.BindPFlag("log-level", pf.Lookup("log-level"))
-	viper.BindPFlag("debug", pf.Lookup("debug"))
-	viper.BindPFlag("trace", pf.Lookup("trace"))
-	viper.BindPFlag("prefix", pf.Lookup("prefix"))
-	viper.BindPFlag("target", pf.Lookup("target"))
-	viper.BindPFlag("user", pf.Lookup("user"))
-	viper.BindEnv("no-interactive", "UNIGET_NO_INTERACTIVE")
+	err = viper.BindPFlag("log-level", pf.Lookup("log-level"))
+	if err != nil {
+		logging.Error.Printfln("Error binding log-level flag: %s", err)
+		os.Exit(1)
+	}
+	err = viper.BindPFlag("debug", pf.Lookup("debug"))
+	if err != nil {
+		logging.Error.Printfln("Error binding debug flag: %s", err)
+		os.Exit(1)
+	}
+	err = viper.BindPFlag("trace", pf.Lookup("trace"))
+	if err != nil {
+		logging.Error.Printfln("Error binding trace flag: %s", err)
+		os.Exit(1)
+	}
+	err = viper.BindPFlag("prefix", pf.Lookup("prefix"))
+	if err != nil {
+		logging.Error.Printfln("Error binding prefix flag: %s", err)
+		os.Exit(1)
+	}
+	err = viper.BindPFlag("target", pf.Lookup("target"))
+	if err != nil {
+		logging.Error.Printfln("Error binding target flag: %s", err)
+		os.Exit(1)
+	}
+	err = viper.BindPFlag("user", pf.Lookup("user"))
+	if err != nil {
+		logging.Error.Printfln("Error binding user flag: %s", err)
+		os.Exit(1)
+	}
+	err = viper.BindEnv("no-interactive", "UNIGET_NO_INTERACTIVE")
+	if err != nil {
+		logging.Error.Printfln("Error binding no-interactive flag: %s", err)
+		os.Exit(1)
+	}
 
-	err := rootCmd.Execute()
+	err = rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
 	}
