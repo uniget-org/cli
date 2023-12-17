@@ -45,8 +45,8 @@ RUN --mount=from=goreleaser,src=/usr/local/bin/goreleaser,target=/usr/local/bin/
     --mount=type=cache,target=/root/.cache/go-build <<EOF
 goreleaser healthcheck
 goreleaser release
-bash scripts/release-notes.sh >/tmp/release-notes.md
-gh release edit "$(git tag --list v* | tail -n 1)" --notes-file /tmp/release-notes.md
+bash scripts/release-notes.sh >release-notes.md
+gh release edit "$(git tag --list v* | tail -n 1)" --notes-file release-notes.md
 EOF
 
 FROM base AS unit-test

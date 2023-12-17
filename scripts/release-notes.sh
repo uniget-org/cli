@@ -3,10 +3,12 @@ set -o errexit -o pipefail
 
 TAG="$(
     git tag \
+    | sort -V \
     | tail -n 1
 )"
 PREVIOUS_TAGS="$(
     git tag --list v* \
+    | sort -V \
     | head -n -1 \
     | sort -Vr
 )"
