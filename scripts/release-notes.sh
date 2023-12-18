@@ -46,7 +46,7 @@ cosign verify-blob uniget_linux_\$(uname -m).tar.gz \\
 EOF
 
 echo
-echo "## Bugfixes"
+echo "## Bugfixes (since ${PREVIOUS_TAG})"
 echo
 gh issue list \
     --search="state:closed closed:>${TIMESTAMP} label:bug -label:wontfix" \
@@ -54,7 +54,7 @@ gh issue list \
     --template='{{range .}}- {{.title}} ({{hyperlink .url (printf "#%v" .number)}}){{"\n"}}{{end}}'
 
 echo
-echo "## Features"
+echo "## Features (since ${PREVIOUS_TAG})"
 echo
 gh issue list \
     --search="state:closed closed:>${TIMESTAMP} label:enhancement -label:wontfix" \
@@ -62,7 +62,7 @@ gh issue list \
     --template='{{range .}}- {{.title}} ({{hyperlink .url (printf "#%v" .number)}}){{"\n"}}{{end}}'
 
 echo
-echo "## Dependency updates"
+echo "## Dependency updates (since ${PREVIOUS_TAG})"
 echo
 gh pr list \
     --state=merged \
@@ -72,7 +72,7 @@ gh pr list \
 
 echo
 cat <<EOF
-## Full Changelog
+## Full Changelog (since ${PREVIOUS_TAG})
 
 [Compare with previous release](https://github.com/uniget-org/cli/compare/${PREVIOUS_TAG}...${TAG})
 EOF
