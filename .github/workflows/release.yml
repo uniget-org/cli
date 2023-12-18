@@ -50,10 +50,5 @@ jobs:
             --build-arg GITHUB_TOKEN \
             --build-arg ACTIONS_ID_TOKEN_REQUEST_URL \
             --build-arg ACTIONS_ID_TOKEN_REQUEST_TOKEN \
+            --build-arg GITHUB_REF_NAME \
             .
-
-    - name: Store release notes
-      uses: actions/upload-artifact@v3
-      with:
-        name: release-notes
-        path: release-notes.md

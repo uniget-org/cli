@@ -46,8 +46,7 @@ RUN --mount=from=goreleaser,src=/usr/local/bin/goreleaser,target=/usr/local/bin/
 goreleaser healthcheck
 goreleaser release
 bash scripts/release-notes.sh >release-notes.md
-cat release-notes.md
-gh release edit "$(git tag --list v* | tail -n 1)" --notes-file release-notes.md
+gh release edit "${GITHUB_REF_NAME}" --notes-file release-notes.md
 EOF
 
 FROM base AS unit-test
