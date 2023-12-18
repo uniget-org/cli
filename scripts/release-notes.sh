@@ -1,6 +1,8 @@
 #!/bin/bash
 set -o errexit -o pipefail
 
+export NO_COLOR=true
+
 TAG="$(
     git tag \
     | sort -V \
