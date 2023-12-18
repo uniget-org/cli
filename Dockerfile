@@ -46,6 +46,7 @@ RUN --mount=from=goreleaser,src=/usr/local/bin/goreleaser,target=/usr/local/bin/
 goreleaser healthcheck
 goreleaser release
 bash scripts/release-notes.sh >release-notes.md
+echo "Updating release ${GITHUB_REF_NAME} with release notes"
 gh release edit "${GITHUB_REF_NAME}" --notes-file release-notes.md
 EOF
 
