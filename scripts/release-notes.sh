@@ -51,7 +51,7 @@ echo
 gh issue list \
     --search="state:closed closed:>${TIMESTAMP} label:bug -label:wontfix" \
     --json=number,title,url \
-    --template='{{range .}}- {{.title}} ([#{{.number}}]({{.url}})'
+    --template='{{range .}}- {{.title}} ([#{{.number}}]({{.url}})){{"\n"}}{{end}}'
 
 echo
 echo "## Features (since ${PREVIOUS_TAG})"
@@ -59,7 +59,7 @@ echo
 gh issue list \
     --search="state:closed closed:>${TIMESTAMP} label:enhancement -label:wontfix" \
     --json=number,title,url \
-    --template='{{range .}}- {{.title}} ([#{{.number}}]({{.url}})'
+    --template='{{range .}}- {{.title}} ([#{{.number}}]({{.url}})){{"\n"}}{{end}}'
 
 echo
 echo "## Dependency updates (since ${PREVIOUS_TAG})"
@@ -68,7 +68,7 @@ gh pr list \
     --state=merged \
     --search="merged:>${TIMESTAMP} label:type/renovate" \
     --json=number,title,url \
-    --template='{{range .}}- {{.title}} ([#{{.number}}]({{.url}})'
+    --template='{{range .}}- {{.title}} ([#{{.number}}]({{.url}})){{"\n"}}{{end}}'
 
 echo
 cat <<EOF
