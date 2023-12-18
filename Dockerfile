@@ -37,6 +37,7 @@ COPY . .
 ARG GITHUB_TOKEN
 ARG ACTIONS_ID_TOKEN_REQUEST_URL
 ARG ACTIONS_ID_TOKEN_REQUEST_TOKEN
+ARG GITHUB_REF_NAME
 RUN --mount=from=goreleaser,src=/usr/local/bin/goreleaser,target=/usr/local/bin/goreleaser \
     --mount=from=cosign,src=/usr/local/bin/cosign,target=/usr/local/bin/cosign \
     --mount=from=syft,src=/usr/local/bin/syft,target=/usr/local/bin/syft \
