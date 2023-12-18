@@ -6,27 +6,19 @@ TAG="$(
     | sort -V \
     | tail -n 1
 )"
-PREVIOUS_TAGS="$(
+PREVIOUS_TAG="$(
     git tag --list v* \
+    | grep -v -- - \
     | sort -V \
     | head -n -1 \
-    | sort -Vr
+    | sort -Vr \
+    | head -n 1
 )"
+echo "Creating release notes for ${PREVIOUS_TAG} -> ${TAG}" >&2
 
-for PREVIOUS_TAG in ${PREVIOUS_TAGS}; do
-    echo "Testing previous tag: ${PREVIOUS_TAG}" >&2
-
-    if \
-        TIMESTAMP="$(
-            gh release view "${PREVIOUS_TAG}" --json=publishedAt --template='{{.publishedAt}}'
-        )"; then
-        break
-    fi
-done
-if test -z "${TIMESTAMP}"; then
-    echo "ERROR: Unable to find previous release of ${TAG}. Candidates: ${PREVIOUS_TAGS}." >&2
-    exit 1
-fi
+TIMESTAMP="$(
+    gh release view "${PREVIOUS_TAG}" --json=publishedAt --template='{{.publishedAt}}'
+)";
 echo "Found timestamp: ${TIMESTAMP}" >&2
 
 cat <<EOF
