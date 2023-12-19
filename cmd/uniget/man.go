@@ -24,12 +24,18 @@ var manCmd = &cobra.Command{
 	Long:  header + "\nGenerate manpages",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		writeManpage(rootCmd, "", manDirectory)
+		err := writeManpage(rootCmd, "", manDirectory)
+		if err != nil {
+			return fmt.Errorf("failed to create manpage: %w", err)
+		}
 
 		for _, cobraCmd := range rootCmd.Commands() {
 			pterm.Info.Printfln("Generating manpage for %s...", cobraCmd.Name())
 
-			writeManpage(cobraCmd, cobraCmd.Name(), manDirectory)
+			err := writeManpage(cobraCmd, cobraCmd.Name(), manDirectory)
+			if err != nil {
+				return fmt.Errorf("failed to create manpage: %w", err)
+			}
 		}
 
 		return nil
@@ -42,8 +48,10 @@ func writeManpage(cobraCmd *cobra.Command, name string, path string) error {
 		panic(err)
 	}
 
-	manPage = manPage.WithSection("Copyright", "(C) 2023 Nicholas Dille.\n"+
-		"Released under MIT license.")
+	manPage = manPage.WithSection(
+		"Copyright", "(C) 2023 Nicholas Dille.\n"+
+			"Released under MIT license.",
+	)
 
 	var fileName string
 	if name == "" {
@@ -58,6 +66,6 @@ func writeManpage(cobraCmd *cobra.Command, name string, path string) error {
 	}
 	defer file.Close()
 
-	file.WriteString(manPage.Build(roff.NewDocument()))
-	return nil
+	_, err = file.WriteString(manPage.Build(roff.NewDocument()))
+	return err
 }
