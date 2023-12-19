@@ -60,7 +60,7 @@ func writeManpage(cobraCmd *cobra.Command, name string, path string) error {
 		fileName = fmt.Sprintf("%s/%s-%s.1", manDirectory, projectName, name)
 	}
 
-	file, err := os.Create(fileName)
+	file, err := os.Create(fileName) // #nosec G304 -- This is exactly the value proposition of this command
 	if err != nil {
 		return fmt.Errorf("failed to create manpage: %w", err)
 	}
