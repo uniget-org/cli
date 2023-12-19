@@ -141,6 +141,7 @@ func init() {
 	initInspectCmd()
 	initInstallCmd()
 	initListCmd()
+	initManCmd()
 	initMessageCmd()
 	initPostinstallCmd()
 	initSearchCmd()
