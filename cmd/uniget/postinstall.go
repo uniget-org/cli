@@ -63,17 +63,18 @@ func postinstall() error {
 		for _, file := range scripts {
 			logging.Info.Printfln("Running post_install script %s", file.Name())
 
-			logging.Debug.Printfln("Running pre_install script %s", "/"+libDirectory+"/pre_install/"+file.Name())
+			logging.Debug.Printfln("Running post_install script %s", "/"+libDirectory+"/post_install/"+file.Name())
 			cmd := exec.Command("/bin/bash", "/"+libDirectory+"/post_install/"+file.Name()) // #nosec G204 -- Tool images are a trusted source
-			cmd.Env = append(os.Environ(),
-				"prefix=",
-				"target=/"+viper.GetString("target"),
-				"arch="+arch,
-				"alt_arch="+altArch,
-				"uniget_contrib=/"+libDirectory+"/contrib",
-			)
+			cmd.Env = os.Environ()
+			cmd.Env = append(cmd.Env, "target=/"+viper.GetString("target"))
+			cmd.Env = append(cmd.Env, "arch="+arch)
+			cmd.Env = append(cmd.Env, "alt_arch="+altArch)
+			cmd.Env = append(cmd.Env, "uniget_contrib=/"+libDirectory+"/contrib")
 			output, err := cmd.CombinedOutput()
 			if err != nil {
+				fmt.Print("---------- 8< ----------\n")
+				fmt.Printf("%s\n", output)
+				fmt.Print("---------- 8< ----------\n")
 				return fmt.Errorf("unable to execute post_install script %s: %s", file.Name(), err)
 			}
 			fmt.Printf("%s\n", output)
