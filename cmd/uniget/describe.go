@@ -89,7 +89,7 @@ var describeCmd = &cobra.Command{
 		case "Abort":
 			return nil
 		case "Inspect":
-			err = tool.Inspect(registryImagePrefix, altArch)
+			err = tool.Inspect(registryImagePrefix, altArch, false)
 			if err != nil {
 				return fmt.Errorf("unable to inspect %s: %s", tool.Name, err)
 			}

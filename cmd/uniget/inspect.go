@@ -11,9 +11,11 @@ import (
 )
 
 var toolVersion string
+var rawInspect bool
 
 func initInspectCmd() {
 	inspectCmd.Flags().StringVar(&toolVersion, "version", "", "Inspect a specific version of the tool")
+	inspectCmd.Flags().BoolVar(&rawInspect, "raw", false, "Show raw contents")
 
 	rootCmd.AddCommand(inspectCmd)
 }
@@ -48,7 +50,7 @@ var inspectCmd = &cobra.Command{
 		}
 
 		logging.Info.Printfln("Inspecting %s %s\n", inspectTool.Name, inspectTool.Version)
-		err = inspectTool.Inspect(registryImagePrefix, altArch)
+		err = inspectTool.Inspect(registryImagePrefix, altArch, rawInspect)
 		if err != nil {
 			return fmt.Errorf("unable to inspect %s: %s", inspectTool.Name, err)
 		}
