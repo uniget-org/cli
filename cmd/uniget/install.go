@@ -103,7 +103,13 @@ var installCmd = &cobra.Command{
 
 		} else {
 			logging.Debug.Printfln("Adding %s to requested tools", strings.Join(args, ","))
-			requestedTools = tools.GetByNames(args)
+			for _, toolName := range args {
+				tool, err := tools.GetByName(toolName)
+				if err != nil {
+					return fmt.Errorf("unable to find tool %s: %s", toolName, err)
+				}
+				requestedTools.Tools = append(requestedTools.Tools, *tool)
+			}
 		}
 		logging.Debug.Printfln("Requested %d tool(s)", len(requestedTools.Tools))
 
