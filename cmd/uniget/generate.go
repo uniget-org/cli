@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var baseImage string
@@ -32,7 +33,7 @@ var generateCmd = &cobra.Command{
 			if err != nil {
 				return fmt.Errorf("failed to get tool %s: %w", toolName, err)
 			}
-			result = append(result, fmt.Sprintf("COPY --link --from=%s%s:%s / /", registryImagePrefix, tool.Name, strings.Replace(tool.Version, "+", "-", -1)))
+			result = append(result, fmt.Sprintf("COPY --link --from=%s%s:%s / /%s", registryImagePrefix, tool.Name, strings.Replace(tool.Version, "+", "-", -1), viper.GetString("target")))
 		}
 		fmt.Printf("%s", strings.Join(result, "\n"))
 
