@@ -74,13 +74,16 @@ func (tool *Tool) Install(registryImagePrefix string, prefix string, target stri
 	return nil
 }
 
-func (tool *Tool) Inspect(registryImagePrefix string, altArch string) error {
+func (tool *Tool) Inspect(registryImagePrefix string, altArch string, raw bool) error {
 	// Fetch manifest for tool
 	err := containers.GetManifest(fmt.Sprintf(registryImagePrefix+"%s:%s", tool.Name, strings.Replace(tool.Version, "+", "-", -1)), altArch, func(blob blob.Reader) error {
 		result, err := archive.ListTarGz(blob, func(path string) string {
 			// Remove prefix usr/local/ to support arbitrary target directories
 			// Necessary as long as tools are still installed in hardcoded /usr/local
-			fixedPath := strings.TrimPrefix(path, "usr/local/")
+			fixedPath := path
+			if !raw {
+				fixedPath = strings.TrimPrefix(path, "usr/local/")
+			}
 			return fixedPath
 		})
 		if err != nil {
