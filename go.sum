@@ -90,6 +90,8 @@ github.com/pterm/pterm v0.12.36/go.mod h1:NjiL09hFhT/vWjQHSj1athJpx6H8cjpHXNAK5b
 github.com/pterm/pterm v0.12.40/go.mod h1:ffwPLwlbXxP+rxT0GsgDTzS3y3rmpAO1NMjUkGTYf8s=
 github.com/pterm/pterm v0.12.72 h1:1W7Oqi5yjEvrI0QroBqUefqXKJW4aD8/wAuqqd5qj0Q=
 github.com/pterm/pterm v0.12.72/go.mod h1:+M33aZWQVpmLmLbvjykyGZ4gAfeebznRo8JMbabaxQU=
+github.com/pterm/pterm v0.12.73 h1:Z//pqnLY9K0Y+1rKGmHedsRIFvWa7JM2WzvjfpNQMFI=
+github.com/pterm/pterm v0.12.73/go.mod h1:+M33aZWQVpmLmLbvjykyGZ4gAfeebznRo8JMbabaxQU=
 github.com/regclient/regclient v0.5.5 h1:fDh5afBCRbeSU71vcvbN0fI88D1fTfp2m39BPqki7EU=
 github.com/regclient/regclient v0.5.5/go.mod h1:604ymXFhwbmWjyfGFp3uF91gfCXIcjWBxJhBg94s9cM=
 github.com/regclient/regclient v0.5.6 h1:Ce5T9N6lAY9tBNzfQqFT+VARuhn4T/vsVsTynnfFaDU=
