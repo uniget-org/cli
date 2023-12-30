@@ -89,16 +89,7 @@ func uninstallTool(toolName string) error {
 			if strippedLine == "" {
 				continue
 			}
-
-			dangerousPrefix := true
-			if strings.HasPrefix(strippedLine, viper.GetString("target")) {
-				dangerousPrefix = false
-			} else if strings.HasPrefix(strippedLine, "/var/lib/uniget/") {
-				dangerousPrefix = false
-			} else if strings.HasPrefix(strippedLine, "/var/cache/uniget/") {
-				dangerousPrefix = false
-			}
-			if dangerousPrefix {
+			if strings.HasPrefix(strippedLine, "/") {
 				logging.Warning.Printfln("Skipping %s because it is not safe to remove", strippedLine)
 				continue
 			}

@@ -5,6 +5,7 @@ import (
 	"os"
 	"regexp"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/pterm/pterm"
@@ -197,7 +198,12 @@ func main() {
 			metadataFile = cacheDirectory + "/" + metadataFileName
 		}
 
+		if strings.HasPrefix(viper.GetString("target"), "/") {
+			viper.Set("target", strings.TrimLeft(viper.GetString("target"), "/"))
+		}
+
 		if viper.GetBool("debug") {
+			logging.Debug.Printfln("prefix: %s", viper.GetString("prefix"))
 			logging.Debug.Printfln("target: %s", viper.GetString("target"))
 			logging.Debug.Printfln("cacheRoot: %s", cacheRoot)
 			logging.Debug.Printfln("cacheDirectory: %s", cacheDirectory)
