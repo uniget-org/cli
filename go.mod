@@ -6,7 +6,7 @@ toolchain go1.21.1
 
 require (
 	atomicgo.dev/keyboard v0.2.9
-	github.com/jedib0t/go-pretty/v6 v6.5.1
+	github.com/jedib0t/go-pretty/v6 v6.5.2
 	github.com/muesli/mango-cobra v1.2.0
 	github.com/muesli/roff v0.1.0
 	github.com/opencontainers/go-digest v1.0.0
