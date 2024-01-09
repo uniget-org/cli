@@ -38,10 +38,10 @@ ARG GITHUB_TOKEN
 ARG ACTIONS_ID_TOKEN_REQUEST_URL
 ARG ACTIONS_ID_TOKEN_REQUEST_TOKEN
 ARG GITHUB_REF_NAME
-RUN --mount=from=goreleaser,src=/usr/local/bin/goreleaser,target=/usr/local/bin/goreleaser \
-    --mount=from=cosign,src=/usr/local/bin/cosign,target=/usr/local/bin/cosign \
-    --mount=from=syft,src=/usr/local/bin/syft,target=/usr/local/bin/syft \
-    --mount=from=gh,src=/usr/local/bin/gh,target=/usr/local/bin/gh \
+RUN --mount=from=goreleaser,src=/bin/goreleaser,target=/usr/local/bin/goreleaser \
+    --mount=from=cosign,src=/bin/cosign,target=/usr/local/bin/cosign \
+    --mount=from=syft,src=/bin/syft,target=/usr/local/bin/syft \
+    --mount=from=gh,src=/bin/gh,target=/usr/local/bin/gh \
     --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build <<EOF
 goreleaser healthcheck
@@ -82,7 +82,7 @@ FROM ghcr.io/uniget-org/tools/gosec:latest AS gosec
 
 FROM base AS sec
 RUN --mount=target=. \
-    --mount=from=gosec,src=/usr/local/bin/gosec,target=/usr/local/bin/gosec \
+    --mount=from=gosec,src=/bin/gosec,target=/usr/local/bin/gosec \
     --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build <<EOF
 gosec ./...
