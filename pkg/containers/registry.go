@@ -23,10 +23,6 @@ func GetPlatformManifest(ctx context.Context, rc *regclient.RegClient, r ref.Ref
 		return nil, fmt.Errorf("failed to get manifest: %s", err)
 	}
 
-	// TODO: Test manifest list with Docker media types
-	// TODO: Test manifest list with OCI media types
-	// TODO: Test image with Docker media types
-	// TODO: Test image with OCI media types
 	if m.IsList() {
 
 		mi, ok := m.(manifest.Indexer)
@@ -65,10 +61,6 @@ func GetPlatformManifest(ctx context.Context, rc *regclient.RegClient, r ref.Ref
 }
 
 func GetManifest(image string, altArch string, callback func(blob blob.Reader) error) error {
-	//old
-	//ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(60*time.Second))
-	//defer cancel()
-	//new
 	ctx := context.Background()
 
 	r, err := ref.New(image)
@@ -82,9 +74,6 @@ func GetManifest(image string, altArch string, callback func(blob blob.Reader) e
 	rc := regclient.New(rcOpts...)
 	defer rc.Close(ctx, r)
 
-	//old
-	//m, err := GetPlatformManifest(ctx, rc, r, altArch)
-	//new
 	manifestCtx, manifestCancel := context.WithTimeout(ctx, 60*time.Second)
 	defer manifestCancel()
 	m, err := GetPlatformManifest(manifestCtx, rc, r, altArch)
@@ -92,11 +81,6 @@ func GetManifest(image string, altArch string, callback func(blob blob.Reader) e
 		return fmt.Errorf("failed to get manifest: %s", err)
 	}
 
-	//old
-	//err = ProcessLayersCallback(ctx, rc, m, r, callback)
-	//new
-	//layerCtx, layerCancel := context.WithTimeout(ctx, 120*time.Second)
-	//defer layerCancel()
 	err = ProcessLayersCallback(ctx, rc, m, r, callback)
 	if err != nil {
 		return fmt.Errorf("failed to process layers with callback: %s", err)
@@ -125,7 +109,6 @@ func ProcessLayersCallback(ctx context.Context, rc *regclient.RegClient, m manif
 	}
 
 	layer := layers[0]
-	// TODO: Test known but unsupported media types
 	if layer.MediaType == types.MediaTypeOCI1Layer || layer.MediaType == types.MediaTypeOCI1LayerZstd {
 		return fmt.Errorf("only layers with gzip compression are supported (not %s)", layer.MediaType)
 	}
@@ -152,6 +135,5 @@ func ProcessLayersCallback(ctx context.Context, rc *regclient.RegClient, m manif
 		return nil
 	}
 
-	// TODO: Test unknown media types
 	return fmt.Errorf("unknown media type encountered: %s", layer.MediaType)
 }
