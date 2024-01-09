@@ -14,53 +14,33 @@ import (
 	"github.com/regclient/regclient/types"
 	"github.com/regclient/regclient/types/blob"
 	"github.com/regclient/regclient/types/manifest"
+	"github.com/regclient/regclient/types/platform"
 	"github.com/regclient/regclient/types/ref"
 )
 
-func GetPlatformManifest(ctx context.Context, rc *regclient.RegClient, r ref.Ref, altArch string) (manifest.Manifest, error) {
+func GetPlatformManifest(ctx context.Context, rc *regclient.RegClient, r ref.Ref) (manifest.Manifest, error) {
 	m, err := rc.ManifestGet(ctx, r)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get manifest: %s", err)
 	}
 
 	if m.IsList() {
-
-		mi, ok := m.(manifest.Indexer)
-		if !ok {
-			return nil, fmt.Errorf("failed to get imager")
-		}
-		manifests, err := mi.GetManifestList()
+		plat := platform.Local()
+		desc, err := manifest.GetPlatformDesc(m, &plat)
 		if err != nil {
-			return nil, fmt.Errorf("error getting manifests")
+			return nil, fmt.Errorf("error getting platform descriptor")
 		}
 
-		for _, manifest := range manifests {
-
-			if manifest.Platform.Architecture == altArch {
-				platformImage := fmt.Sprintf("%s@%s", r.Reference, manifest.Digest)
-				r2, err := ref.New(platformImage)
-				if err != nil {
-					return nil, fmt.Errorf("failed to parse image name <%s>: %s", platformImage, err)
-				}
-
-				m, err := rc.ManifestGet(ctx, r2)
-				if err != nil {
-					return nil, fmt.Errorf("failed to get manifest: %s", err)
-				}
-
-				if m.IsList() {
-					return nil, fmt.Errorf("manifest cannot be list again")
-				}
-
-				return m, nil
-			}
+		m, err = rc.ManifestGet(ctx, r, regclient.WithManifestDesc(*desc))
+		if err != nil {
+			return nil, fmt.Errorf("failed to get manifest: %s", err)
 		}
 	}
 
 	return m, nil
 }
 
-func GetManifest(image string, altArch string, callback func(blob blob.Reader) error) error {
+func GetManifest(image string, callback func(blob blob.Reader) error) error {
 	ctx := context.Background()
 
 	r, err := ref.New(image)
@@ -76,7 +56,7 @@ func GetManifest(image string, altArch string, callback func(blob blob.Reader) e
 
 	manifestCtx, manifestCancel := context.WithTimeout(ctx, 60*time.Second)
 	defer manifestCancel()
-	m, err := GetPlatformManifest(manifestCtx, rc, r, altArch)
+	m, err := GetPlatformManifest(manifestCtx, rc, r)
 	if err != nil {
 		return fmt.Errorf("failed to get manifest: %s", err)
 	}

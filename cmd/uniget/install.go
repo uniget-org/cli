@@ -338,10 +338,10 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 		var err error
 		if viper.GetBool("user") {
 			logging.Debug.Printfln("Installing in user context")
-			err = tool.Install(registryImagePrefix, viper.GetString("prefix")+"/"+viper.GetString("target"), "", altArch)
+			err = tool.Install(registryImagePrefix, viper.GetString("prefix")+"/"+viper.GetString("target"), "")
 		} else {
 			logging.Debug.Printfln("Installing in system context")
-			err = tool.Install(registryImagePrefix, viper.GetString("prefix"), viper.GetString("target"), altArch)
+			err = tool.Install(registryImagePrefix, viper.GetString("prefix"), viper.GetString("target"))
 		}
 		if err != nil {
 			logging.Warning.Printfln("Unable to install %s: %s", tool.Name, err)

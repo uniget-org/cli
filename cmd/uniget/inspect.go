@@ -50,7 +50,7 @@ var inspectCmd = &cobra.Command{
 		}
 
 		logging.Info.Printfln("Inspecting %s %s\n", inspectTool.Name, inspectTool.Version)
-		err = inspectTool.Inspect(registryImagePrefix, altArch, rawInspect)
+		err = inspectTool.Inspect(registryImagePrefix, rawInspect)
 		if err != nil {
 			return fmt.Errorf("unable to inspect %s: %s", inspectTool.Name, err)
 		}
