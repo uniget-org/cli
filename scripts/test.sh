@@ -57,22 +57,12 @@ go run ./cmd/uniget --prefix=${TEMP_DIR} --target=usr version yq || exit 1
 
 go run ./cmd/uniget inspect jq | grep "bin/jq$" || exit 1
 
-#cat <<EOF >"${TEMP_DIR}/Dockerfile"
-#FROM ghcr.io/uniget-org/tools/uniget:latest AS uniget
-#FROM ubuntu:22.04
-#RUN apt-get update \
-# && apt-get -y install ca-certificates
-#COPY --link --from=uniget / /usr/local
-#EOF
-#docker buildx build --tag uniget-user --load "${TEMP_DIR}"
-#docker run --interactive --rm uniget-user bash -o errexit <<EOF || exit 1
-uniget --user update
-test -f "${HOME}"/.cache/uniget/metadata.json"
-uniget --user install dummy
-test -d "${HOME}"/.cache/uniget/dummy"
-test -f "${HOME}"/.local/var/lib/uniget/manifests/dummy.json"
-test -f "${HOME}"/.local/var/lib/uniget/manifests/dummy.txt"
-#EOF
+go run ./cmd/uniget --user update
+test -f "${HOME}/.cache/uniget/metadata.json"
+go run ./cmd/uniget --user install dummy
+test -d "${HOME}/.cache/uniget/dummy"
+test -f "${HOME}/.local/var/lib/uniget/manifests/dummy.json"
+test -f "${HOME}/.local/var/lib/uniget/manifests/dummy.txt"
 
 echo "-----------------------------"
 echo "All tests passed successfully"
