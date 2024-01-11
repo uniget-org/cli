@@ -262,7 +262,7 @@ func main() {
 
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix("uniget")
-	err = viper.BindPFlag("log-level", pf.Lookup("log-level"))
+	err = viper.BindEnv("log-level", "UNIGET_LOG_LEVEL")
 	if err != nil {
 		logging.Error.Printfln("Error binding log-level flag: %s", err)
 		os.Exit(1)
