@@ -277,8 +277,8 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 			continue
 		}
 
+		var installSpinner *pterm.SpinnerPrinter
 		if reinstall {
-			logging.Info.Printfln("Reinstalling %s %s", tool.Name, tool.Version)
 			err := uninstallTool(tool.Name)
 			if err != nil {
 				logging.Warning.Printfln("Unable to uninstall %s: %s", tool.Name, err)
@@ -286,7 +286,6 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 			}
 
 		} else if tool.Status.BinaryPresent || tool.Status.MarkerFilePresent {
-			logging.Info.Printfln("Updating %s %s", tool.Name, tool.Version)
 			err := uninstallTool(tool.Name)
 			if err != nil {
 				logging.Warning.Printfln("Unable to uninstall %s: %s", tool.Name, err)
@@ -297,9 +296,12 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 				logging.Warning.Printfln("Unable to print tool update: %s", err)
 				continue
 			}
-
+		}
+		installMessage := fmt.Sprintf("Installing %s %s", tool.Name, tool.Version)
+		if viper.GetString("log-level") == "warning" {
+			installSpinner, _ = pterm.DefaultSpinner.Start(installMessage)
 		} else {
-			logging.Info.Printfln("Installing %s %s", tool.Name, tool.Version)
+			logging.Info.Println(installMessage)
 		}
 
 		if !skipDependencies {
@@ -344,8 +346,14 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 			err = tool.Install(registryImagePrefix, viper.GetString("prefix"), viper.GetString("target"))
 		}
 		if err != nil {
+			if installSpinner != nil {
+				installSpinner.Fail()
+			}
 			logging.Warning.Printfln("Unable to install %s: %s", tool.Name, err)
 			continue
+		}
+		if installSpinner != nil {
+			installSpinner.Success()
 		}
 
 		err = printToolUsage(tool.Name)
@@ -366,8 +374,7 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 		return nil
 	}
 	if len(viper.GetString("prefix")) > 0 {
-		logging.Warning.Printfln("Post installation skipped because prefix is set to %s", viper.GetString("prefix"))
-		logging.Warning.Printfln("Please run 'uniget postinstall' in the context of %s to complete the installation", viper.GetString("prefix"))
+		logging.Warning.Println("Post installation skipped because prefix is set")
 		return nil
 	}
 
