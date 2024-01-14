@@ -210,7 +210,7 @@ func main() {
 			}
 			libDirectory = libRoot + "/" + projectName
 
-			configRoot = ".local/state"
+			configRoot = ".config"
 			if os.Getenv("XDG_CONFIG_HOME") != "" {
 				if strings.HasPrefix(os.Getenv("XDG_CONFIG_HOME"), os.Getenv("HOME")) {
 					configRoot = strings.TrimPrefix(os.Getenv("XDG_CONFIG_HOME"), os.Getenv("HOME")+"/")
