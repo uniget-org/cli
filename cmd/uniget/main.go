@@ -34,6 +34,8 @@ var cacheRoot = "var/cache"
 var cacheDirectory = cacheRoot + "/" + projectName
 var libRoot = "var/lib"
 var libDirectory = libRoot + "/" + projectName
+var configRoot = "etc"
+var profileDDirectory = configRoot + "/profile.d"
 var metadataFileName = "metadata.json"
 var metadataFile = cacheDirectory + "/" + metadataFileName
 var registry = "ghcr.io"
@@ -191,10 +193,31 @@ func main() {
 		if viper.GetBool("user") {
 			viper.Set("prefix", os.Getenv("HOME"))
 			viper.Set("target", ".local")
+
 			cacheRoot = ".cache"
+			if os.Getenv("XDG_CACHE_HOME") != "" {
+				if strings.HasPrefix(os.Getenv("XDG_CACHE_HOME"), os.Getenv("HOME")) {
+					cacheRoot = strings.TrimPrefix(os.Getenv("XDG_CACHE_HOME"), os.Getenv("HOME"))
+				}
+			}
 			cacheDirectory = cacheRoot + "/" + projectName
+
 			libRoot = ".local/state"
+			if os.Getenv("XDG_STATE_HOME") != "" {
+				if strings.HasPrefix(os.Getenv("XDG_STATE_HOME"), os.Getenv("HOME")) {
+					libRoot = strings.TrimPrefix(os.Getenv("XDG_STATE_HOME"), os.Getenv("HOME"))
+				}
+			}
 			libDirectory = libRoot + "/" + projectName
+
+			configRoot = ".local/state"
+			if os.Getenv("XDG_CONFIG_HOME") != "" {
+				if strings.HasPrefix(os.Getenv("XDG_CONFIG_HOME"), os.Getenv("HOME")) {
+					configRoot = strings.TrimPrefix(os.Getenv("XDG_CONFIG_HOME"), os.Getenv("HOME"))
+				}
+			}
+			profileDDirectory = configRoot + "/profile.d"
+
 			metadataFile = cacheDirectory + "/" + metadataFileName
 		}
 

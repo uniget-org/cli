@@ -36,7 +36,22 @@ var postinstallCmd = &cobra.Command{
 	Long:  header + "\nRun postinstall for tools",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return postinstall()
+		err := postinstall()
+		if err != nil {
+			return fmt.Errorf("unable to run postinstall: %s", err)
+		}
+
+		err = installProfileDShim()
+		if err != nil {
+			return fmt.Errorf("unable to install profile.d shim: %s", err)
+		}
+
+		err = installCompletionShim()
+		if err != nil {
+			return fmt.Errorf("unable to install completion shim: %s", err)
+		}
+
+		return nil
 	},
 }
 
@@ -86,8 +101,12 @@ func postinstall() error {
 		}
 	}
 
-	// Add shim for profile.d
-	profileDShimFile := viper.GetString("prefix") + "/etc/profile.d/uniget-profile.d.sh"
+	return nil
+}
+
+func installProfileDShim() error {
+	profileDShimFile := profileDDirectory + "/uniget-profile.d.sh"
+
 	if directoryIsWritable(profileDShimFile) {
 		profileDScript := strings.Replace(postinstallProfileDScript, "${target}", "/"+viper.GetString("target"), -1)
 		err := os.WriteFile(
@@ -100,8 +119,12 @@ func postinstall() error {
 		}
 	}
 
-	// Add shim for completion
-	completionShimFile := viper.GetString("prefix") + "/etc/profile.d/uniget-completion.sh"
+	return nil
+}
+
+func installCompletionShim() error {
+	completionShimFile := profileDDirectory + "/uniget-completion.sh"
+
 	if directoryIsWritable(completionShimFile) {
 		completionScript := strings.Replace(postinstallCompletionScript, "${target}", "/"+viper.GetString("target"), -1)
 		err := os.WriteFile(
