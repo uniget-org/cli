@@ -61,6 +61,8 @@ func createCron() error {
 		return fmt.Errorf("cannot determine OS: %w", err)
 	}
 
+	// user
+
 	var cronWeeklyPath string
 	var cronDailyPath string
 	switch osVendor {
@@ -92,6 +94,8 @@ func createCron() error {
 }
 
 func removeCron() error {
+	// user
+
 	// Check if exists /etc/cron.daily/uniget-update
 	if fileExists(viper.GetString("prefix") + "/etc/cron.weekly/uniget-update") {
 		// Remove /etc/cron.daily/uniget-update
