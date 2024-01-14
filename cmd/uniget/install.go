@@ -377,6 +377,18 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 		logging.Warning.Println("Post installation skipped because prefix is set")
 		return nil
 	}
+	err := postinstall()
+	if err != nil {
+		return fmt.Errorf("unable to run postinstall: %s", err)
+	}
+	err = installProfileDShim()
+	if err != nil {
+		return fmt.Errorf("unable to install profile.d shim: %s", err)
+	}
+	err = installCompletionShim()
+	if err != nil {
+		return fmt.Errorf("unable to install completion shim: %s", err)
+	}
 
-	return postinstall()
+	return nil
 }
