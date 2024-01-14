@@ -2,41 +2,29 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-
-	myos "github.com/uniget-org/cli/pkg/os"
 )
 
-var cronUpdateScript = `#!/bin/bash
-set -o errexit
-
-uniget update
-uniget install --installed
-`
-var cronUpgradeScript = `#!/bin/bash
-set -o errexit
-
-outputPath="$(which uniget)"
-curl https://github.com/uniget-org/cli/releases/latest/download/uniget \
-	--location \
-	--fail \
-	--output "${outputPath}"
-chmod +x "${outputPath}"
-`
-
 var create bool
+var createUpgradeHour string
+var createSelfUpgradeHour string
+var createSelfUpgradeDay string
 var remove bool
 
 func initCronCmd() {
 	rootCmd.AddCommand(cronCmd)
 
 	cronCmd.Flags().BoolVar(&create, "create", false, "Create cron jobs")
+	cronCmd.Flags().StringVar(&createUpgradeHour, "upgrade-hour", "1", "Hour to run cron jobs for tool upgrade")
+	cronCmd.Flags().StringVar(&createSelfUpgradeHour, "self-upgrade-hour", "0", "Hour to run cron jobs for self-upgrade")
+	cronCmd.Flags().StringVar(&createSelfUpgradeDay, "self-upgrade-day", "0", "Day to run cron jobs for self-upgrade on")
 	cronCmd.Flags().BoolVar(&remove, "remove", false, "Remove cron jobs")
 	cronCmd.MarkFlagsMutuallyExclusive("create", "remove")
+	cronCmd.MarkFlagsMutuallyExclusive("remove", "upgrade-hour")
+	cronCmd.MarkFlagsMutuallyExclusive("remove", "self-upgrade-hour")
 }
 
 var cronCmd = &cobra.Command{
@@ -56,78 +44,80 @@ var cronCmd = &cobra.Command{
 	},
 }
 
-func getUserCrontab() (string, error) {
+func getUserCrontab() ([]string, error) {
 	cmd := exec.Command("crontab", "-l")
 	output, err := cmd.Output()
 	if err != nil {
-		return "", fmt.Errorf("cannot get user crontab: %w", err)
+		return nil, fmt.Errorf("cannot get user crontab: %w", err)
 	}
-	return string(output), nil
+
+	lines := []string{}
+	if len(output) > 0 {
+		lines = strings.Split(string(output), "\n")
+	}
+
+	return lines, nil
+}
+
+func removeUserCronTab(lines []string) []string {
+	newLines := []string{}
+
+	for i := len(lines) - 1; i >= 0; i-- {
+		if !strings.Contains(lines[i], "uniget") {
+			newLines = append(newLines, lines[i])
+		}
+	}
+
+	return newLines
+}
+
+func setUserCrontab(lines []string) error {
+	input := strings.Join(lines, "\n") + "\n"
+	if len(lines) == 0 {
+		input = ""
+	}
+	cmd := exec.Command("crontab", "-")
+	cmd.Stdin = strings.NewReader(input)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("cannot set user crontab: %s", output)
+	}
+
+	return nil
 }
 
 func createCron() error {
-	osVendor, err := myos.GetOsVendor(viper.GetString("prefix"))
+	lines, err := getUserCrontab()
 	if err != nil {
-		return fmt.Errorf("cannot determine OS: %w", err)
+		return fmt.Errorf("cannot get user crontab: %w", err)
 	}
+	lines = removeUserCronTab(lines)
+	lines = append(lines, fmt.Sprintf("30 %s * * * uniget update && uniget install --installed", createUpgradeHour))
+	lines = append(lines, fmt.Sprintf("0 %s * * %s uniget self-upgrade", createSelfUpgradeHour, createSelfUpgradeDay))
 
-	if viper.GetBool("user") {
-		return fmt.Errorf("user cron jobs are not supported yet")
-
-	} else {
-		var cronWeeklyPath string
-		var cronDailyPath string
-		switch osVendor {
-		case "ubuntu":
-			cronWeeklyPath = "/etc/cron.weekly"
-			cronDailyPath = "/etc/cron.daily"
-		case "alpine":
-			cronWeeklyPath = "/etc/periodic/weekly"
-			cronDailyPath = "/etc/periodic/daily"
-		default:
-			return fmt.Errorf("unsupported OS: %s", osVendor)
-		}
-
-		// Write cronUpdateScript to /etc/cron.daily/uniget-update
-		updateScript := []byte(cronUpdateScript)
-		err = os.WriteFile(fmt.Sprintf("%s/uniget-update", cronDailyPath), updateScript, 0755) // #nosec G306 -- File must be executable
-		if err != nil {
-			return fmt.Errorf("cannot write cron update script: %w", err)
-		}
-
-		// Write cronUpgradeScript to /etc/cron.weekly/uniget-upgrade
-		upgradeScript := []byte(cronUpgradeScript)
-		err = os.WriteFile(fmt.Sprintf("%s/uniget-upgrade", cronWeeklyPath), upgradeScript, 0755) // #nosec G306 -- File must be executable
-		if err != nil {
-			return fmt.Errorf("cannot write cron upgrade script: %w", err)
-		}
+	err = setUserCrontab(lines)
+	if err != nil {
+		return fmt.Errorf("cannot set user crontab: %w", err)
 	}
 
 	return nil
 }
 
 func removeCron() error {
-	if viper.GetBool("user") {
-		return fmt.Errorf("user cron jobs are not supported yet")
+	lines, err := getUserCrontab()
+	if err != nil {
+		return fmt.Errorf("cannot get user crontab: %w", err)
+	}
+	lines = removeUserCronTab(lines)
+	if len(lines) > 0 && lines[len(lines)-1] == "" {
+		lines = lines[:len(lines)-1]
+	}
 
-	} else {
-		// Check if exists /etc/cron.daily/uniget-update
-		if fileExists(viper.GetString("prefix") + "/etc/cron.weekly/uniget-update") {
-			// Remove /etc/cron.daily/uniget-update
-			err := os.Remove(viper.GetString("prefix") + "/etc/cron.weekly/uniget-update")
-			if err != nil {
-				return fmt.Errorf("cannot remove cron update script: %w", err)
-			}
-		}
+	fmt.Printf("Line count: %d\n", len(lines))
 
-		// Check if exists /etc/cron.weekly/uniget-upgrade
-		if fileExists(viper.GetString("prefix") + "/etc/cron.daily/uniget-upgrade") {
-			// Remove /etc/cron.weekly/uniget-upgrade
-			err := os.Remove(viper.GetString("prefix") + "/etc/cron.daily/uniget-upgrade")
-			if err != nil {
-				return fmt.Errorf("cannot remove cron upgrade script: %w", err)
-			}
-		}
+	err = setUserCrontab(lines)
+	if err != nil {
+		return fmt.Errorf("cannot set user crontab: %w", err)
 	}
 
 	return nil
