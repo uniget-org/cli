@@ -106,9 +106,14 @@ func postinstall() error {
 
 func installProfileDShim() error {
 	profileDShimFile := profileDDirectory + "/uniget-profile.d.sh"
+	profileDScript := strings.Replace(postinstallProfileDScript, "${target}", "/"+viper.GetString("target"), -1)
+
+	if viper.GetBool("user") {
+		profileDShimFile = viper.GetString("prefix") + "/.config/uniget/profile.d-shim.sh"
+		profileDScript = strings.Replace(postinstallProfileDScript, "${target}", viper.GetString("prefix")+"/"+viper.GetString("target"), -1)
+	}
 
 	if directoryIsWritable(profileDShimFile) {
-		profileDScript := strings.Replace(postinstallProfileDScript, "${target}", "/"+viper.GetString("target"), -1)
 		err := os.WriteFile(
 			profileDShimFile,
 			[]byte(profileDScript),
@@ -124,9 +129,20 @@ func installProfileDShim() error {
 
 func installCompletionShim() error {
 	completionShimFile := profileDDirectory + "/uniget-completion.sh"
+	completionScript := strings.Replace(postinstallCompletionScript, "${target}", "/"+viper.GetString("target"), -1)
+
+	if viper.GetBool("user") {
+		dataDirectory := ".local/share"
+		if os.Getenv("XDG_DATA_HOME") != "" {
+			if strings.HasPrefix(os.Getenv("XDG_DATA_HOME"), os.Getenv("HOME")) {
+				dataDirectory = strings.TrimPrefix(os.Getenv("XDG_DATA_HOME"), os.Getenv("HOME")+"/")
+			}
+		}
+		completionShimFile = viper.GetString("prefix") + dataDirectory + "/bash-completion/uniget-shim.sh"
+		completionScript = strings.Replace(postinstallCompletionScript, "${target}", viper.GetString("prefix")+"/.local", -1)
+	}
 
 	if directoryIsWritable(completionShimFile) {
-		completionScript := strings.Replace(postinstallCompletionScript, "${target}", "/"+viper.GetString("target"), -1)
 		err := os.WriteFile(
 			completionShimFile,
 			[]byte(completionScript),
