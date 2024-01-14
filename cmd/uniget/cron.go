@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -55,62 +56,77 @@ var cronCmd = &cobra.Command{
 	},
 }
 
+func getUserCrontab() (string, error) {
+	cmd := exec.Command("crontab", "-l")
+	output, err := cmd.Output()
+	if err != nil {
+		return "", fmt.Errorf("cannot get user crontab: %w", err)
+	}
+	return string(output), nil
+}
+
 func createCron() error {
 	osVendor, err := myos.GetOsVendor(viper.GetString("prefix"))
 	if err != nil {
 		return fmt.Errorf("cannot determine OS: %w", err)
 	}
 
-	// user
+	if viper.GetBool("user") {
+		return fmt.Errorf("user cron jobs are not supported yet")
 
-	var cronWeeklyPath string
-	var cronDailyPath string
-	switch osVendor {
-	case "ubuntu":
-		cronWeeklyPath = "/etc/cron.weekly"
-		cronDailyPath = "/etc/cron.daily"
-	case "alpine":
-		cronWeeklyPath = "/etc/periodic/weekly"
-		cronDailyPath = "/etc/periodic/daily"
-	default:
-		return fmt.Errorf("unsupported OS: %s", osVendor)
-	}
+	} else {
+		var cronWeeklyPath string
+		var cronDailyPath string
+		switch osVendor {
+		case "ubuntu":
+			cronWeeklyPath = "/etc/cron.weekly"
+			cronDailyPath = "/etc/cron.daily"
+		case "alpine":
+			cronWeeklyPath = "/etc/periodic/weekly"
+			cronDailyPath = "/etc/periodic/daily"
+		default:
+			return fmt.Errorf("unsupported OS: %s", osVendor)
+		}
 
-	// Write cronUpdateScript to /etc/cron.daily/uniget-update
-	updateScript := []byte(cronUpdateScript)
-	err = os.WriteFile(fmt.Sprintf("%s/uniget-update", cronDailyPath), updateScript, 0755) // #nosec G306 -- File must be executable
-	if err != nil {
-		return fmt.Errorf("cannot write cron update script: %w", err)
-	}
+		// Write cronUpdateScript to /etc/cron.daily/uniget-update
+		updateScript := []byte(cronUpdateScript)
+		err = os.WriteFile(fmt.Sprintf("%s/uniget-update", cronDailyPath), updateScript, 0755) // #nosec G306 -- File must be executable
+		if err != nil {
+			return fmt.Errorf("cannot write cron update script: %w", err)
+		}
 
-	// Write cronUpgradeScript to /etc/cron.weekly/uniget-upgrade
-	upgradeScript := []byte(cronUpgradeScript)
-	err = os.WriteFile(fmt.Sprintf("%s/uniget-upgrade", cronWeeklyPath), upgradeScript, 0755) // #nosec G306 -- File must be executable
-	if err != nil {
-		return fmt.Errorf("cannot write cron upgrade script: %w", err)
+		// Write cronUpgradeScript to /etc/cron.weekly/uniget-upgrade
+		upgradeScript := []byte(cronUpgradeScript)
+		err = os.WriteFile(fmt.Sprintf("%s/uniget-upgrade", cronWeeklyPath), upgradeScript, 0755) // #nosec G306 -- File must be executable
+		if err != nil {
+			return fmt.Errorf("cannot write cron upgrade script: %w", err)
+		}
 	}
 
 	return nil
 }
 
 func removeCron() error {
-	// user
+	if viper.GetBool("user") {
+		return fmt.Errorf("user cron jobs are not supported yet")
 
-	// Check if exists /etc/cron.daily/uniget-update
-	if fileExists(viper.GetString("prefix") + "/etc/cron.weekly/uniget-update") {
-		// Remove /etc/cron.daily/uniget-update
-		err := os.Remove(viper.GetString("prefix") + "/etc/cron.weekly/uniget-update")
-		if err != nil {
-			return fmt.Errorf("cannot remove cron update script: %w", err)
+	} else {
+		// Check if exists /etc/cron.daily/uniget-update
+		if fileExists(viper.GetString("prefix") + "/etc/cron.weekly/uniget-update") {
+			// Remove /etc/cron.daily/uniget-update
+			err := os.Remove(viper.GetString("prefix") + "/etc/cron.weekly/uniget-update")
+			if err != nil {
+				return fmt.Errorf("cannot remove cron update script: %w", err)
+			}
 		}
-	}
 
-	// Check if exists /etc/cron.weekly/uniget-upgrade
-	if fileExists(viper.GetString("prefix") + "/etc/cron.daily/uniget-upgrade") {
-		// Remove /etc/cron.weekly/uniget-upgrade
-		err := os.Remove(viper.GetString("prefix") + "/etc/cron.daily/uniget-upgrade")
-		if err != nil {
-			return fmt.Errorf("cannot remove cron upgrade script: %w", err)
+		// Check if exists /etc/cron.weekly/uniget-upgrade
+		if fileExists(viper.GetString("prefix") + "/etc/cron.daily/uniget-upgrade") {
+			// Remove /etc/cron.weekly/uniget-upgrade
+			err := os.Remove(viper.GetString("prefix") + "/etc/cron.daily/uniget-upgrade")
+			if err != nil {
+				return fmt.Errorf("cannot remove cron upgrade script: %w", err)
+			}
 		}
 	}
 
