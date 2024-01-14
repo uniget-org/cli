@@ -75,7 +75,7 @@ func uninstallTool(toolName string) error {
 	}
 
 	var uninstallSpinner *pterm.SpinnerPrinter
-	installMessage := fmt.Sprintf("Uninstalling %s %s", tool.Name, tool.Version)
+	installMessage := fmt.Sprintf("Uninstalling %s", tool.Name)
 	if viper.GetString("log-level") == "warning" {
 		uninstallSpinner, _ = pterm.DefaultSpinner.Start(installMessage)
 	} else {
