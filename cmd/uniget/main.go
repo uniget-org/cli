@@ -197,7 +197,7 @@ func main() {
 			cacheRoot = ".cache"
 			if os.Getenv("XDG_CACHE_HOME") != "" {
 				if strings.HasPrefix(os.Getenv("XDG_CACHE_HOME"), os.Getenv("HOME")) {
-					cacheRoot = strings.TrimPrefix(os.Getenv("XDG_CACHE_HOME"), os.Getenv("HOME"))
+					cacheRoot = strings.TrimPrefix(os.Getenv("XDG_CACHE_HOME"), os.Getenv("HOME")+"/")
 				}
 			}
 			cacheDirectory = cacheRoot + "/" + projectName
@@ -205,7 +205,7 @@ func main() {
 			libRoot = ".local/state"
 			if os.Getenv("XDG_STATE_HOME") != "" {
 				if strings.HasPrefix(os.Getenv("XDG_STATE_HOME"), os.Getenv("HOME")) {
-					libRoot = strings.TrimPrefix(os.Getenv("XDG_STATE_HOME"), os.Getenv("HOME"))
+					libRoot = strings.TrimPrefix(os.Getenv("XDG_STATE_HOME"), os.Getenv("HOME")+"/")
 				}
 			}
 			libDirectory = libRoot + "/" + projectName
@@ -213,7 +213,7 @@ func main() {
 			configRoot = ".local/state"
 			if os.Getenv("XDG_CONFIG_HOME") != "" {
 				if strings.HasPrefix(os.Getenv("XDG_CONFIG_HOME"), os.Getenv("HOME")) {
-					configRoot = strings.TrimPrefix(os.Getenv("XDG_CONFIG_HOME"), os.Getenv("HOME"))
+					configRoot = strings.TrimPrefix(os.Getenv("XDG_CONFIG_HOME"), os.Getenv("HOME")+"/")
 				}
 			}
 			profileDDirectory = configRoot + "/profile.d"
