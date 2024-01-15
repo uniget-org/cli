@@ -13,7 +13,8 @@
     ":separatePatchReleases",
     ":automergePr",
     ":automergeRequireAllStatusChecks",
-    ":semanticCommits"
+    ":semanticCommits",
+    "mergeConfidence:all-badges"
   ],
   "timezone": "Europe/Berlin",
   "prConcurrentLimit": 0,
