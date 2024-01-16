@@ -389,6 +389,10 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 	if err != nil {
 		return fmt.Errorf("unable to install completion shim: %s", err)
 	}
+	err = installSystemDUnit()
+	if err != nil {
+		return fmt.Errorf("unable to install systemd unit: %s", err)
+	}
 
 	return nil
 }

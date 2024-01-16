@@ -155,3 +155,13 @@ func installCompletionShim() error {
 
 	return nil
 }
+
+func installSystemDUnit() error {
+	// add flag --systemd whether to install systemd units
+	// check if tool ships with systemd unit (check file list for etc/systemd/system/*)
+	// if no user context create symlink from TARGET/etc/systemd/system/* to /etc/systemd/system/
+	// if user context create symlink from TARGET/etc/systemd/user/* to ~/.local/share/systemd/user/ or ~/.config/systemd/user/
+	// reload systemd honoring context
+
+	return nil
+}
