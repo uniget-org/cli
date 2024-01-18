@@ -1,7 +1,6 @@
 package archive
 
 import (
-	// TODO: Check if https://github.com/mholt/archiver makes more sense
 	"archive/tar"
 	"compress/gzip"
 	"fmt"
