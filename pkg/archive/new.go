@@ -155,6 +155,20 @@ func ExtractTarGz(gzipStream io.Reader, patchPath func(path string) string) erro
 					return fmt.Errorf("ExtractTarGz: MkdirAll() failed: %s", err.Error())
 				}
 
+				_, err = os.Lstat(header.Linkname)
+				if err != nil {
+					if os.IsNotExist(err) {
+						// Symlink target does not exist
+					} else {
+						return fmt.Errorf("ExtractTarGz: Lstat() failed for TypeSymlink: %s", err.Error())
+					}
+				} else {
+					err = os.Remove(header.Linkname)
+					if err != nil {
+						return fmt.Errorf("ExtractTarGz: Remove() failed for TypeSymlink: %s", err.Error())
+					}
+				}
+
 				// Create symlink
 				err = os.Symlink(header.Linkname, fixedHeaderName)
 				if err != nil {
