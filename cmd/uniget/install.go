@@ -58,15 +58,15 @@ var installCmd = &cobra.Command{
 
 		// Collect requested tools based on mode
 		if defaultMode {
-			logging.Debug.Printfln("Adding default tools to requested tools")
+			logging.Debugf("Adding default tools to requested tools")
 			requestedTools = tools.GetByTags([]string{"category/default"})
 
 		} else if tagsMode {
-			logging.Debug.Printfln("Adding tools matching tags to requested tools")
+			logging.Debugf("Adding tools matching tags to requested tools")
 			requestedTools = tools.GetByTags(args)
 
 		} else if installedMode {
-			logging.Debug.Println("Collecting installed tools")
+			logging.Debugf("Collecting installed tools")
 			spinnerInstalledTools, _ := pterm.DefaultSpinner.Start("Collecting installed tools...")
 			var err error
 			requestedTools, err = findInstalledTools(tools)
@@ -76,11 +76,11 @@ var installCmd = &cobra.Command{
 			spinnerInstalledTools.Info()
 
 		} else if allMode {
-			logging.Debug.Printfln("Adding all tools to requested tools")
+			logging.Debugf("Adding all tools to requested tools")
 			requestedTools = tools
 
 		} else if filename != "" {
-			logging.Debug.Printfln("Adding tools from file %s to requested tools", filename)
+			logging.Debugf("Adding tools from file %s to requested tools", filename)
 			data, err := os.ReadFile(filename) // #nosec G304 -- Accept file from arbitrary location
 			if err != nil {
 				return fmt.Errorf("unable to read file %s: %s", filename, err)
@@ -92,7 +92,7 @@ var installCmd = &cobra.Command{
 					continue
 				}
 
-				logging.Debug.Printfln("Adding %s to requested tools", line)
+				logging.Debugf("Adding %s to requested tools", line)
 				tool, err := tools.GetByName(line)
 				if err != nil {
 					logging.Warning.Printfln("Unable to find tool %s: %s", line, err)
@@ -102,7 +102,7 @@ var installCmd = &cobra.Command{
 			}
 
 		} else {
-			logging.Debug.Printfln("Adding %s to requested tools", strings.Join(args, ","))
+			logging.Debugf("Adding %s to requested tools", strings.Join(args, ","))
 			for _, toolName := range args {
 				tool, err := tools.GetByName(toolName)
 				if err != nil {
@@ -111,7 +111,7 @@ var installCmd = &cobra.Command{
 				requestedTools.Tools = append(requestedTools.Tools, *tool)
 			}
 		}
-		logging.Debug.Printfln("Requested %d tool(s)", len(requestedTools.Tools))
+		logging.Debugf("Requested %d tool(s)", len(requestedTools.Tools))
 
 		return installTools(requestedTools, check, plan, reinstall, skipDependencies, skipConflicts)
 	},
@@ -120,7 +120,7 @@ var installCmd = &cobra.Command{
 func findInstalledTools(tools tool.Tools) (tool.Tools, error) {
 	var requestedTools tool.Tools
 	for index, tool := range tools.Tools {
-		logging.Debug.Printfln("Getting status for requested tool %s", tool.Name)
+		logging.Debugf("Getting status for requested tool %s", tool.Name)
 		tools.Tools[index].ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
 
 		err := tools.Tools[index].GetBinaryStatus()
@@ -134,7 +134,7 @@ func findInstalledTools(tools tool.Tools) (tool.Tools, error) {
 		}
 
 		if tools.Tools[index].Status.MarkerFilePresent && tools.Tools[index].Status.BinaryPresent {
-			logging.Debug.Printfln("Adding %s to requested tools", tool.Name)
+			logging.Debugf("Adding %s to requested tools", tool.Name)
 			requestedTools.Tools = append(requestedTools.Tools, tool)
 		}
 	}
@@ -165,7 +165,7 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 		}
 		tool.Status.IsRequested = true
 	}
-	logging.Debug.Printfln("Planned %d tool(s)", len(plannedTools.Tools))
+	logging.Debugf("Planned %d tool(s)", len(plannedTools.Tools))
 
 	// Populate status of planned tools
 	for index, tool := range plannedTools.Tools {
@@ -173,7 +173,7 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 			continue
 		}
 
-		logging.Debug.Printfln("Getting status for requested tool %s", tool.Name)
+		logging.Debugf("Getting status for requested tool %s", tool.Name)
 
 		plannedTools.Tools[index].ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
 
@@ -339,10 +339,10 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 		assertDirectory(viper.GetString("prefix") + "/" + viper.GetString("target"))
 		var err error
 		if viper.GetBool("user") {
-			logging.Debug.Printfln("Installing in user context")
+			logging.Debugf("Installing in user context")
 			err = tool.Install(registryImagePrefix, viper.GetString("prefix")+"/"+viper.GetString("target"), "")
 		} else {
-			logging.Debug.Printfln("Installing in system context")
+			logging.Debugf("Installing in system context")
 			err = tool.Install(registryImagePrefix, viper.GetString("prefix"), viper.GetString("target"))
 		}
 		if err != nil {

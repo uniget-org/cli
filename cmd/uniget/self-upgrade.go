@@ -50,7 +50,7 @@ var selfUpgradeCmd = &cobra.Command{
 
 		tag := "latest"
 		url := fmt.Sprintf("https://github.com/%s/releases/%s/download/uniget_%s_%s.tar.gz", projectRepository, tag, runtime.GOOS, arch)
-		logging.Debug.Printfln("Downloading %s", url)
+		logging.Debugf("Downloading %s", url)
 		client := &http.Client{
 			CheckRedirect: func(req *http.Request, via []*http.Request) error {
 				re, err := regexp.Compile(`\/uniget-org\/cli\/releases\/download\/(v\d+\.\d+\.\d+)\/`)
@@ -85,7 +85,7 @@ var selfUpgradeCmd = &cobra.Command{
 			return nil
 		}
 
-		logging.Debug.Printfln("Extracting tar.gz")
+		logging.Debugf("Extracting tar.gz")
 		err = os.Chdir(selfDir)
 		if err != nil {
 			return fmt.Errorf("error changing directory to %s: %s", selfDir, err)

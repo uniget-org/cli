@@ -78,7 +78,7 @@ func postinstall() error {
 		for _, file := range scripts {
 			logging.Info.Printfln("Running post_install script %s", file.Name())
 
-			logging.Debug.Printfln("Running post_install script %s", "/"+libDirectory+"/post_install/"+file.Name())
+			logging.Debugf("Running post_install script %s", "/"+libDirectory+"/post_install/"+file.Name())
 			cmd := exec.Command("/bin/bash", "/"+libDirectory+"/post_install/"+file.Name()) // #nosec G204 -- Tool images are a trusted source
 			cmd.Env = os.Environ()
 			cmd.Env = append(cmd.Env, "target=/"+viper.GetString("target"))

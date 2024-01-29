@@ -91,10 +91,10 @@ func uninstallTool(toolName string) error {
 			return fmt.Errorf("unable to read file %s: %s", filename, err)
 		}
 		for _, line := range strings.Split(string(data), "\n") {
-			logging.Debug.Printfln("processing %s", line)
+			logging.Debugf("processing %s", line)
 			strippedLine := strings.TrimPrefix(line, "./")
 			strippedLine = strings.TrimPrefix(strippedLine, "usr/local/")
-			logging.Debug.Printfln("stripped line %s", strippedLine)
+			logging.Debugf("stripped line %s", strippedLine)
 			if strippedLine == "" {
 				continue
 			}
@@ -104,7 +104,7 @@ func uninstallTool(toolName string) error {
 			}
 
 			prefixedLine := viper.GetString("prefix") + "/" + viper.GetString("target") + "/" + strippedLine
-			logging.Debug.Printfln("prefixed line %s", prefixedLine)
+			logging.Debugf("prefixed line %s", prefixedLine)
 
 			_, err := os.Lstat(prefixedLine)
 			if err != nil {
@@ -127,7 +127,7 @@ func uninstallTool(toolName string) error {
 
 	err = tool.RemoveMarkerFile(viper.GetString("prefix") + "/" + cacheDirectory)
 	if os.IsNotExist(err) {
-		logging.Debug.Printfln("unable to remove marker file because it does not exist")
+		logging.Debugf("unable to remove marker file because it does not exist")
 	} else if err != nil {
 		if uninstallSpinner != nil {
 			uninstallSpinner.Fail()

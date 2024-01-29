@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/pterm/pterm"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/uniget-org/cli/pkg/logging"
@@ -55,19 +54,19 @@ var (
 )
 
 func directoryExists(directory string) bool {
-	logging.Debug.Printfln("Checking if directory %s exists", directory)
+	logging.Debugf("Checking if directory %s exists", directory)
 	_, err := os.Stat(directory)
 	return err == nil
 }
 
 func fileExists(file string) bool {
-	logging.Debug.Printfln("Checking if file %s exists", file)
+	logging.Debugf("Checking if file %s exists", file)
 	_, err := os.Stat(file)
 	return err == nil
 }
 
 func directoryIsWritable(directory string) bool {
-	logging.Debug.Printfln("Checking if directory %s is writable", directory)
+	logging.Debugf("Checking if directory %s is writable", directory)
 	return unix.Access(directory, unix.W_OK) == nil
 }
 
@@ -86,7 +85,7 @@ func assertWritableTarget() {
 }
 
 func assertDirectory(directory string) {
-	logging.Debug.Printfln("Creating directory %s", directory)
+	logging.Debugf("Creating directory %s", directory)
 	err := os.MkdirAll(directory, 0755) // #nosec G301 -- Directories will contain public information
 	if err != nil {
 		logging.Error.Printfln("Error creating directory %s: %s", directory, err)
@@ -165,14 +164,18 @@ func main() {
 
 		if viper.GetBool("trace") {
 			pterm.EnableDebugMessages()
-			log.SetLevel(log.TraceLevel)
+			pterm.DefaultLogger.Level = pterm.LogLevelTrace
+			logging.Level = pterm.LogLevelTrace
 
 		} else if viper.GetBool("debug") {
 			pterm.EnableDebugMessages()
-			log.SetLevel(log.DebugLevel)
+			pterm.DefaultLogger.Level = pterm.LogLevelDebug
+			logging.Level = pterm.LogLevelDebug
 
 		} else {
-			log.SetLevel(log.WarnLevel)
+			pterm.DisableDebugMessages()
+			pterm.DefaultLogger.Level = pterm.LogLevelInfo
+			logging.Level = pterm.LogLevelInfo
 		}
 
 		if len(viper.GetString("prefix")) > 0 {
@@ -186,7 +189,7 @@ func main() {
 					return fmt.Errorf("cannot determine working directory: %w", err)
 				}
 				viper.Set("prefix", wd+"/"+viper.GetString("prefix"))
-				log.Debugf("Converted prefix to absolute path %s\n", viper.GetString("prefix"))
+				pterm.Debug.Printfln("Converted prefix to absolute path %s", viper.GetString("prefix"))
 			}
 		}
 
@@ -226,23 +229,23 @@ func main() {
 		}
 
 		if viper.GetBool("debug") {
-			logging.Debug.Printfln("prefix: %s", viper.GetString("prefix"))
-			logging.Debug.Printfln("target: %s", viper.GetString("target"))
-			logging.Debug.Printfln("cacheRoot: %s", cacheRoot)
-			logging.Debug.Printfln("cacheDirectory: %s", cacheDirectory)
-			logging.Debug.Printfln("libRoot: %s", libRoot)
-			logging.Debug.Printfln("libDirectory: %s", libDirectory)
-			logging.Debug.Printfln("metadataFile: %s", metadataFile)
+			logging.Debugf("prefix: %s", viper.GetString("prefix"))
+			logging.Debugf("target: %s", viper.GetString("target"))
+			logging.Debugf("cacheRoot: %s", cacheRoot)
+			logging.Debugf("cacheDirectory: %s", cacheDirectory)
+			logging.Debugf("libRoot: %s", libRoot)
+			logging.Debugf("libDirectory: %s", libDirectory)
+			logging.Debugf("metadataFile: %s", metadataFile)
 		}
 
 		if !fileExists(viper.GetString("prefix") + "/" + metadataFile) {
-			logging.Debug.Printfln("Metadata file does not exist. Downloading...")
+			logging.Debugf("Metadata file does not exist. Downloading...")
 			err := downloadMetadata()
 			if err != nil {
 				return fmt.Errorf("error downloading metadata: %s", err)
 			}
 		} else {
-			logging.Debug.Printfln("Metadata file exists")
+			logging.Debugf("Metadata file exists")
 		}
 		err := loadMetadata()
 		if err != nil {
@@ -262,7 +265,7 @@ func main() {
 		return nil
 	}
 
-	viper.SetDefault("log-level", log.WarnLevel.String())
+	viper.SetDefault("log-level", pterm.LogLevelInfo.String())
 	viper.SetDefault("debug", false)
 	viper.SetDefault("trace", false)
 	viper.SetDefault("prefix", "")
