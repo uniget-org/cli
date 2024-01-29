@@ -7,6 +7,7 @@ import (
 
 	"github.com/uniget-org/cli/pkg/archive"
 	"github.com/uniget-org/cli/pkg/containers"
+	"github.com/uniget-org/cli/pkg/logging"
 
 	"github.com/pterm/pterm"
 	"github.com/regclient/regclient/types/blob"
@@ -15,7 +16,7 @@ import (
 func (tool *Tool) Install(registryImagePrefix string, prefix string, target string) error {
 	// Fetch manifest for tool
 	err := containers.GetManifest(fmt.Sprintf(registryImagePrefix+"%s:%s", tool.Name, strings.Replace(tool.Version, "+", "-", -1)), func(blob blob.Reader) error {
-		pterm.Debug.Printfln("Extracting with prefix=%s and target=%s", prefix, target)
+		logging.Debugf("Extracting with prefix=%s and target=%s", prefix, target)
 
 		// Change working directory to prefix
 		// so that unpacking can ignore the target directory
@@ -31,7 +32,7 @@ func (tool *Tool) Install(registryImagePrefix string, prefix string, target stri
 		if err != nil {
 			return fmt.Errorf("error getting working directory")
 		}
-		pterm.Debug.Printfln("Current directory: %s", dir)
+		logging.Debugf("Current directory: %s", dir)
 
 		// Unpack tool
 		err = archive.ExtractTarGz(blob, func(path string) string {
@@ -45,17 +46,17 @@ func (tool *Tool) Install(registryImagePrefix string, prefix string, target stri
 			// Remove prefix usr/local/ to support arbitrary target directories
 			fixedPath := strings.TrimPrefix(path, "usr/local/")
 
-			pterm.Debug.Printfln("fixedPath=%s", fixedPath)
-			pterm.Debug.Printfln("          012345678901234567890")
+			logging.Debugf("fixedPath=%s", fixedPath)
+			logging.Debugf("          012345678901234567890")
 			if len(fixedPath) >= 16 {
-				pterm.Debug.Printfln("          %s", fixedPath[0:15])
+				logging.Debugf("          %s", fixedPath[0:15])
 			}
 
 			// Prepend target directory for all paths except those with prefix var/lib/uniget/
 			if len(fixedPath) >= 16 && fixedPath[0:15] == "var/lib/uniget/" {
-				pterm.Debug.Printfln("No need to prepend target")
+				logging.Debugf("No need to prepend target")
 			} else if len(target) > 0 {
-				pterm.Debug.Printfln("Prepending target to %s", fixedPath)
+				logging.Debugf("Prepending target to %s", fixedPath)
 				fixedPath = target + "/" + fixedPath
 			}
 
