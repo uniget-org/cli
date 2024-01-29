@@ -68,21 +68,29 @@ var (
 var Level pterm.LogLevel = pterm.LogLevelInfo
 
 func Debug(message string) {
-	pterm.DefaultLogger.WithLevel(Level).WithTime(false).Debug(message)
+	pterm.DefaultLogger.
+		WithLevel(Level).
+		WithTime(false).
+		WithMaxWidth(1000).
+		Debug(message)
 }
 
 func Debugf(message string, args ...interface{}) {
-	pterm.DefaultLogger.WithLevel(Level).WithTime(false).Debug(
+	Debug(
 		fmt.Sprintf(message, args...),
 	)
 }
 
 func Trace(message string) {
-	pterm.DefaultLogger.WithLevel(Level).WithTime(false).Trace(message)
+	pterm.DefaultLogger.
+		WithLevel(Level).
+		WithTime(false).
+		WithMaxWidth(1000).
+		Trace(message)
 }
 
 func Tracef(message string, args ...interface{}) {
-	pterm.DefaultLogger.WithLevel(Level).WithTime(false).Trace(
+	Trace(
 		fmt.Sprintf(message, args...),
 	)
 }

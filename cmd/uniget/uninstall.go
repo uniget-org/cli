@@ -108,7 +108,7 @@ func uninstallTool(toolName string) error {
 
 			_, err := os.Lstat(prefixedLine)
 			if err != nil {
-				pterm.Debug.Printfln("Unable to stat %s: %s", prefixedLine, err)
+				logging.Debugf("Unable to stat %s: %s", prefixedLine, err)
 				continue
 			}
 

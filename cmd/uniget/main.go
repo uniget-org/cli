@@ -189,7 +189,7 @@ func main() {
 					return fmt.Errorf("cannot determine working directory: %w", err)
 				}
 				viper.Set("prefix", wd+"/"+viper.GetString("prefix"))
-				pterm.Debug.Printfln("Converted prefix to absolute path %s", viper.GetString("prefix"))
+				logging.Debugf("Converted prefix to absolute path %s", viper.GetString("prefix"))
 			}
 		}
 
