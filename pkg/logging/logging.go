@@ -1,6 +1,10 @@
 package logging
 
-import "github.com/pterm/pterm"
+import (
+	"fmt"
+
+	"github.com/pterm/pterm"
+)
 
 var (
 	Description = pterm.PrefixPrinter{
@@ -44,15 +48,6 @@ var (
 		Fatal: true,
 	}
 
-	Debug = pterm.PrefixPrinter{
-		MessageStyle: &pterm.ThemeDefault.DebugMessageStyle,
-		Prefix: pterm.Prefix{
-			Text:  " DEBUG ",
-			Style: &pterm.ThemeDefault.DebugPrefixStyle,
-		},
-		Debugger: true,
-	}
-
 	Warning = pterm.PrefixPrinter{
 		MessageStyle: &pterm.ThemeDefault.WarningMessageStyle,
 		Prefix: pterm.Prefix{
@@ -69,3 +64,25 @@ var (
 		},
 	}
 )
+
+var Level pterm.LogLevel = pterm.LogLevelInfo
+
+func Debug(message string) {
+	pterm.DefaultLogger.WithLevel(Level).WithTime(false).Debug(message)
+}
+
+func Debugf(message string, args ...interface{}) {
+	pterm.DefaultLogger.WithLevel(Level).WithTime(false).Debug(
+		fmt.Sprintf(message, args...),
+	)
+}
+
+func Trace(message string) {
+	pterm.DefaultLogger.WithLevel(Level).WithTime(false).Trace(message)
+}
+
+func Tracef(message string, args ...interface{}) {
+	pterm.DefaultLogger.WithLevel(Level).WithTime(false).Trace(
+		fmt.Sprintf(message, args...),
+	)
+}

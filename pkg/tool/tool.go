@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/uniget-org/cli/pkg/logging"
 )
 
 func (tool *Tool) MatchesName(term string) bool {
@@ -87,7 +87,7 @@ func replaceVariables(source string, variables []string, values []string) (resul
 }
 
 func (tool *Tool) ReplaceVariables(target string, arch string, altArch string) {
-	log.Tracef("Replacing variables for %s", tool.Name)
+	logging.Tracef("Replacing variables for %s", tool.Name)
 
 	//binary
 	tool.Binary = replaceVariables(tool.Binary,
@@ -108,11 +108,11 @@ func (tool *Tool) ReplaceVariables(target string, arch string, altArch string) {
 func (tool *Tool) GetBinaryStatus() error {
 	_, err := os.Stat(tool.Binary)
 	if err == nil {
-		log.Debugf("Binary for tool %s is present", tool.Name)
+		logging.Debugf("Binary for tool %s is present", tool.Name)
 		tool.Status.BinaryPresent = true
 
 	} else if errors.Is(err, os.ErrNotExist) {
-		log.Debugf("Binary for tool %s is not present", tool.Name)
+		logging.Debugf("Binary for tool %s is not present", tool.Name)
 		tool.Status.BinaryPresent = false
 
 	} else {
@@ -123,11 +123,11 @@ func (tool *Tool) GetBinaryStatus() error {
 }
 
 func (tool *Tool) GetMarkerFileStatus(markerFileDirectory string) error {
-	log.Tracef("Finding latest marker file for %s in %s", tool.Name, markerFileDirectory)
+	logging.Tracef("Finding latest marker file for %s in %s", tool.Name, markerFileDirectory)
 
 	_, err := os.Stat(fmt.Sprintf("%s/%s", markerFileDirectory, tool.Name))
 	if err != nil {
-		log.Tracef("Marker file directory %s/%s does not exist", markerFileDirectory, tool.Name)
+		logging.Tracef("Marker file directory %s/%s does not exist", markerFileDirectory, tool.Name)
 		return nil
 	}
 
@@ -142,7 +142,7 @@ func (tool *Tool) GetMarkerFileStatus(markerFileDirectory string) error {
 			return fmt.Errorf("unable to get info for %s: %s", info.Name(), err)
 		}
 
-		log.Tracef("comparing marker file for version %s with known version %s", info.Name(), version)
+		logging.Tracef("comparing marker file for version %s with known version %s", info.Name(), version)
 		if !info.IsDir() && info.Name() > version {
 			version = info.Name()
 		}
@@ -159,7 +159,7 @@ func (tool *Tool) GetMarkerFileStatus(markerFileDirectory string) error {
 }
 
 func (tool *Tool) CreateMarkerFile(markerFileDirectory string) error {
-	log.Tracef("Creating marker file for %s", tool.Name)
+	logging.Tracef("Creating marker file for %s", tool.Name)
 
 	err := os.MkdirAll(fmt.Sprintf("%s/%s", markerFileDirectory, tool.Name), 0755) // #nosec G301 -- Public information
 	if err != nil {
@@ -175,11 +175,11 @@ func (tool *Tool) CreateMarkerFile(markerFileDirectory string) error {
 }
 
 func (tool *Tool) RemoveMarkerFile(markerFileDirectory string) error {
-	log.Tracef("Removing marker file for %s", tool.Name)
+	logging.Tracef("Removing marker file for %s", tool.Name)
 
 	err := os.Remove(fmt.Sprintf("%s/%s/%s", markerFileDirectory, tool.Name, tool.Version))
 	if os.IsNotExist(err) {
-		log.Tracef("Marker file for %s does not exist", tool.Name)
+		logging.Tracef("Marker file for %s does not exist", tool.Name)
 	} else if err != nil {
 		return fmt.Errorf("unable to remove marker file for %s: %s", tool.Name, err)
 	}
@@ -188,7 +188,7 @@ func (tool *Tool) RemoveMarkerFile(markerFileDirectory string) error {
 }
 
 func (tool *Tool) RunVersionCheck() (string, error) {
-	log.Tracef("Running version check for %s: %s", tool.Name, tool.Check)
+	logging.Tracef("Running version check for %s: %s", tool.Name, tool.Check)
 	cmd := exec.Command("/bin/bash", "-c", tool.Check+" | tr -d '\n'") // #nosec G204 -- Tool images are a trusted source
 	version, err := cmd.Output()
 	if err != nil {
@@ -200,7 +200,7 @@ func (tool *Tool) RunVersionCheck() (string, error) {
 
 func (tool *Tool) GetVersionStatus() error {
 	if tool.Status.MarkerFilePresent {
-		log.Tracef("Using marker file version for %s: %s", tool.Name, tool.Status.MarkerFileVersion)
+		logging.Tracef("Using marker file version for %s: %s", tool.Name, tool.Status.MarkerFileVersion)
 		tool.Status.Version = tool.Status.MarkerFileVersion
 
 	} else if tool.Status.BinaryPresent && len(tool.Check) > 0 {
@@ -211,7 +211,7 @@ func (tool *Tool) GetVersionStatus() error {
 		tool.Status.Version = version
 	}
 
-	log.Tracef("Comparing requested version <%s> with installed version <%s>.", tool.Version, tool.Status.Version)
+	logging.Tracef("Comparing requested version <%s> with installed version <%s>.", tool.Version, tool.Status.Version)
 	tool.Status.VersionMatches = (tool.Status.Version == tool.Version)
 
 	return nil

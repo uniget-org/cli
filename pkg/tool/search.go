@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"regexp"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/pterm/pterm"
+	"github.com/uniget-org/cli/pkg/logging"
 )
 
 func (tools *Tools) Contains(name string) bool {
@@ -120,21 +121,21 @@ func (tools *Tools) AddIfMissing(newTool *Tool) {
 }
 
 func (tools *Tools) ResolveDependencies(queue *Tools, toolName string) error {
-	log.Tracef("Resolving dependencies for %s", toolName)
+	logging.Tracef("Resolving dependencies for %s", toolName)
 
 	tool, err := tools.GetByName(toolName)
 	if err != nil {
-		log.Errorf("Error getting tool %s", toolName)
+		pterm.Error.Printfln("Error getting tool %s", toolName)
 		return err
 	}
-	log.Tracef("Tool %s is requested? %t", toolName, tool.Status.IsRequested)
+	logging.Tracef("Tool %s is requested? %t", toolName, tool.Status.IsRequested)
 
 	for _, depName := range tool.RuntimeDependencies {
 		dep, err := tools.GetByName(depName)
 		if err != nil {
-			log.Errorf("Unable to find dependency called %s for %s", depName, toolName)
+			pterm.Error.Printfln("Unable to find dependency called %s for %s", depName, toolName)
 		}
-		log.Tracef("Dep %s is requested? %t", depName, dep.Status.IsRequested)
+		logging.Tracef("Dep %s is requested? %t", depName, dep.Status.IsRequested)
 
 		err = tools.ResolveDependencies(queue, depName)
 		if err != nil {

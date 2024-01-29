@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/uniget-org/cli/pkg/logging"
 )
 
 func pathIsInsideTarget(target string, candidate string) error {
@@ -18,25 +18,25 @@ func pathIsInsideTarget(target string, candidate string) error {
 		return fmt.Errorf("pathIsInsideTarget(): Abs() failed: %s", err.Error())
 	}
 
-	log.Debugf("Checking if %s works\n", filepath.Join(absTarget, candidate))
+	logging.Debugf("Checking if %s works", filepath.Join(absTarget, candidate))
 	cleanPath := filepath.Clean(filepath.Join(absTarget, candidate))
-	log.Debugf("Cleaned path is %s\n", cleanPath)
+	logging.Debugf("Cleaned path is %s", cleanPath)
 
 	realPath, err := filepath.EvalSymlinks(cleanPath)
 	if os.IsNotExist(err) {
-		log.Tracef("Path does not exist (yet): %s\n", cleanPath)
+		logging.Tracef("Path does not exist (yet): %s", cleanPath)
 		realPath = cleanPath
 
 	} else if err != nil {
 		return fmt.Errorf("pathIsInsideTarget(): EvalSymlinks() failed: %s", err.Error())
 	}
-	log.Debugf("Realpath of %s is %s\n", candidate, realPath)
+	logging.Debugf("Realpath of %s is %s", candidate, realPath)
 
 	relPath, err := filepath.Rel(absTarget, realPath)
 	if err != nil {
 		return fmt.Errorf("pathIsInsideTarget(): Rel() failed: %s", err.Error())
 	}
-	log.Debugf("Relative path of %s is %s\n", realPath, relPath)
+	logging.Debugf("Relative path of %s is %s", realPath, relPath)
 
 	if strings.Contains(relPath, "..") {
 		return fmt.Errorf("pathIsInsideTarget(): symlink target contains '..': %s", relPath)
@@ -73,13 +73,13 @@ func ExtractTarGz(gzipStream io.Reader, patchPath func(path string) string) erro
 			return fmt.Errorf("ExtractTarGz: filename contains '..': %s", header.Name)
 		}
 
-		log.Tracef("Processing %s\n", header.Name)
+		logging.Tracef("Processing %s", header.Name)
 
 		// Use callback function to patch path
 		fixedHeaderName := patchPath(header.Name)
-		log.Tracef("  Stripped name is %s\n", fixedHeaderName)
+		logging.Tracef("  Stripped name is %s", fixedHeaderName)
 		if len(fixedHeaderName) == 0 {
-			log.Tracef("  Skipping\n")
+			logging.Tracef("  Skipping")
 			continue
 		}
 
@@ -87,7 +87,7 @@ func ExtractTarGz(gzipStream io.Reader, patchPath func(path string) string) erro
 
 		// Unpack file
 		case tar.TypeReg:
-			log.Tracef("Untarring file %s\n", fixedHeaderName)
+			logging.Tracef("Untarring file %s", fixedHeaderName)
 
 			// Prevent path traversal attacks using absolute paths
 			cleanFixedHeaderName := filepath.Clean(fixedHeaderName)
@@ -121,23 +121,23 @@ func ExtractTarGz(gzipStream io.Reader, patchPath func(path string) string) erro
 
 		// Unpack symlink
 		case tar.TypeSymlink:
-			log.Tracef("Untarring symlink %s\n", fixedHeaderName)
+			logging.Tracef("Untarring symlink %s", fixedHeaderName)
 
 			// Check if symlink already exists
 			_, err := os.Stat(fixedHeaderName)
 			if err == nil {
-				log.Debugf("Symlink %s already exists\n", fixedHeaderName)
+				logging.Debugf("Symlink %s already exists", fixedHeaderName)
 			}
 			// Continue if symlink does not exist
 			if os.IsNotExist(err) {
-				log.Debugf("Symlink %s does not exist\n", fixedHeaderName)
+				logging.Debugf("Symlink %s does not exist", fixedHeaderName)
 
 				// Prevent path traversal attacks for symlink source and target
 				absHeaderLinkname := header.Linkname
 				if !filepath.IsAbs(header.Linkname) {
 					absHeaderLinkname = filepath.Join(filepath.Dir(fixedHeaderName), header.Linkname) // #nosec G305 -- Following code prevents traversal
 				}
-				log.Tracef("Absolute symlink target is %s\n", absHeaderLinkname)
+				logging.Tracef("Absolute symlink target is %s", absHeaderLinkname)
 				err = pathIsInsideTarget(target, absHeaderLinkname)
 				if err != nil {
 					return fmt.Errorf("ExtractTarGz: pathIsInsideTarget() failed for %s: %s", absHeaderLinkname, err.Error())
@@ -149,7 +149,7 @@ func ExtractTarGz(gzipStream io.Reader, patchPath func(path string) string) erro
 
 				// Create directories for symlink
 				dir := filepath.Dir(fixedHeaderName)
-				log.Tracef("Creating directory %s\n", dir)
+				logging.Tracef("Creating directory %s", dir)
 				err := os.MkdirAll(dir, 0755) // #nosec G301 -- Tools must be world readable
 				if err != nil {
 					return fmt.Errorf("ExtractTarGz: MkdirAll() failed: %s", err.Error())
@@ -164,16 +164,16 @@ func ExtractTarGz(gzipStream io.Reader, patchPath func(path string) string) erro
 
 		// Unpack hardlink
 		case tar.TypeLink:
-			log.Tracef("Untarring link %s\n", fixedHeaderName)
+			logging.Tracef("Untarring link %s", fixedHeaderName)
 
 			// Check if link already exists
 			_, err := os.Stat(fixedHeaderName)
 			if err == nil {
-				log.Debugf("Link %s already exists\n", fixedHeaderName)
+				logging.Debugf("Link %s already exists", fixedHeaderName)
 			}
 			// Continue if link does not exist
 			if os.IsNotExist(err) {
-				log.Debugf("Target of link %s does not exist\n", fixedHeaderName)
+				logging.Debugf("Target of link %s does not exist", fixedHeaderName)
 
 				// Remove existing link
 				err = os.Remove(fixedHeaderName)
@@ -218,11 +218,11 @@ func ListTarGz(gzipStream io.Reader, patchPath func(path string) string) ([]stri
 			return nil, fmt.Errorf("ListTarGz: Next() failed: %s", err.Error())
 		}
 
-		log.Tracef("Processing %s\n", header.Name)
+		logging.Tracef("Processing %s", header.Name)
 		fixedHeaderName := patchPath(header.Name)
-		log.Tracef("  Stripped name is %s\n", fixedHeaderName)
+		logging.Tracef("  Stripped name is %s", fixedHeaderName)
 		if len(fixedHeaderName) == 0 {
-			log.Tracef("  Skipping\n")
+			logging.Tracef("  Skipping")
 			continue
 		}
 

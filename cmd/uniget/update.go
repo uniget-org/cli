@@ -60,13 +60,13 @@ var updateCmd = &cobra.Command{
 func downloadMetadata() error {
 	assertCacheDirectory()
 	err := containers.GetManifest(registryImagePrefix+"metadata:main", func(blob blob.Reader) error {
-		logging.Debug.Printfln("Changing directory to %s", viper.GetString("prefix")+"/"+cacheDirectory)
+		logging.Debugf("Changing directory to %s", viper.GetString("prefix")+"/"+cacheDirectory)
 		err := os.Chdir(viper.GetString("prefix") + "/" + cacheDirectory)
 		if err != nil {
 			return fmt.Errorf("error changing directory to %s: %s", viper.GetString("prefix")+"/"+cacheDirectory, err)
 		}
 
-		logging.Debug.Printfln("Extracting archive to %s", viper.GetString("prefix")+"/"+cacheDirectory)
+		logging.Debugf("Extracting archive to %s", viper.GetString("prefix")+"/"+cacheDirectory)
 		err = archive.ExtractTarGz(blob, func(path string) string { return path })
 		if err != nil {
 			return fmt.Errorf("error extracting archive: %s", err)
