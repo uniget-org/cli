@@ -2,14 +2,9 @@ package main
 
 import (
 	"fmt"
-	"os"
 
-	"atomicgo.dev/keyboard/keys"
-	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"github.com/uniget-org/cli/pkg/logging"
-	"golang.org/x/term"
 )
 
 func initSearchCmd() {
@@ -86,29 +81,6 @@ var searchCmd = &cobra.Command{
 		}
 
 		results.List()
-
-		if viper.GetBool("no-interactive") || !term.IsTerminal(int(os.Stdin.Fd())) || !term.IsTerminal(int(os.Stdout.Fd())) {
-			return nil
-		}
-
-		fmt.Println()
-		var options []string
-		for _, tool := range results.Tools {
-			options = append(options, tool.Name)
-		}
-		printer := pterm.DefaultInteractiveMultiselect.WithOptions(options)
-		printer.DefaultText = "Select tools to install"
-		printer.Filter = false
-		printer.KeyConfirm = keys.Enter
-		printer.KeySelect = keys.Space
-		printer.Checkmark = &pterm.Checkmark{Checked: "✓", Unchecked: " "}
-		selectedOptions, _ := printer.Show()
-		if len(selectedOptions) > 0 {
-			err := installToolsByName(selectedOptions, false, false, false, false, false)
-			if err != nil {
-				return err
-			}
-		}
 
 		return nil
 	},
