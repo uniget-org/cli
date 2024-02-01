@@ -142,11 +142,6 @@ func findInstalledTools(tools tool.Tools) (tool.Tools, error) {
 	return requestedTools, nil
 }
 
-func installToolsByName(toolNames []string, check bool, plan bool, reinstall bool, skipDependencies bool, skipConflicts bool) error {
-	requestedTools := tools.GetByNames(toolNames)
-	return installTools(requestedTools, check, plan, reinstall, skipDependencies, skipConflicts)
-}
-
 func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bool, skipDependencies bool, skipConflicts bool) error {
 	var plannedTools tool.Tools
 
