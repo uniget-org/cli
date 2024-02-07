@@ -88,7 +88,7 @@ RUN --mount=target=. \
 gosec ./...
 EOF
 
-FROM golangci/golangci-lint:v1.55.2@sha256:e699df940be1810b08ba6ec050bfc34cc1931027283b5a7f607fb6a67b503876 AS lint-base
+FROM golangci/golangci-lint:v1.56.0@sha256:bfedc4572e009ff3b71c555d720803041146deda783abb9e0db581523e5e5b1e AS lint-base
 
 FROM base AS lint
 RUN --mount=target=. \
