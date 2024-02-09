@@ -10,7 +10,7 @@ require (
 	github.com/muesli/mango-cobra v1.2.0
 	github.com/muesli/roff v0.1.0
 	github.com/opencontainers/go-digest v1.0.0
-	github.com/pterm/pterm v0.12.78
+	github.com/pterm/pterm v0.12.79
 	github.com/regclient/regclient v0.5.7
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.18.2
