@@ -109,9 +109,9 @@ func ExtractTarGz(gzipStream io.Reader, patchPath func(path string) string) erro
 			}
 			defer outFile.Close()
 			// Write contents
-			if _, err := io.Copy(outFile, tarReader); err != nil {
+			if _, err := io.Copy(outFile, tarReader); err != nil /* #nosec G110 -- Tool images are a trusted source */ {
 				return fmt.Errorf("ExtractTarGz: Copy() failed: %s", err.Error())
-			} // #nosec G110 -- Tool images are a trusted source
+			}
 			// Set permissions
 			mode := os.FileMode(header.Mode)
 			err = outFile.Chmod(mode)
