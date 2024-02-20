@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/uniget-org/cli/pkg/logging"
 )
 
 var baseImage string
@@ -29,11 +30,21 @@ var generateCmd = &cobra.Command{
 
 		result = append(result, fmt.Sprintf("FROM %s", baseImage))
 		for _, toolName := range args {
+			var toolVersion string
+			if strings.Contains(toolName, "@") {
+				toolVersion = strings.Split(toolName, "@")[1]
+				toolName = strings.Split(toolName, "@")[0]
+				logging.Warning.Printfln("Unable to check if %s has a version %s", toolName, toolVersion)
+			}
+
 			tool, err := tools.GetByName(toolName)
 			if err != nil {
 				return fmt.Errorf("failed to get tool %s: %w", toolName, err)
 			}
-			result = append(result, fmt.Sprintf("COPY --link --from=%s%s:%s / /%s", registryImagePrefix, tool.Name, strings.Replace(tool.Version, "+", "-", -1), viper.GetString("target")))
+			if len(toolVersion) == 0 {
+				toolVersion = tool.Version
+			}
+			result = append(result, fmt.Sprintf("COPY --link --from=%s%s:%s / /%s", registryImagePrefix, tool.Name, strings.Replace(toolVersion, "+", "-", -1), viper.GetString("target")))
 		}
 		fmt.Printf("%s", strings.Join(result, "\n"))
 
