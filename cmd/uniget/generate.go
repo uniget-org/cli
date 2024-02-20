@@ -6,7 +6,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/uniget-org/cli/pkg/logging"
 )
 
 var baseImage string
@@ -28,13 +27,14 @@ var generateCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var result []string
 
+		result = append(result, "# syntax=docker/dockerfile:1.6.0")
 		result = append(result, fmt.Sprintf("FROM %s", baseImage))
 		for _, toolName := range args {
 			var toolVersion string
 			if strings.Contains(toolName, "@") {
 				toolVersion = strings.Split(toolName, "@")[1]
 				toolName = strings.Split(toolName, "@")[0]
-				logging.Warning.Printfln("Unable to check if %s has a version %s", toolName, toolVersion)
+				result = append(result, fmt.Sprintf("# Warning: Unable to check if %s has version %s", toolName, toolVersion))
 			}
 
 			tool, err := tools.GetByName(toolName)
