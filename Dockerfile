@@ -112,3 +112,18 @@ FROM scratch AS bin-windows
 COPY --from=build /out/uniget /uniget.exe
 
 FROM bin-${TARGETOS} as bin
+
+FROM alpine:3.19.0 AS ca-certificates
+RUN <<EOF
+apk update
+apk add ca-certificates
+EOF
+
+FROM ca-certificates AS uniget
+COPY --from=bin /uniget /uniget
+ENTRYPOINT [ "/uniget"]
+
+FROM scratch AS scratch-uniget
+COPY --from=ca-certificates /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=bin /uniget /uniget
+ENTRYPOINT [ "/uniget"]
