@@ -30,7 +30,7 @@ var generateCmd = &cobra.Command{
 		result = append(result, "# syntax=docker/dockerfile:1.6.0")
 		result = append(result, fmt.Sprintf("FROM %s", baseImage))
 		for _, toolName := range args {
-			var toolVersion string
+			var toolVersion = "latest"
 			if strings.Contains(toolName, "@") {
 				toolVersion = strings.Split(toolName, "@")[1]
 				toolName = strings.Split(toolName, "@")[0]
@@ -46,6 +46,7 @@ var generateCmd = &cobra.Command{
 			}
 			result = append(result, fmt.Sprintf("COPY --link --from=%s%s:%s / /%s", registryImagePrefix, tool.Name, strings.Replace(toolVersion, "+", "-", -1), viper.GetString("target")))
 		}
+
 		fmt.Printf("%s", strings.Join(result, "\n"))
 
 		return nil
