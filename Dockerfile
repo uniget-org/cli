@@ -113,7 +113,7 @@ COPY --from=build /out/uniget /uniget.exe
 
 FROM bin-${TARGETOS} as bin
 
-FROM alpine:3.19.0 AS ca-certificates
+FROM alpine:3.19.1@sha256:c5b1261d6d3e43071626931fc004f70149baeba2c8ec672bd4f27761f8e1ad6b AS ca-certificates
 RUN <<EOF
 apk update
 apk add ca-certificates
