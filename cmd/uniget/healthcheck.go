@@ -51,7 +51,9 @@ var healthcheckCmd = &cobra.Command{
 		} else {
 			pterm.Warning.Printfln("%s: Marker file is not present", tool.Name)
 		}
-		if tool.Status.BinaryPresent {
+		if tool.Binary == "false" {
+			pterm.Warning.Printfln("%s: Tool does not have a binary", tool.Name)
+		} else if tool.Status.BinaryPresent {
 			pterm.Success.Printfln("%s: Binary is present (%s)", tool.Name, tool.Binary)
 		} else {
 			pterm.Error.Printfln("%s: Binary is not present (%s)", tool.Name, tool.Binary)
@@ -59,13 +61,19 @@ var healthcheckCmd = &cobra.Command{
 		}
 
 		if !tool.Status.MarkerFilePresent && !tool.Status.BinaryPresent {
-			pterm.Warning.Printfln("Tool %s is not installed", tool.Name)
-			return nil
+			if fileExists(viper.GetString("prefix") + "/" + libDirectory + "/manifests/" + tool.Name + ".txt") {
+				pterm.Success.Printfln("%s: Manifest file is present", tool.Name)
+				return nil
+
+			} else {
+				pterm.Warning.Printfln("Tool %s is not installed", tool.Name)
+				return fmt.Errorf("tool %s is not installed", tool.Name)
+			}
 		}
 
 		if tool.Check == "" {
 			pterm.Warning.Printfln("%s: Tool does not support version check", tool.Name)
-			pterm.Info.Printfln("%s: Version is %s", tool.Name, tool.Version)
+			pterm.Info.Printfln("%s: Manifest version is %s", tool.Name, tool.Version)
 		} else {
 			tool.ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
 			version, err := tool.RunVersionCheck()
@@ -73,7 +81,7 @@ var healthcheckCmd = &cobra.Command{
 				pterm.Error.Printfln("%s: Error getting version: %s", tool.Name, err)
 				testFailed = true
 			}
-			pterm.Success.Printfln("%s: Version is %s", tool.Name, version)
+			pterm.Success.Printfln("%s: Installed version is %s", tool.Name, version)
 		}
 
 		if testFailed {

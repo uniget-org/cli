@@ -89,7 +89,11 @@ func replaceVariables(source string, variables []string, values []string) (resul
 func (tool *Tool) ReplaceVariables(target string, arch string, altArch string) {
 	logging.Tracef("Replacing variables for %s", tool.Name)
 
-	//binary
+	if tool.Binary == "false" {
+		return
+	}
+
+	// Replace variables for binary
 	tool.Binary = replaceVariables(tool.Binary,
 		[]string{"${name}", "${target}"},
 		[]string{tool.Name, target},
@@ -98,7 +102,7 @@ func (tool *Tool) ReplaceVariables(target string, arch string, altArch string) {
 		tool.Binary = target + "/bin/" + tool.Binary
 	}
 
-	//check
+	// replace variables for check
 	tool.Check = replaceVariables(tool.Check,
 		[]string{"${binary}", "${name}", "${target}"},
 		[]string{tool.Binary, tool.Name, target},
@@ -106,6 +110,12 @@ func (tool *Tool) ReplaceVariables(target string, arch string, altArch string) {
 }
 
 func (tool *Tool) GetBinaryStatus() error {
+	if tool.Binary == "false" {
+		logging.Debugf("Tool %s does not have a binary", tool.Name)
+		tool.Status.BinaryPresent = false
+		return nil
+	}
+
 	_, err := os.Stat(tool.Binary)
 	if err == nil {
 		logging.Debugf("Binary for tool %s is present", tool.Name)
