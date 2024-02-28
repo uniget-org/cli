@@ -43,14 +43,14 @@ var versionCmd = &cobra.Command{
 			return fmt.Errorf("failed to get version status: %s", err)
 		}
 
-		if !tool.Status.MarkerFilePresent && !tool.Status.BinaryPresent {
-			if fileExists(viper.GetString("prefix") + "/" + libDirectory + "/manifests/" + tool.Name + ".txt") {
-				pterm.Success.Printfln("%s: Manifest file is present", tool.Name)
+		markerFilePresent := false
+		if fileExists(viper.GetString("prefix") + "/" + libDirectory + "/manifests/" + tool.Name + ".txt") {
+			markerFilePresent = true
+		}
 
-			} else {
-				pterm.Warning.Printfln("Tool %s is not installed", tool.Name)
-				return fmt.Errorf("tool %s is not installed", tool.Name)
-			}
+		if !tool.Status.MarkerFilePresent && !tool.Status.BinaryPresent && !markerFilePresent {
+			pterm.Warning.Printfln("Tool %s is not installed", tool.Name)
+			return fmt.Errorf("tool %s is not installed", tool.Name)
 		}
 
 		if tool.Check == "" {
