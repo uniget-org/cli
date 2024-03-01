@@ -92,7 +92,7 @@ func postinstall() error {
 				fmt.Print("---------- 8< ----------\n")
 				return fmt.Errorf("unable to execute post_install script %s: %s", file.Name(), err)
 			}
-			fmt.Printf("%s\n", output)
+			fmt.Printf("%s", output)
 
 			err = os.Remove("/" + libDirectory + "/post_install/" + file.Name())
 			if err != nil {
