@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	//"github.com/uniget-org/cli/pkg/tool"
 )
 
 var baseImage string
@@ -29,20 +30,31 @@ var generateCmd = &cobra.Command{
 
 		result = append(result, "# syntax=docker/dockerfile:1.6.0")
 		result = append(result, fmt.Sprintf("FROM %s", baseImage))
+
 		for _, toolName := range args {
 			var toolVersion = "latest"
 			if strings.Contains(toolName, "@") {
 				toolVersion = strings.Split(toolName, "@")[1]
 				toolName = strings.Split(toolName, "@")[0]
-				result = append(result, fmt.Sprintf("# Warning: Unable to check if %s has version %s", toolName, toolVersion))
 			}
 
 			tool, err := tools.GetByName(toolName)
 			if err != nil {
 				return fmt.Errorf("failed to get tool %s: %w", toolName, err)
 			}
+
+			for _, depName := range tool.RuntimeDependencies {
+				dep, err := tools.GetByName(depName)
+				if err != nil {
+					return fmt.Errorf("unable to find dependency called %s for %s", depName, toolName)
+				}
+				result = append(result, fmt.Sprintf("COPY --link --from=%s%s:latest /%s", registryImagePrefix, dep.Name, viper.GetString("target")))
+			}
+
 			if len(toolVersion) == 0 {
 				toolVersion = tool.Version
+			} else if toolVersion != "latest" {
+				result = append(result, fmt.Sprintf("# Warning: Unable to check if %s has version %s", toolName, toolVersion))
 			}
 			result = append(result, fmt.Sprintf("COPY --link --from=%s%s:%s / /%s", registryImagePrefix, tool.Name, strings.Replace(toolVersion, "+", "-", -1), viper.GetString("target")))
 		}
