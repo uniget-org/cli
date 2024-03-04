@@ -8,12 +8,13 @@ import (
 	"github.com/muesli/roff"
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var manDirectory string
 
 func initManCmd() {
-	manCmd.Flags().StringVar(&manDirectory, "path", ".", "Path to store manpages in")
+	manCmd.Flags().StringVar(&manDirectory, "path", "share/man", "Path to store manpages in (relative paths resolves using target directory)")
 
 	rootCmd.AddCommand(manCmd)
 }
@@ -24,6 +25,10 @@ var manCmd = &cobra.Command{
 	Long:  header + "\nGenerate manpages",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if (manDirectory[0:1] != "/") && (manDirectory[0:1] != ".") {
+			manDirectory = fmt.Sprintf("%s/%s", viper.GetString("target"), manDirectory)
+		}
+
 		err := writeManpage(rootCmd, "", manDirectory)
 		if err != nil {
 			return fmt.Errorf("failed to create manpage: %w", err)
@@ -42,7 +47,7 @@ var manCmd = &cobra.Command{
 	},
 }
 
-func writeManpage(cobraCmd *cobra.Command, name string, path string) error {
+func writeManpage(cobraCmd *cobra.Command, name string, manDirectory string) error {
 	manPage, err := mcobra.NewManPage(1, cobraCmd)
 	if err != nil {
 		panic(err)
@@ -54,10 +59,17 @@ func writeManpage(cobraCmd *cobra.Command, name string, path string) error {
 	)
 
 	var fileName string
+	dirName := fmt.Sprintf("%s/man1", manDirectory)
+	if !directoryExists(dirName) {
+		err := os.MkdirAll(dirName, 0755)
+		if err != nil {
+			return fmt.Errorf("failed to create manpage directory: %w", err)
+		}
+	}
 	if name == "" {
-		fileName = fmt.Sprintf("%s/%s.1", manDirectory, projectName)
+		fileName = fmt.Sprintf("%s/%s.1", dirName, projectName)
 	} else {
-		fileName = fmt.Sprintf("%s/%s-%s.1", manDirectory, projectName, name)
+		fileName = fmt.Sprintf("%s/%s-%s.1", dirName, projectName, name)
 	}
 
 	file, err := os.Create(fileName) // #nosec G304 -- This is exactly the value proposition of this command
