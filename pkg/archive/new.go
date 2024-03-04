@@ -114,6 +114,10 @@ func ExtractTarGz(gzipStream io.Reader, patchPath func(path string) string) erro
 			}
 			// Set permissions
 			mode := os.FileMode(header.Mode)
+			Setuid := mode &^ 0777
+			if (mode & Setuid) != 0 {
+				logging.Warning.Printfln("Setuid bit cannot be set for %s", fixedHeaderName)
+			}
 			err = outFile.Chmod(mode)
 			if err != nil {
 				return fmt.Errorf("ExtractTarGz: Chmod() failed: %s", err.Error())
