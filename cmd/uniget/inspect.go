@@ -24,7 +24,13 @@ var inspectCmd = &cobra.Command{
 	Use:   "inspect",
 	Short: "Inspect tool",
 	Long:  header + "\nInspect tools",
-	Args:  cobra.ExactArgs(1),
+	Example: "" +
+		"  Use regctl/jq/xargs/tar to display raw contents:\n" +
+		"    regctl manifest get ghcr.io/uniget-org/tools/TOOL:latest --platform linux/amd64 --format raw-body \\\n" +
+		"    | jq --raw-output '.layers[0].digest' \\\n" +
+		"    | xargs -I{} regctl blob get ghcr.io/uniget-org/tools/TOOL {} \\\n" +
+		"    | tar -tvz",
+	Args: cobra.ExactArgs(1),
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},
