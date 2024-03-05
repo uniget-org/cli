@@ -61,7 +61,7 @@ func writeManpage(cobraCmd *cobra.Command, name string, manDirectory string) err
 	var fileName string
 	dirName := fmt.Sprintf("%s/man1", manDirectory)
 	if !directoryExists(dirName) {
-		err := os.MkdirAll(dirName, 0755)
+		err := os.MkdirAll(dirName, 0755) // #nosec G301 -- Directory need to be accessible by all users
 		if err != nil {
 			return fmt.Errorf("failed to create manpage directory: %w", err)
 		}
