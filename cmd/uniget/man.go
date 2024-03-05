@@ -9,6 +9,7 @@ import (
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/uniget-org/cli/pkg/logging"
 )
 
 var manDirectory string
@@ -26,8 +27,9 @@ var manCmd = &cobra.Command{
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if (manDirectory[0:1] != "/") && (manDirectory[0:1] != ".") {
-			manDirectory = fmt.Sprintf("%s/%s", viper.GetString("target"), manDirectory)
+			manDirectory = fmt.Sprintf("%s/%s", "/"+viper.GetString("target"), manDirectory)
 		}
+		logging.Debugf("Using base directory for manpages: %s", manDirectory)
 
 		err := writeManpage(rootCmd, "", manDirectory)
 		if err != nil {
