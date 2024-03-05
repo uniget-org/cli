@@ -1,6 +1,8 @@
 #!/bin/bash
 set -o errexit -o pipefail
 
+export UNIGET_USER=false
+
 function check_dir() {
     local dir=$1
     local name=$2
@@ -61,8 +63,9 @@ go run ./cmd/uniget --user update
 test -f "${HOME}/.cache/uniget/metadata.json"
 go run ./cmd/uniget --user install dummy
 test -d "${HOME}/.cache/uniget/dummy"
-test -f "${HOME}/.local/var/lib/uniget/manifests/dummy.json"
-test -f "${HOME}/.local/var/lib/uniget/manifests/dummy.txt"
+test -f "${HOME}/.local/state/uniget/manifests/dummy.json"
+test -f "${HOME}/.local/state/uniget/manifests/dummy.txt"
+go run ./cmd/uniget --user uninstall dummy
 
 echo "-----------------------------"
 echo "All tests passed successfully"
