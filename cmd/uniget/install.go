@@ -333,13 +333,7 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 
 		assertDirectory(viper.GetString("prefix") + "/" + viper.GetString("target"))
 		var err error
-		if viper.GetBool("user") {
-			logging.Debugf("Installing in user context")
-			err = tool.Install(registryImagePrefix, viper.GetString("prefix")+"/"+viper.GetString("target"), "")
-		} else {
-			logging.Debugf("Installing in system context")
-			err = tool.Install(registryImagePrefix, viper.GetString("prefix"), viper.GetString("target"))
-		}
+		err = tool.Install(registryImagePrefix, viper.GetString("prefix"), viper.GetString("target"), libDirectory, cacheDirectory)
 		if err != nil {
 			if installSpinner != nil {
 				installSpinner.Fail()

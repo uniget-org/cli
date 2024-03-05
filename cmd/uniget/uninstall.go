@@ -82,6 +82,7 @@ func uninstallTool(toolName string) error {
 		logging.Info.Println(installMessage)
 	}
 
+	logging.Tracef("Looking for manifest file for tool %s at %s", tool.Name, viper.GetString("prefix") + "/" + libDirectory + "/manifests/" + tool.Name + ".txt")
 	if fileExists(viper.GetString("prefix") + "/" + libDirectory + "/manifests/" + tool.Name + ".txt") {
 		data, err := os.ReadFile(viper.GetString("prefix") + "/" + libDirectory + "/manifests/" + tool.Name + ".txt")
 		if err != nil {
@@ -123,16 +124,6 @@ func uninstallTool(toolName string) error {
 
 	} else {
 		logging.Warning.Printfln("Unable to find manifest for %s", tool.Name)
-	}
-
-	err = tool.RemoveMarkerFile(viper.GetString("prefix") + "/" + cacheDirectory)
-	if os.IsNotExist(err) {
-		logging.Debugf("unable to remove marker file because it does not exist")
-	} else if err != nil {
-		if uninstallSpinner != nil {
-			uninstallSpinner.Fail()
-		}
-		return fmt.Errorf("unable to remove marker file: %s", err)
 	}
 
 	if directoryExists(viper.GetString("prefix") + "/" + cacheDirectory + "/" + tool.Name) {
@@ -187,6 +178,16 @@ func uninstallTool(toolName string) error {
 			}
 			return fmt.Errorf("unable to remove %s: %s", viper.GetString("prefix")+"/"+libDirectory+"/manifests/"+tool.Name+".txt", err)
 		}
+	}
+
+	err = tool.RemoveMarkerFile(viper.GetString("prefix") + "/" + cacheDirectory)
+	if os.IsNotExist(err) {
+		logging.Debugf("unable to remove marker file because it does not exist")
+	} else if err != nil {
+		if uninstallSpinner != nil {
+			uninstallSpinner.Fail()
+		}
+		return fmt.Errorf("unable to remove marker file: %s", err)
 	}
 
 	if uninstallSpinner != nil {

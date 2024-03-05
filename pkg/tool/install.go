@@ -13,7 +13,7 @@ import (
 	"github.com/regclient/regclient/types/blob"
 )
 
-func (tool *Tool) Install(registryImagePrefix string, prefix string, target string) error {
+func (tool *Tool) Install(registryImagePrefix string, prefix string, target string, libDirectory string, cacheDirectory string) error {
 	// Fetch manifest for tool
 	err := containers.GetManifest(fmt.Sprintf(registryImagePrefix+"%s:%s", tool.Name, strings.Replace(tool.Version, "+", "-", -1)), func(blob blob.Reader) error {
 		logging.Debugf("Extracting with prefix=%s and target=%s", prefix, target)
@@ -46,15 +46,17 @@ func (tool *Tool) Install(registryImagePrefix string, prefix string, target stri
 			// Remove prefix usr/local/ to support arbitrary target directories
 			fixedPath := strings.TrimPrefix(path, "usr/local/")
 
-			logging.Debugf("fixedPath=%s", fixedPath)
-			logging.Debugf("          012345678901234567890")
-			if len(fixedPath) >= 16 {
-				logging.Debugf("          %s", fixedPath[0:15])
-			}
+			// Fix lib directory
+			if strings.HasPrefix(fixedPath, "var/lib/uniget/") {
+				logging.Debugf("Replacing lib directory with %s", libDirectory)
+				fixedPath = libDirectory + "/" + strings.TrimPrefix(fixedPath, "var/lib/uniget/")
 
-			// Prepend target directory for all paths except those with prefix var/lib/uniget/
-			if len(fixedPath) >= 16 && fixedPath[0:15] == "var/lib/uniget/" {
-				logging.Debugf("No need to prepend target")
+				// Fix cache directory
+			} else if strings.HasPrefix(fixedPath, "var/cache/uniget/") {
+				logging.Debugf("Replacing cache directory with %s", cacheDirectory)
+				fixedPath = cacheDirectory + "/" + strings.TrimPrefix(fixedPath, "var/cache/uniget/")
+
+				// Prepending target
 			} else if len(target) > 0 {
 				logging.Debugf("Prepending target to %s", fixedPath)
 				fixedPath = target + "/" + fixedPath
