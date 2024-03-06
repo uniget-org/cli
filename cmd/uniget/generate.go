@@ -48,7 +48,7 @@ var generateCmd = &cobra.Command{
 				if err != nil {
 					return fmt.Errorf("unable to find dependency called %s for %s", depName, toolName)
 				}
-				result = append(result, fmt.Sprintf("COPY --link --from=%s%s:latest /%s", registryImagePrefix, dep.Name, viper.GetString("target")))
+				result = append(result, fmt.Sprintf("COPY --link --from=%s%s:latest / /%s", registryImagePrefix, dep.Name, viper.GetString("target")))
 			}
 
 			if len(toolVersion) == 0 {
