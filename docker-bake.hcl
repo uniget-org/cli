@@ -21,7 +21,11 @@ target "test" {
 }
 
 target "gosec" {
-    target = "sec"
+    target = "gosec"
+}
+
+target "staticcheck" {
+    target = "staticcheck"
 }
 
 target "cli-test" {

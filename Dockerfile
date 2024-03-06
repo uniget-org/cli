@@ -26,10 +26,10 @@ GOARCH=${TARGETARCH} \
         ./cmd/uniget
 EOF
 
-FROM ghcr.io/uniget-org/tools/goreleaser:latest AS goreleaser
-FROM ghcr.io/uniget-org/tools/cosign:latest AS cosign
-FROM ghcr.io/uniget-org/tools/syft:latest AS syft
-FROM ghcr.io/uniget-org/tools/gh:latest AS gh
+FROM ghcr.io/uniget-org/tools/goreleaser:latest AS uniget-goreleaser
+FROM ghcr.io/uniget-org/tools/cosign:latest AS uniget-cosign
+FROM ghcr.io/uniget-org/tools/syft:latest AS uniget-syft
+FROM ghcr.io/uniget-org/tools/gh:latest AS uniget-gh
 
 FROM base AS publish
 WORKDIR /go/src/github.com/uniget-org/cli
@@ -38,10 +38,10 @@ ARG GITHUB_TOKEN
 ARG ACTIONS_ID_TOKEN_REQUEST_URL
 ARG ACTIONS_ID_TOKEN_REQUEST_TOKEN
 ARG GITHUB_REF_NAME
-RUN --mount=from=goreleaser,src=/bin/goreleaser,target=/usr/local/bin/goreleaser \
-    --mount=from=cosign,src=/bin/cosign,target=/usr/local/bin/cosign \
-    --mount=from=syft,src=/bin/syft,target=/usr/local/bin/syft \
-    --mount=from=gh,src=/bin/gh,target=/usr/local/bin/gh \
+RUN --mount=from=uniget-goreleaser,src=/bin/goreleaser,target=/usr/local/bin/goreleaser \
+    --mount=from=uniget-cosign,src=/bin/cosign,target=/usr/local/bin/cosign \
+    --mount=from=uniget-syft,src=/bin/syft,target=/usr/local/bin/syft \
+    --mount=from=uniget-gh,src=/bin/gh,target=/usr/local/bin/gh \
     --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build <<EOF
 goreleaser healthcheck
@@ -78,14 +78,24 @@ go vet \
     ./...
 EOF
 
-FROM ghcr.io/uniget-org/tools/gosec:latest AS gosec
+FROM ghcr.io/uniget-org/tools/gosec:latest AS uniget-gosec
 
-FROM base AS sec
+FROM base AS gosec
 RUN --mount=target=. \
-    --mount=from=gosec,src=/bin/gosec,target=/usr/local/bin/gosec \
+    --mount=from=uniget-gosec,src=/bin/gosec,target=/usr/local/bin/gosec \
     --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build <<EOF
 gosec ./...
+EOF
+
+FROM ghcr.io/uniget-org/tools/staticcheck:latest AS uniget-staticcheck
+
+FROM base AS staticcheck
+RUN --mount=target=. \
+    --mount=from=uniget-staticcheck,src=/bin/staticcheck,target=/usr/local/bin/staticcheck \
+    --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build <<EOF
+staticcheck ./...
 EOF
 
 FROM golangci/golangci-lint:v1.56.2@sha256:04c2e881e069d6827ddca7d9c4fcf4de46eda0c10e58692609a047f8a09a0274 AS lint-base
