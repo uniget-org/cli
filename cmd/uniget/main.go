@@ -160,7 +160,7 @@ func main() {
 
 	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
 		logging.Error.Writer = os.Stderr
-		pterm.Warning.Writer = os.Stderr
+		logging.Warning.Writer = os.Stderr
 
 		if viper.GetBool("trace") {
 			pterm.EnableDebugMessages()
@@ -259,7 +259,7 @@ func main() {
 		now := time.Now()
 		modifiedtime := file.ModTime()
 		if now.Sub(modifiedtime).Hours() > 24 {
-			pterm.Warning.Println("Metadata file is older than 24 hours")
+			logging.Warning.Println("Metadata file is older than 24 hours")
 		}
 
 		return nil

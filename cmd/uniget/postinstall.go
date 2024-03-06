@@ -7,7 +7,6 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/uniget-org/cli/pkg/logging"
@@ -72,7 +71,7 @@ func postinstall() error {
 			}
 		}
 		if len(scripts) > 0 && len(viper.GetString("prefix")) > 0 {
-			pterm.Warning.Printfln("prefix cannot be set for postinstall scripts to run")
+			logging.Warning.Printfln("prefix cannot be set for postinstall scripts to run")
 			return nil
 		}
 		for _, file := range scripts {

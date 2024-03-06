@@ -55,7 +55,7 @@ var uninstallCmd = &cobra.Command{
 		}
 
 		if !force && !tool.Status.MarkerFilePresent && !tool.Status.BinaryPresent {
-			pterm.Warning.Printfln("Tool %s is not installed", args[0])
+			logging.Warning.Printfln("Tool %s is not installed", args[0])
 			return nil
 		}
 
@@ -82,7 +82,7 @@ func uninstallTool(toolName string) error {
 		logging.Info.Println(installMessage)
 	}
 
-	logging.Tracef("Looking for manifest file for tool %s at %s", tool.Name, viper.GetString("prefix") + "/" + libDirectory + "/manifests/" + tool.Name + ".txt")
+	logging.Tracef("Looking for manifest file for tool %s at %s", tool.Name, viper.GetString("prefix")+"/"+libDirectory+"/manifests/"+tool.Name+".txt")
 	if fileExists(viper.GetString("prefix") + "/" + libDirectory + "/manifests/" + tool.Name + ".txt") {
 		data, err := os.ReadFile(viper.GetString("prefix") + "/" + libDirectory + "/manifests/" + tool.Name + ".txt")
 		if err != nil {

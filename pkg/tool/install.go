@@ -9,7 +9,6 @@ import (
 	"github.com/uniget-org/cli/pkg/containers"
 	"github.com/uniget-org/cli/pkg/logging"
 
-	"github.com/pterm/pterm"
 	"github.com/regclient/regclient/types/blob"
 )
 
@@ -39,7 +38,7 @@ func (tool *Tool) Install(registryImagePrefix string, prefix string, target stri
 			// Skip paths that are a prefix of usr/local/
 			// Necessary as long as tools are still installed in hardcoded /usr/local
 			if strings.HasPrefix("usr/local/", path) {
-				pterm.Debug.Println("Path is prefix of usr/local/")
+				logging.Debug.Println("Path is prefix of usr/local/")
 				return ""
 			}
 

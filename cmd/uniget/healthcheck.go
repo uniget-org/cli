@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 
-	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/uniget-org/cli/pkg/logging"
 )
 
 func initHealthcheckCmd() {
@@ -47,16 +47,16 @@ var healthcheckCmd = &cobra.Command{
 		testFailed := false
 
 		if tool.Status.MarkerFilePresent {
-			pterm.Success.Printfln("%s: Marker file is present", tool.Name)
+			logging.Success.Printfln("%s: Marker file is present", tool.Name)
 		} else {
-			pterm.Warning.Printfln("%s: Marker file is not present", tool.Name)
+			logging.Warning.Printfln("%s: Marker file is not present", tool.Name)
 		}
 		if tool.Binary == "false" {
-			pterm.Warning.Printfln("%s: Tool does not have a binary", tool.Name)
+			logging.Warning.Printfln("%s: Tool does not have a binary", tool.Name)
 		} else if tool.Status.BinaryPresent {
-			pterm.Success.Printfln("%s: Binary is present (%s)", tool.Name, tool.Binary)
+			logging.Success.Printfln("%s: Binary is present (%s)", tool.Name, tool.Binary)
 		} else {
-			pterm.Error.Printfln("%s: Binary is not present (%s)", tool.Name, tool.Binary)
+			logging.Error.Printfln("%s: Binary is not present (%s)", tool.Name, tool.Binary)
 			testFailed = true
 		}
 
@@ -66,26 +66,26 @@ var healthcheckCmd = &cobra.Command{
 		}
 
 		if !tool.Status.MarkerFilePresent && !tool.Status.BinaryPresent && !markerFilePresent {
-			pterm.Warning.Printfln("Tool %s is not installed", tool.Name)
+			logging.Warning.Printfln("Tool %s is not installed", tool.Name)
 			testFailed = true
 		}
 
 		if tool.Check == "" {
-			pterm.Warning.Printfln("%s: Tool does not support version check", tool.Name)
-			pterm.Info.Printfln("%s: Manifest version is %s", tool.Name, tool.Version)
+			logging.Warning.Printfln("%s: Tool does not support version check", tool.Name)
+			logging.Info.Printfln("%s: Manifest version is %s", tool.Name, tool.Version)
 
 		} else {
 			tool.ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
 			version, err := tool.RunVersionCheck()
 			if err != nil {
-				pterm.Error.Printfln("%s: Error getting version: %s", tool.Name, err)
+				logging.Error.Printfln("%s: Error getting version: %s", tool.Name, err)
 				testFailed = true
 			}
-			pterm.Success.Printfln("%s: Installed version is %s", tool.Name, version)
+			logging.Success.Printfln("%s: Installed version is %s", tool.Name, version)
 		}
 
 		if testFailed {
-			pterm.Error.Printfln("%s: Healthcheck failed", tool.Name)
+			logging.Error.Printfln("%s: Healthcheck failed", tool.Name)
 			return fmt.Errorf("healthcheck failed for %s", tool.Name)
 		}
 

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/pterm/pterm"
 	"github.com/uniget-org/cli/pkg/logging"
 )
 
@@ -125,7 +124,7 @@ func (tools *Tools) ResolveDependencies(queue *Tools, toolName string) error {
 
 	tool, err := tools.GetByName(toolName)
 	if err != nil {
-		pterm.Error.Printfln("Error getting tool %s", toolName)
+		logging.Error.Printfln("Error getting tool %s", toolName)
 		return err
 	}
 	logging.Tracef("Tool %s is requested? %t", toolName, tool.Status.IsRequested)
@@ -133,7 +132,7 @@ func (tools *Tools) ResolveDependencies(queue *Tools, toolName string) error {
 	for _, depName := range tool.RuntimeDependencies {
 		dep, err := tools.GetByName(depName)
 		if err != nil {
-			pterm.Error.Printfln("Unable to find dependency called %s for %s", depName, toolName)
+			logging.Error.Printfln("Unable to find dependency called %s for %s", depName, toolName)
 		}
 		logging.Tracef("Dep %s is requested? %t", depName, dep.Status.IsRequested)
 

@@ -9,7 +9,6 @@ import (
 	"regexp"
 	"runtime"
 
-	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 	"github.com/uniget-org/cli/pkg/archive"
 	"github.com/uniget-org/cli/pkg/logging"
@@ -27,7 +26,7 @@ var selfUpgradeCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		versionRegex := regexp.MustCompile(`^\d+\.\d+\.\d+(-\w+)?$`)
 		if !versionRegex.MatchString(version) {
-			pterm.Warning.Printf("Version is %s and does not match a.b.c\n", version)
+			logging.Warning.Printf("Version is %s and does not match a.b.c\n", version)
 			return nil
 		}
 
@@ -36,13 +35,13 @@ var selfUpgradeCmd = &cobra.Command{
 			return fmt.Errorf("failed to get base name for %s", os.Args[0])
 		}
 		if selfExe != "uniget" {
-			pterm.Warning.Printf("Binary must be called uniget but is %s\n", selfExe)
+			logging.Warning.Printf("Binary must be called uniget but is %s\n", selfExe)
 			return nil
 		}
 
 		path, err := exec.LookPath(selfExe)
 		if err != nil {
-			pterm.Error.Printfln("Failed to find %s in PATH", selfExe)
+			logging.Error.Printfln("Failed to find %s in PATH", selfExe)
 			return fmt.Errorf("failed to find %s in PATH: %s", selfExe, err)
 		}
 		fmt.Printf("%s is available at %s\n", selfExe, path)
@@ -81,7 +80,7 @@ var selfUpgradeCmd = &cobra.Command{
 		}
 
 		if fmt.Sprintf("v%s", version) == tag {
-			pterm.Info.Printf("Already at latest version %s\n", version)
+			logging.Info.Printf("Already at latest version %s\n", version)
 			return nil
 		}
 

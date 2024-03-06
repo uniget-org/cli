@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 
-	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/uniget-org/cli/pkg/logging"
 )
 
 func initVersionCmd() {
@@ -49,12 +49,12 @@ var versionCmd = &cobra.Command{
 		}
 
 		if !tool.Status.MarkerFilePresent && !tool.Status.BinaryPresent && !markerFilePresent {
-			pterm.Warning.Printfln("Tool %s is not installed", tool.Name)
+			logging.Warning.Printfln("Tool %s is not installed", tool.Name)
 			return fmt.Errorf("tool %s is not installed", tool.Name)
 		}
 
 		if tool.Check == "" {
-			pterm.Warning.Printfln("Tool %s does not support version check", tool.Name)
+			logging.Warning.Printfln("Tool %s does not support version check", tool.Name)
 			fmt.Println(tool.Version)
 			return nil
 		}

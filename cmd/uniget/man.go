@@ -6,7 +6,6 @@ import (
 
 	mcobra "github.com/muesli/mango-cobra"
 	"github.com/muesli/roff"
-	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/uniget-org/cli/pkg/logging"
@@ -37,7 +36,7 @@ var manCmd = &cobra.Command{
 		}
 
 		for _, cobraCmd := range rootCmd.Commands() {
-			pterm.Info.Printfln("Generating manpage for %s...", cobraCmd.Name())
+			logging.Info.Printfln("Generating manpage for %s...", cobraCmd.Name())
 
 			err := writeManpage(cobraCmd, cobraCmd.Name(), manDirectory)
 			if err != nil {
