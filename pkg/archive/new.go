@@ -128,7 +128,7 @@ func ExtractTarGz(gzipStream io.Reader, patchPath func(path string) string) erro
 			logging.Tracef("Untarring symlink %s", fixedHeaderName)
 
 			// Check if symlink already exists
-			_, err := os.Stat(fixedHeaderName)
+			_, err := os.Lstat(fixedHeaderName)
 			if err == nil {
 				logging.Debugf("Symlink %s already exists", fixedHeaderName)
 			}
@@ -159,12 +159,12 @@ func ExtractTarGz(gzipStream io.Reader, patchPath func(path string) string) erro
 					return fmt.Errorf("ExtractTarGz: MkdirAll() failed: %s", err.Error())
 				}
 
-				_, err = os.Lstat(header.Linkname)
+				_, err = os.Stat(header.Linkname)
 				if err != nil {
 					if os.IsNotExist(err) {
 						// Symlink target does not exist
 					} else {
-						return fmt.Errorf("ExtractTarGz: Lstat() failed for TypeSymlink: %s", err.Error())
+						return fmt.Errorf("ExtractTarGz: Stat() failed for TypeSymlink: %s", err.Error())
 					}
 				} else {
 					err = os.Remove(header.Linkname)
