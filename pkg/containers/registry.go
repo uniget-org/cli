@@ -99,9 +99,7 @@ func ProcessLayersCallback(ctx context.Context, rc *regclient.RegClient, m manif
 			return fmt.Errorf("failed to parse digest %s: %s", layer.Digest, err)
 		}
 
-		layerCtx, layerCancel := context.WithTimeout(ctx, 180*time.Second)
-		defer layerCancel()
-		blob, err := rc.BlobGet(layerCtx, r, types.Descriptor{Digest: d})
+		blob, err := rc.BlobGet(ctx, r, types.Descriptor{Digest: d})
 		if err != nil {
 			return fmt.Errorf("failed to get blob for digest %s: %s", layer.Digest, err)
 		}
