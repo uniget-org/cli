@@ -61,7 +61,7 @@ func GetManifest(image string, callback func(blob blob.Reader) error) error {
 		return fmt.Errorf("failed to get manifest: %s", err)
 	}
 
-	err = ProcessLayersCallback(ctx, rc, m, r, callback)
+	err = ProcessLayersCallback(rc, m, r, callback)
 	if err != nil {
 		return fmt.Errorf("failed to process layers with callback: %s", err)
 	}
@@ -69,7 +69,7 @@ func GetManifest(image string, callback func(blob blob.Reader) error) error {
 	return nil
 }
 
-func ProcessLayersCallback(ctx context.Context, rc *regclient.RegClient, m manifest.Manifest, r ref.Ref, callback func(blob blob.Reader) error) error {
+func ProcessLayersCallback(rc *regclient.RegClient, m manifest.Manifest, r ref.Ref, callback func(blob blob.Reader) error) error {
 	if m.IsList() {
 		return fmt.Errorf("manifest is a list")
 	}
@@ -99,7 +99,7 @@ func ProcessLayersCallback(ctx context.Context, rc *regclient.RegClient, m manif
 			return fmt.Errorf("failed to parse digest %s: %s", layer.Digest, err)
 		}
 
-		blob, err := rc.BlobGet(ctx, r, types.Descriptor{Digest: d})
+		blob, err := rc.BlobGet(context.Background(), r, types.Descriptor{Digest: d})
 		if err != nil {
 			return fmt.Errorf("failed to get blob for digest %s: %s", layer.Digest, err)
 		}
