@@ -98,6 +98,8 @@ github.com/pterm/pterm v0.12.79 h1:lH3yrYMhdpeqX9y5Ep1u7DejyHy7NSQg9qrBjF9dFT4=
 github.com/pterm/pterm v0.12.79/go.mod h1:1v/gzOF1N0FsjbgTHZ1wVycRkKiatFvJSJC4IGaQAAo=
 github.com/regclient/regclient v0.5.7 h1:d6bXhvz7UYJM+r20ls60RIVdoYh/rp+PygD/dIsJ9UA=
 github.com/regclient/regclient v0.5.7/go.mod h1:5QTWmekWy6+gq13Z6U69zsMQV5lvgxg2T7AefHT6BmA=
+github.com/regclient/regclient v0.6.0 h1:P+8L9fdOTCo6S6O0/vE/C47csVY5UW5CMEzVwENVbWA=
+github.com/regclient/regclient v0.6.0/go.mod h1:ofqAoAhp8T8us4pXT2acvmpUnqjfEdXt3y3b9YunqGo=
 github.com/rivo/uniseg v0.2.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=
 github.com/rivo/uniseg v0.4.7 h1:WUdvkW8uEhrYfLC4ZzdpI2ztxP1I582+49Oc5Mq64VQ=
 github.com/rivo/uniseg v0.4.7/go.mod h1:FN3SvrM+Zdj16jyLfmOkMNblXMcoc8DfTHruCPUcx88=
@@ -180,6 +182,8 @@ golang.org/x/term v0.0.0-20210927222741-03fcf44c2211/go.mod h1:jbD1KX2456YbFQfuX
 golang.org/x/term v0.5.0/go.mod h1:jMB1sMXY+tzblOD4FWmEbocvup2/aLOaQEp7JmGp78k=
 golang.org/x/term v0.17.0 h1:mkTF7LCd6WGJNL3K1Ad7kwxNfYAW6a8a8QqtMblp/4U=
 golang.org/x/term v0.17.0/go.mod h1:lLRBjIVuehSbZlaOtGMbcMncT+aqLLLmKrsjNrUguwk=
+golang.org/x/term v0.18.0 h1:FcHjZXDMxI8mM3nwhX9HlKop4C0YQvCVCdwYl2wOtE8=
+golang.org/x/term v0.18.0/go.mod h1:ILwASektA3OnRv7amZ1xhE/KTR+u50pbXfZ03+6Nx58=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 golang.org/x/text v0.3.3/go.mod h1:5Zoc/QRtKVWzQhOtBMvqHzDpF6irO9z98xDceosuGiQ=
 golang.org/x/text v0.3.7/go.mod h1:u+2+/6zg+i71rQMx5EYifcz6MCKuco9NR6JIITiCfzQ=
