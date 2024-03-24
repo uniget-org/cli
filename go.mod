@@ -10,7 +10,7 @@ require (
 	github.com/muesli/roff v0.1.0
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/pterm/pterm v0.12.79
-	github.com/regclient/regclient v0.5.7
+	github.com/regclient/regclient v0.6.0
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.18.2
 	golang.org/x/sys v0.18.0
@@ -47,7 +47,7 @@ require (
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/exp v0.0.0-20240213143201-ec583247a57a // indirect
-	golang.org/x/term v0.17.0 // indirect
+	golang.org/x/term v0.18.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
