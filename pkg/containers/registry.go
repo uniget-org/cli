@@ -11,9 +11,10 @@ import (
 	"github.com/opencontainers/go-digest"
 
 	"github.com/regclient/regclient"
-	"github.com/regclient/regclient/types"
 	"github.com/regclient/regclient/types/blob"
+	"github.com/regclient/regclient/types/descriptor"
 	"github.com/regclient/regclient/types/manifest"
+	"github.com/regclient/regclient/types/mediatype"
 	"github.com/regclient/regclient/types/platform"
 	"github.com/regclient/regclient/types/ref"
 )
@@ -89,17 +90,17 @@ func ProcessLayersCallback(rc *regclient.RegClient, m manifest.Manifest, r ref.R
 	}
 
 	layer := layers[0]
-	if layer.MediaType == types.MediaTypeOCI1Layer || layer.MediaType == types.MediaTypeOCI1LayerZstd {
+	if layer.MediaType == mediatype.OCI1Layer || layer.MediaType == mediatype.OCI1LayerZstd {
 		return fmt.Errorf("only layers with gzip compression are supported (not %s)", layer.MediaType)
 	}
-	if layer.MediaType == types.MediaTypeOCI1LayerGzip || layer.MediaType == types.MediaTypeDocker2LayerGzip {
+	if layer.MediaType == mediatype.OCI1LayerGzip || layer.MediaType == mediatype.Docker2LayerGzip {
 
 		d, err := digest.Parse(string(layer.Digest))
 		if err != nil {
 			return fmt.Errorf("failed to parse digest %s: %s", layer.Digest, err)
 		}
 
-		blob, err := rc.BlobGet(context.Background(), r, types.Descriptor{Digest: d})
+		blob, err := rc.BlobGet(context.Background(), r, descriptor.Descriptor{Digest: d})
 		if err != nil {
 			return fmt.Errorf("failed to get blob for digest %s: %s", layer.Digest, err)
 		}
