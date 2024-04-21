@@ -2,7 +2,7 @@ module github.com/uniget-org/cli
 
 go 1.21
 
-toolchain go1.21.9
+toolchain go1.22.2
 
 require (
 	github.com/jedib0t/go-pretty/v6 v6.5.8
