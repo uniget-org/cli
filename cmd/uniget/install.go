@@ -293,7 +293,7 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 			}
 		}
 		installMessage := fmt.Sprintf("Installing %s %s", tool.Name, tool.Version)
-		if viper.GetString("log-level") == "warning" {
+		if viper.GetString("loglevel") == "warning" {
 			installSpinner, _ = pterm.DefaultSpinner.Start(installMessage)
 		} else {
 			logging.Info.Println(installMessage)

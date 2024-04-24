@@ -275,7 +275,7 @@ func main() {
 
 	pf := rootCmd.PersistentFlags()
 
-	pf.String("log-level", viper.GetString("log-level"), "Log level (trace, debug, info, warning, error)")
+	pf.String("log-level", viper.GetString("loglevel"), "Log level (trace, debug, info, warning, error)")
 	pf.BoolP("debug", "d", viper.GetBool("debug"), "Set log level to debug")
 	pf.Bool("trace", viper.GetBool("trace"), "Set log level to trace")
 	pf.StringP("prefix", "p", viper.GetString("prefix"), "Base directory for the installation (useful when preparing a chroot environment)")
@@ -287,7 +287,13 @@ func main() {
 
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix("uniget")
-	err = viper.BindEnv("log-level", "UNIGET_LOG_LEVEL")
+
+	err = viper.BindPFlag("loglevel", pf.Lookup("log-level"))
+	if err != nil {
+		logging.Error.Printfln("Error binding log-level flag: %s", err)
+		os.Exit(1)
+	}
+	err = viper.BindEnv("loglevel", "UNIGET_LOG_LEVEL")
 	if err != nil {
 		logging.Error.Printfln("Error binding log-level flag: %s", err)
 		os.Exit(1)
