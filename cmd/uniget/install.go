@@ -23,6 +23,7 @@ var skipConflicts bool
 var check bool
 var plan bool
 var reinstall bool
+var update bool
 
 func initInstallCmd() {
 	installCmd.Flags().BoolVar(&defaultMode, "default", false, "Install default tools")
@@ -51,6 +52,9 @@ var installCmd = &cobra.Command{
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if viper.GetBool("update") {
+			downloadMetadata()
+		}
 		assertMetadataFileExists()
 		assertMetadataIsLoaded()
 

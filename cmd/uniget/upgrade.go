@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 func initUpgradeCmd() {
@@ -18,6 +19,12 @@ var upgradeCmd = &cobra.Command{
 	Long:  header + "\nUpgrade all tools to latest version",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if viper.GetBool("update") {
+			downloadMetadata()
+		}
+		assertMetadataFileExists()
+		assertMetadataIsLoaded()
+
 		requestdTools, err := findInstalledTools(tools)
 		if err != nil {
 			return fmt.Errorf("failed to find installed tools: %s", err)

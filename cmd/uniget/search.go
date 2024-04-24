@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/uniget-org/cli/pkg/logging"
 )
 
@@ -25,6 +26,9 @@ var searchCmd = &cobra.Command{
 	Long:    header + "\nSearch for tools",
 	Args:    cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if viper.GetBool("update") {
+			downloadMetadata()
+		}
 		assertMetadataFileExists()
 		assertMetadataIsLoaded()
 

@@ -6,6 +6,7 @@ import (
 
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 func initTagsCmd() {
@@ -19,6 +20,9 @@ var tagsCmd = &cobra.Command{
 	Long:    header + "\nList tags",
 	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if viper.GetBool("update") {
+			downloadMetadata()
+		}
 		assertMetadataFileExists()
 		assertMetadataIsLoaded()
 

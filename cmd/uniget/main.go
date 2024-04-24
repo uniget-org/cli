@@ -266,12 +266,13 @@ func main() {
 		return nil
 	}
 
-	viper.SetDefault("log-level", pterm.LogLevelInfo.String())
+	viper.SetDefault("loglevel", pterm.LogLevelInfo.String())
 	viper.SetDefault("debug", false)
 	viper.SetDefault("trace", false)
 	viper.SetDefault("prefix", "")
 	viper.SetDefault("target", "usr/local")
 	viper.SetDefault("user", false)
+	viper.SetDefault("autoupdate", false)
 
 	pf := rootCmd.PersistentFlags()
 
@@ -281,6 +282,7 @@ func main() {
 	pf.StringP("prefix", "p", viper.GetString("prefix"), "Base directory for the installation (useful when preparing a chroot environment)")
 	pf.StringP("target", "t", viper.GetString("target"), "Target directory for installation relative to PREFIX")
 	pf.BoolP("user", "u", viper.GetBool("user"), "Install in user context")
+	pf.BoolP("auto-update", "a", viper.GetBool("autoupdate"), "Automatically update metadata")
 
 	rootCmd.MarkFlagsMutuallyExclusive("prefix", "user")
 	rootCmd.MarkFlagsMutuallyExclusive("target", "user")
@@ -321,6 +323,16 @@ func main() {
 	err = viper.BindPFlag("user", pf.Lookup("user"))
 	if err != nil {
 		logging.Error.Printfln("Error binding user flag: %s", err)
+		os.Exit(1)
+	}
+	err = viper.BindPFlag("autoupdate", pf.Lookup("auto-update"))
+	if err != nil {
+		logging.Error.Printfln("Error binding auto-update flag: %s", err)
+		os.Exit(1)
+	}
+	err = viper.BindEnv("autoupdate", "UNIGET_AUTO_UPDATE")
+	if err != nil {
+		logging.Error.Printfln("Error binding environment variable for autoupdate key: %s", err)
 		os.Exit(1)
 	}
 

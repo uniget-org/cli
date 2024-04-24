@@ -22,6 +22,9 @@ var versionCmd = &cobra.Command{
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if viper.GetBool("update") {
+			downloadMetadata()
+		}
 		assertMetadataFileExists()
 		assertMetadataIsLoaded()
 

@@ -28,6 +28,9 @@ var listCmd = &cobra.Command{
 	Long:    header + "\nList tools",
 	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if viper.GetBool("update") {
+			downloadMetadata()
+		}
 		assertMetadataFileExists()
 		assertMetadataIsLoaded()
 
