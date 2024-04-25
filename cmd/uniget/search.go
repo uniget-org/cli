@@ -27,7 +27,10 @@ var searchCmd = &cobra.Command{
 	Args:    cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if viper.GetBool("update") {
-			downloadMetadata()
+			err := downloadMetadata()
+			if err != nil {
+				return fmt.Errorf("error downloading metadata: %s", err)
+			}
 		}
 		assertMetadataFileExists()
 		assertMetadataIsLoaded()
