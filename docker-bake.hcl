@@ -31,3 +31,15 @@ target "staticcheck" {
 target "cli-test" {
     target = "cli-test"
 }
+
+group "full" {
+    targets = [
+        "binary",
+        "lint",
+        "vet",
+        "test",
+        "gosec",
+        "staticcheck",
+        "cli-test"
+    ]
+}
