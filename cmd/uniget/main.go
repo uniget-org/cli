@@ -282,7 +282,7 @@ func main() {
 	pf.StringP("prefix", "p", viper.GetString("prefix"), "Base directory for the installation (useful when preparing a chroot environment)")
 	pf.StringP("target", "t", viper.GetString("target"), "Target directory for installation relative to PREFIX")
 	pf.BoolP("user", "u", viper.GetBool("user"), "Install in user context")
-	pf.BoolP("auto-update", "a", viper.GetBool("autoupdate"), "Automatically update metadata")
+	pf.Bool("auto-update", viper.GetBool("autoupdate"), "Automatically update metadata")
 
 	rootCmd.MarkFlagsMutuallyExclusive("prefix", "user")
 	rootCmd.MarkFlagsMutuallyExclusive("target", "user")
