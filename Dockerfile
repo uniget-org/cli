@@ -98,7 +98,7 @@ RUN --mount=target=. \
 staticcheck ./...
 EOF
 
-FROM golangci/golangci-lint:v1.57.2@sha256:8f3a60a00a83bb7d599d2e028ac0c3573dc2b9ec0842590f1c2e59781c821da7 AS lint-base
+FROM golangci/golangci-lint:v1.58.0@sha256:42692fa92a34b74d9e85687b5efea48f0c5eaa13f93d08edd72fb629d9385933 AS lint-base
 
 FROM base AS lint
 RUN --mount=target=. \
