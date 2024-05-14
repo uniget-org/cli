@@ -10,7 +10,7 @@ require (
 	github.com/muesli/roff v0.1.0
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/pterm/pterm v0.12.79
-	github.com/regclient/regclient v0.6.0
+	github.com/regclient/regclient v0.6.1
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.18.2
 	golang.org/x/sys v0.20.0
@@ -27,6 +27,7 @@ require (
 	github.com/gookit/color v1.5.4 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/klauspost/compress v1.17.8 // indirect
 	github.com/lithammer/fuzzysearch v1.1.8 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
