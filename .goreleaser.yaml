@@ -1,4 +1,6 @@
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+version: 2
+
 project_name: uniget
 
 builds:
@@ -61,7 +63,7 @@ signs:
   artifacts: all
 
 changelog:
-  skip: true
+  disable: true
 
 release:
   github:
