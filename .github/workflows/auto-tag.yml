@@ -21,7 +21,7 @@ jobs:
 
     - name: Test
       run: |
-        LAST_TAG="$( git describe --abbrev=0 )"
+        LAST_TAG="$( git describe --tags --abbrev=0 --exclude '*-*' )"
         echo "Checking commits since tag ${LAST_TAG}"
 
         if git log ${LAST_TAG}.. --pretty="%an" | grep -Fq 'renovate[bot]'; then
