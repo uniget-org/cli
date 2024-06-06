@@ -21,7 +21,7 @@ jobs:
       run: |
         go get -u ./...
 
-    - name: Tody deps
+    - name: Tidy deps
       run: |
         go mod tidy
 
