@@ -25,7 +25,7 @@ jobs:
         echo "Checking commits since tag ${LAST_TAG}"
 
         if git log ${LAST_TAG}.. --pretty="%an" | grep -Fq 'renovate[bot]'; then
-            echo "Unattended changes detected"
+            echo "Unattended changes detected."
 
             if git log ${LAST_TAG}.. --pretty="%an" | grep -Fvq 'renovate[bot]'; then
                 echo "Commit by developer(s) detected. Aborting."
@@ -36,4 +36,7 @@ jobs:
                 echo "Creating patch"
                 make patch
             fi
+
+        else
+            echo "No unattended commits detected. Aborting."
         fi
