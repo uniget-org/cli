@@ -1,0 +1,36 @@
+name: auto-tag
+
+on:
+  #schedule:
+  #- cron: '0 7 * * *'
+  workflow_dispatch:
+
+jobs:
+
+  auto-tag:
+    name: auto-tag
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+
+    - name: Checkout code
+      uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4
+
+    - name: Test
+      run: |
+        LAST_TAG="$( git describe --abbrev=0 )"
+        echo "Checking commits since tag ${LAST_TAG}"
+
+        if git log v0.14.3.. --pretty="%an" | grep -Fq 'renovate[bot]'; then
+            echo "Unattended changes detected"
+
+            if git log v0.14.3.. --pretty="%an" | grep -Fvq 'renovate[bot]'; then
+                echo "Commit by developer(s) detected. Aborting."
+            
+            else
+                echo "No authors/committers since last tag"
+
+                echo "Creating patch"
+                make patch
+            fi
