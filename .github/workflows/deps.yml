@@ -1,0 +1,32 @@
+name: deps
+
+on:
+  schedule:
+  - cron: '0 7 * * *'
+  workflow_dispatch:
+
+jobs:
+
+  deps:
+    name: deps
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+
+    - name: Checkout code
+      uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4
+
+    - name: Bump deps
+      run: |
+        go get -u ./...
+
+    - name: Tody deps
+      run: |
+        go mod tidy
+
+    - name: Commit changes
+      uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: "Bump dependencies"
+        file_pattern: 'go.mod go.sum'
