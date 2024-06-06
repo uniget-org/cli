@@ -24,10 +24,10 @@ jobs:
         LAST_TAG="$( git describe --abbrev=0 )"
         echo "Checking commits since tag ${LAST_TAG}"
 
-        if git log v0.14.3.. --pretty="%an" | grep -Fq 'renovate[bot]'; then
+        if git log ${LAST_TAG}.. --pretty="%an" | grep -Fq 'renovate[bot]'; then
             echo "Unattended changes detected"
 
-            if git log v0.14.3.. --pretty="%an" | grep -Fvq 'renovate[bot]'; then
+            if git log ${LAST_TAG}.. --pretty="%an" | grep -Fvq 'renovate[bot]'; then
                 echo "Commit by developer(s) detected. Aborting."
             
             else
@@ -36,3 +36,4 @@ jobs:
                 echo "Creating patch"
                 make patch
             fi
+        fi
