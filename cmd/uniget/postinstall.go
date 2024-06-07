@@ -80,6 +80,7 @@ func postinstall() error {
 			logging.Debugf("Running post_install script %s", "/"+libDirectory+"/post_install/"+file.Name())
 			cmd := exec.Command("/bin/bash", "/"+libDirectory+"/post_install/"+file.Name()) // #nosec G204 -- Tool images are a trusted source
 			cmd.Env = os.Environ()
+			cmd.Env = append(cmd.Env, "name=/"+strings.Split(file.Name(), ".")[0])
 			cmd.Env = append(cmd.Env, "target=/"+viper.GetString("target"))
 			cmd.Env = append(cmd.Env, "arch="+arch)
 			cmd.Env = append(cmd.Env, "alt_arch="+altArch)
