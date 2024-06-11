@@ -13,6 +13,59 @@ import (
 	"github.com/regclient/regclient/types/blob"
 )
 
+type PathRewrite struct {
+	Source    string
+	Target    string
+	Operation string
+}
+
+func applyPathRewrites(path string, rules []PathRewrite) string {
+	for _, rule := range rules {
+		if rule.Source == path {
+			return rule.Target
+		}
+	}
+	return path
+}
+
+func (tool *Tool) InstallWithPathRewrites(registryImagePrefix string, prefix string, rules []PathRewrite) error {
+	// Fetch manifest for tool
+	err := containers.GetManifest(fmt.Sprintf(registryImagePrefix+"%s:%s", tool.Name, strings.Replace(tool.Version, "+", "-", -1)), func(blob blob.Reader) error {
+		logging.Debugf("Extracting with prefix=%s", prefix)
+
+		// Change working directory to prefix
+		// so that unpacking can ignore the target directory
+		installDir := prefix
+		if len(prefix) == 0 {
+			installDir = "/"
+		}
+		err := os.Chdir(installDir)
+		if err != nil {
+			return fmt.Errorf("error changing directory to %s: %s", prefix, err)
+		}
+		dir, err := os.Getwd()
+		if err != nil {
+			return fmt.Errorf("error getting working directory")
+		}
+		logging.Debugf("Current directory: %s", dir)
+
+		// Unpack tool
+		err = archive.ExtractTarGz(blob, func(path string) string {
+			return applyPathRewrites(path, rules)
+		})
+		if err != nil {
+			return fmt.Errorf("failed to extract layer: %s", err)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("failed to get manifest: %s", err)
+	}
+
+	return nil
+}
+
 func (tool *Tool) Install(registryImagePrefix string, prefix string, target string, libDirectory string, cacheDirectory string) error {
 	// Fetch manifest for tool
 	err := containers.GetManifest(fmt.Sprintf(registryImagePrefix+"%s:%s", tool.Name, strings.Replace(tool.Version, "+", "-", -1)), func(blob blob.Reader) error {
