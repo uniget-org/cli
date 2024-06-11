@@ -133,6 +133,7 @@ func (tools *Tools) ResolveDependencies(queue *Tools, toolName string) error {
 		dep, err := tools.GetByName(depName)
 		if err != nil {
 			logging.Error.Printfln("Unable to find dependency called %s for %s", depName, toolName)
+			continue
 		}
 		logging.Tracef("Dep %s is requested? %t", depName, dep.Status.IsRequested)
 

@@ -23,6 +23,7 @@ var skipConflicts bool
 var check bool
 var plan bool
 var reinstall bool
+var usePathRewrite bool
 
 func initInstallCmd() {
 	installCmd.Flags().BoolVar(&defaultMode, "default", false, "Install default tools")
@@ -37,6 +38,9 @@ func initInstallCmd() {
 	installCmd.Flags().BoolVarP(&reinstall, "reinstall", "r", false, "Reinstall tool(s)")
 	installCmd.MarkFlagsMutuallyExclusive("default", "tags", "installed", "all", "file")
 	installCmd.MarkFlagsMutuallyExclusive("check", "plan")
+
+	installCmd.Flags().BoolVar(&usePathRewrite, "use-path-rewrite", false, "(Experimental) Enable path rewrite rules for installation")
+	installCmd.Flags().MarkHidden("use-path-rewrite")
 
 	rootCmd.AddCommand(installCmd)
 }
@@ -264,41 +268,41 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 	// Install
 	assertWritableTarget()
 	assertLibDirectory()
-	for _, tool := range plannedTools.Tools {
-		if tool.Status.VersionMatches && !reinstall {
-			//logging.Skip.Printfln("Skipping %s %s because it is already installed.", tool.Name, tool.Version)
+	for _, plannedTool := range plannedTools.Tools {
+		if plannedTool.Status.VersionMatches && !reinstall {
+			//logging.Skip.Printfln("Skipping %s %s because it is already installed.", plannedTool.Name, plannedTool.Version)
 			continue
 		}
-		if tool.Status.SkipDueToConflicts {
-			logging.Skip.Printfln("Skipping %s because it conflicts with another tool.", tool.Name)
+		if plannedTool.Status.SkipDueToConflicts {
+			logging.Skip.Printfln("Skipping %s because it conflicts with another tool.", plannedTool.Name)
 			continue
 		}
-		if skipDependencies && !tool.Status.IsRequested {
-			logging.Skip.Printfln("Skipping %s because it is a dependency (--skip-deps was specified)", tool.Name)
+		if skipDependencies && !plannedTool.Status.IsRequested {
+			logging.Skip.Printfln("Skipping %s because it is a dependency (--skip-deps was specified)", plannedTool.Name)
 			continue
 		}
 
 		var installSpinner *pterm.SpinnerPrinter
 		if reinstall {
-			err := uninstallTool(tool.Name)
+			err := uninstallTool(plannedTool.Name)
 			if err != nil {
-				logging.Warning.Printfln("Unable to uninstall %s: %s", tool.Name, err)
+				logging.Warning.Printfln("Unable to uninstall %s: %s", plannedTool.Name, err)
 				continue
 			}
 
-		} else if tool.Status.BinaryPresent || tool.Status.MarkerFilePresent {
-			err := uninstallTool(tool.Name)
+		} else if plannedTool.Status.BinaryPresent || plannedTool.Status.MarkerFilePresent {
+			err := uninstallTool(plannedTool.Name)
 			if err != nil {
-				logging.Warning.Printfln("Unable to uninstall %s: %s", tool.Name, err)
+				logging.Warning.Printfln("Unable to uninstall %s: %s", plannedTool.Name, err)
 				continue
 			}
-			err = printToolUpdate(tool.Name)
+			err = printToolUpdate(plannedTool.Name)
 			if err != nil {
 				logging.Warning.Printfln("Unable to print tool update: %s", err)
 				continue
 			}
 		}
-		installMessage := fmt.Sprintf("Installing %s %s", tool.Name, tool.Version)
+		installMessage := fmt.Sprintf("Installing %s %s", plannedTool.Name, plannedTool.Version)
 		if viper.GetString("loglevel") == "warning" {
 			installSpinner, _ = pterm.DefaultSpinner.Start(installMessage)
 		} else {
@@ -306,7 +310,7 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 		}
 
 		if !skipDependencies {
-			for _, depName := range tool.RuntimeDependencies {
+			for _, depName := range plannedTool.RuntimeDependencies {
 				dep, err := plannedTools.GetByName(depName)
 				if err != nil {
 					logging.Error.Printfln("Unable to find dependency %s", depName)
@@ -339,25 +343,58 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 
 		assertDirectory(viper.GetString("prefix") + "/" + viper.GetString("target"))
 		var err error
-		err = tool.Install(registryImagePrefix, viper.GetString("prefix"), viper.GetString("target"), libDirectory, cacheDirectory)
+		if usePathRewrite {
+			pathRewriteRules := []tool.PathRewrite{}
+
+			// Remove leading usr/local/ which is a relict
+			pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
+				Source: "usr/local/",
+				Target: "",
+				Operation: "REPLACE",
+			})
+
+			// Make uniget paths configurable
+			pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
+				Source: "var/lib/uniget/",
+				Target: libDirectory + "/",
+				Operation: "REPLACE",
+			})
+			pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
+				Source: "var/cache/uniget/",
+				Target: cacheDirectory + "/",
+				Operation: "REPLACE",
+			})
+
+			// Make target directory configurable
+			pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
+				Source: "",
+				Target: viper.GetString("target") + "/",
+				Operation: "PREPEND",
+			})
+
+			err = plannedTool.InstallWithPathRewrites(registryImagePrefix, viper.GetString("prefix"), pathRewriteRules)
+
+		} else {
+			err = plannedTool.Install(registryImagePrefix, viper.GetString("prefix"), viper.GetString("target"), libDirectory, cacheDirectory)
+		}
 		if err != nil {
 			if installSpinner != nil {
 				installSpinner.Fail()
 			}
-			logging.Warning.Printfln("Unable to install %s: %s", tool.Name, err)
+			logging.Warning.Printfln("Unable to install %s: %s", plannedTool.Name, err)
 			continue
 		}
 		if installSpinner != nil {
 			installSpinner.Success()
 		}
 
-		err = printToolUsage(tool.Name)
+		err = printToolUsage(plannedTool.Name)
 		if err != nil {
 			logging.Warning.Printfln("Unable to print tool usage: %s", err)
 			continue
 		}
 
-		err = tool.CreateMarkerFile(viper.GetString("prefix") + "/" + cacheDirectory)
+		err = plannedTool.CreateMarkerFile(viper.GetString("prefix") + "/" + cacheDirectory)
 		if err != nil {
 			logging.Warning.Printfln("Unable to create marker file: %s", err)
 			continue
