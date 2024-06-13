@@ -372,6 +372,13 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 				Operation: "PREPEND",
 			})
 
+			// Fix CLI plugins
+			//pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
+			//	Source: "",
+			//	Target: viper.GetString("target") + "/",
+			//	Operation: "PREPEND",
+			//})
+
 			err = plannedTool.InstallWithPathRewrites(registryImagePrefix, viper.GetString("prefix"), pathRewriteRules)
 
 		} else {
