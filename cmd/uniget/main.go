@@ -44,8 +44,6 @@ var toolSeparator = "/"
 var registryImagePrefix = registry + "/" + imageRepository + toolSeparator
 var tools tool.Tools
 
-
-
 var pathRewriteRules = make([]tool.PathRewrite, 0)
 
 var (
@@ -265,6 +263,13 @@ func main() {
 				Target: cacheDirectory + "/",
 				Operation: "REPLACE",
 			},
+		}
+		if viper.GetBool("user") {
+			pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
+				Source: viper.GetString("target") + "/" + "libexec/docker/cli-plugins/",
+				Target: configRoot + "/docker/cli-plugins/",
+				Operation: "REPLACE",
+			})
 		}
 		// Fix CLI plugins
 		//pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
