@@ -20,12 +20,31 @@ type PathRewrite struct {
 }
 
 func applyPathRewrites(path string, rules []PathRewrite) string {
+	logging.Debugf("Applying path rewrites to %s", path)
+
+	newPath := path
 	for _, rule := range rules {
-		if rule.Source == path {
-			return rule.Target
+		logging.Debugf("  Checking rule %v", rule)
+
+		if rule.Operation == "REPLACE" {
+			if strings.HasPrefix(path, rule.Source) {
+				newPath = rule.Target + strings.TrimPrefix(path, rule.Source)
+				logging.Debugf("    Applied rule")
+			}
+
+		} else if rule.Operation == "PREPEND" {
+			if ! strings.HasPrefix(path, rule.Target) {
+				newPath = rule.Target + path
+				logging.Debugf("    Applied rule")
+			}
+
+		} else {
+			logging.Debugf("Operation %s not supported", rule.Operation)
 		}
 	}
-	return path
+
+	logging.Debugf("  New path is %s", newPath)
+	return newPath
 }
 
 func (tool *Tool) InstallWithPathRewrites(registryImagePrefix string, prefix string, rules []PathRewrite) error {
@@ -141,6 +160,30 @@ func (tool *Tool) Inspect(registryImagePrefix string, raw bool) error {
 				fixedPath = strings.TrimPrefix(path, "usr/local/")
 			}
 			return fixedPath
+		})
+		if err != nil {
+			return fmt.Errorf("failed to extract layer: %s", err)
+		}
+
+		// Display contents of tool image
+		for _, file := range result {
+			fmt.Printf("%s\n", file)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("failed to get manifest: %s", err)
+	}
+
+	return nil
+}
+
+func (tool *Tool) InspectWithPathRewrites(registryImagePrefix string, raw bool, rules []PathRewrite) error {
+	// Fetch manifest for tool
+	err := containers.GetManifest(fmt.Sprintf(registryImagePrefix+"%s:%s", tool.Name, strings.Replace(tool.Version, "+", "-", -1)), func(blob blob.Reader) error {
+		result, err := archive.ListTarGz(blob, func(path string) string {
+			return applyPathRewrites(path, rules)
 		})
 		if err != nil {
 			return fmt.Errorf("failed to extract layer: %s", err)
