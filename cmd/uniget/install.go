@@ -344,41 +344,6 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 		assertDirectory(viper.GetString("prefix") + "/" + viper.GetString("target"))
 		var err error
 		if usePathRewrite {
-			pathRewriteRules := []tool.PathRewrite{}
-
-			// Remove leading usr/local/ which is a relict
-			pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-				Source: "usr/local/",
-				Target: "",
-				Operation: "REPLACE",
-			})
-
-			// Make uniget paths configurable
-			pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-				Source: "var/lib/uniget/",
-				Target: libDirectory + "/",
-				Operation: "REPLACE",
-			})
-			pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-				Source: "var/cache/uniget/",
-				Target: cacheDirectory + "/",
-				Operation: "REPLACE",
-			})
-
-			// Make target directory configurable
-			pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-				Source: "",
-				Target: viper.GetString("target") + "/",
-				Operation: "PREPEND",
-			})
-
-			// Fix CLI plugins
-			//pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-			//	Source: "",
-			//	Target: viper.GetString("target") + "/",
-			//	Operation: "PREPEND",
-			//})
-
 			err = plannedTool.InstallWithPathRewrites(registryImagePrefix, viper.GetString("prefix"), pathRewriteRules)
 
 		} else {

@@ -44,6 +44,10 @@ var toolSeparator = "/"
 var registryImagePrefix = registry + "/" + imageRepository + toolSeparator
 var tools tool.Tools
 
+
+
+var pathRewriteRules = make([]tool.PathRewrite, 0)
+
 var (
 	rootCmd = &cobra.Command{
 		Use:          projectName,
@@ -239,6 +243,35 @@ func main() {
 			logging.Debugf("libDirectory: %s", libDirectory)
 			logging.Debugf("metadataFile: %s", metadataFile)
 		}
+
+		pathRewriteRules = []tool.PathRewrite{
+			{
+				Source: "usr/local/",
+				Target: "",
+				Operation: "REPLACE",
+			},
+			{
+				Source: "",
+				Target: viper.GetString("target") + "/",
+				Operation: "PREPEND",
+			},
+			{
+				Source: "var/lib/uniget/",
+				Target: libDirectory + "/",
+				Operation: "REPLACE",
+			},
+			{
+				Source: "var/cache/uniget/",
+				Target: cacheDirectory + "/",
+				Operation: "REPLACE",
+			},
+		}
+		// Fix CLI plugins
+		//pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
+		//	Source: "",
+		//	Target: viper.GetString("target") + "/",
+		//	Operation: "PREPEND",
+		//})
 
 		if !fileExists(viper.GetString("prefix") + "/" + metadataFile) {
 			logging.Debugf("Metadata file does not exist. Downloading...")
