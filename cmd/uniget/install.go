@@ -40,7 +40,10 @@ func initInstallCmd() {
 	installCmd.MarkFlagsMutuallyExclusive("check", "plan")
 
 	installCmd.Flags().BoolVar(&usePathRewrite, "use-path-rewrite", false, "(Experimental) Enable path rewrite rules for installation")
-	installCmd.Flags().MarkHidden("use-path-rewrite")
+	err := installCmd.Flags().MarkHidden("use-path-rewrite")
+	if err != nil {
+		logging.Warning.Printfln("Unable to hide flag use-path-rewrite: %s", err)
+	}
 
 	rootCmd.AddCommand(installCmd)
 }
