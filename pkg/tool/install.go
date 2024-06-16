@@ -42,7 +42,7 @@ func applyPathRewrites(path string, rules []PathRewrite) string {
 			logging.Debugf("Operation %s not supported", rule.Operation)
 		}
 
-		if strings.HasPrefix(newPath, "./") {
+		if strings.HasPrefix(newPath, "/") || strings.HasPrefix(newPath, "./") {
 			break
 		}
 	}
