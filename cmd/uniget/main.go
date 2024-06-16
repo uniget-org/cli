@@ -249,11 +249,6 @@ func main() {
 				Operation: "REPLACE",
 			},
 			{
-				Source: "",
-				Target: viper.GetString("target") + "/",
-				Operation: "PREPEND",
-			},
-			{
 				Source: "var/lib/uniget/",
 				Target: libDirectory + "/",
 				Operation: "REPLACE",
@@ -263,11 +258,22 @@ func main() {
 				Target: cacheDirectory + "/",
 				Operation: "REPLACE",
 			},
+			{
+				Source: "",
+				Target: viper.GetString("target") + "/",
+				Operation: "PREPEND",
+			},
 		}
 		if viper.GetBool("user") {
 			pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
 				Source: viper.GetString("target") + "/" + "libexec/docker/cli-plugins/",
-				Target: configRoot + "/docker/cli-plugins/",
+				Target: ".docker/cli-plugins/",
+				Operation: "REPLACE",
+			})
+
+			pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
+				Source: viper.GetString("target") + "/" + "etc/systemd/user/",
+				Target: ".config/systemd/user/",
 				Operation: "REPLACE",
 			})
 		}
