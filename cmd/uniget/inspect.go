@@ -18,7 +18,10 @@ func initInspectCmd() {
 	inspectCmd.Flags().BoolVar(&rawInspect, "raw", false, "Show raw contents")
 
 	inspectCmd.Flags().BoolVar(&usePathRewrite, "use-path-rewrite", false, "(Experimental) Enable path rewrite rules for installation")
-	inspectCmd.Flags().MarkHidden("use-path-rewrite")
+	err := inspectCmd.Flags().MarkHidden("use-path-rewrite")
+	if err != nil {
+		logging.Warning.Printfln("Unable to hide flag use-path-rewrite: %s", err)
+	}
 
 	rootCmd.AddCommand(inspectCmd)
 }
