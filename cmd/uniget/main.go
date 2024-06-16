@@ -258,31 +258,32 @@ func main() {
 				Target: cacheDirectory + "/",
 				Operation: "REPLACE",
 			},
-			{
-				Source: "",
-				Target: viper.GetString("target") + "/",
-				Operation: "PREPEND",
-			},
 		}
-		if viper.GetBool("user") {
+		if ! viper.GetBool("user") {
 			pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-				Source: viper.GetString("target") + "/" + "libexec/docker/cli-plugins/",
-				Target: ".docker/cli-plugins/",
+				Source: "etc/systemd/",
+				Target: "/etc/systemd/",
+				Operation: "REPLACE",
+			})
+
+		} else {
+			pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
+				Source: "libexec/docker/cli-plugins/",
+				Target: "./.docker/cli-plugins/",
 				Operation: "REPLACE",
 			})
 
 			pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-				Source: viper.GetString("target") + "/" + "etc/systemd/user/",
-				Target: ".config/systemd/user/",
+				Source: "etc/systemd/user/",
+				Target: "./.config/systemd/user/",
 				Operation: "REPLACE",
 			})
 		}
-		// Fix CLI plugins
-		//pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-		//	Source: "",
-		//	Target: viper.GetString("target") + "/",
-		//	Operation: "PREPEND",
-		//})
+		pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
+			Source: "",
+			Target: viper.GetString("target") + "/",
+			Operation: "PREPEND",
+		})
 
 		if !fileExists(viper.GetString("prefix") + "/" + metadataFile) {
 			logging.Debugf("Metadata file does not exist. Downloading...")
