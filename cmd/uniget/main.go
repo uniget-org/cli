@@ -44,6 +44,7 @@ var toolSeparator = "/"
 var registryImagePrefix = registry + "/" + imageRepository + toolSeparator
 var tools tool.Tools
 
+var usePathRewrite bool
 var pathRewriteRules = make([]tool.PathRewrite, 0)
 
 var (
@@ -347,6 +348,7 @@ func main() {
 	viper.SetDefault("integrateprofiled", false)
 	viper.SetDefault("integratedockercliplugins", false)
 	viper.SetDefault("integrateall", false)
+	viper.SetDefault("usepathrewrite", false)
 
 	pf := rootCmd.PersistentFlags()
 
@@ -357,13 +359,39 @@ func main() {
 	pf.StringP("target", "t", viper.GetString("target"), "Target directory for installation relative to PREFIX")
 	pf.BoolP("user", "u", viper.GetBool("user"), "Install in user context")
 	pf.Bool("auto-update", viper.GetBool("autoupdate"), "Automatically update metadata")
-	pf.Bool("integrate-systemd", viper.GetBool("integratesystemd"), "Integrate systemd unit files")
-	pf.Bool("integrate-profiled", viper.GetBool("integrateprofiled"), "Integrate profile.d scripts")
-	pf.Bool("integrate-docker-cli-plugins", viper.GetBool("integratedockercliplugins"), "Integrate Docker CLI plugins")
-	pf.Bool("integrate-all", viper.GetBool("integrateall"), "Integrate all available integrations")
 
 	rootCmd.MarkFlagsMutuallyExclusive("prefix", "user")
 	rootCmd.MarkFlagsMutuallyExclusive("target", "user")
+
+	pf.Bool("integrate-systemd", viper.GetBool("integratesystemd"), "Integrate systemd unit files")
+	err = pf.MarkHidden("integrate-systemd")
+	if err != nil {
+		logging.Warning.Printfln("Unable to hide flag integrate-systemd: %s", err)
+	}
+
+	pf.Bool("integrate-profiled", viper.GetBool("integrateprofiled"), "Integrate profile.d scripts")
+	err = pf.MarkHidden("integrate-profiled")
+	if err != nil {
+		logging.Warning.Printfln("Unable to hide flag integrate-profiled: %s", err)
+	}
+
+	pf.Bool("integrate-docker-cli-plugins", viper.GetBool("integratedockercliplugins"), "Integrate Docker CLI plugins")
+	err = pf.MarkHidden("integrate-docker-cli-plugins")
+	if err != nil {
+		logging.Warning.Printfln("Unable to hide flag integrate-docker-cli-plugins: %s", err)
+	}
+
+	pf.Bool("integrate-all", viper.GetBool("integrateall"), "Integrate all available integrations")
+	err = pf.MarkHidden("integrate-all")
+	if err != nil {
+		logging.Warning.Printfln("Unable to hide flag integrate-all: %s", err)
+	}
+
+	pf.BoolVar(&usePathRewrite, "use-path-rewrite", false, "(Experimental) Enable path rewrite rules for installation")
+	err = pf.MarkHidden("use-path-rewrite")
+	if err != nil {
+		logging.Warning.Printfln("Unable to hide flag use-path-rewrite: %s", err)
+	}
 
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix("uniget")
@@ -451,6 +479,16 @@ func main() {
 	err = viper.BindEnv("integrateall", "UNIGET_INTEGRATE_ALL")
 	if err != nil {
 		logging.Error.Printfln("Error binding environment variable for integrate-all key: %s", err)
+		os.Exit(1)
+	}
+	err = viper.BindPFlag("usepathrewrite", pf.Lookup("use-path-rewrite"))
+	if err != nil {
+		logging.Error.Printfln("Error binding use-path-rewrite flag: %s", err)
+		os.Exit(1)
+	}
+	err = viper.BindEnv("usepathrewrite", "UNIGET_USE_PATH_REWRITE")
+	if err != nil {
+		logging.Error.Printfln("Error binding environment variable for use-path-rewrite key: %s", err)
 		os.Exit(1)
 	}
 
