@@ -19,25 +19,25 @@ major: ; $(info $(M) Creating major release...)
 next-prerel: \
 		$(HELPER)/var/lib/uniget/manifests/semver.json \
 		; $(info $(M) Creating next prerelease...)
-	@make tag--$$( semver bump prerelease rc. $(LATEST_VERSION) )
+	@make tag--$$( semver bump prerelease rc.. $(LATEST_VERSION) )
 
 .PHONY:
 patch-pre: \
 		$(HELPER)/var/lib/uniget/manifests/semver.json \
 		; $(info $(M) Creating patch prerelease...)
-	@make tag--$$( semver bump prerelease rc. $$( semver bump patch $(LATEST_VERSION) ) )
+	@make tag--$$( semver bump prerelease rc.. $$( semver bump patch $(LATEST_VERSION) ) )
 
 .PHONY:
 minor-pre: \
 		$(HELPER)/var/lib/uniget/manifests/semver.json \
 		; $(info $(M) Creating patch prerelease...)
-	@make tag--$$( semver bump prerelease rc. $$( semver bump minor $(LATEST_VERSION) ) )
+	@make tag--$$( semver bump prerelease rc.. $$( semver bump minor $(LATEST_VERSION) ) )
 
 .PHONY:
 major-pre: \
 		$(HELPER)/var/lib/uniget/manifests/semver.json \
 		; $(info $(M) Creating patch prerelease...)
-	@make tag--$$( semver bump prerelease rc. $$( semver bump major $(LATEST_VERSION) ) )
+	@make tag--$$( semver bump prerelease rc.. $$( semver bump major $(LATEST_VERSION) ) )
 
 .PHONY:
 tag--%: ; $(info $(M) Creating tag v$*...)
