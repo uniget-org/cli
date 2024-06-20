@@ -10,6 +10,7 @@ import (
 
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
+	flag "github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"github.com/uniget-org/cli/pkg/logging"
 	"github.com/uniget-org/cli/pkg/tool"
@@ -158,6 +159,22 @@ func init() {
 	initUpdateCmd()
 	initUpgradeCmd()
 	initVersionCmd()
+}
+
+func addViperBindings(flags *flag.FlagSet, cobraLongName string, viperName string) error {
+	err := viper.BindPFlag(viperName, flags.Lookup(cobraLongName))
+	if err != nil {
+		return fmt.Errorf("unable to bind flag %s: %w", cobraLongName, err)
+	}
+
+	if viperName != cobraLongName {
+		err = viper.BindEnv(viperName, strings.ToUpper(viper.GetEnvPrefix() + "_" + strings.ReplaceAll(cobraLongName, "-", "_")))
+		if err != nil {
+			return fmt.Errorf("unable to bind environment variable for flag %s: %w", cobraLongName, err)
+		}
+	}
+
+	return nil
 }
 
 func main() {
@@ -359,138 +376,30 @@ func main() {
 	pf.StringP("target", "t", viper.GetString("target"), "Target directory for installation relative to PREFIX")
 	pf.BoolP("user", "u", viper.GetBool("user"), "Install in user context")
 	pf.Bool("auto-update", viper.GetBool("autoupdate"), "Automatically update metadata")
+	pf.Bool("integrate-systemd", viper.GetBool("integratesystemd"), "Integrate systemd unit files")
+	pf.Bool("integrate-profiled", viper.GetBool("integrateprofiled"), "Integrate profile.d scripts")
+	pf.Bool("integrate-docker-cli-plugins", viper.GetBool("integratedockercliplugins"), "Integrate Docker CLI plugins")
+	pf.Bool("integrate-all", viper.GetBool("integrateall"), "Integrate all available integrations")
+	pf.BoolVar(&usePathRewrite, "use-path-rewrite", false, "(Experimental) Enable path rewrite rules for installation")
 
 	rootCmd.MarkFlagsMutuallyExclusive("prefix", "user")
 	rootCmd.MarkFlagsMutuallyExclusive("target", "user")
 
-	pf.Bool("integrate-systemd", viper.GetBool("integratesystemd"), "Integrate systemd unit files")
-	err = pf.MarkHidden("integrate-systemd")
-	if err != nil {
-		logging.Warning.Printfln("Unable to hide flag integrate-systemd: %s", err)
-	}
-
-	pf.Bool("integrate-profiled", viper.GetBool("integrateprofiled"), "Integrate profile.d scripts")
-	err = pf.MarkHidden("integrate-profiled")
-	if err != nil {
-		logging.Warning.Printfln("Unable to hide flag integrate-profiled: %s", err)
-	}
-
-	pf.Bool("integrate-docker-cli-plugins", viper.GetBool("integratedockercliplugins"), "Integrate Docker CLI plugins")
-	err = pf.MarkHidden("integrate-docker-cli-plugins")
-	if err != nil {
-		logging.Warning.Printfln("Unable to hide flag integrate-docker-cli-plugins: %s", err)
-	}
-
-	pf.Bool("integrate-all", viper.GetBool("integrateall"), "Integrate all available integrations")
-	err = pf.MarkHidden("integrate-all")
-	if err != nil {
-		logging.Warning.Printfln("Unable to hide flag integrate-all: %s", err)
-	}
-
-	pf.BoolVar(&usePathRewrite, "use-path-rewrite", false, "(Experimental) Enable path rewrite rules for installation")
-	err = pf.MarkHidden("use-path-rewrite")
-	if err != nil {
-		logging.Warning.Printfln("Unable to hide flag use-path-rewrite: %s", err)
-	}
-
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix("uniget")
 
-	err = viper.BindPFlag("loglevel", pf.Lookup("log-level"))
-	if err != nil {
-		logging.Error.Printfln("Error binding log-level flag: %s", err)
-		os.Exit(1)
-	}
-	err = viper.BindEnv("loglevel", "UNIGET_LOG_LEVEL")
-	if err != nil {
-		logging.Error.Printfln("Error binding log-level flag: %s", err)
-		os.Exit(1)
-	}
-	err = viper.BindPFlag("debug", pf.Lookup("debug"))
-	if err != nil {
-		logging.Error.Printfln("Error binding debug flag: %s", err)
-		os.Exit(1)
-	}
-	err = viper.BindPFlag("trace", pf.Lookup("trace"))
-	if err != nil {
-		logging.Error.Printfln("Error binding trace flag: %s", err)
-		os.Exit(1)
-	}
-	err = viper.BindPFlag("prefix", pf.Lookup("prefix"))
-	if err != nil {
-		logging.Error.Printfln("Error binding prefix flag: %s", err)
-		os.Exit(1)
-	}
-	err = viper.BindPFlag("target", pf.Lookup("target"))
-	if err != nil {
-		logging.Error.Printfln("Error binding target flag: %s", err)
-		os.Exit(1)
-	}
-	err = viper.BindPFlag("user", pf.Lookup("user"))
-	if err != nil {
-		logging.Error.Printfln("Error binding user flag: %s", err)
-		os.Exit(1)
-	}
-	err = viper.BindPFlag("autoupdate", pf.Lookup("auto-update"))
-	if err != nil {
-		logging.Error.Printfln("Error binding auto-update flag: %s", err)
-		os.Exit(1)
-	}
-	err = viper.BindEnv("autoupdate", "UNIGET_AUTO_UPDATE")
-	if err != nil {
-		logging.Error.Printfln("Error binding environment variable for autoupdate key: %s", err)
-		os.Exit(1)
-	}
-	err = viper.BindPFlag("integratesystemd", pf.Lookup("integrate-systemd"))
-	if err != nil {
-		logging.Error.Printfln("Error binding integrate-systemd flag: %s", err)
-		os.Exit(1)
-	}
-	err = viper.BindEnv("integratesystemd", "UNIGET_INTEGRATE_SYSTEMD")
-	if err != nil {
-		logging.Error.Printfln("Error binding environment variable for integrate-systemd key: %s", err)
-		os.Exit(1)
-	}
-	err = viper.BindPFlag("integrateprofiled", pf.Lookup("integrate-profiled"))
-	if err != nil {
-		logging.Error.Printfln("Error binding integrate-profiled flag: %s", err)
-		os.Exit(1)
-	}
-	err = viper.BindEnv("integrateprofiled", "UNIGET_INTEGRATE_PROFILED")
-	if err != nil {
-		logging.Error.Printfln("Error binding environment variable for integrate-profiled key: %s", err)
-		os.Exit(1)
-	}
-	err = viper.BindPFlag("integratedockercliplugins", pf.Lookup("integrate-docker-cli-plugins"))
-	if err != nil {
-		logging.Error.Printfln("Error binding integrate-docker-cli-plugins flag: %s", err)
-		os.Exit(1)
-	}
-	err = viper.BindEnv("integratedockercliplugins", "UNIGET_INTEGRATE_DOCKER_CLI_PLUGINS")
-	if err != nil {
-		logging.Error.Printfln("Error binding environment variable for integrate-docker-cli-plugins key: %s", err)
-		os.Exit(1)
-	}
-	err = viper.BindPFlag("integrateall", pf.Lookup("integrate-all"))
-	if err != nil {
-		logging.Error.Printfln("Error binding integrate-all flag: %s", err)
-		os.Exit(1)
-	}
-	err = viper.BindEnv("integrateall", "UNIGET_INTEGRATE_ALL")
-	if err != nil {
-		logging.Error.Printfln("Error binding environment variable for integrate-all key: %s", err)
-		os.Exit(1)
-	}
-	err = viper.BindPFlag("usepathrewrite", pf.Lookup("use-path-rewrite"))
-	if err != nil {
-		logging.Error.Printfln("Error binding use-path-rewrite flag: %s", err)
-		os.Exit(1)
-	}
-	err = viper.BindEnv("usepathrewrite", "UNIGET_USE_PATH_REWRITE")
-	if err != nil {
-		logging.Error.Printfln("Error binding environment variable for use-path-rewrite key: %s", err)
-		os.Exit(1)
-	}
+	addViperBindings(pf, "log-level", "loglevel")
+	addViperBindings(pf, "debug", "debug")
+	addViperBindings(pf, "trace", "trace")
+	addViperBindings(pf, "prefix", "prefix")
+	addViperBindings(pf, "target", "target")
+	addViperBindings(pf, "user", "user")
+	addViperBindings(pf, "auto-update", "autoupdate")
+	addViperBindings(pf, "integrate-systemd", "integratesystemd")
+	addViperBindings(pf, "integrate-profiled", "integrateprofiled")
+	addViperBindings(pf, "integrate-docker-cli-plugins", "integratedockercliplugins")
+	addViperBindings(pf, "integrate-all", "integrateall")
+	addViperBindings(pf, "use-path-rewrite", "usepathrewrite")
 
 	err = rootCmd.Execute()
 	if err != nil {
