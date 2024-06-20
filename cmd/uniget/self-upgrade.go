@@ -14,8 +14,12 @@ import (
 	"github.com/uniget-org/cli/pkg/logging"
 )
 
+var requestedVersion string
+
 func initSelfUpgradeCmd() {
 	rootCmd.AddCommand(selfUpgradeCmd)
+
+	selfUpgradeCmd.Flags().StringVar(&requestedVersion, "version", "latest", "Upgrade to a specific version")
 }
 
 var selfUpgradeCmd = &cobra.Command{
@@ -24,12 +28,6 @@ var selfUpgradeCmd = &cobra.Command{
 	Long:  header + "\nUpgrade " + projectName + " to latest version",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		versionRegex := regexp.MustCompile(`^\d+\.\d+\.\d+(-\w+)?$`)
-		if !versionRegex.MatchString(version) {
-			logging.Warning.Printf("Version is %s and does not match a.b.c\n", version)
-			return nil
-		}
-
 		selfExe := filepath.Base(os.Args[0])
 		if selfExe == "." {
 			return fmt.Errorf("failed to get base name for %s", os.Args[0])
@@ -47,8 +45,14 @@ var selfUpgradeCmd = &cobra.Command{
 		fmt.Printf("%s is available at %s\n", selfExe, path)
 		selfDir := filepath.Dir(path)
 
-		tag := "latest"
-		url := fmt.Sprintf("https://github.com/%s/releases/%s/download/uniget_%s_%s.tar.gz", projectRepository, tag, runtime.GOOS, arch)
+		var url string
+		if requestedVersion == "latest" {
+			url = fmt.Sprintf("https://github.com/%s/releases/%s/download/uniget_%s_%s.tar.gz", projectRepository, requestedVersion, runtime.GOOS, arch)
+		} else {
+			logging.Info.Printfln("Requested version %s", requestedVersion)
+			url = fmt.Sprintf("https://github.com/%s/releases/download/v%s/uniget_%s_%s.tar.gz", projectRepository, requestedVersion, runtime.GOOS, arch)
+		}
+
 		logging.Debugf("Downloading %s", url)
 		client := &http.Client{
 			CheckRedirect: func(req *http.Request, via []*http.Request) error {
@@ -58,7 +62,7 @@ var selfUpgradeCmd = &cobra.Command{
 				}
 
 				if re.MatchString(req.URL.Path) {
-					tag = re.FindStringSubmatch(req.URL.Path)[1]
+					requestedVersion = re.FindStringSubmatch(req.URL.Path)[1]
 				}
 				return nil
 			},
@@ -79,8 +83,16 @@ var selfUpgradeCmd = &cobra.Command{
 			return fmt.Errorf("failed to download %s: %s", url, resp.Status)
 		}
 
-		if fmt.Sprintf("v%s", version) == tag {
+		if fmt.Sprintf("v%s", version) == requestedVersion {
 			logging.Info.Printf("Already at latest version %s\n", version)
+			return nil
+		}
+
+		logging.Info.Printfln("Upgrading from %s to %s", version, requestedVersion)
+
+		versionRegex := regexp.MustCompile(`^\d+\.\d+\.\d+(-[a-z]+\.\d+)?$`)
+		if !versionRegex.MatchString(version) {
+			logging.Warning.Printf("Version is %s and does not match semver\n", version)
 			return nil
 		}
 
