@@ -161,20 +161,20 @@ func init() {
 	initVersionCmd()
 }
 
-func addViperBindings(flags *flag.FlagSet, cobraLongName string, viperName string) error {
+func addViperBindings(flags *flag.FlagSet, cobraLongName string, viperName string) {
 	err := viper.BindPFlag(viperName, flags.Lookup(cobraLongName))
 	if err != nil {
-		return fmt.Errorf("unable to bind flag %s: %w", cobraLongName, err)
+		fmt.Printf("unable to bind flag %s: %s", cobraLongName, err)
+		os.Exit(1)
 	}
 
 	if viperName != cobraLongName {
 		err = viper.BindEnv(viperName, strings.ToUpper(viper.GetEnvPrefix() + "_" + strings.ReplaceAll(cobraLongName, "-", "_")))
 		if err != nil {
-			return fmt.Errorf("unable to bind environment variable for flag %s: %w", cobraLongName, err)
+			fmt.Printf("unable to bind environment variable for flag %s: %s", cobraLongName, err)
+			os.Exit(1)
 		}
 	}
-
-	return nil
 }
 
 func main() {
