@@ -14,7 +14,7 @@ var baseImage string
 func initGenerateCmd() {
 	rootCmd.AddCommand(generateCmd)
 
-	generateCmd.Flags().StringVar(&baseImage, "base", "ubuntu:22.04", "Base image to use")
+	generateCmd.Flags().StringVar(&baseImage, "base", "ubuntu:24.04", "Base image to use")
 }
 
 var generateCmd = &cobra.Command{
@@ -28,7 +28,7 @@ var generateCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var result []string
 
-		result = append(result, "# syntax=docker/dockerfile:1.7.0")
+		result = append(result, "# syntax=docker/dockerfile:1.8.1")
 		result = append(result, fmt.Sprintf("FROM %s", baseImage))
 
 		for _, toolName := range args {
