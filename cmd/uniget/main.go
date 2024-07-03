@@ -152,6 +152,7 @@ func init() {
 	initManCmd()
 	initMessageCmd()
 	initPostinstallCmd()
+	initReleaseNotesCmd()
 	initSearchCmd()
 	initSelfUpgradeCmd()
 	initTagsCmd()
