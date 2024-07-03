@@ -1,6 +1,6 @@
 #syntax=docker/dockerfile:1.8.1
 
-FROM --platform=${BUILDPLATFORM} golang:1.22.4@sha256:c8736b8dbf2b12c98bb0eeed91eef58ecef52b8c2bd49b8044531e8d8d8d58e8 AS base
+FROM --platform=${BUILDPLATFORM} golang:1.22.5@sha256:f47a7952d08277f9816459d851319c9041637022f04517388d9f32e384fc2dab AS base
 WORKDIR /src
 ENV CGO_ENABLED=0
 COPY go.* .
