@@ -1,7 +1,7 @@
 package tool
 
 type Renovate struct {
-	Datasource     string `json:"datasoruce"`
+	Datasource     string `json:"datasource"`
 	Package        string `json:"package"`
 	ExtractVersion string `json:"extractVersion,omitempty"`
 	Versioning     string `json:"versioning,omitempty"`
