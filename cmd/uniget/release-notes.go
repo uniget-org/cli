@@ -43,14 +43,6 @@ var releaseNotesCmd = &cobra.Command{
 			return fmt.Errorf("failed to get tool: %s", err)
 		}
 
-		// add support for npm
-		//   https://registry.npmjs.com/<package>/<version>
-		//   .repository.type == "git"
-		//   .repository.url contains "github.com"
-		// add support for pypi
-		//   https://pypi.org/pypi/<package_name>/<version>/json
-		//   .project_urls.Homepage
-
 		var payload []byte
 		var bodyFieldName string
 		versionTag := tool.Version
@@ -82,6 +74,20 @@ var releaseNotesCmd = &cobra.Command{
 				payload, err = fetchBodyFromGiteaRelease(tool.Renovate.Package, versionTag)
 				if err != nil {
 					return fmt.Errorf("failed to fetch body of Gitea release for tool %s: %s", tool.Name, err)
+				}
+				bodyFieldName = "body"
+
+			case "npm":
+				payload, err = fetchBodyFromNpm(tool.Renovate.Package, versionTag)
+				if err != nil {
+					return fmt.Errorf("failed to fetch body from npm for tool %s: %s", tool.Name, err)
+				}
+				bodyFieldName = "body"
+
+			case "pypi":
+				payload, err = fetchBodyFromPypi(tool.Renovate.Package, versionTag)
+				if err != nil {
+					return fmt.Errorf("failed to fetch body from pypi for tool %s: %s", tool.Name, err)
 				}
 				bodyFieldName = "body"
 		
@@ -171,4 +177,85 @@ func fetchBodyFromGiteaRelease(project string, versionTag string) ([]byte, error
 	}
 
 	return bodyBytes, nil
+}
+
+func extractGitHubOwnerAndProject(url string) (string, error) {
+	re, err := regexp.Compile(`^(git\+)?https://github.com/(?<owner>[^/]+)/(?<project>[^/.]+)(\.git)?$`)
+	if err != nil {
+		return "", fmt.Errorf("cannot compile regexp: %w", err)
+	}
+	matches := re.FindStringSubmatch(url)
+	owner := matches[re.SubexpIndex("owner")]
+	project := matches[re.SubexpIndex("project")]
+
+	return fmt.Sprintf("%s/%s", owner, project), nil
+}
+
+func fetchBodyFromNpm(project string, versionTag string) ([]byte, error) {
+	url := fmt.Sprintf("https://registry.npmjs.com/%s/%s", project, versionTag)
+	logging.Debugf("Fetching release notes from %s", url)
+
+	bodyBytes, err := fetchUrl(url)
+	if err != nil {
+		return []byte{}, fmt.Errorf("failed to fetch body from npm: %s", err)
+	}
+
+	var result map[string]interface{}
+	err = json.Unmarshal(bodyBytes, &result)
+	if err != nil {
+		return []byte{}, fmt.Errorf("failed to parse npm response: %s", err)
+	}
+
+	repo := result["repository"].(map[string]interface{})
+	if repo["type"] == "git" && strings.Contains(repo["url"].(string), "github.com") {
+		project, err := extractGitHubOwnerAndProject(repo["url"].(string))
+		if err != nil {
+			return []byte{}, fmt.Errorf("failed to fetch body of GitHub release for npm package: %s", err)
+		}
+
+		GhBody, err := fetchBodyFromGitHubRelease(project, versionTag)
+		if err != nil {
+			return []byte{}, fmt.Errorf("failed to fetch body of GitHub release for npm package: %s", err)
+		}
+
+		return GhBody, nil
+
+	} else {
+		return []byte{}, fmt.Errorf("unsupported repository type <%s> for npm package %s", repo["type"], project)
+	}
+}
+
+func fetchBodyFromPypi(project string, versionTag string) ([]byte, error) {
+	url := fmt.Sprintf("https://pypi.org/pypi/%s/%s/json", project, versionTag)
+	logging.Debugf("Fetching release notes from %s", url)
+
+	bodyBytes, err := fetchUrl(url)
+	if err != nil {
+		return []byte{}, fmt.Errorf("failed to fetch body from pypi: %s", err)
+	}
+
+	var result map[string]interface{}
+	err = json.Unmarshal(bodyBytes, &result)
+	if err != nil {
+		return []byte{}, fmt.Errorf("failed to parse pypi response: %s", err)
+	}
+
+	info := result["info"].(map[string]interface{})
+	urls := info["project_urls"].(map[string]interface{})
+	if urls["Homepage"] != nil {
+		project, err := extractGitHubOwnerAndProject(urls["Homepage"].(string))
+		if err != nil {
+			return []byte{}, fmt.Errorf("failed to extract owner/project from homepage <%s>: %s", urls["Homepage"].(string), err)
+		}
+
+		GhBody, err := fetchBodyFromGitHubRelease(project, versionTag)
+		if err != nil {
+			return []byte{}, fmt.Errorf("failed to fetch body of GitHub release for npm package: %s", err)
+		}
+
+		return GhBody, nil
+
+	} else {
+		return []byte{}, fmt.Errorf("no homepage found for pypi package %s", project)
+	}
 }
