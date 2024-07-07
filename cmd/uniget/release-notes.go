@@ -180,7 +180,7 @@ func fetchBodyFromGiteaRelease(project string, versionTag string) ([]byte, error
 }
 
 func extractGitHubOwnerAndProject(url string) (string, error) {
-	re, err := regexp.Compile(`^(git\+)?https://github.com/(?<owner>[^/]+)/(?<project>[^/.]+)(\.git)?$`)
+	re, err := regexp.Compile(`^(git\+)?https://github\.com/(?<owner>[^/]+)/(?<project>[^/.]+)(\.git)?$`)
 	if err != nil {
 		return "", fmt.Errorf("cannot compile regexp: %w", err)
 	}
