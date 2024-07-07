@@ -6,6 +6,7 @@ toolchain go1.22.5
 
 require (
 	github.com/charmbracelet/glamour v0.7.0
+	github.com/hashicorp/go-version v1.7.0
 	github.com/jedib0t/go-pretty/v6 v6.5.9
 	github.com/muesli/mango-cobra v1.2.0
 	github.com/muesli/roff v0.1.0
