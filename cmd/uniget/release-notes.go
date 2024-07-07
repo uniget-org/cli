@@ -16,7 +16,11 @@ import (
 	"github.com/charmbracelet/glamour"
 )
 
+var releaseNotesVersion string
+
 func initReleaseNotesCmd() {
+	releaseNotesCmd.Flags().StringVar(&releaseNotesVersion, "version", "", "Show release notes for a specific version")
+
 	rootCmd.AddCommand(releaseNotesCmd)
 }
 
@@ -46,15 +50,20 @@ var releaseNotesCmd = &cobra.Command{
 		var payload []byte
 		var bodyFieldName string
 		versionTag := tool.Version
+		if len(releaseNotesVersion) > 0 {
+			logging.Debugf("Using version %s for release notes", releaseNotesVersion)
+			versionTag = releaseNotesVersion
+		}
 		if tool.Renovate.ExtractVersion != "" {
 			re, err := regexp.Compile(`\(\?[^)]+\)`)
 			if err != nil {
 				return fmt.Errorf("cannot compile regexp: %w", err)
 			}
-			versionTag = re.ReplaceAllString(tool.Renovate.ExtractVersion, tool.Version)
+			versionTag = re.ReplaceAllString(tool.Renovate.ExtractVersion, versionTag)
 			versionTag = strings.Replace(versionTag, "^", "", -1)
 			versionTag = strings.Replace(versionTag, "$", "", -1)
 		}
+		logging.Debugf("Using version tag %s for release notes", versionTag)
 		switch tool.Renovate.Datasource {
 			case "github-releases":
 				payload, err = fetchBodyFromGitHubRelease(tool.Renovate.Package, versionTag)
