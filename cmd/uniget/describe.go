@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"os"
 	"regexp"
-	"strings"
 	"sort"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/uniget-org/cli/pkg/containers"
 	"github.com/uniget-org/cli/pkg/logging"
 )
 
@@ -89,8 +90,16 @@ var describeCmd = &cobra.Command{
 		}
 
 		if versions {
-			// https://github.com/regclient/regclient/blob/main/cmd/regctl/tag.go#L101
-			logging.Warning.Printfln("Available versions not implemented yet.")
+			tags, err := containers.GetImageTags(fmt.Sprintf("%s/%s/%s", registry, imageRepository, tool.Name))
+			if err != nil {
+				return fmt.Errorf("failed to get image tags: %s", err)
+			}
+			
+			sort.Sort(sort.Reverse(byVersion(tags)))
+			fmt.Printf("  Available versions:\n")
+			for _, tag := range tags {
+				fmt.Printf("    %s\n", tag)
+			}
 		}
 
 		if upstreamVersions {

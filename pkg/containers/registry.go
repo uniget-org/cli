@@ -19,6 +19,37 @@ import (
 	"github.com/regclient/regclient/types/ref"
 )
 
+func GetImageTags(repository string) ([]string, error) {
+	ctx := context.Background()
+
+	r, err := ref.New(repository)
+	if err != nil {
+		return []string{}, fmt.Errorf("failed to parse image name <%s>: %s", repository, err)
+	}
+
+	rcOpts := []regclient.Opt{}
+	rcOpts = append(rcOpts, regclient.WithUserAgent("uniget"))
+	rcOpts = append(rcOpts, regclient.WithDockerCreds())
+	rc := regclient.New(rcOpts...)
+	defer rc.Close(ctx, r)
+
+	tags, err := rc.TagList(ctx, r)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list tags: %s", err)
+	}
+
+	var filteredTags []string
+	for _, tag := range tags.Tags {
+		if tag == "latest" || tag == "main" || tag == "test" {
+			continue
+		}
+
+		filteredTags = append(filteredTags, tag)
+	}
+
+	return filteredTags, nil
+}
+
 func GetPlatformManifest(ctx context.Context, rc *regclient.RegClient, r ref.Ref) (manifest.Manifest, error) {
 	m, err := rc.ManifestGet(ctx, r)
 	if err != nil {
