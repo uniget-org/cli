@@ -40,6 +40,20 @@ major-pre: \
 	@make tag--$$( semver bump prerelease rc.. $$( semver bump major $(LATEST_VERSION) ) )
 
 .PHONY:
+ga: \
+		$(HELPER)/var/lib/uniget/manifests/semver.json \
+		; $(info $(M) Creating patch prerelease...)
+	@\
+	PREREL="$$( semver get prerelease $(LATEST_VERSION) )"; \
+	echo "Release: Remove <$${PREREL}> from $(LATEST_VERSION)"; \
+	if test -z "$${PREREL}"; then \
+		echo "ERROR: Release is only possible from a prerelease."; \
+		exit 1; \
+	else \
+		make tag--$$( semver bump release $(LATEST_VERSION) ); \
+	fi
+
+.PHONY:
 tag--%: ; $(info $(M) Creating tag v$*...)
 	@if git show-ref --tags refs/tags/v$* >/dev/null 2>&1; then \
 		echo "Tag v$* already exists"; \
