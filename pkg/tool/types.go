@@ -23,7 +23,8 @@ type Tool struct {
 	RuntimeDependencies []string `json:"runtime_dependencies,omitempty"`
 	Platforms           []string `json:"platforms,omitempty"`
 	ConflictsWith       []string `json:"conflicts_with,omitempty"`
-	Homepage            string   `json:"homepage"`
+	Homepage            string   `json:"homepage,omitempty"`
+	Repository          string   `json:"repository"`
 	Description         string   `json:"description"`
 	Messages            Messages `json:"messages,omitempty"`
 	Renovate            Renovate `json:"renovate,omitempty"`
