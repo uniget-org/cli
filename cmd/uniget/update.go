@@ -67,7 +67,7 @@ func downloadMetadata() error {
 		}
 
 		logging.Debugf("Extracting archive to %s", viper.GetString("prefix")+"/"+cacheDirectory)
-		err = archive.ExtractTarGz(blob, func(path string) string { return path })
+		err = archive.ExtractTarGz(blob, func(path string) string { return path }, func(path string) {})
 		if err != nil {
 			return fmt.Errorf("error extracting archive: %s", err)
 		}

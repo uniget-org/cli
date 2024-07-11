@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"os"
 	"strings"
+	"syscall"
 
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
@@ -340,10 +342,10 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 		assertDirectory(viper.GetString("prefix") + "/" + viper.GetString("target"))
 		var err error
 		if usePathRewrite {
-			err = plannedTool.InstallWithPathRewrites(registryImagePrefix, viper.GetString("prefix"), pathRewriteRules)
+			err = plannedTool.InstallWithPathRewrites(registryImagePrefix, viper.GetString("prefix"), pathRewriteRules, createPatchFileCallback(plannedTool))
 
 		} else {
-			err = plannedTool.Install(registryImagePrefix, viper.GetString("prefix"), viper.GetString("target"), libDirectory, cacheDirectory)
+			err = plannedTool.Install(registryImagePrefix, viper.GetString("prefix"), viper.GetString("target"), libDirectory, cacheDirectory, createPatchFileCallback(plannedTool))
 		}
 		if err != nil {
 			if installSpinner != nil {
@@ -395,4 +397,55 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 	}
 
 	return nil
+}
+
+func createPatchFileCallback(tool tool.Tool) func(path string) {
+	var patchFile = func(templatePath string) {
+		if strings.HasSuffix(templatePath, ".go-template") {
+		} else {
+			logging.Debugf("Skipping file %s. Will not patch.", templatePath)
+			return
+		}
+	
+		values := make(map[string]interface{})
+		values["Target"] = viper.GetString("target")
+		values["Prefix"] = viper.GetString("prefix")
+		values["Name"] = tool.Name
+		values["Version"] = tool.Version
+	
+		filePath := strings.TrimSuffix(templatePath, ".go-template")
+		logging.Info.Printfln("Patching file %s <- %s", filePath, templatePath)
+	
+		templathPathInfo, err := os.Stat(templatePath)
+		if err != nil {
+			logging.Error.Printfln("Unable to get file info: %s", err)
+			return
+		}
+	
+		file, err := os.Create(filePath)
+		if err != nil {
+			logging.Error.Printfln("Unable to create file: %s", err)
+			return
+		}
+		defer file.Close()
+		if stat, ok := templathPathInfo.Sys().(*syscall.Stat_t); ok {
+			file.Chown(int(stat.Uid), int(stat.Gid))
+		}
+		file.Chmod(templathPathInfo.Mode())
+	
+		tmpl, err := template.ParseFiles(templatePath)
+		if err != nil {
+			logging.Error.Printfln("Unable to parse template file: %s", err)
+			return
+		}
+		tmpl.Execute(file, values)
+	
+		err = os.Remove(templatePath)
+		if err != nil {
+			logging.Error.Printfln("Unable to remove template file: %s", err)
+			return
+		}
+	}
+
+	return patchFile
 }

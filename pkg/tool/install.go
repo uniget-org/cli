@@ -51,7 +51,7 @@ func applyPathRewrites(path string, rules []PathRewrite) string {
 	return newPath
 }
 
-func (tool *Tool) InstallWithPathRewrites(registryImagePrefix string, prefix string, rules []PathRewrite) error {
+func (tool *Tool) InstallWithPathRewrites(registryImagePrefix string, prefix string, rules []PathRewrite, patchFile func(path string)) error {
 	// Fetch manifest for tool
 	err := containers.GetManifest(fmt.Sprintf(registryImagePrefix+"%s:%s", tool.Name, strings.Replace(tool.Version, "+", "-", -1)), func(blob blob.Reader) error {
 		logging.Debugf("Extracting with prefix=%s", prefix)
@@ -75,7 +75,7 @@ func (tool *Tool) InstallWithPathRewrites(registryImagePrefix string, prefix str
 		// Unpack tool
 		err = archive.ExtractTarGz(blob, func(path string) string {
 			return applyPathRewrites(path, rules)
-		})
+		}, patchFile)
 		if err != nil {
 			return fmt.Errorf("failed to extract layer: %s", err)
 		}
@@ -89,7 +89,7 @@ func (tool *Tool) InstallWithPathRewrites(registryImagePrefix string, prefix str
 	return nil
 }
 
-func (tool *Tool) Install(registryImagePrefix string, prefix string, target string, libDirectory string, cacheDirectory string) error {
+func (tool *Tool) Install(registryImagePrefix string, prefix string, target string, libDirectory string, cacheDirectory string, patchFile func(path string)) error {
 	// Fetch manifest for tool
 	err := containers.GetManifest(fmt.Sprintf(registryImagePrefix+"%s:%s", tool.Name, strings.Replace(tool.Version, "+", "-", -1)), func(blob blob.Reader) error {
 		logging.Debugf("Extracting with prefix=%s and target=%s", prefix, target)
@@ -139,7 +139,7 @@ func (tool *Tool) Install(registryImagePrefix string, prefix string, target stri
 			}
 
 			return fixedPath
-		})
+		}, patchFile)
 		if err != nil {
 			return fmt.Errorf("failed to extract layer: %s", err)
 		}
