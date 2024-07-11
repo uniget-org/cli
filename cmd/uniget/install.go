@@ -422,7 +422,7 @@ func createPatchFileCallback(tool tool.Tool) func(path string) {
 			return
 		}
 	
-		file, err := os.Create(filePath)
+		file, err := os.Create(filePath) // #nosec G304 -- File path was checked before callback
 		if err != nil {
 			logging.Error.Printfln("Unable to create file: %s", err)
 			return
