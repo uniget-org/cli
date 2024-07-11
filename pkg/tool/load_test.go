@@ -16,7 +16,7 @@ var testLoadToolsString = `{
 				"baz",
 				"blarg"
 			],
-			"homepage": "https://foo.bar",
+			"repository": "https://foo.bar",
 			"description": "Foo"
 		},
 		{
