@@ -128,7 +128,10 @@ func printToolInternalsWithIndentation(toolName string, indentation int, values 
 		if err != nil {
 			return fmt.Errorf("failed to parse template: %s", err)
 		}
-		tmpl.Execute(os.Stdout, values)
+		err = tmpl.Execute(os.Stdout, values)
+		if err != nil {
+			return fmt.Errorf("failed to execute template: %s", err)
+		}
 	}
 
 	return nil
@@ -154,7 +157,15 @@ func printToolUsageWithIndentation(toolName string, indentation int, values map[
 		prefix.Println()
 		prefix.Print(" Usage ")
 		suffix.Printfln(" for %s:", tool.Name)
-		fmt.Print(tool.ShowUsage(indentation))
+		output := tool.ShowUsage(indentation)
+		tmpl, err := template.New("Internals").Parse(output)
+		if err != nil {
+			return fmt.Errorf("failed to parse template: %s", err)
+		}
+		err = tmpl.Execute(os.Stdout, values)
+		if err != nil {
+			return fmt.Errorf("failed to execute template: %s", err)
+		}
 	}
 
 	return nil
@@ -180,7 +191,15 @@ func printToolUpdateWithIndentation(toolName string, indentation int, values map
 		prefix.Println()
 		prefix.Print(" Update ")
 		suffix.Printfln(" for %s:", tool.Name)
-		fmt.Print(tool.ShowUpdate(indentation))
+		output := tool.ShowUpdate(indentation)
+		tmpl, err := template.New("Internals").Parse(output)
+		if err != nil {
+			return fmt.Errorf("failed to parse template: %s", err)
+		}
+		err = tmpl.Execute(os.Stdout, values)
+		if err != nil {
+			return fmt.Errorf("failed to execute template: %s", err)
+		}
 	}
 
 	return nil
