@@ -429,16 +429,28 @@ func createPatchFileCallback(tool tool.Tool) func(path string) {
 		}
 		defer file.Close()
 		if stat, ok := templathPathInfo.Sys().(*syscall.Stat_t); ok {
-			file.Chown(int(stat.Uid), int(stat.Gid))
+			err = file.Chown(int(stat.Uid), int(stat.Gid))
+			if err != nil {
+				logging.Error.Printfln("Unable to set file ownership: %s", err)
+				return
+			}
 		}
-		file.Chmod(templathPathInfo.Mode())
+		err = file.Chmod(templathPathInfo.Mode())
+		if err != nil {
+			logging.Error.Printfln("Unable to set file permissions: %s", err)
+			return
+		}
 	
 		tmpl, err := template.ParseFiles(templatePath)
 		if err != nil {
 			logging.Error.Printfln("Unable to parse template file: %s", err)
 			return
 		}
-		tmpl.Execute(file, values)
+		err = tmpl.Execute(file, values)
+		if err != nil {
+			logging.Error.Printfln("Unable to execute template: %s", err)
+			return
+		}
 	
 		err = os.Remove(templatePath)
 		if err != nil {
