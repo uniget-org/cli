@@ -92,6 +92,7 @@ func uninstallTool(toolName string) error {
 			return fmt.Errorf("unable to read file %s: %s", filename, err)
 		}
 		for _, line := range strings.Split(string(data), "\n") {
+			line = strings.TrimSuffix(line, ".go-template")
 			logging.Debugf("processing %s", line)
 			strippedLine := strings.TrimPrefix(line, "./")
 			strippedLine = strings.TrimPrefix(strippedLine, "usr/local/")

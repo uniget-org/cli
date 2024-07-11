@@ -105,7 +105,7 @@ var selfUpgradeCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("failed to remove %s: %s", selfExe, err)
 		}
-		err = archive.ExtractTarGz(resp.Body, func(path string) string { return path })
+		err = archive.ExtractTarGz(resp.Body, func(path string) string { return path }, func(path string) {})
 		if err != nil {
 			return fmt.Errorf("failed to extract tar.gz: %s", err)
 		}

@@ -45,7 +45,7 @@ func pathIsInsideTarget(target string, candidate string) error {
 	return nil
 }
 
-func ExtractTarGz(gzipStream io.Reader, patchPath func(path string) string) error {
+func ExtractTarGz(gzipStream io.Reader, patchPath func(path string) string, patchFile func(path string)) error {
 	target := "."
 
 	uncompressedStream, err := gzip.NewReader(gzipStream)
@@ -122,6 +122,9 @@ func ExtractTarGz(gzipStream io.Reader, patchPath func(path string) string) erro
 			if err != nil {
 				return fmt.Errorf("ExtractTarGz: Chmod() failed: %s", err.Error())
 			}
+
+			// Callback for patching file
+			patchFile(fixedHeaderName)
 
 		// Unpack symlink
 		case tar.TypeSymlink:
