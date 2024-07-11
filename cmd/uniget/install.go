@@ -406,12 +406,12 @@ func createPatchFileCallback(tool tool.Tool) func(path string) {
 			logging.Debugf("Skipping file %s. Will not patch.", templatePath)
 			return
 		}
-	
-		values, err := createTemplateVariablesForTool(&tool)
-		if err != nil {
-			logging.Error.Printfln("Unable to create template variables: %s", err)
-			return
-		}
+
+		values := make(map[string]interface{})
+		values["Target"] = viper.GetString("target")
+		values["Prefix"] = viper.GetString("prefix")
+		values["Name"] = tool.Name
+		values["Version"] = tool.Version
 	
 		filePath := strings.TrimSuffix(templatePath, ".go-template")
 		logging.Info.Printfln("Patching file %s <- %s", filePath, templatePath)

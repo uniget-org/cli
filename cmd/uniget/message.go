@@ -86,8 +86,7 @@ var messageCmd = &cobra.Command{
 
 func createTemplateVariablesForTool(tool *tool.Tool) (map[string]interface{}, error) {
 	values := make(map[string]interface{})
-	values["Target"] = viper.GetString("target")
-	values["Prefix"] = viper.GetString("prefix")
+	values["Target"] = fmt.Sprintf("%s/%s", viper.GetString("prefix"), viper.GetString("target"))
 	values["Name"] = tool.Name
 	values["Version"] = tool.Version
 
