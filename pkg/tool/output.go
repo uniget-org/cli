@@ -101,9 +101,7 @@ func (tool *Tool) ShowUpdate(indentation int) string {
 func (tool *Tool) Print() {
 	fmt.Printf("Name: %s\n", tool.Name)
 	fmt.Printf("  Description: %s\n", tool.Description)
-	if len(tool.Homepage) > 0 {
-		fmt.Printf("  Homepage: %s\n", tool.Homepage)
-	}
+	fmt.Printf("  Homepage: %s\n", tool.Homepage)
 	fmt.Printf("  Repository: %s\n", tool.Repository)
 	fmt.Printf("  Version: %s\n", tool.Version)
 
