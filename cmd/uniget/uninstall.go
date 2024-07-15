@@ -39,8 +39,9 @@ var uninstallCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("unable to find tool %s: %s", args[0], err)
 		}
-		tool.ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
+		checkClientVersionRequirement(tool)
 
+		tool.ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
 		err = tool.GetBinaryStatus()
 		if err != nil {
 			return fmt.Errorf("unable to get binary status: %s", err)

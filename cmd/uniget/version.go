@@ -35,6 +35,8 @@ var versionCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("failed to get tool: %s", err)
 		}
+		checkClientVersionRequirement(tool)
+		
 		tool.ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
 		err = tool.GetMarkerFileStatus(viper.GetString("prefix") + "/" + cacheDirectory)
 		if err != nil {

@@ -267,6 +267,8 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 	assertWritableTarget()
 	assertLibDirectory()
 	for _, plannedTool := range plannedTools.Tools {
+		checkClientVersionRequirement(&plannedTool)
+
 		if plannedTool.Status.VersionMatches && !reinstall {
 			//logging.Skip.Printfln("Skipping %s %s because it is already installed.", plannedTool.Name, plannedTool.Version)
 			continue
@@ -314,6 +316,7 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 					logging.Error.Printfln("Unable to find dependency %s", depName)
 					return fmt.Errorf("unable to find dependency %s", depName)
 				}
+				checkClientVersionRequirement(dep)
 
 				err = dep.GetBinaryStatus()
 				if err != nil {

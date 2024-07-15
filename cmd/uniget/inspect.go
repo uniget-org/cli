@@ -46,6 +46,7 @@ var inspectCmd = &cobra.Command{
 			if err != nil {
 				return fmt.Errorf("error getting tool %s", args[0])
 			}
+			checkClientVersionRequirement(inspectTool)
 			inspectTool.ReplaceVariables(viper.GetString("prefix")+viper.GetString("target"), arch, altArch)
 
 		} else {

@@ -57,6 +57,23 @@ var (
 	}
 )
 
+var minimumCliVersionForSchemaVersion = map[string]string{
+	"1": "0.1.0",
+}
+
+func checkClientVersionRequirement(tool *tool.Tool) {
+	var requiredCliVersion = "0.0.0"
+	for cliVersion, schemaVersion := range minimumCliVersionForSchemaVersion {
+		if tool.SchemaVersion > schemaVersion {
+			requiredCliVersion = cliVersion
+		}
+	}
+	if requiredCliVersion > version {
+		logging.Error.Printfln("The tool %s requires at least version %s but you have %s", tool.Name, requiredCliVersion, version)
+		os.Exit(1)
+	}
+}
+
 func directoryExists(directory string) bool {
 	logging.Debugf("Checking if directory %s exists", directory)
 	_, err := os.Stat(directory)

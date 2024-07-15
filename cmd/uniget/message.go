@@ -44,6 +44,7 @@ var messageCmd = &cobra.Command{
 			if err != nil {
 				return fmt.Errorf("failed to get tool: %s", err)
 			}
+			checkClientVersionRequirement(tool)
 
 			logging.Info.Printfln("Messages for %s:", toolName)
 			if tool.Messages.Internals != "" {
@@ -58,6 +59,8 @@ var messageCmd = &cobra.Command{
 
 		} else if find {
 			for _, tool := range tools.Tools {
+				checkClientVersionRequirement(&tool)
+				
 				if tool.Messages.Internals != "" || tool.Messages.Usage != "" || tool.Messages.Update != "" {
 					fmt.Println(tool.Name)
 				}

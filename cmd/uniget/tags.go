@@ -32,6 +32,8 @@ var tagsCmd = &cobra.Command{
 
 		tags := make(map[string]int)
 		for _, tool := range tools.Tools {
+			checkClientVersionRequirement(&tool)
+
 			for _, name := range tool.Tags {
 				_, exists := tags[name]
 				if !exists {
