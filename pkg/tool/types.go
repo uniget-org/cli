@@ -13,8 +13,14 @@ type Messages struct {
 	Update    string `json:"update"`
 }
 
+type License struct {
+	Name string `json:"name"`
+	Link string `json:"link"`
+}
+
 type Tool struct {
 	Name                string   `json:"name"`
+	License			    License  `json:"license"`
 	Version             string   `json:"version"`
 	Binary              string   `json:"binary,omitempty"`
 	Check               string   `json:"check,omitempty"`
