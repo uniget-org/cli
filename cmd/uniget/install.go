@@ -266,8 +266,8 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 	// Install
 	assertWritableTarget()
 	assertLibDirectory()
-	for _, plannedTool := range plannedTools.Tools {
-		checkClientVersionRequirement(&plannedTool)
+	for index, plannedTool := range plannedTools.Tools {
+		checkClientVersionRequirement(&plannedTools.Tools[index])
 
 		if plannedTool.Status.VersionMatches && !reinstall {
 			//logging.Skip.Printfln("Skipping %s %s because it is already installed.", plannedTool.Name, plannedTool.Version)
