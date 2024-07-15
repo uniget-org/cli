@@ -58,8 +58,8 @@ var messageCmd = &cobra.Command{
 			}
 
 		} else if find {
-			for _, tool := range tools.Tools {
-				checkClientVersionRequirement(&tool)
+			for index, tool := range tools.Tools {
+				checkClientVersionRequirement(&tools.Tools[index])
 				
 				if tool.Messages.Internals != "" || tool.Messages.Usage != "" || tool.Messages.Update != "" {
 					fmt.Println(tool.Name)
