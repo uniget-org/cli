@@ -42,12 +42,14 @@ var generateCmd = &cobra.Command{
 			if err != nil {
 				return fmt.Errorf("failed to get tool %s: %w", toolName, err)
 			}
+			checkClientVersionRequirement(tool)
 
 			for _, depName := range tool.RuntimeDependencies {
 				dep, err := tools.GetByName(depName)
 				if err != nil {
 					return fmt.Errorf("unable to find dependency called %s for %s", depName, toolName)
 				}
+				checkClientVersionRequirement(dep)
 				result = append(result, fmt.Sprintf("COPY --link --from=%s%s:latest / /%s", registryImagePrefix, dep.Name, viper.GetString("target")))
 			}
 

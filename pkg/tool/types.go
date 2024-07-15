@@ -19,6 +19,7 @@ type License struct {
 }
 
 type Tool struct {
+	SchemaVersion		string	 `json:"schema_version"`
 	Name                string   `json:"name"`
 	License			    License  `json:"license"`
 	Version             string   `json:"version"`

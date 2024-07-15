@@ -42,6 +42,8 @@ var listCmd = &cobra.Command{
 		if installedOnly {
 			var installedTools tool.Tools
 			for index := range tools.Tools {
+				checkClientVersionRequirement(&tools.Tools[index])
+
 				tools.Tools[index].ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
 				err := tools.Tools[index].GetMarkerFileStatus(viper.GetString("prefix") + "/" + cacheDirectory)
 				if err != nil {

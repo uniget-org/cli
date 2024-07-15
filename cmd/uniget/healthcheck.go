@@ -30,6 +30,8 @@ var healthcheckCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("error getting tool %s", toolName)
 		}
+		checkClientVersionRequirement(tool)
+		
 		tool.ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
 		err = tool.GetMarkerFileStatus(viper.GetString("prefix") + "/" + cacheDirectory)
 		if err != nil {
