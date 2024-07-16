@@ -28,7 +28,7 @@ RUN --mount=target=. \
 goreleaser healthcheck
 goreleaser build \
     --single-target \
-    --auto-snapshot
+    --snapshot
 mkdir -p /out
 find dist -type f -executable -exec cp {} /out/uniget \;
 EOF
