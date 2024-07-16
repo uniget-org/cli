@@ -18,7 +18,7 @@ RUN --mount=from=uniget-goreleaser,src=/bin/goreleaser,target=/usr/local/bin/gor
 mkdir -p /out
 GOOS=${TARGETOS} \
 GOARCH=${TARGETARCH} \
-    goreleaser build --single-target
+    goreleaser build --single-target --auto-snapshot
 find dist -type f -executable -exec cp {} /out/uniget \;
 EOF
 
