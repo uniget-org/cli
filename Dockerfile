@@ -18,8 +18,8 @@ ARG TARGETARCH
 ARG GOOS=${TARGETOS}
 ARG GOARCH=${TARGETARCH}
 WORKDIR /go/src/github.com/uniget-org/cli
-COPY . .
-RUN --mount=from=uniget-goreleaser,src=/bin/goreleaser,target=/usr/local/bin/goreleaser \
+RUN --mount=target=. \
+    --mount=from=uniget-goreleaser,src=/bin/goreleaser,target=/usr/local/bin/goreleaser \
     --mount=from=uniget-cosign,src=/bin/cosign,target=/usr/local/bin/cosign \
     --mount=from=uniget-syft,src=/bin/syft,target=/usr/local/bin/syft \
     --mount=from=uniget-gh,src=/bin/gh,target=/usr/local/bin/gh \
@@ -34,20 +34,20 @@ find dist -type f -executable -exec cp {} /out/uniget \;
 EOF
 
 FROM base AS publish
-WORKDIR /go/src/github.com/uniget-org/cli
-COPY . .
 ARG GITHUB_TOKEN
 ARG ACTIONS_ID_TOKEN_REQUEST_URL
 ARG ACTIONS_ID_TOKEN_REQUEST_TOKEN
 ARG GITHUB_REF_NAME
-RUN --mount=from=uniget-goreleaser,src=/bin/goreleaser,target=/usr/local/bin/goreleaser \
+WORKDIR /go/src/github.com/uniget-org/cli
+RUN --mount=target=. \
+    --mount=from=uniget-goreleaser,src=/bin/goreleaser,target=/usr/local/bin/goreleaser \
     --mount=from=uniget-cosign,src=/bin/cosign,target=/usr/local/bin/cosign \
     --mount=from=uniget-syft,src=/bin/syft,target=/usr/local/bin/syft \
     --mount=from=uniget-gh,src=/bin/gh,target=/usr/local/bin/gh \
     --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build <<EOF
 goreleaser healthcheck
-goreleaser release --clean
+goreleaser release
 bash scripts/release-notes.sh >release-notes.md
 echo "Updating release ${GITHUB_REF_NAME} with release notes"
 gh release edit "${GITHUB_REF_NAME}" --notes-file release-notes.md
