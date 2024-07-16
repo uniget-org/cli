@@ -1,6 +1,7 @@
 #syntax=docker/dockerfile:1.9.0
 
 FROM --platform=${BUILDPLATFORM} golang:1.22.5@sha256:829eff99a4b2abffe68f6a3847337bf6455d69d17e49ec1a97dac78834754bd6 AS base
+SHELL [ "/bin/sh", "-o", "errexit", "-c" ]
 WORKDIR /src
 ENV CGO_ENABLED=0
 COPY go.* .
@@ -8,25 +9,32 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     go mod download
 
 FROM ghcr.io/uniget-org/tools/goreleaser:latest AS uniget-goreleaser
-
-FROM base AS build
-WORKDIR /go/src/github.com/uniget-org/cli
-COPY . .
-RUN --mount=from=uniget-goreleaser,src=/bin/goreleaser,target=/usr/local/bin/goreleaser \
-    --mount=type=cache,target=/go/pkg/mod \
-    --mount=type=cache,target=/root/.cache/go-build <<EOF
-mkdir -p /out
-GOOS=${TARGETOS} \
-GOARCH=${TARGETARCH} \
-    goreleaser build --single-target --auto-snapshot
-find dist -type f -executable -exec cp {} /out/uniget \;
-EOF
-
 FROM ghcr.io/uniget-org/tools/cosign:latest AS uniget-cosign
 FROM ghcr.io/uniget-org/tools/syft:latest AS uniget-syft
 FROM ghcr.io/uniget-org/tools/gh:latest AS uniget-gh
 
-FROM build AS publish
+FROM base AS build
+ARG TARGETOS
+ARG TARGETARCH
+ARG GOOS=${TARGETOS}
+ARG GOARCH=${TARGETARCH}
+WORKDIR /go/src/github.com/uniget-org/cli
+COPY . .
+RUN --mount=from=uniget-goreleaser,src=/bin/goreleaser,target=/usr/local/bin/goreleaser \
+    --mount=from=uniget-cosign,src=/bin/cosign,target=/usr/local/bin/cosign \
+    --mount=from=uniget-syft,src=/bin/syft,target=/usr/local/bin/syft \
+    --mount=from=uniget-gh,src=/bin/gh,target=/usr/local/bin/gh \
+    --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build <<EOF
+goreleaser healthcheck
+goreleaser build \
+    --single-target \
+    --auto-snapshot
+mkdir -p /out
+find dist -type f -executable -exec cp {} /out/uniget \;
+EOF
+
+FROM base AS publish
 WORKDIR /go/src/github.com/uniget-org/cli
 COPY . .
 ARG GITHUB_TOKEN
@@ -40,7 +48,7 @@ RUN --mount=from=uniget-goreleaser,src=/bin/goreleaser,target=/usr/local/bin/gor
     --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build <<EOF
 goreleaser healthcheck
-goreleaser release
+goreleaser release --clean
 bash scripts/release-notes.sh >release-notes.md
 echo "Updating release ${GITHUB_REF_NAME} with release notes"
 gh release edit "${GITHUB_REF_NAME}" --notes-file release-notes.md
