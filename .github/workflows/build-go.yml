@@ -117,7 +117,7 @@ jobs:
     - vet
     - gosec
     - staticcheck
-    - uni-tests
+    - unit-tests
     - cli-test
     runs-on: ubuntu-22.04
     steps:
