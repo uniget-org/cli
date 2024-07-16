@@ -109,28 +109,3 @@ jobs:
     - name: Run CLI tests
       run: |
         docker buildx bake cli-test
-
-  build-go:
-    name: build-go
-    needs:
-    - lint
-    - vet
-    - gosec
-    - staticcheck
-    - unit-tests
-    - cli-test
-    runs-on: ubuntu-22.04
-    steps:
-
-    - name: Checkout code
-      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
-      with:
-        fetch-depth: 0
-
-    - name: Build binary
-      run: |
-        docker buildx bake binary
-
-    - name: Smoke test
-      run: |
-        ./uniget --version
