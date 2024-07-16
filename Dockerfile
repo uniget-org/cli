@@ -18,7 +18,7 @@ ARG TARGETARCH
 ARG GOOS=${TARGETOS}
 ARG GOARCH=${TARGETARCH}
 WORKDIR /go/src/github.com/uniget-org/cli
-RUN --mount=target=. \
+RUN --mount=target=.,readwrite \
     --mount=from=uniget-goreleaser,src=/bin/goreleaser,target=/usr/local/bin/goreleaser \
     --mount=from=uniget-cosign,src=/bin/cosign,target=/usr/local/bin/cosign \
     --mount=from=uniget-syft,src=/bin/syft,target=/usr/local/bin/syft \
@@ -39,7 +39,7 @@ ARG ACTIONS_ID_TOKEN_REQUEST_URL
 ARG ACTIONS_ID_TOKEN_REQUEST_TOKEN
 ARG GITHUB_REF_NAME
 WORKDIR /go/src/github.com/uniget-org/cli
-RUN --mount=target=. \
+RUN --mount=target=.,readwrite \
     --mount=from=uniget-goreleaser,src=/bin/goreleaser,target=/usr/local/bin/goreleaser \
     --mount=from=uniget-cosign,src=/bin/cosign,target=/usr/local/bin/cosign \
     --mount=from=uniget-syft,src=/bin/syft,target=/usr/local/bin/syft \
