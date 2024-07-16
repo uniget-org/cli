@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	goversion "github.com/hashicorp/go-version"
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 	flag "github.com/spf13/pflag"
@@ -63,12 +64,24 @@ var minimumCliVersionForSchemaVersion = map[string]string{
 
 func checkClientVersionRequirement(tool *tool.Tool) {
 	var requiredCliVersion = "0.0.0"
-	for cliVersion, schemaVersion := range minimumCliVersionForSchemaVersion {
+	for schemaVersion, cliVersion := range minimumCliVersionForSchemaVersion {
 		if tool.SchemaVersion > schemaVersion {
 			requiredCliVersion = cliVersion
 		}
 	}
-	if requiredCliVersion > version {
+
+	logging.Debugf("Checking if client version %s is at least %s", version, requiredCliVersion)
+	
+    v1, err := goversion.NewVersion(requiredCliVersion)
+    if err != nil {
+        panic(err)
+    }
+    v2, err := goversion.NewVersion(version)
+    if err != nil {
+        panic(err)
+    }
+
+    if v1.GreaterThan(v2) {
 		logging.Error.Printfln("The tool %s requires at least version %s but you have %s", tool.Name, requiredCliVersion, version)
 		os.Exit(1)
 	}

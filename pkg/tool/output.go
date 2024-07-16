@@ -108,7 +108,7 @@ func (tool *Tool) Print() {
 	fmt.Printf("  Repository: %s\n", tool.Repository)
 	fmt.Printf("  License: %s", tool.License.Name)
 	if len(tool.License.Link) > 0 {
-		fmt.Printf(" (%s)\n", tool.License.Link)
+		fmt.Printf(" (%s)", tool.License.Link)
 	}
 	fmt.Print("\n")
 	fmt.Printf("  Version: %s\n", tool.Version)
