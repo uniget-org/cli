@@ -31,44 +31,41 @@ function check_file() {
     fi
 }
 
-VERSION="$(git describe --abbrev=0)"
-go build -ldflags "-X main.version=${VERSION}" -o uniget ./cmd/uniget
-
 TEMP_DIR=$(mktemp -d)
 echo "Using temp dir: ${TEMP_DIR}"
 trap "rm -rf $TEMP_DIR" EXIT
 
-./uniget --prefix=${TEMP_DIR} update
+/out/uniget --prefix=${TEMP_DIR} update
 check_file "${TEMP_DIR}/var/cache/uniget/metadata.json" "Metadata" || exit 1
 
-./uniget --prefix=${TEMP_DIR} install dummy
+/out/uniget --prefix=${TEMP_DIR} install dummy
 check_dir "${TEMP_DIR}/var/cache/uniget/dummy" "Marker file" || exit 1
 check_file "${TEMP_DIR}/var/lib/uniget/manifests/dummy.json" "Manifest" || exit 1
 check_file "${TEMP_DIR}/var/lib/uniget/manifests/dummy.txt" "File list" || exit 1
 
-./uniget --prefix=${TEMP_DIR} uninstall dummy
+/out/uniget --prefix=${TEMP_DIR} uninstall dummy
 check_dir "${TEMP_DIR}/var/cache/uniget/dummy" "Marker file" && exit 1
 check_file "${TEMP_DIR}/var/lib/uniget/manifests/dummy.json" "Manifest" && exit 1
 check_file "${TEMP_DIR}/var/lib/uniget/manifests/dummy.txt" "File list" && exit 1
 
-./uniget --prefix=${TEMP_DIR} install gojq
+/out/uniget --prefix=${TEMP_DIR} install gojq
 "${TEMP_DIR}/usr/local/bin/gojq" --version || exit 1
 
-./uniget --prefix=${TEMP_DIR} --target=usr install yq
+/out/uniget --prefix=${TEMP_DIR} --target=usr install yq
 check_dir "${TEMP_DIR}/var/cache/uniget/yq" "Marker file" || exit 1
 check_file "${TEMP_DIR}/var/lib/uniget/manifests/yq.json" "Manifest" || exit 1
 check_file "${TEMP_DIR}/var/lib/uniget/manifests/yq.txt" "File list" || exit 1
-./uniget --prefix=${TEMP_DIR} --target=usr version yq || exit 1
+/out/uniget --prefix=${TEMP_DIR} --target=usr version yq || exit 1
 
-./uniget inspect jq | grep "bin/jq$" || exit 1
+/out/uniget inspect jq | grep "bin/jq$" || exit 1
 
-./uniget --user update
+/out/uniget --user update
 test -f "${HOME}/.cache/uniget/metadata.json"
-./uniget --user install dummy
+/out/uniget --user install dummy
 test -d "${HOME}/.cache/uniget/dummy"
 test -f "${HOME}/.local/state/uniget/manifests/dummy.json"
 test -f "${HOME}/.local/state/uniget/manifests/dummy.txt"
-./uniget --user uninstall dummy
+/out/uniget --user uninstall dummy
 
 echo "-----------------------------"
 echo "All tests passed successfully"

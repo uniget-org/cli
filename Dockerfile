@@ -7,31 +7,26 @@ COPY go.* .
 RUN --mount=type=cache,target=/go/pkg/mod \
     go mod download
 
+FROM ghcr.io/uniget-org/tools/goreleaser:latest AS uniget-goreleaser
+
 FROM base AS build
-ARG TARGETOS
-ARG TARGETARCH
 WORKDIR /go/src/github.com/uniget-org/cli
-ARG version=main
-ENV CGO_ENABLED=0
-RUN --mount=target=. \
+COPY . .
+RUN --mount=from=uniget-goreleaser,src=/bin/goreleaser,target=/usr/local/bin/goreleaser \
     --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build <<EOF
 mkdir -p /out
 GOOS=${TARGETOS} \
 GOARCH=${TARGETARCH} \
-    go build \
-        -buildvcs=false \
-        -ldflags "-w -s -X main.version=${version}" \
-        -o /out/uniget \
-        ./cmd/uniget
+    goreleaser build --single-target
+find dist -type f -executable -exec cp {} /out/uniget \;
 EOF
 
-FROM ghcr.io/uniget-org/tools/goreleaser:latest AS uniget-goreleaser
 FROM ghcr.io/uniget-org/tools/cosign:latest AS uniget-cosign
 FROM ghcr.io/uniget-org/tools/syft:latest AS uniget-syft
 FROM ghcr.io/uniget-org/tools/gh:latest AS uniget-gh
 
-FROM base AS publish
+FROM build AS publish
 WORKDIR /go/src/github.com/uniget-org/cli
 COPY . .
 ARG GITHUB_TOKEN
