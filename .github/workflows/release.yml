@@ -13,7 +13,7 @@ jobs:
 
   lint:
     name: lint
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
 
     - name: Checkout code
@@ -27,7 +27,7 @@ jobs:
 
   vet:
     name: vet
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
 
     - name: Checkout code
@@ -41,7 +41,7 @@ jobs:
 
   gosec:
     name: gosec
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
 
     - name: Checkout code
@@ -55,7 +55,7 @@ jobs:
 
   staticcheck:
     name: staticcheck
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
 
     - name: Checkout code
@@ -69,7 +69,7 @@ jobs:
 
   unit-tests:
     name: unit-tests
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
 
     - name: Checkout code
@@ -83,7 +83,7 @@ jobs:
 
   cli-test:
     name: cli-test
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
 
     - name: Checkout code
@@ -104,7 +104,7 @@ jobs:
     - staticcheck
     - unit-tests
     - cli-test
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
 
     - name: Checkout code
