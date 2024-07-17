@@ -344,10 +344,12 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 
 		assertDirectory(viper.GetString("prefix") + "/" + viper.GetString("target"))
 		var err error
-		if usePathRewrite {
+		if viper.GetBool("usepathrewrite") {
+			logging.Debug("Using path rewrite rules")
 			err = plannedTool.InstallWithPathRewrites(registryImagePrefix, viper.GetString("prefix"), pathRewriteRules, createPatchFileCallback(plannedTool))
 
 		} else {
+			logging.Debug("Not using path rewrite rules")
 			err = plannedTool.Install(registryImagePrefix, viper.GetString("prefix"), viper.GetString("target"), libDirectory, cacheDirectory, createPatchFileCallback(plannedTool))
 		}
 		if err != nil {

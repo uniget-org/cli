@@ -46,7 +46,6 @@ var toolSeparator = "/"
 var registryImagePrefix = registry + "/" + imageRepository + toolSeparator
 var tools tool.Tools
 
-var usePathRewrite bool
 var pathRewriteRules = make([]tool.PathRewrite, 0)
 
 var (
@@ -282,6 +281,7 @@ func main() {
 		}
 
 		if viper.GetBool("debug") {
+			logging.Debugf("user: %t", viper.GetBool("prefix"))
 			logging.Debugf("prefix: %s", viper.GetString("prefix"))
 			logging.Debugf("target: %s", viper.GetString("target"))
 			logging.Debugf("cacheRoot: %s", cacheRoot)
@@ -289,6 +289,7 @@ func main() {
 			logging.Debugf("libRoot: %s", libRoot)
 			logging.Debugf("libDirectory: %s", libDirectory)
 			logging.Debugf("metadataFile: %s", metadataFile)
+			logging.Debugf("use-path-rewrite: %t", viper.GetBool("usepathrewrite"))
 		}
 
 		pathRewriteRules = []tool.PathRewrite{
@@ -309,6 +310,7 @@ func main() {
 			},
 		}
 		if ! viper.GetBool("user") {
+			logging.Debugf("Adding path rewrite rules for system installation")
 
 			if viper.GetBool("integratesystemd") || viper.GetBool("integrateall") {
 				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
@@ -327,6 +329,7 @@ func main() {
 			}
 
 		} else {
+			logging.Debugf("Adding path rewrite rules for user installation")
 
 			if viper.GetBool("integratedockercliplugins") || viper.GetBool("integrateall") {
 				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
@@ -357,6 +360,12 @@ func main() {
 			Target: viper.GetString("target") + "/",
 			Operation: "PREPEND",
 		})
+		if viper.GetBool("debug") {
+			logging.Debug("Path rewrite rules:")
+			for _, rule := range pathRewriteRules {
+				logging.Debugf("  %s -> %s (%s)", rule.Source, rule.Target, rule.Operation)
+			}
+		}
 
 		if !fileExists(viper.GetString("prefix") + "/" + metadataFile) {
 			logging.Debugf("Metadata file does not exist. Downloading...")
@@ -411,7 +420,7 @@ func main() {
 	pf.Bool("integrate-profiled", viper.GetBool("integrateprofiled"), "Integrate profile.d scripts")
 	pf.Bool("integrate-docker-cli-plugins", viper.GetBool("integratedockercliplugins"), "Integrate Docker CLI plugins")
 	pf.Bool("integrate-all", viper.GetBool("integrateall"), "Integrate all available integrations")
-	pf.BoolVar(&usePathRewrite, "use-path-rewrite", false, "(Experimental) Enable path rewrite rules for installation")
+	pf.Bool("use-path-rewrite", viper.GetBool("usepathrewrite"), "(Experimental) Enable path rewrite rules for installation")
 
 	rootCmd.MarkFlagsMutuallyExclusive("prefix", "user")
 	rootCmd.MarkFlagsMutuallyExclusive("target", "user")
