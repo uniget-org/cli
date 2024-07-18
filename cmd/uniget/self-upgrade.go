@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"runtime"
 
+	goversion "github.com/hashicorp/go-version"
 	"github.com/spf13/cobra"
 	"github.com/uniget-org/cli/pkg/archive"
 	"github.com/uniget-org/cli/pkg/logging"
@@ -28,6 +29,11 @@ var selfUpgradeCmd = &cobra.Command{
 	Long:  header + "\nUpgrade " + projectName + " to latest version",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		versionRegex := regexp.MustCompile(`^\d+\.\d+\.\d+(-[a-z]+\.\d+)?$`)
+		if !versionRegex.MatchString(version) {
+			return fmt.Errorf("invalid version %s", version)
+		}
+
 		selfExe := filepath.Base(os.Args[0])
 		if selfExe == "." {
 			return fmt.Errorf("failed to get base name for %s", os.Args[0])
@@ -42,7 +48,7 @@ var selfUpgradeCmd = &cobra.Command{
 			logging.Error.Printfln("Failed to find %s in PATH", selfExe)
 			return fmt.Errorf("failed to find %s in PATH: %s", selfExe, err)
 		}
-		fmt.Printf("%s is available at %s\n", selfExe, path)
+		logging.Debugf("%s is available at %s\n", selfExe, path)
 		selfDir := filepath.Dir(path)
 
 		var url string
@@ -83,16 +89,17 @@ var selfUpgradeCmd = &cobra.Command{
 			return fmt.Errorf("failed to download %s: %s", url, resp.Status)
 		}
 
-		if fmt.Sprintf("v%s", version) == requestedVersion {
-			logging.Info.Printf("Already at latest version %s\n", version)
-			return nil
+		v1, err := goversion.NewVersion(requestedVersion)
+		if err != nil {
+			panic(err)
+		}
+		v2, err := goversion.NewVersion(version)
+		if err != nil {
+			panic(err)
 		}
 
-		logging.Info.Printfln("Upgrading from %s to %s", version, requestedVersion)
-
-		versionRegex := regexp.MustCompile(`^\d+\.\d+\.\d+(-[a-z]+\.\d+)?$`)
-		if !versionRegex.MatchString(version) {
-			logging.Warning.Printf("Version is %s and does not match semver\n", version)
+		if v1.LessThanOrEqual(v2) {
+			logging.Info.Printfln("Latest version %s already installed.", version)
 			return nil
 		}
 
