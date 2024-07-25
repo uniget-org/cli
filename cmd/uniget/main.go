@@ -354,6 +354,14 @@ func main() {
 					Operation: "REPLACE",
 				})
 			}
+
+			if viper.GetBool("integrateetc") || viper.GetBool("integrateall") {
+				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
+					Source: "etc/",
+					Target: "./.config/",
+					Operation: "REPLACE",
+				})
+			}
 		}
 		pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
 			Source: "",
@@ -403,6 +411,7 @@ func main() {
 	viper.SetDefault("autoupdate", false)
 	viper.SetDefault("integratesystemd", false)
 	viper.SetDefault("integrateprofiled", false)
+	viper.SetDefault("integrateetc", false)
 	viper.SetDefault("integratedockercliplugins", false)
 	viper.SetDefault("integrateall", false)
 	viper.SetDefault("usepathrewrite", false)
@@ -418,6 +427,7 @@ func main() {
 	pf.Bool("auto-update", viper.GetBool("autoupdate"), "Automatically update metadata")
 	pf.Bool("integrate-systemd", viper.GetBool("integratesystemd"), "Integrate systemd unit files")
 	pf.Bool("integrate-profiled", viper.GetBool("integrateprofiled"), "Integrate profile.d scripts")
+	pf.Bool("integrate-etc", viper.GetBool("integrateetc"), "Integrate configuration files from /etc")
 	pf.Bool("integrate-docker-cli-plugins", viper.GetBool("integratedockercliplugins"), "Integrate Docker CLI plugins")
 	pf.Bool("integrate-all", viper.GetBool("integrateall"), "Integrate all available integrations")
 	pf.Bool("use-path-rewrite", viper.GetBool("usepathrewrite"), "(Experimental) Enable path rewrite rules for installation")
@@ -437,6 +447,7 @@ func main() {
 	addViperBindings(pf, "auto-update", "autoupdate")
 	addViperBindings(pf, "integrate-systemd", "integratesystemd")
 	addViperBindings(pf, "integrate-profiled", "integrateprofiled")
+	addViperBindings(pf, "integrate-etc", "integrateetc")
 	addViperBindings(pf, "integrate-docker-cli-plugins", "integratedockercliplugins")
 	addViperBindings(pf, "integrate-all", "integrateall")
 	addViperBindings(pf, "use-path-rewrite", "usepathrewrite")
