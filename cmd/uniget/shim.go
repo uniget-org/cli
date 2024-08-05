@@ -7,31 +7,37 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/uniget-org/cli/pkg/logging"
 )
 
-var postinstallProfileDScript = `
+var profileDShim = `
 SCRIPTS="$( find "${target}/etc/profile.d" -type f )"
 for SCRIPT in ${SCRIPTS}; do
 	source "${SCRIPT}"
 done
 `
-var postinstallCompletionScript = `
+var completionShim = `
 SCRIPTS="$( find "${target}/share/bash-completion/completions/" -type f )"
 for SCRIPT in ${SCRIPTS}; do
 	source "${SCRIPT}"
 done
 `
 
-func initPostinstallCmd() {
-	rootCmd.AddCommand(postinstallCmd)
+func initShimCmd() {
+	rootCmd.AddCommand(shimCmd)
 }
 
-var postinstallCmd = &cobra.Command{
-	Use:   "postinstall",
-	Short: "Run postinstall for tools",
-	Long:  header + "\nRun postinstall for tools",
+var shimCmd = &cobra.Command{
+	Use:   "shim",
+	Aliases: []string{"postinstall"},
+	Short: "Install shims for profile.d and completion scripts",
+	Long:  header + "\nInstall shims for profile.d and completion scripts",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if cmd.CalledAs() == "postinstall" {
+			logging.Warning.Println("The 'postinstall' command is deprecated and will be removed in a future release. Please use 'shim' instead.")
+		}
+
 		err := installProfileDShim()
 		if err != nil {
 			return fmt.Errorf("unable to install profile.d shim: %s", err)
@@ -48,13 +54,15 @@ var postinstallCmd = &cobra.Command{
 
 func installProfileDShim() error {
 	profileDShimFile := profileDDirectory + "/uniget-profile.d.sh"
-	profileDScript := strings.Replace(postinstallProfileDScript, "${target}", "/"+viper.GetString("target"), -1)
+	profileDScript := strings.Replace(profileDShim, "${target}", "/"+viper.GetString("target"), -1)
 
 	if viper.GetBool("user") {
 		profileDShimFile = viper.GetString("prefix") + "/.config/uniget/profile.d-shim.sh"
-		profileDScript = strings.Replace(postinstallProfileDScript, "${target}", viper.GetString("prefix")+"/"+viper.GetString("target"), -1)
+		profileDScript = strings.Replace(completionShim, "${target}", viper.GetString("prefix")+"/"+viper.GetString("target"), -1)
 	}
 
+	logging.Info.Printfln("Installing shim for profile.d in %s", profileDShimFile)
+		
 	if directoryIsWritable(profileDShimFile) {
 		err := os.WriteFile(
 			profileDShimFile,
@@ -71,7 +79,7 @@ func installProfileDShim() error {
 
 func installCompletionShim() error {
 	completionShimFile := profileDDirectory + "/uniget-completion.sh"
-	completionScript := strings.Replace(postinstallCompletionScript, "${target}", "/"+viper.GetString("target"), -1)
+	completionScript := strings.Replace(completionShim, "${target}", "/"+viper.GetString("target"), -1)
 
 	if viper.GetBool("user") {
 		dataDirectory := ".local/share"
@@ -81,8 +89,10 @@ func installCompletionShim() error {
 			}
 		}
 		completionShimFile = viper.GetString("prefix") + dataDirectory + "/bash-completion/uniget-shim.sh"
-		completionScript = strings.Replace(postinstallCompletionScript, "${target}", viper.GetString("prefix")+"/.local", -1)
+		completionScript = strings.Replace(completionShim, "${target}", viper.GetString("prefix")+"/.local", -1)
 	}
+
+	logging.Info.Printfln("Installing shim for completion in %s", completionShimFile)
 
 	if directoryIsWritable(completionShimFile) {
 		err := os.WriteFile(
