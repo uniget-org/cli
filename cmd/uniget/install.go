@@ -376,29 +376,13 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 		}
 	}
 
-	if viper.GetBool("user") {
-		logging.Warning.Printfln("Post installation is not yet support for user context")
-		return nil
-	}
-	if len(viper.GetString("prefix")) > 0 {
-		logging.Warning.Println("Post installation skipped because prefix is set")
-		return nil
-	}
-	err := postinstall()
-	if err != nil {
-		return fmt.Errorf("unable to run postinstall: %s", err)
-	}
-	err = installProfileDShim()
+	err := installProfileDShim()
 	if err != nil {
 		return fmt.Errorf("unable to install profile.d shim: %s", err)
 	}
 	err = installCompletionShim()
 	if err != nil {
 		return fmt.Errorf("unable to install completion shim: %s", err)
-	}
-	err = installSystemDUnit()
-	if err != nil {
-		return fmt.Errorf("unable to install systemd unit: %s", err)
 	}
 
 	return nil
