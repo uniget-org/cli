@@ -5,16 +5,17 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	//"github.com/uniget-org/cli/pkg/tool"
 )
 
 var baseImage string
+var imageTarget string
 
 func initGenerateCmd() {
 	rootCmd.AddCommand(generateCmd)
 
-	generateCmd.Flags().StringVar(&baseImage, "base", "ubuntu:24.04", "Base image to use")
+	generateCmd.Flags().StringVar(&baseImage,   "base", "ubuntu:24.04", "Base image to use")
+	generateCmd.Flags().StringVar(&imageTarget, "root", "usr/local",    "Root directory to install tools")
 }
 
 var generateCmd = &cobra.Command{
@@ -50,7 +51,7 @@ var generateCmd = &cobra.Command{
 					return fmt.Errorf("unable to find dependency called %s for %s", depName, toolName)
 				}
 				checkClientVersionRequirement(dep)
-				result = append(result, fmt.Sprintf("COPY --link --from=%s%s:latest / /%s", registryImagePrefix, dep.Name, viper.GetString("target")))
+				result = append(result, fmt.Sprintf("COPY --link --from=%s%s:latest / /%s", registryImagePrefix, dep.Name, imageTarget))
 			}
 
 			if len(toolVersion) == 0 {
@@ -58,7 +59,7 @@ var generateCmd = &cobra.Command{
 			} else if toolVersion != "latest" {
 				result = append(result, fmt.Sprintf("# Warning: Unable to check if %s has version %s", toolName, toolVersion))
 			}
-			result = append(result, fmt.Sprintf("COPY --link --from=%s%s:%s / /%s", registryImagePrefix, tool.Name, strings.Replace(toolVersion, "+", "-", -1), viper.GetString("target")))
+			result = append(result, fmt.Sprintf("COPY --link --from=%s%s:%s / /%s", registryImagePrefix, tool.Name, strings.Replace(toolVersion, "+", "-", -1), imageTarget))
 		}
 
 		fmt.Printf("%s", strings.Join(result, "\n"))
