@@ -62,6 +62,11 @@ var minimumCliVersionForSchemaVersion = map[string]string{
 }
 
 func checkClientVersionRequirement(tool *tool.Tool) {
+	if version == "main" {
+		logging.Warning.Printfln("You are running an unreleased version of uniget. Cannot check client version requirement for %s", tool.Name)
+		return
+	}
+
 	var requiredCliVersion = "0.0.0"
 	for schemaVersion, cliVersion := range minimumCliVersionForSchemaVersion {
 		if tool.SchemaVersion > schemaVersion {
