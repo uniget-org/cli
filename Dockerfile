@@ -1,6 +1,6 @@
 #syntax=docker/dockerfile:1.9.0
 
-FROM --platform=${BUILDPLATFORM} golang:1.22.6@sha256:bb9d8c48543148d038e2d76ffcc12ee7c80d3cb0132b325c1983680ca04d320d AS base
+FROM --platform=${BUILDPLATFORM} golang:1.22.6@sha256:d5e49f92b9566b0ddfc59a0d9d85cd8a848e88c8dc40d97e29f306f07c3f8338 AS base
 SHELL [ "/bin/sh", "-o", "errexit", "-c" ]
 WORKDIR /src
 COPY go.* .
