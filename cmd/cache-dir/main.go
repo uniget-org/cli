@@ -114,7 +114,7 @@ func GetFirstLayerFromRegistry(ctx context.Context, rc *regclient.RegClient, r r
 }
 
 func WriteDataToCache(data []byte, key string) error {
-	err := os.WriteFile(fmt.Sprintf("%s/%s", cacheDirectory, key), data, 0644)
+	err := os.WriteFile(fmt.Sprintf("%s/%s", cacheDirectory, key), data, 0644) // #nosec G306 -- just for testing
 	if err != nil {
 		return fmt.Errorf("failed to write data for key %s to cache: %s", key, err)
 	}
@@ -162,7 +162,7 @@ func main() {
 		cacheRoot = "/var/cache"
 	}
 	cacheDirectory = cacheRoot + "/" + projectName + "/download"
-	err := os.MkdirAll(cacheDirectory, 0755)
+	err := os.MkdirAll(cacheDirectory, 0755) // #nosec G301 -- cache directory
 	if err != nil {
 		panic(err)
 	}
@@ -203,7 +203,7 @@ func main() {
 		panic(err)
 	}
 
-	err = os.WriteFile(fmt.Sprintf("%s-%s.tar", tool, version), layer, 0644)
+	err = os.WriteFile(fmt.Sprintf("%s-%s.tar", tool, version), layer, 0644) // #nosec G306 -- just for testing
 	if err != nil {
 		panic(err)
 	}
