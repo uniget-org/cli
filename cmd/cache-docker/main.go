@@ -52,7 +52,7 @@ func main() {
 		panic(err)
 	}
 
-	err = os.WriteFile(fmt.Sprintf("%s-%s.tar", tool, tag), layer, 0644)
+	err = os.WriteFile(fmt.Sprintf("%s-%s.tar", tool, tag), layer, 0644) // #nosec G306 -- just for testing
 	if err != nil {
 		panic(err)
 	}

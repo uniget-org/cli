@@ -20,7 +20,10 @@ func GetDockerImage(cli *client.Client, ref string) ([]byte, error) {
 		return nil, fmt.Errorf("failed to pull image: %s", err)
 	}
 	defer events.Close()
-	io.Copy(io.Discard, events)
+	_, err = io.Copy(io.Discard, events)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read events: %s", err)
+	}
 
 	imageInspect, _, err := cli.ImageInspectWithRaw(ctx, ref)
 	if err != nil {
