@@ -2,6 +2,7 @@ package archive
 
 import (
 	"archive/tar"
+	"bytes"
 	"compress/gzip"
 	"fmt"
 	"io"
@@ -43,6 +44,21 @@ func pathIsInsideTarget(target string, candidate string) error {
 	}
 
 	return nil
+}
+
+func Gunzip(layer []byte) ([]byte, error) {
+	reader, err := gzip.NewReader(bytes.NewReader(layer))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create gzip reader: %s", err)
+	}
+	defer reader.Close()
+
+	buffer, err := io.ReadAll(reader)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read gzip: %s", err)
+	}
+
+	return buffer, nil
 }
 
 func ExtractTarGz(gzipStream io.Reader, patchPath func(path string) string, patchFile func(path string)) error {
