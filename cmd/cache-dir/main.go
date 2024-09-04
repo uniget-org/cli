@@ -1,8 +1,11 @@
 package main
 
 import (
+	"archive/tar"
+	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 	"time"
@@ -146,6 +149,27 @@ var (
 	cacheDirectory string
 )
 
+func ProcessLayerContents(layer []byte, patchPath func(path string) string, patchFile func(path string)) error {
+	tarReader := tar.NewReader(bytes.NewReader(layer))
+
+	for {
+		header, err := tarReader.Next()
+		if err == io.EOF {
+			break
+
+		} else if err != nil {
+			return fmt.Errorf("failed to find next item in tar: %s", err)
+		}
+
+		switch header.Typeflag {
+			case tar.TypeReg:
+				fmt.Printf("File: %s\n", header.Name)
+		}
+	}
+
+	return nil
+}
+
 func main() {
 	toolRef := fmt.Sprintf("%s/%s/%s:%s", registry, repository, tool, version)
 
@@ -203,7 +227,7 @@ func main() {
 		panic(err)
 	}
 
-	err = os.WriteFile(fmt.Sprintf("%s-%s.tar", tool, version), layer, 0644) // #nosec G306 -- just for testing
+	err = ProcessLayerContents(layer, func(path string) string { return path } , func(path string) {})
 	if err != nil {
 		panic(err)
 	}
