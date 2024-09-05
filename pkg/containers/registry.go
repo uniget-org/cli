@@ -1,8 +1,11 @@
 package containers
 
 import (
+	"archive/tar"
+	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"time"
 
 	_ "crypto/sha256"
@@ -50,7 +53,7 @@ func GetImageTags(repository string) ([]string, error) {
 	return filteredTags, nil
 }
 
-func GetPlatformManifest(ctx context.Context, rc *regclient.RegClient, r ref.Ref) (manifest.Manifest, error) {
+func GetPlatformManifestOld(ctx context.Context, rc *regclient.RegClient, r ref.Ref) (manifest.Manifest, error) {
 	m, err := rc.ManifestGet(ctx, r)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get manifest: %s", err)
@@ -72,7 +75,7 @@ func GetPlatformManifest(ctx context.Context, rc *regclient.RegClient, r ref.Ref
 	return m, nil
 }
 
-func GetManifest(image string, callback func(blob blob.Reader) error) error {
+func GetManifestOld(image string, callback func(blob blob.Reader) error) error {
 	ctx := context.Background()
 
 	r, err := ref.New(image)
@@ -88,7 +91,7 @@ func GetManifest(image string, callback func(blob blob.Reader) error) error {
 
 	manifestCtx, manifestCancel := context.WithTimeout(ctx, 60*time.Second)
 	defer manifestCancel()
-	m, err := GetPlatformManifest(manifestCtx, rc, r)
+	m, err := GetPlatformManifestOld(manifestCtx, rc, r)
 	if err != nil {
 		return fmt.Errorf("failed to get manifest: %s", err)
 	}
@@ -164,7 +167,7 @@ func GetFirstLayerShaFromRegistry(image string) (string, error) {
 
 	manifestCtx, manifestCancel := context.WithTimeout(ctx, 60*time.Second)
 	defer manifestCancel()
-	m, err := GetPlatformManifest(manifestCtx, rc, r)
+	m, err := GetPlatformManifestForLocalPlatform(manifestCtx, rc, r)
 	if err != nil {
 		return "", fmt.Errorf("failed to get manifest: %s", err)
 	}
@@ -197,4 +200,122 @@ func GetFirstLayerShaFromRegistry(image string) (string, error) {
 	}
 
 	return "", fmt.Errorf("unknown media type encountered: %s", layer.MediaType)
+}
+
+func GetPlatformManifestForLocalPlatform(ctx context.Context, rc *regclient.RegClient, r ref.Ref) (manifest.Manifest, error) {
+	return GetPlatformManifest(ctx, rc, r, platform.Local())
+}
+
+func GetPlatformManifest(ctx context.Context, rc *regclient.RegClient, r ref.Ref, p platform.Platform) (manifest.Manifest, error) {
+	m, err := rc.ManifestGet(ctx, r)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get manifest: %s", err)
+	}
+
+	if m.IsList() {
+		desc, err := manifest.GetPlatformDesc(m, &p)
+		if err != nil {
+			return nil, fmt.Errorf("error getting platform descriptor")
+		}
+
+		m, err = rc.ManifestGet(ctx, r, regclient.WithManifestDesc(*desc))
+		if err != nil {
+			return nil, fmt.Errorf("failed to get manifest: %s", err)
+		}
+	}
+
+	return m, nil
+}
+
+func GetManifest(ctx context.Context, rc *regclient.RegClient, r ref.Ref) (manifest.Manifest, error) {
+	manifestCtx, manifestCancel := context.WithTimeout(ctx, 60*time.Second)
+	defer manifestCancel()
+
+	m, err := GetPlatformManifestForLocalPlatform(manifestCtx, rc, r)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get manifest: %s", err)
+	}
+
+	return m, nil
+}
+
+func GetFirstLayerFromManifest(ctx context.Context, rc *regclient.RegClient, m manifest.Manifest) ([] byte, error) {
+	return GetLayerFromManifestByIndex(ctx, rc, m, 0)
+}
+
+func GetLayerFromManifestByIndex(ctx context.Context, rc *regclient.RegClient, m manifest.Manifest, index int) ([]byte, error) {
+	if m.IsList() {
+		return nil, fmt.Errorf("manifest is a list")
+	}
+
+	mi, ok := m.(manifest.Imager)
+	if !ok {
+		return nil, fmt.Errorf("failed to get imager")
+	}
+
+	layers, err := mi.GetLayers()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get layers: %s", err)
+	}
+
+	if len(layers) < index {
+		return nil, fmt.Errorf("image only has %d layers", len(layers))
+	}
+
+	layer := layers[index]
+	if layer.MediaType == mediatype.OCI1Layer || layer.MediaType == mediatype.OCI1LayerZstd {
+		return nil, fmt.Errorf("only layers with gzip compression are supported (not %s)", layer.MediaType)
+	}
+	if layer.MediaType == mediatype.OCI1LayerGzip || layer.MediaType == mediatype.Docker2LayerGzip {
+
+		d, err := digest.Parse(string(layer.Digest))
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse digest %s: %s", layer.Digest, err)
+		}
+
+		blob, err := rc.BlobGet(context.Background(), m.GetRef(), descriptor.Descriptor{Digest: d})
+		if err != nil {
+			return nil, fmt.Errorf("failed to get blob for digest %s: %s", layer.Digest, err)
+		}
+		defer blob.Close()
+
+		layerData, err := blob.RawBody()
+		if err != nil {
+			return nil, fmt.Errorf("failed to read layer: %s", err)
+		}
+
+		return layerData, nil
+	}
+
+	return nil, fmt.Errorf("unsupported layer media type %s", layer.MediaType)
+}
+
+func GetFirstLayerFromRegistry(ctx context.Context, rc *regclient.RegClient, r ref.Ref) ([]byte, error) {
+	m, err := GetManifest(ctx, rc, r)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get manifest: %s", err)
+	}
+
+	return GetFirstLayerFromManifest(ctx, rc, m)
+}
+
+func ProcessLayerContents(layer []byte, patchPath func(path string) string, patchFile func(path string)) error {
+	tarReader := tar.NewReader(bytes.NewReader(layer))
+
+	for {
+		header, err := tarReader.Next()
+		if err == io.EOF {
+			break
+
+		} else if err != nil {
+			return fmt.Errorf("failed to find next item in tar: %s", err)
+		}
+
+		switch header.Typeflag {
+			case tar.TypeReg:
+				fmt.Printf("File: %s\n", header.Name)
+		}
+	}
+
+	return nil
 }

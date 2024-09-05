@@ -420,6 +420,9 @@ func main() {
 	viper.SetDefault("integratedockercliplugins", false)
 	viper.SetDefault("integrateall", false)
 	viper.SetDefault("usepathrewrite", false)
+	viper.SetDefault("registry", registry)
+	viper.SetDefault("repository", imageRepository)
+	viper.SetDefault("toolseparator", toolSeparator)
 
 	pf := rootCmd.PersistentFlags()
 
@@ -436,6 +439,9 @@ func main() {
 	pf.Bool("integrate-docker-cli-plugins", viper.GetBool("integratedockercliplugins"), "Integrate Docker CLI plugins")
 	pf.Bool("integrate-all", viper.GetBool("integrateall"), "Integrate all available integrations")
 	pf.Bool("use-path-rewrite", viper.GetBool("usepathrewrite"), "(Experimental) Enable path rewrite rules for installation")
+	pf.String("registry", viper.GetString("registry"), "Registry for the image repository")
+	pf.String("repository", viper.GetString("repository"), "Repository for the image repository")
+	pf.String("tool-separator", viper.GetString("toolseparator"), "Separator between repository and tool name")
 
 	rootCmd.MarkFlagsMutuallyExclusive("prefix", "user")
 	rootCmd.MarkFlagsMutuallyExclusive("target", "user")
@@ -456,6 +462,9 @@ func main() {
 	addViperBindings(pf, "integrate-docker-cli-plugins", "integratedockercliplugins")
 	addViperBindings(pf, "integrate-all", "integrateall")
 	addViperBindings(pf, "use-path-rewrite", "usepathrewrite")
+	addViperBindings(pf, "registry", "registry")
+	addViperBindings(pf, "repository", "repository")
+	addViperBindings(pf, "tool-separator", "toolseparator")
 
 	err = rootCmd.Execute()
 	if err != nil {

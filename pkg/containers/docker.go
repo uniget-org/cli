@@ -9,20 +9,63 @@ import (
 
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
+	"github.com/uniget-org/cli/pkg/archive"
 )
 
+func GetFirstLayerFromDockerImage(cli *client.Client, ref string) ([]byte, error) {
+	shaString, err := GetFirstLayerShaFromRegistry(ref)
+	if err != nil {
+		panic(err)
+	}
+	sha := shaString[7:]
 
-func GetDockerImage(cli *client.Client, ref string) ([]byte, error) {
+	image, err := ReadDockerImage(cli, ref)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get image: %s", err)
+	}
+
+	layerGzip, err := UnpackLayerFromDockerImage(image, sha)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unpack layer: %s", err)
+	}
+
+	layer, err := archive.Gunzip(layerGzip)
+	if err != nil {
+		return nil, fmt.Errorf("failed to gunzip layer: %s", err)
+	}
+
+	return layer, nil
+}
+
+func PullDockerImage(cli *client.Client, ref string) error {
 	ctx := context.Background()
-	
+
 	events, err := cli.ImagePull(ctx, ref, image.PullOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("failed to pull image: %s", err)
+		return fmt.Errorf("failed to pull image: %s", err)
 	}
 	defer events.Close()
 	_, err = io.Copy(io.Discard, events)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read events: %s", err)
+		return fmt.Errorf("failed to read events: %s", err)
+	}
+
+	return nil
+}
+
+func CheckDockerImageExists(cli *client.Client, ref string) bool {
+	ctx := context.Background()
+
+	_, _, err := cli.ImageInspectWithRaw(ctx, ref)
+	return err == nil
+}
+
+func ReadDockerImage(cli *client.Client, ref string) ([]byte, error) {
+	ctx := context.Background()
+	
+	err := PullDockerImage(cli, ref)
+	if err != nil {
+		return nil, fmt.Errorf("failed to pull image: %s", err)
 	}
 
 	imageInspect, _, err := cli.ImageInspectWithRaw(ctx, ref)
