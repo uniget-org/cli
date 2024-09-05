@@ -1,16 +1,22 @@
 #syntax=docker/dockerfile:1.9.0
 
-FROM --platform=${BUILDPLATFORM} golang:1.23.0@sha256:1a6db32ea47a4910759d5bcbabeb8a8b42658e311bd8348ea4763735447c636c AS base
+FROM ghcr.io/uniget-org/tools/goreleaser:2.2.0@sha256:744c3af45765f16fd44eedbf8b80e0df756ed1306698c9cb1fdd9c5f003a927c AS uniget-goreleaser
+FROM ghcr.io/uniget-org/tools/cosign:2.4.0@sha256:f98cc3d9f9a8c8ddddd3d77ee0bb80a4950b7874ffe1cd490162372a0217592a AS uniget-cosign
+FROM ghcr.io/uniget-org/tools/syft:1.11.1@sha256:0e2bfb951a24695e9c2ca5dcc9240b52877356c1b6cefa5b325407384b3118ec AS uniget-syft
+FROM ghcr.io/uniget-org/tools/gh:2.55.0@sha256:49a411599c389e008c4b0124d5f516d11abf261982db3ea1cdb389af2005ce11 AS uniget-gh
+FROM ghcr.io/uniget-org/tools/gosec:2.20.0@sha256:3cc48dede9294499bf20584af7e77e0f7fcab45191b92e1e1dca10ed127f75f5 AS uniget-gosec
+FROM ghcr.io/uniget-org/tools/staticcheck:2024.1.1@sha256:319956a914f39999a22e2c676f70f06e14351007b7d2d689f78b181246109e7d AS uniget-staticcheck
+FROM golangci/golangci-lint:v1.60.3@sha256:e64f6ba5950132542e3b6745c18879282444699f89db69ac9b46f267c1aeb3fd AS lint-base
+FROM --platform=${BUILDPLATFORM} golang:1.23.0@sha256:1a6db32ea47a4910759d5bcbabeb8a8b42658e311bd8348ea4763735447c636c AS latest-golang
+FROM alpine:3.20.2@sha256:0a4eaa0eecf5f8c050e5bba433f58c052be7587ee8af3e8b3910ef9ab5fbe9f5 AS latest-alpine
+FROM ubuntu:24.04@sha256:8a37d68f4f73ebf3d4efafbcf66379bf3728902a8038616808f04e34a9ab63ee AS latest-ubuntu
+
+FROM latest-golang AS base
 SHELL [ "/bin/sh", "-o", "errexit", "-c" ]
 WORKDIR /src
 COPY go.* .
 RUN --mount=type=cache,target=/go/pkg/mod \
     go mod download
-
-FROM ghcr.io/uniget-org/tools/goreleaser:latest AS uniget-goreleaser
-FROM ghcr.io/uniget-org/tools/cosign:latest AS uniget-cosign
-FROM ghcr.io/uniget-org/tools/syft:latest AS uniget-syft
-FROM ghcr.io/uniget-org/tools/gh:latest AS uniget-gh
 
 FROM base AS build
 ARG TARGETOS
@@ -81,7 +87,6 @@ go vet \
     ./...
 EOF
 
-FROM ghcr.io/uniget-org/tools/gosec:latest AS uniget-gosec
 
 FROM base AS gosec
 RUN --mount=target=. \
@@ -91,7 +96,6 @@ RUN --mount=target=. \
 gosec ./...
 EOF
 
-FROM ghcr.io/uniget-org/tools/staticcheck:latest AS uniget-staticcheck
 
 FROM base AS staticcheck
 RUN --mount=target=. \
@@ -101,7 +105,6 @@ RUN --mount=target=. \
 staticcheck ./...
 EOF
 
-FROM golangci/golangci-lint:v1.60.3@sha256:e64f6ba5950132542e3b6745c18879282444699f89db69ac9b46f267c1aeb3fd AS lint-base
 
 FROM base AS lint
 RUN --mount=target=. \
@@ -126,7 +129,7 @@ COPY --from=build /out/uniget /uniget.exe
 
 FROM bin-${TARGETOS} AS bin
 
-FROM alpine:3.20.2@sha256:0a4eaa0eecf5f8c050e5bba433f58c052be7587ee8af3e8b3910ef9ab5fbe9f5 AS ca-certificates
+FROM latest-alpine AS ca-certificates
 RUN <<EOF
 apk update
 apk add ca-certificates
@@ -143,7 +146,7 @@ ENTRYPOINT [ "/uniget"]
 
 # docker run -d --name systemd --security-opt seccomp=unconfined --tmpfs /run --tmpfs /run/lock -v /sys/fs/cgroup:/sys/fs/cgroup:ro -t systemd
 # docker run -dt --privileged -v /sys/fs/cgroup:/sys/fs/cgroup systemd
-FROM ubuntu:24.04@sha256:8a37d68f4f73ebf3d4efafbcf66379bf3728902a8038616808f04e34a9ab63ee AS systemd
+FROM latest-ubuntu AS systemd
 ENV container=docker \
     LC_ALL=C \
     DEBIAN_FRONTEND=noninteractive
