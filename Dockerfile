@@ -143,7 +143,7 @@ ENTRYPOINT [ "/uniget"]
 
 # docker run -d --name systemd --security-opt seccomp=unconfined --tmpfs /run --tmpfs /run/lock -v /sys/fs/cgroup:/sys/fs/cgroup:ro -t systemd
 # docker run -dt --privileged -v /sys/fs/cgroup:/sys/fs/cgroup systemd
-FROM ubuntu:24.04 AS systemd
+FROM ubuntu:24.04@sha256:8a37d68f4f73ebf3d4efafbcf66379bf3728902a8038616808f04e34a9ab63ee AS systemd
 ENV container=docker \
     LC_ALL=C \
     DEBIAN_FRONTEND=noninteractive
