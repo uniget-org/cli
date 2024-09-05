@@ -7,11 +7,11 @@ FROM ghcr.io/uniget-org/tools/gh:2.55.0@sha256:49a411599c389e008c4b0124d5f516d11
 FROM ghcr.io/uniget-org/tools/gosec:2.20.0@sha256:3cc48dede9294499bf20584af7e77e0f7fcab45191b92e1e1dca10ed127f75f5 AS uniget-gosec
 FROM ghcr.io/uniget-org/tools/staticcheck:2024.1.1@sha256:319956a914f39999a22e2c676f70f06e14351007b7d2d689f78b181246109e7d AS uniget-staticcheck
 FROM golangci/golangci-lint:v1.60.3@sha256:e64f6ba5950132542e3b6745c18879282444699f89db69ac9b46f267c1aeb3fd AS lint-base
-FROM --platform=${BUILDPLATFORM} golang:1.23.0@sha256:1a6db32ea47a4910759d5bcbabeb8a8b42658e311bd8348ea4763735447c636c AS latest-golang
+FROM golang:1.23.0@sha256:1a6db32ea47a4910759d5bcbabeb8a8b42658e311bd8348ea4763735447c636c AS latest-golang
 FROM alpine:3.20.2@sha256:0a4eaa0eecf5f8c050e5bba433f58c052be7587ee8af3e8b3910ef9ab5fbe9f5 AS latest-alpine
 FROM ubuntu:24.04@sha256:8a37d68f4f73ebf3d4efafbcf66379bf3728902a8038616808f04e34a9ab63ee AS latest-ubuntu
 
-FROM latest-golang AS base
+FROM --platform=${BUILDPLATFORM} latest-golang AS base
 SHELL [ "/bin/sh", "-o", "errexit", "-c" ]
 WORKDIR /src
 COPY go.* .
