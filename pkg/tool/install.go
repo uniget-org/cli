@@ -53,7 +53,7 @@ func applyPathRewrites(path string, rules []PathRewrite) string {
 
 func (tool *Tool) InstallWithPathRewrites(registryImagePrefix string, prefix string, rules []PathRewrite, patchFile func(path string)) error {
 	// Fetch manifest for tool
-	err := containers.GetManifest(fmt.Sprintf(registryImagePrefix+"%s:%s", tool.Name, strings.Replace(tool.Version, "+", "-", -1)), func(blob blob.Reader) error {
+	err := containers.GetManifestOld(fmt.Sprintf(registryImagePrefix+"%s:%s", tool.Name, strings.Replace(tool.Version, "+", "-", -1)), func(blob blob.Reader) error {
 		logging.Debugf("Extracting with prefix=%s", prefix)
 
 		// Change working directory to prefix
@@ -91,7 +91,7 @@ func (tool *Tool) InstallWithPathRewrites(registryImagePrefix string, prefix str
 
 func (tool *Tool) Install(registryImagePrefix string, prefix string, target string, libDirectory string, cacheDirectory string, patchFile func(path string)) error {
 	// Fetch manifest for tool
-	err := containers.GetManifest(fmt.Sprintf(registryImagePrefix+"%s:%s", tool.Name, strings.Replace(tool.Version, "+", "-", -1)), func(blob blob.Reader) error {
+	err := containers.GetManifestOld(fmt.Sprintf(registryImagePrefix+"%s:%s", tool.Name, strings.Replace(tool.Version, "+", "-", -1)), func(blob blob.Reader) error {
 		logging.Debugf("Extracting with prefix=%s and target=%s", prefix, target)
 
 		// Change working directory to prefix
@@ -155,7 +155,7 @@ func (tool *Tool) Install(registryImagePrefix string, prefix string, target stri
 
 func (tool *Tool) Inspect(registryImagePrefix string, raw bool) error {
 	// Fetch manifest for tool
-	err := containers.GetManifest(fmt.Sprintf(registryImagePrefix+"%s:%s", tool.Name, strings.Replace(tool.Version, "+", "-", -1)), func(blob blob.Reader) error {
+	err := containers.GetManifestOld(fmt.Sprintf(registryImagePrefix+"%s:%s", tool.Name, strings.Replace(tool.Version, "+", "-", -1)), func(blob blob.Reader) error {
 		result, err := archive.ListTarGz(blob, func(path string) string {
 			// Remove prefix usr/local/ to support arbitrary target directories
 			// Necessary as long as tools are still installed in hardcoded /usr/local
@@ -185,7 +185,7 @@ func (tool *Tool) Inspect(registryImagePrefix string, raw bool) error {
 
 func (tool *Tool) InspectWithPathRewrites(registryImagePrefix string, raw bool, rules []PathRewrite) error {
 	// Fetch manifest for tool
-	err := containers.GetManifest(fmt.Sprintf(registryImagePrefix+"%s:%s", tool.Name, strings.Replace(tool.Version, "+", "-", -1)), func(blob blob.Reader) error {
+	err := containers.GetManifestOld(fmt.Sprintf(registryImagePrefix+"%s:%s", tool.Name, strings.Replace(tool.Version, "+", "-", -1)), func(blob blob.Reader) error {
 		result, err := archive.ListTarGz(blob, func(path string) string {
 			return applyPathRewrites(path, rules)
 		})
