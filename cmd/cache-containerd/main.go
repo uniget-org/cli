@@ -43,9 +43,7 @@ func main() {
 
 	namespace := "uniget"
 	
-	// TODO: Support equivalent of `ctr --address=...`
-	address := "/run/containerd/containerd.sock"
-	client, err := containerd.New(address, containerd.WithDefaultNamespace(namespace))
+	client, err := containerd.New("/run/containerd/containerd.sock", containerd.WithDefaultNamespace(namespace))
 	if err != nil {
 		panic(err)
 	}
