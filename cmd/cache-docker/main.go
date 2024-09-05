@@ -5,34 +5,8 @@ import (
 	"os"
 
 	"github.com/docker/docker/client"
-	"github.com/uniget-org/cli/pkg/archive"
 	"github.com/uniget-org/cli/pkg/containers"
 )
-
-func GetFirstLayerFromDockerImage(cli *client.Client, ref string) ([]byte, error) {
-	shaString, err := containers.GetFirstLayerShaFromRegistry(ref)
-	if err != nil {
-		panic(err)
-	}
-	sha := shaString[7:]
-
-	image, err := containers.GetDockerImage(cli, ref)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get image: %s", err)
-	}
-
-	layerGzip, err := containers.UnpackLayerFromDockerImage(image, sha)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unpack layer: %s", err)
-	}
-
-	layer, err := archive.Gunzip(layerGzip)
-	if err != nil {
-		return nil, fmt.Errorf("failed to gunzip layer: %s", err)
-	}
-
-	return layer, nil
-}
 
 func main() {
 	registry := "ghcr.io"
@@ -46,7 +20,7 @@ func main() {
 		panic(err)
 	}
 
-	layer, err := GetFirstLayerFromDockerImage(cli, ref)
+	layer, err := containers.GetFirstLayerFromDockerImage(cli, ref)
 	if err != nil {
 		panic(err)
 	}
