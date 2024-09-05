@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/docker/docker/client"
-	"github.com/uniget-org/cli/pkg/containers"
+	ucache "github.com/uniget-org/cli/pkg/cache"
 )
 
 func main() {
@@ -13,14 +12,13 @@ func main() {
 	repository := "uniget-org/tools"
 	tool := "jq"
 	tag := "latest"
-	ref := fmt.Sprintf("%s/%s/%s:%s", registry, repository, tool, tag)
-
-	cli, err := client.NewClientWithOpts(client.FromEnv)
+	
+	cache, err := ucache.NewDockerCache()
 	if err != nil {
 		panic(err)
 	}
 
-	layer, err := containers.GetFirstLayerFromDockerImage(cli, ref)
+	layer, err := cache.Get(ucache.NewToolRef(registry, repository, tool, tag))
 	if err != nil {
 		panic(err)
 	}
