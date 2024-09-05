@@ -4,21 +4,21 @@ Thank you for considering contributing to uniget! We welcome any contributions, 
 
 ## Contribution Prerequisites
 
-Make sure that you have [Docker]() and [buildx]() installed. You can use a locally installed [Go]() but the containerized build environment enables you to use the same tooling as in CI.
+Make sure that you have [Docker](https://www.docker.com/) and [buildx](https://github.com/docker/buildx) installed. You can use a locally installed [Go](https://go.dev/) but the containerized build environment enables you to use the same tooling as in CI.
 
 ## Sending a Pull Request
 
 1. Create an issue in the repository outlining the fix or feature
 1. Fork the repository to your own GitHub account and clone it locally
 1. Complete and test the change
+1. Add tests for new code
 1. Create a concise commit message and reference the issue(s) and pull request(s) adressed
-1. (Optionally) Sign off your commit
 1. Ensure that CI passes. If it fails, fix the failures
 1. Every pull request requires a review
 
 The following steps describe the build, linting and testing processes:
 
-### Building Cosign
+### Building uniget CLI
 
 To build locally, run this command:
 
@@ -38,10 +38,6 @@ docker buildx bake test
 ```
 
 **Make sure all tests pass** without any failures or errors.
-
-### Sign DCO
-
-Make sure to sign the [Developer Certificate of Origin](https://git-scm.com/docs/git-commit#Documentation/git-commit.txt---signoff).
 
 ## What to contribute
 
