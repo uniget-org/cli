@@ -13,14 +13,17 @@ import (
 	"github.com/spf13/cobra"
 	flag "github.com/spf13/pflag"
 	"github.com/spf13/viper"
+	"github.com/uniget-org/cli/pkg/cache"
+	ucache "github.com/uniget-org/cli/pkg/cache"
 	"github.com/uniget-org/cli/pkg/logging"
 	"github.com/uniget-org/cli/pkg/tool"
 	"golang.org/x/sys/unix"
 )
 
-var projectName = "uniget"
-var version string = "main"
-var header string = "" +
+var (
+	projectName = "uniget"
+	version string = "main"
+	header string = "" +
 	"             _            _\n" +
 	" _   _ _ __ (_) __ _  ___| |_\n" +
 	"| | | | '_ \\| |/ _` |/ _ \\ __|\n" +
@@ -28,38 +31,37 @@ var header string = "" +
 	" \\__,_|_| |_|_|\\__, |\\___|\\__|\n" +
 	"               |___/\n"
 
-var altArch string = runtime.GOARCH
-var arch string
+	altArch string = runtime.GOARCH
+	arch string
 
-var cacheRoot = "var/cache"
-var cacheDirectory = cacheRoot + "/" + projectName
-var libRoot = "var/lib"
-var libDirectory = libRoot + "/" + projectName
-var configRoot = "etc"
-var profileDDirectory = configRoot + "/profile.d"
-var metadataFileName = "metadata.json"
-var metadataFile = cacheDirectory + "/" + metadataFileName
-var registry = "ghcr.io"
-var projectRepository = "uniget-org/cli"
-var imageRepository = "uniget-org/tools"
-var toolSeparator = "/"
-var registryImagePrefix = registry + "/" + imageRepository + toolSeparator
-var tools tool.Tools
-
-var pathRewriteRules = make([]tool.PathRewrite, 0)
-
-var (
+	cacheRoot = "var/cache"
+	cacheDirectory = cacheRoot + "/" + projectName
+	libRoot = "var/lib"
+	libDirectory = libRoot + "/" + projectName
+	configRoot = "etc"
+	profileDDirectory = configRoot + "/profile.d"
+	metadataFileName = "metadata.json"
+	metadataFile = cacheDirectory + "/" + metadataFileName
+	registry = "ghcr.io"
+	projectRepository = "uniget-org/cli"
+	imageRepository = "uniget-org/tools"
+	toolSeparator = "/"
+	registryImagePrefix = registry + "/" + imageRepository + toolSeparator
+	tools = tool.Tools{
+		Tools: make([]tool.Tool, 0),
+	}
+	pathRewriteRules = make([]tool.PathRewrite, 0)
 	rootCmd = &cobra.Command{
 		Use:          projectName,
 		Version:      version,
 		Short:        header + "The universal installer and updater to (container) tools",
 		SilenceUsage: true,
 	}
-)
-
-var minimumCliVersionForSchemaVersion = map[string]string{
+	minimumCliVersionForSchemaVersion = map[string]string{
 	"1": "0.1.0",
 }
+	toolCache cache.Cache
+)
 
 func checkClientVersionRequirement(tool *tool.Tool) {
 	if version == "main" {
@@ -295,6 +297,9 @@ func main() {
 			logging.Debugf("libDirectory: %s", libDirectory)
 			logging.Debugf("metadataFile: %s", metadataFile)
 			logging.Debugf("use-path-rewrite: %t", viper.GetBool("usepathrewrite"))
+			logging.Debugf("registry: %s", viper.GetString("registry"))
+			logging.Debugf("repository: %s", viper.GetString("repository"))
+			logging.Debugf("tool-separator: %s", viper.GetString("toolseparator"))
 		}
 
 		pathRewriteRules = []tool.PathRewrite{
@@ -403,6 +408,8 @@ func main() {
 		if now.Sub(modifiedtime).Hours() > 24 {
 			logging.Warning.Println("Metadata file is older than 24 hours")
 		}
+
+		toolCache = ucache.NewNoneCache()
 
 		return nil
 	}

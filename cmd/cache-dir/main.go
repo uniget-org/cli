@@ -1,15 +1,11 @@
 package main
 
 import (
-	"context"
-	"fmt"
 	"os"
 	"strings"
 
-	"github.com/regclient/regclient"
-	"github.com/regclient/regclient/types/ref"
-	"github.com/uniget-org/cli/pkg/cache"
-	"github.com/uniget-org/cli/pkg/containers"
+	"github.com/uniget-org/cli/pkg/archive"
+	ucache "github.com/uniget-org/cli/pkg/cache"
 )
 
 var (
@@ -25,8 +21,6 @@ var (
 )
 
 func main() {
-	toolRef := fmt.Sprintf("%s/%s/%s:%s", registry, repository, tool, version)
-
 	user := true
 	if user {
 		cacheRoot = os.Getenv("HOME") + "/.cache"
@@ -45,45 +39,14 @@ func main() {
 		panic(err)
 	}
 
-	var cache = cache.NewFileCache(cacheDirectory)
-
-	cacheKey := fmt.Sprintf("%s-%s", tool, version)
-	if cache.CheckDataInCache(cacheKey) {
-		fmt.Printf("Cache hit for %s\n", cacheKey)
-
-	} else {
-		fmt.Printf("Cache miss for %s\n", cacheKey)
-
-		ctx := context.Background()
-
-		r, err := ref.New(toolRef)
-		if err != nil {
-			panic(err)
-		}
-
-		rcOpts := []regclient.Opt{}
-		rcOpts = append(rcOpts, regclient.WithUserAgent("uniget"))
-		rcOpts = append(rcOpts, regclient.WithDockerCreds())
-		rc := regclient.New(rcOpts...)
-		defer rc.Close(ctx, r)
-
-		layer, err := containers.GetFirstLayerFromRegistry(ctx, rc, r)
-		if err != nil {
-			panic(err)
-		}
-
-		err = cache.WriteDataToCache(layer, cacheKey)
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	layer, err := cache.ReadDataFromCache(cacheKey)
+	//cache := ucache.NewFileCache(cacheDirectory)
+	cache := ucache.NewNoneCache()
+	layer, err := cache.Get(ucache.NewToolRef(registry, repository, tool, version))
 	if err != nil {
 		panic(err)
 	}
 
-	err = containers.ProcessLayerContents(layer, func(path string) string { return path } , func(path string) {})
+	err = archive.ProcessTarContents(layer, func(path string) string { return path } , func(path string) {})
 	if err != nil {
 		panic(err)
 	}

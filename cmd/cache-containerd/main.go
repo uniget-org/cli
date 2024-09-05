@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/containerd/containerd"
-	"github.com/uniget-org/cli/pkg/containers"
+	ucache "github.com/uniget-org/cli/pkg/cache"
 )
   
 func main() {
@@ -13,17 +12,13 @@ func main() {
 	repository := "uniget-org/tools"
 	tool := "jq"
 	tag := "latest"
-	ref := fmt.Sprintf("%s/%s/%s:%s", registry, repository, tool, tag)
 
-	namespace := "uniget"
-	
-	client, err := containerd.New("/run/containerd/containerd.sock", containerd.WithDefaultNamespace(namespace))
+	cache, err := ucache.NewContainerdCache("unitget")
 	if err != nil {
 		panic(err)
 	}
-	defer client.Close()
 
-	layer, err := containers.GetFirstLayerFromContainerdImage(client, ref)
+	layer, err := cache.Get(ucache.NewToolRef(registry, repository, tool, tag))
 	if err != nil {
 		panic(err)
 	}

@@ -1,11 +1,8 @@
 package containers
 
 import (
-	"archive/tar"
-	"bytes"
 	"context"
 	"fmt"
-	"io"
 	"time"
 
 	_ "crypto/sha256"
@@ -297,25 +294,4 @@ func GetFirstLayerFromRegistry(ctx context.Context, rc *regclient.RegClient, r r
 	}
 
 	return GetFirstLayerFromManifest(ctx, rc, m)
-}
-
-func ProcessLayerContents(layer []byte, patchPath func(path string) string, patchFile func(path string)) error {
-	tarReader := tar.NewReader(bytes.NewReader(layer))
-
-	for {
-		header, err := tarReader.Next()
-		if err == io.EOF {
-			break
-
-		} else if err != nil {
-			return fmt.Errorf("failed to find next item in tar: %s", err)
-		}
-
-		switch header.Typeflag {
-			case tar.TypeReg:
-				fmt.Printf("File: %s\n", header.Name)
-		}
-	}
-
-	return nil
 }

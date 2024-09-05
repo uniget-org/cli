@@ -8,11 +8,13 @@ import (
 var cacheDirectory string
 
 type FileCache struct {
+	n *NoneCache
 	cacheDirectory string
 }
 
 func NewFileCache(directory string) *FileCache {
 	return &FileCache{
+		n: NewNoneCache(),
 		cacheDirectory: directory,
 	}
 }
@@ -26,35 +28,62 @@ func (c *FileCache) checkIfCacheDirectoryExists() bool {
 	return !os.IsNotExist(err)
 }
 
-func (c *FileCache) WriteDataToCache(data []byte, key string) error {
+func (c *FileCache) writeDataToCache(data []byte, ref string) error {
 	if ! c.checkIfCacheDirectoryExists() {
 		return fmt.Errorf("cache directory is not set")
 	}
 
-	err := os.WriteFile(fmt.Sprintf("%s/%s", cacheDirectory, key), data, 0644) // #nosec G306 -- just for testing
+	err := os.WriteFile(fmt.Sprintf("%s/%s", cacheDirectory, ref), data, 0644) // #nosec G306 -- just for testing
 	if err != nil {
-		return fmt.Errorf("failed to write data for key %s to cache: %s", key, err)
+		return fmt.Errorf("failed to write data for ref %s to cache: %s", ref, err)
 	}
 	return nil
 }
 
-func (c *FileCache) CheckDataInCache(key string) bool {
+func (c *FileCache) checkDataInCache(ref string) bool {
 	if ! c.checkIfCacheDirectoryExists() {
 		return false
 	}
 
-	_, err := os.Stat(fmt.Sprintf("%s/%s", cacheDirectory, key))
+	_, err := os.Stat(fmt.Sprintf("%s/%s", cacheDirectory, ref))
 	return !os.IsNotExist(err)
 }
 
-func (c *FileCache) ReadDataFromCache(key string) ([]byte, error) {
+func (c *FileCache) readDataFromCache(ref string) ([]byte, error) {
 	if ! c.checkIfCacheDirectoryExists() {
 		return nil, fmt.Errorf("cache directory is not set")
 	}
 
-	data, err := os.ReadFile(fmt.Sprintf("%s/%s", cacheDirectory, key))
+	data, err := os.ReadFile(fmt.Sprintf("%s/%s", cacheDirectory, ref))
 	if err != nil {
-		return nil, fmt.Errorf("failed to read data for key %s from cache: %s", key, err)
+		return nil, fmt.Errorf("failed to read data for ref %s from cache: %s", ref, err)
 	}
 	return data, nil
+}
+
+func (c *FileCache) Get(tool *ToolRef) ([]byte, error) {
+	cacheKey := fmt.Sprintf("%s-%s", tool.Tool, tool.Version)
+	if c.checkDataInCache(tool.String()) {
+		fmt.Printf("Cache hit for %s\n", cacheKey)
+
+	} else {
+		fmt.Printf("Cache miss for %s\n", cacheKey)
+
+		layer, err := c.n.Get(tool)
+		if err != nil {
+			panic(err)
+		}
+
+		err = c.writeDataToCache(layer, cacheKey)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	layer, err := c.readDataFromCache(cacheKey)
+	if err != nil {
+		panic(err)
+	}
+
+	return layer, nil
 }
