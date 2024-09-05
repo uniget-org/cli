@@ -41,7 +41,6 @@ func main() {
 	tag := "latest"
 	ref := fmt.Sprintf("%s/%s/%s:%s", registry, repository, tool, tag)
 
-	// TODO: Support equivalent of `docker --host=...`
 	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
 		panic(err)
