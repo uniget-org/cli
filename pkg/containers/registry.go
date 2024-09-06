@@ -11,6 +11,7 @@ import (
 	"github.com/opencontainers/go-digest"
 
 	"github.com/regclient/regclient"
+	"github.com/regclient/regclient/config"
 	"github.com/regclient/regclient/types/blob"
 	"github.com/regclient/regclient/types/descriptor"
 	"github.com/regclient/regclient/types/manifest"
@@ -19,18 +20,27 @@ import (
 	"github.com/regclient/regclient/types/ref"
 )
 
-func GetImageTags(repository string) ([]string, error) {
-	ctx := context.Background()
-
-	r, err := ref.New(repository)
-	if err != nil {
-		return []string{}, fmt.Errorf("failed to parse image name <%s>: %s", repository, err)
-	}
-
+func GetRegclient() *regclient.RegClient {
 	rcOpts := []regclient.Opt{}
 	rcOpts = append(rcOpts, regclient.WithUserAgent("uniget"))
 	rcOpts = append(rcOpts, regclient.WithDockerCreds())
-	rc := regclient.New(rcOpts...)
+	rcOpts = append(rcOpts, regclient.WithConfigHost(config.Host{
+		Name: "127.0.0.1:5000",
+		TLS:  config.TLSDisabled,
+	}))
+
+	return regclient.New(rcOpts...)
+}
+
+func GetImageTags(t *ToolRef) ([]string, error) {
+	ctx := context.Background()
+
+	r, err := ref.New(t.String())
+	if err != nil {
+		return []string{}, fmt.Errorf("failed to parse image name <%s>: %s", t.String(), err)
+	}
+
+	rc := GetRegclient()
 	defer rc.Close(ctx, r)
 
 	tags, err := rc.TagList(ctx, r)
@@ -72,18 +82,15 @@ func GetPlatformManifestOld(ctx context.Context, rc *regclient.RegClient, r ref.
 	return m, nil
 }
 
-func GetManifestOld(image string, callback func(blob blob.Reader) error) error {
+func GetManifestOld(t *ToolRef, callback func(blob blob.Reader) error) error {
 	ctx := context.Background()
 
-	r, err := ref.New(image)
+	r, err := ref.New(t.String())
 	if err != nil {
-		return fmt.Errorf("failed to parse image name <%s>: %s", image, err)
+		return fmt.Errorf("failed to parse image name <%s>: %s", t, err)
 	}
 
-	rcOpts := []regclient.Opt{}
-	rcOpts = append(rcOpts, regclient.WithUserAgent("uniget"))
-	rcOpts = append(rcOpts, regclient.WithDockerCreds())
-	rc := regclient.New(rcOpts...)
+	rc := GetRegclient()
 	defer rc.Close(ctx, r)
 
 	manifestCtx, manifestCancel := context.WithTimeout(ctx, 60*time.Second)
@@ -148,18 +155,15 @@ func ProcessLayersCallback(rc *regclient.RegClient, m manifest.Manifest, r ref.R
 	return fmt.Errorf("unknown media type encountered: %s", layer.MediaType)
 }
 
-func GetFirstLayerShaFromRegistry(image string) (string, error) {
+func GetFirstLayerShaFromRegistry(image *ToolRef) (string, error) {
 	ctx := context.Background()
 
-	r, err := ref.New(image)
+	r, err := ref.New(image.String())
 	if err != nil {
 		return "", fmt.Errorf("failed to parse image name <%s>: %s", image, err)
 	}
 
-	rcOpts := []regclient.Opt{}
-	rcOpts = append(rcOpts, regclient.WithUserAgent("uniget"))
-	rcOpts = append(rcOpts, regclient.WithDockerCreds())
-	rc := regclient.New(rcOpts...)
+	rc := GetRegclient()
 	defer rc.Close(ctx, r)
 
 	manifestCtx, manifestCancel := context.WithTimeout(ctx, 60*time.Second)
@@ -236,7 +240,7 @@ func GetManifest(ctx context.Context, rc *regclient.RegClient, r ref.Ref) (manif
 	return m, nil
 }
 
-func GetFirstLayerFromManifest(ctx context.Context, rc *regclient.RegClient, m manifest.Manifest) ([] byte, error) {
+func GetFirstLayerFromManifest(ctx context.Context, rc *regclient.RegClient, m manifest.Manifest) ([]byte, error) {
 	return GetLayerFromManifestByIndex(ctx, rc, m, 0)
 }
 

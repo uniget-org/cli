@@ -6,17 +6,18 @@ import (
 
 	"github.com/uniget-org/cli/pkg/archive"
 	ucache "github.com/uniget-org/cli/pkg/cache"
+	"github.com/uniget-org/cli/pkg/containers"
 )
 
 var (
 	projectName = "uniget"
 
-	registry = "ghcr.io"
+	registry   = "ghcr.io"
 	repository = "uniget-org/tools"
-	tool = "jq"
-	version = "1.7.1"
+	tool       = "jq"
+	version    = "1.7.1"
 
-	cacheRoot string
+	cacheRoot      string
 	cacheDirectory string
 )
 
@@ -41,12 +42,12 @@ func main() {
 
 	//cache := ucache.NewFileCache(cacheDirectory)
 	cache := ucache.NewNoneCache()
-	layer, err := cache.Get(ucache.NewToolRef(registry, repository, tool, version))
+	layer, err := cache.Get(containers.NewToolRef(registry, repository, tool, version))
 	if err != nil {
 		panic(err)
 	}
 
-	err = archive.ProcessTarContents(layer, func(path string) string { return path } , func(path string) {})
+	err = archive.ProcessTarContents(layer, func(path string) string { return path }, func(path string) {})
 	if err != nil {
 		panic(err)
 	}

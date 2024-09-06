@@ -346,11 +346,11 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 		var err error
 		if viper.GetBool("usepathrewrite") {
 			logging.Debug("Using path rewrite rules")
-			err = plannedTool.InstallWithPathRewrites(registryImagePrefix, viper.GetString("prefix"), pathRewriteRules, createPatchFileCallback(plannedTool))
+			err = plannedTool.InstallWithPathRewrites(registry, imageRepository, viper.GetString("prefix"), pathRewriteRules, createPatchFileCallback(plannedTool))
 
 		} else {
 			logging.Debug("Not using path rewrite rules")
-			err = plannedTool.Install(registryImagePrefix, viper.GetString("prefix"), viper.GetString("target"), libDirectory, cacheDirectory, createPatchFileCallback(plannedTool))
+			err = plannedTool.Install(registry, imageRepository, viper.GetString("prefix"), viper.GetString("target"), libDirectory, cacheDirectory, createPatchFileCallback(plannedTool))
 		}
 		if err != nil {
 			if installSpinner != nil {
@@ -401,16 +401,16 @@ func createPatchFileCallback(tool tool.Tool) func(path string) {
 		values["Prefix"] = viper.GetString("prefix")
 		values["Name"] = tool.Name
 		values["Version"] = tool.Version
-	
+
 		filePath := strings.TrimSuffix(templatePath, ".go-template")
 		logging.Info.Printfln("Patching file %s <- %s", filePath, templatePath)
-	
+
 		templathPathInfo, err := os.Stat(templatePath)
 		if err != nil {
 			logging.Error.Printfln("Unable to get file info: %s", err)
 			return
 		}
-	
+
 		file, err := os.Create(filePath) // #nosec G304 -- File path was checked before callback
 		if err != nil {
 			logging.Error.Printfln("Unable to create file: %s", err)
@@ -429,7 +429,7 @@ func createPatchFileCallback(tool tool.Tool) func(path string) {
 			logging.Error.Printfln("Unable to set file permissions: %s", err)
 			return
 		}
-	
+
 		tmpl, err := template.ParseFiles(templatePath)
 		if err != nil {
 			logging.Error.Printfln("Unable to parse template file: %s", err)
@@ -440,7 +440,7 @@ func createPatchFileCallback(tool tool.Tool) func(path string) {
 			logging.Error.Printfln("Unable to execute template: %s", err)
 			return
 		}
-	
+
 		err = os.Remove(templatePath)
 		if err != nil {
 			logging.Error.Printfln("Unable to remove template file: %s", err)

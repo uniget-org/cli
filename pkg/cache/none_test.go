@@ -4,32 +4,9 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"testing"
+
+	"github.com/uniget-org/cli/pkg/containers"
 )
-
-func TestNewToolRef(t *testing.T) {
-	ref := NewToolRef("a", "b", "c", "d")
-
-	if ref.Registry != "a" {
-		t.Errorf("Registry is invalid")
-	}
-	if ref.Repository != "b" {
-		t.Errorf("Repository is invalid")
-	}
-	if ref.Tool != "c" {
-		t.Errorf("Tool is invalid")
-	}
-	if ref.Version != "d" {
-		t.Errorf("Version is invalid")
-	}
-}
-
-func TestNewToolRefToString(t *testing.T) {
-	ref := NewToolRef("a", "b", "c", "d")
-
-	if ref.String() != "a/b/c:d" {
-		t.Errorf("String is invalid")
-	}
-}
 
 func TestNewNoneCache(t *testing.T) {
 	c := NewNoneCache()
@@ -38,8 +15,13 @@ func TestNewNoneCache(t *testing.T) {
 	}
 }
 
-func TestGet(t *testing.T) {
-	ref := NewToolRef("127.0.0.1:5000", "uniget-org/tools", "test", "1.0.0")
+func TestNoneCacheGet(t *testing.T) {
+	ref := containers.NewToolRef(
+		"127.0.0.1:5000",
+		"uniget-org/tools",
+		"test",
+		"1.0.0",
+	)
 	c := NewNoneCache()
 	image, err := c.Get(ref)
 	if err != nil {

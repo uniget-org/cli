@@ -45,8 +45,6 @@ func TestLoadFromBytes(t *testing.T) {
 		t.Errorf("Error getting tool foo: %s\n", err)
 	}
 
-	foo.Print()
-
 	if foo.Name != "foo" {
 		t.Errorf("Expected foo, got %s", foo.Name)
 	}

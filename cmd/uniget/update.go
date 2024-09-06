@@ -59,7 +59,8 @@ var updateCmd = &cobra.Command{
 
 func downloadMetadata() error {
 	assertCacheDirectory()
-	err := containers.GetManifestOld(registryImagePrefix+"metadata:main", func(blob blob.Reader) error {
+	t := containers.NewToolRef(registry, imageRepository, "main", "latest")
+	err := containers.GetManifestOld(t, func(blob blob.Reader) error {
 		logging.Debugf("Changing directory to %s", viper.GetString("prefix")+"/"+cacheDirectory)
 		err := os.Chdir(viper.GetString("prefix") + "/" + cacheDirectory)
 		if err != nil {

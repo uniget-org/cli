@@ -5,6 +5,7 @@ import (
 	"os"
 
 	ucache "github.com/uniget-org/cli/pkg/cache"
+	"github.com/uniget-org/cli/pkg/containers"
 )
 
 func main() {
@@ -12,13 +13,13 @@ func main() {
 	repository := "uniget-org/tools"
 	tool := "jq"
 	tag := "latest"
-	
+
 	cache, err := ucache.NewDockerCache()
 	if err != nil {
 		panic(err)
 	}
 
-	layer, err := cache.Get(ucache.NewToolRef(registry, repository, tool, tag))
+	layer, err := cache.Get(containers.NewToolRef(registry, repository, tool, tag))
 	if err != nil {
 		panic(err)
 	}
