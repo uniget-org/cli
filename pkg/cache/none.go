@@ -5,6 +5,7 @@ import (
 
 	"github.com/regclient/regclient"
 	rref "github.com/regclient/regclient/types/ref"
+	"github.com/regclient/regclient/config"
 	"github.com/uniget-org/cli/pkg/containers"
 )
 
@@ -25,6 +26,10 @@ func (c *NoneCache) Get(tool *ToolRef) ([]byte, error) {
 	rcOpts := []regclient.Opt{}
 	rcOpts = append(rcOpts, regclient.WithUserAgent("uniget"))
 	rcOpts = append(rcOpts, regclient.WithDockerCreds())
+	rcOpts = append(rcOpts, regclient.WithConfigHost(config.Host{
+		Name: tool.Registry,
+		TLS: config.TLSDisabled,
+	}))
 	rc := regclient.New(rcOpts...)
 	defer rc.Close(ctx, r)
 

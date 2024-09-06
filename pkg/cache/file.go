@@ -8,18 +8,18 @@ import (
 var cacheDirectory string
 
 type FileCache struct {
-	n *NoneCache
+	n              *NoneCache
 	cacheDirectory string
 }
 
 func NewFileCache(directory string) *FileCache {
 	return &FileCache{
-		n: NewNoneCache(),
+		n:              NewNoneCache(),
 		cacheDirectory: directory,
 	}
 }
 
-func (c *FileCache) checkIfCacheDirectoryExists() bool {
+func (c *FileCache) cacheDirectoryExists() bool {
 	if c.cacheDirectory == "" {
 		return false
 	}
@@ -29,7 +29,7 @@ func (c *FileCache) checkIfCacheDirectoryExists() bool {
 }
 
 func (c *FileCache) writeDataToCache(data []byte, ref string) error {
-	if ! c.checkIfCacheDirectoryExists() {
+	if !c.cacheDirectoryExists() {
 		return fmt.Errorf("cache directory is not set")
 	}
 
@@ -41,7 +41,7 @@ func (c *FileCache) writeDataToCache(data []byte, ref string) error {
 }
 
 func (c *FileCache) checkDataInCache(ref string) bool {
-	if ! c.checkIfCacheDirectoryExists() {
+	if !c.cacheDirectoryExists() {
 		return false
 	}
 
@@ -50,7 +50,7 @@ func (c *FileCache) checkDataInCache(ref string) bool {
 }
 
 func (c *FileCache) readDataFromCache(ref string) ([]byte, error) {
-	if ! c.checkIfCacheDirectoryExists() {
+	if !c.cacheDirectoryExists() {
 		return nil, fmt.Errorf("cache directory is not set")
 	}
 
