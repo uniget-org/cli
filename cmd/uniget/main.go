@@ -14,52 +14,51 @@ import (
 	flag "github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"github.com/uniget-org/cli/pkg/cache"
-	ucache "github.com/uniget-org/cli/pkg/cache"
 	"github.com/uniget-org/cli/pkg/logging"
 	"github.com/uniget-org/cli/pkg/tool"
 	"golang.org/x/sys/unix"
 )
 
 var (
-	projectName = "uniget"
-	version string = "main"
-	header string = "" +
-	"             _            _\n" +
-	" _   _ _ __ (_) __ _  ___| |_\n" +
-	"| | | | '_ \\| |/ _` |/ _ \\ __|\n" +
-	"| |_| | | | | | (_| |  __/ |_\n" +
-	" \\__,_|_| |_|_|\\__, |\\___|\\__|\n" +
-	"               |___/\n"
+	projectName        = "uniget"
+	version     string = "main"
+	header      string = "" +
+		"             _            _\n" +
+		" _   _ _ __ (_) __ _  ___| |_\n" +
+		"| | | | '_ \\| |/ _` |/ _ \\ __|\n" +
+		"| |_| | | | | | (_| |  __/ |_\n" +
+		" \\__,_|_| |_|_|\\__, |\\___|\\__|\n" +
+		"               |___/\n"
 
 	altArch string = runtime.GOARCH
-	arch string
+	arch    string
 
-	cacheRoot = "var/cache"
-	cacheDirectory = cacheRoot + "/" + projectName
-	libRoot = "var/lib"
-	libDirectory = libRoot + "/" + projectName
-	configRoot = "etc"
-	profileDDirectory = configRoot + "/profile.d"
-	metadataFileName = "metadata.json"
-	metadataFile = cacheDirectory + "/" + metadataFileName
-	registry = "ghcr.io"
-	projectRepository = "uniget-org/cli"
-	imageRepository = "uniget-org/tools"
-	toolSeparator = "/"
+	cacheRoot           = "var/cache"
+	cacheDirectory      = cacheRoot + "/" + projectName
+	libRoot             = "var/lib"
+	libDirectory        = libRoot + "/" + projectName
+	configRoot          = "etc"
+	profileDDirectory   = configRoot + "/profile.d"
+	metadataFileName    = "metadata.json"
+	metadataFile        = cacheDirectory + "/" + metadataFileName
+	registry            = "ghcr.io"
+	projectRepository   = "uniget-org/cli"
+	imageRepository     = "uniget-org/tools"
+	toolSeparator       = "/"
 	registryImagePrefix = registry + "/" + imageRepository + toolSeparator
-	tools = tool.Tools{
+	tools               = tool.Tools{
 		Tools: make([]tool.Tool, 0),
 	}
 	pathRewriteRules = make([]tool.PathRewrite, 0)
-	rootCmd = &cobra.Command{
+	rootCmd          = &cobra.Command{
 		Use:          projectName,
 		Version:      version,
 		Short:        header + "The universal installer and updater to (container) tools",
 		SilenceUsage: true,
 	}
 	minimumCliVersionForSchemaVersion = map[string]string{
-	"1": "0.1.0",
-}
+		"1": "0.1.0",
+	}
 	toolCache cache.Cache
 )
 
@@ -77,17 +76,17 @@ func checkClientVersionRequirement(tool *tool.Tool) {
 	}
 
 	logging.Debugf("Checking if client version %s is at least %s", version, requiredCliVersion)
-	
-    v1, err := goversion.NewVersion(requiredCliVersion)
-    if err != nil {
-        panic(err)
-    }
-    v2, err := goversion.NewVersion(version)
-    if err != nil {
-        panic(err)
-    }
 
-    if v1.GreaterThan(v2) {
+	v1, err := goversion.NewVersion(requiredCliVersion)
+	if err != nil {
+		panic(err)
+	}
+	v2, err := goversion.NewVersion(version)
+	if err != nil {
+		panic(err)
+	}
+
+	if v1.GreaterThan(v2) {
 		logging.Error.Printfln("The tool %s requires at least version %s but you have %s", tool.Name, requiredCliVersion, version)
 		os.Exit(1)
 	}
@@ -206,7 +205,7 @@ func addViperBindings(flags *flag.FlagSet, cobraLongName string, viperName strin
 	}
 
 	if viperName != cobraLongName {
-		err = viper.BindEnv(viperName, strings.ToUpper(viper.GetEnvPrefix() + "_" + strings.ReplaceAll(cobraLongName, "-", "_")))
+		err = viper.BindEnv(viperName, strings.ToUpper(viper.GetEnvPrefix()+"_"+strings.ReplaceAll(cobraLongName, "-", "_")))
 		if err != nil {
 			fmt.Printf("unable to bind environment variable for flag %s: %s", cobraLongName, err)
 			os.Exit(1)
@@ -304,36 +303,36 @@ func main() {
 
 		pathRewriteRules = []tool.PathRewrite{
 			{
-				Source: "usr/local/",
-				Target: "",
+				Source:    "usr/local/",
+				Target:    "",
 				Operation: "REPLACE",
 			},
 			{
-				Source: "var/lib/uniget/",
-				Target: libDirectory + "/",
+				Source:    "var/lib/uniget/",
+				Target:    libDirectory + "/",
 				Operation: "REPLACE",
 			},
 			{
-				Source: "var/cache/uniget/",
-				Target: cacheDirectory + "/",
+				Source:    "var/cache/uniget/",
+				Target:    cacheDirectory + "/",
 				Operation: "REPLACE",
 			},
 		}
-		if ! viper.GetBool("user") {
+		if !viper.GetBool("user") {
 			logging.Debugf("Adding path rewrite rules for system installation")
 
 			if viper.GetBool("integratesystemd") || viper.GetBool("integrateall") {
 				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-					Source: "etc/systemd/",
-					Target: "/etc/systemd/",
+					Source:    "etc/systemd/",
+					Target:    "/etc/systemd/",
 					Operation: "REPLACE",
 				})
 			}
 
 			if viper.GetBool("integrateprofiled") || viper.GetBool("integrateall") {
 				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-					Source: "etc/profile.d/",
-					Target: "/etc/profile.d/",
+					Source:    "etc/profile.d/",
+					Target:    "/etc/profile.d/",
 					Operation: "REPLACE",
 				})
 			}
@@ -343,39 +342,39 @@ func main() {
 
 			if viper.GetBool("integratedockercliplugins") || viper.GetBool("integrateall") {
 				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-					Source: "libexec/docker/cli-plugins/",
-					Target: "./.docker/cli-plugins/",
+					Source:    "libexec/docker/cli-plugins/",
+					Target:    "./.docker/cli-plugins/",
 					Operation: "REPLACE",
 				})
 			}
 
 			if viper.GetBool("integratesystemd") || viper.GetBool("integrateall") {
 				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-					Source: "etc/systemd/user/",
-					Target: "./.config/systemd/user/",
+					Source:    "etc/systemd/user/",
+					Target:    "./.config/systemd/user/",
 					Operation: "REPLACE",
 				})
 			}
 
 			if viper.GetBool("integrateprofiled") || viper.GetBool("integrateall") {
 				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-					Source: "etc/profile.d/",
-					Target: "./.config/profile.d/",
+					Source:    "etc/profile.d/",
+					Target:    "./.config/profile.d/",
 					Operation: "REPLACE",
 				})
 			}
 
 			if viper.GetBool("integrateetc") || viper.GetBool("integrateall") {
 				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-					Source: "etc/",
-					Target: "./.config/",
+					Source:    "etc/",
+					Target:    "./.config/",
 					Operation: "REPLACE",
 				})
 			}
 		}
 		pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-			Source: "",
-			Target: viper.GetString("target") + "/",
+			Source:    "",
+			Target:    viper.GetString("target") + "/",
 			Operation: "PREPEND",
 		})
 		if viper.GetBool("debug") {
@@ -409,7 +408,7 @@ func main() {
 			logging.Warning.Println("Metadata file is older than 24 hours")
 		}
 
-		toolCache = ucache.NewNoneCache()
+		toolCache = cache.NewNoneCache()
 
 		return nil
 	}

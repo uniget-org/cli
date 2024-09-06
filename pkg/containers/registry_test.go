@@ -101,7 +101,7 @@ func TestProcessLayersCallback(t *testing.T) {
 		t.Errorf("failed to get platform manifest: %s", err)
 	}
 
-	ProcessLayersCallback(rc, m, r, func(blob blob.Reader) error {
+	err = ProcessLayersCallback(rc, m, r, func(blob blob.Reader) error {
 		layer, err := io.ReadAll(blob)
 		if err != nil {
 			return fmt.Errorf("failed to read layer: %s", err)
@@ -111,6 +111,9 @@ func TestProcessLayersCallback(t *testing.T) {
 		}
 		return nil
 	})
+	if err != nil {
+		t.Errorf("failed to process layers: %s", err)
+	}
 }
 
 func TestGetPlatformManifestForLocalPlatform(t *testing.T) {

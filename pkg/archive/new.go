@@ -139,7 +139,7 @@ func ExtractItemOld(tarReader *tar.Reader, header *tar.Header, patchPath func(pa
 			return fmt.Errorf("ExtractTarGz: Copy() failed: %s", err.Error())
 		}
 		// Set permissions
-		mode := os.FileMode(header.Mode)
+		mode := os.FileMode(header.Mode) // #nosec G115 -- Must be addressed upstream
 		Setuid := mode &^ 0777
 		if (mode & Setuid) != 0 {
 			logging.Warning.Printfln("Setuid bit cannot be set for %s", fixedHeaderName)
