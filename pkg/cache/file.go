@@ -3,9 +3,9 @@ package cache
 import (
 	"fmt"
 	"os"
-)
 
-var cacheDirectory string
+	"github.com/uniget-org/cli/pkg/containers"
+)
 
 type FileCache struct {
 	n              *NoneCache
@@ -24,7 +24,7 @@ func (c *FileCache) cacheDirectoryExists() bool {
 		return false
 	}
 
-	_, err := os.Stat(cacheDirectory)
+	_, err := os.Stat(c.cacheDirectory)
 	return !os.IsNotExist(err)
 }
 
@@ -33,7 +33,7 @@ func (c *FileCache) writeDataToCache(data []byte, ref string) error {
 		return fmt.Errorf("cache directory is not set")
 	}
 
-	err := os.WriteFile(fmt.Sprintf("%s/%s", cacheDirectory, ref), data, 0644) // #nosec G306 -- just for testing
+	err := os.WriteFile(fmt.Sprintf("%s/%s", c.cacheDirectory, ref), data, 0644) // #nosec G306 -- just for testing
 	if err != nil {
 		return fmt.Errorf("failed to write data for ref %s to cache: %s", ref, err)
 	}
@@ -45,7 +45,7 @@ func (c *FileCache) checkDataInCache(ref string) bool {
 		return false
 	}
 
-	_, err := os.Stat(fmt.Sprintf("%s/%s", cacheDirectory, ref))
+	_, err := os.Stat(fmt.Sprintf("%s/%s", c.cacheDirectory, ref))
 	return !os.IsNotExist(err)
 }
 
@@ -54,21 +54,16 @@ func (c *FileCache) readDataFromCache(ref string) ([]byte, error) {
 		return nil, fmt.Errorf("cache directory is not set")
 	}
 
-	data, err := os.ReadFile(fmt.Sprintf("%s/%s", cacheDirectory, ref))
+	data, err := os.ReadFile(fmt.Sprintf("%s/%s", c.cacheDirectory, ref))
 	if err != nil {
 		return nil, fmt.Errorf("failed to read data for ref %s from cache: %s", ref, err)
 	}
 	return data, nil
 }
 
-func (c *FileCache) Get(tool *ToolRef) ([]byte, error) {
-	cacheKey := fmt.Sprintf("%s-%s", tool.Tool, tool.Version)
-	if c.checkDataInCache(tool.String()) {
-		fmt.Printf("Cache hit for %s\n", cacheKey)
-
-	} else {
-		fmt.Printf("Cache miss for %s\n", cacheKey)
-
+func (c *FileCache) Get(tool *containers.ToolRef) ([]byte, error) {
+	cacheKey := tool.Key()
+	if !c.checkDataInCache(tool.String()) {
 		layer, err := c.n.Get(tool)
 		if err != nil {
 			panic(err)

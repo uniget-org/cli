@@ -4,18 +4,18 @@ import (
 	"context"
 
 	"github.com/regclient/regclient"
-	rref "github.com/regclient/regclient/types/ref"
 	"github.com/regclient/regclient/config"
+	rref "github.com/regclient/regclient/types/ref"
 	"github.com/uniget-org/cli/pkg/containers"
 )
 
-type NoneCache struct {}
+type NoneCache struct{}
 
 func NewNoneCache() *NoneCache {
 	return &NoneCache{}
 }
 
-func (c *NoneCache) Get(tool *ToolRef) ([]byte, error) {
+func (c *NoneCache) Get(tool *containers.ToolRef) ([]byte, error) {
 	ctx := context.Background()
 
 	r, err := rref.New(tool.String())
@@ -27,8 +27,8 @@ func (c *NoneCache) Get(tool *ToolRef) ([]byte, error) {
 	rcOpts = append(rcOpts, regclient.WithUserAgent("uniget"))
 	rcOpts = append(rcOpts, regclient.WithDockerCreds())
 	rcOpts = append(rcOpts, regclient.WithConfigHost(config.Host{
-		Name: tool.Registry,
-		TLS: config.TLSDisabled,
+		Name: "127.0.0.1:5000",
+		TLS:  config.TLSDisabled,
 	}))
 	rc := regclient.New(rcOpts...)
 	defer rc.Close(ctx, r)

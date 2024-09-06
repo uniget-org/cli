@@ -9,10 +9,10 @@ import (
 
 type ContainerdCache struct {
 	namespace string
-	client *containerd.Client
+	client    *containerd.Client
 }
 
-func NewContainerdCache(namespace string, ) (*ContainerdCache, error) {
+func NewContainerdCache(namespace string) (*ContainerdCache, error) {
 	client, err := containerd.New("/run/containerd/containerd.sock", containerd.WithDefaultNamespace(namespace))
 	if err != nil {
 		panic(err)
@@ -21,12 +21,12 @@ func NewContainerdCache(namespace string, ) (*ContainerdCache, error) {
 
 	return &ContainerdCache{
 		namespace: namespace,
-		client: client,
+		client:    client,
 	}, nil
 }
 
-func (c *ContainerdCache) Get(tool *ToolRef) ([]byte, error) {
-	layer, err := containers.GetFirstLayerFromContainerdImage(c.client, tool.String())
+func (c *ContainerdCache) Get(tool *containers.ToolRef) ([]byte, error) {
+	layer, err := containers.GetFirstLayerFromContainerdImage(c.client, tool)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get layer for ref %s: %w", tool, err)
 	}

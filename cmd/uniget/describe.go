@@ -53,7 +53,7 @@ var describeCmd = &cobra.Command{
 			return fmt.Errorf("error getting tool %s", toolName)
 		}
 		checkClientVersionRequirement(tool)
-		
+
 		tool.ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
 		err = tool.GetMarkerFileStatus(viper.GetString("prefix") + "/" + cacheDirectory)
 		if err != nil {
@@ -92,11 +92,12 @@ var describeCmd = &cobra.Command{
 		}
 
 		if versions {
-			tags, err := containers.GetImageTags(fmt.Sprintf("%s/%s/%s", registry, imageRepository, tool.Name))
+			toolRef := containers.NewToolRef(registry, imageRepository, tool.Name, tool.Version)
+			tags, err := containers.GetImageTags(toolRef)
 			if err != nil {
 				return fmt.Errorf("failed to get image tags: %s", err)
 			}
-			
+
 			sort.Sort(sort.Reverse(byVersion(tags)))
 			fmt.Printf("  Available versions:\n")
 			for _, tag := range tags {
@@ -107,38 +108,38 @@ var describeCmd = &cobra.Command{
 		if upstreamVersions {
 			var releaseTags []string
 			switch tool.Renovate.Datasource {
-				case "github-releases":
-					releaseTags, err = fetchGitHubReleases(tool.Renovate.Package)
-					if err != nil {
-						return fmt.Errorf("failed to fetch GitHub releases: %s", err)
-					}
+			case "github-releases":
+				releaseTags, err = fetchGitHubReleases(tool.Renovate.Package)
+				if err != nil {
+					return fmt.Errorf("failed to fetch GitHub releases: %s", err)
+				}
 
-				case "gitlab-releases":
-					releaseTags, err = fetchGitLabReleases(tool.Renovate.Package)
-					if err != nil {
-						return fmt.Errorf("failed to fetch GitLab releases: %s", err)
-					}
-	
-				case "gitea-releases":
-					releaseTags, err = fetchGiteaReleases(tool.Renovate.Package)
-					if err != nil {
-						return fmt.Errorf("failed to fetch Gitea releases: %s", err)
-					}
+			case "gitlab-releases":
+				releaseTags, err = fetchGitLabReleases(tool.Renovate.Package)
+				if err != nil {
+					return fmt.Errorf("failed to fetch GitLab releases: %s", err)
+				}
 
-				case "npm":
-					releaseTags, err = fetchNpmReleases(tool.Renovate.Package)
-					if err != nil {
-						return fmt.Errorf("failed to fetch Gitea releases: %s", err)
-					}
+			case "gitea-releases":
+				releaseTags, err = fetchGiteaReleases(tool.Renovate.Package)
+				if err != nil {
+					return fmt.Errorf("failed to fetch Gitea releases: %s", err)
+				}
 
-				case "pypi":
-					releaseTags, err = fetchPypiReleases(tool.Renovate.Package)
-					if err != nil {
-						return fmt.Errorf("failed to fetch Gitea releases: %s", err)
-					}
+			case "npm":
+				releaseTags, err = fetchNpmReleases(tool.Renovate.Package)
+				if err != nil {
+					return fmt.Errorf("failed to fetch Gitea releases: %s", err)
+				}
 
-				default:
-					logging.Warning.Printfln("Upstream versions are not available for datasource %s", tool.Renovate.Datasource)
+			case "pypi":
+				releaseTags, err = fetchPypiReleases(tool.Renovate.Package)
+				if err != nil {
+					return fmt.Errorf("failed to fetch Gitea releases: %s", err)
+				}
+
+			default:
+				logging.Warning.Printfln("Upstream versions are not available for datasource %s", tool.Renovate.Datasource)
 			}
 
 			if len(releaseTags) > 0 {
@@ -151,7 +152,7 @@ var describeCmd = &cobra.Command{
 					}
 					fmt.Printf("    %s\n", version)
 				}
-	
+
 			} else {
 				logging.Warning.Printfln("  No upstream versions found")
 			}

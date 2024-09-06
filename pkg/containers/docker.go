@@ -12,14 +12,14 @@ import (
 	"github.com/uniget-org/cli/pkg/archive"
 )
 
-func GetFirstLayerFromDockerImage(cli *client.Client, ref string) ([]byte, error) {
+func GetFirstLayerFromDockerImage(cli *client.Client, ref *ToolRef) ([]byte, error) {
 	shaString, err := GetFirstLayerShaFromRegistry(ref)
 	if err != nil {
 		panic(err)
 	}
 	sha := shaString[7:]
 
-	image, err := ReadDockerImage(cli, ref)
+	image, err := ReadDockerImage(cli, ref.String())
 	if err != nil {
 		return nil, fmt.Errorf("failed to get image: %s", err)
 	}
@@ -62,7 +62,7 @@ func CheckDockerImageExists(cli *client.Client, ref string) bool {
 
 func ReadDockerImage(cli *client.Client, ref string) ([]byte, error) {
 	ctx := context.Background()
-	
+
 	err := PullDockerImage(cli, ref)
 	if err != nil {
 		return nil, fmt.Errorf("failed to pull image: %s", err)
@@ -79,12 +79,12 @@ func ReadDockerImage(cli *client.Client, ref string) ([]byte, error) {
 		return nil, fmt.Errorf("failed to save image: %s", err)
 	}
 	defer reader.Close()
-	
+
 	buffer, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read image: %s", err)
 	}
-	
+
 	return buffer, nil
 }
 
@@ -106,12 +106,12 @@ func UnpackLayerFromDockerImage(buffer []byte, sha256 string) ([]byte, error) {
 		}
 
 		switch header.Typeflag {
-			case tar.TypeReg:
-				layerBuffer, err = io.ReadAll(tarReader)
-				if err != nil {
-					return nil, fmt.Errorf("failed to read file from tar: %s", err)
-				}
-				return layerBuffer, nil
+		case tar.TypeReg:
+			layerBuffer, err = io.ReadAll(tarReader)
+			if err != nil {
+				return nil, fmt.Errorf("failed to read file from tar: %s", err)
+			}
+			return layerBuffer, nil
 		}
 	}
 

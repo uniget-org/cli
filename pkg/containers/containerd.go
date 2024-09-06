@@ -12,14 +12,14 @@ import (
 	uarchive "github.com/uniget-org/cli/pkg/archive"
 )
 
-func GetFirstLayerFromContainerdImage(client *containerd.Client, ref string) ([]byte, error) {
+func GetFirstLayerFromContainerdImage(client *containerd.Client, ref *ToolRef) ([]byte, error) {
 	shaString, err := GetFirstLayerShaFromRegistry(ref)
 	if err != nil {
 		panic(err)
 	}
 	sha := shaString[7:]
-	
-	imageData, err := ReadContainerdImage(client, ref)
+
+	imageData, err := ReadContainerdImage(client, ref.String())
 	if err != nil {
 		return nil, fmt.Errorf("failed to get image: %s", err)
 	}
@@ -71,6 +71,6 @@ func ReadContainerdImage(client *containerd.Client, ref string) ([]byte, error) 
 		return nil, fmt.Errorf("failed to export image: %s", err)
 	}
 	imageData := imageBuffer.Bytes()
-	
+
 	return imageData, nil
 }

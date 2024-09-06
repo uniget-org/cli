@@ -5,8 +5,9 @@ import (
 	"os"
 
 	ucache "github.com/uniget-org/cli/pkg/cache"
+	"github.com/uniget-org/cli/pkg/containers"
 )
-  
+
 func main() {
 	registry := "ghcr.io"
 	repository := "uniget-org/tools"
@@ -18,11 +19,11 @@ func main() {
 		panic(err)
 	}
 
-	layer, err := cache.Get(ucache.NewToolRef(registry, repository, tool, tag))
+	layer, err := cache.Get(containers.NewToolRef(registry, repository, tool, tag))
 	if err != nil {
 		panic(err)
 	}
-	
+
 	err = os.WriteFile(fmt.Sprintf("%s-%s.tar", tool, tag), layer, 0644) // #nosec G306 -- just for testing
 	if err != nil {
 		panic(err)

@@ -22,8 +22,8 @@ func NewDockerCache() (*DockerCache, error) {
 	}, nil
 }
 
-func (c *DockerCache) Get(tool *ToolRef) ([]byte, error) {
-	layer, err := containers.GetFirstLayerFromDockerImage(c.cli, tool.String())
+func (c *DockerCache) Get(tool *containers.ToolRef) ([]byte, error) {
+	layer, err := containers.GetFirstLayerFromDockerImage(c.cli, tool)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get layer for ref %s: %w", tool, err)
 	}

@@ -121,7 +121,6 @@ func TestFind(t *testing.T) {
 	if toolList.Tools[0].Name != "foo" {
 		t.Errorf("Expected tool foo, got %s", toolList.Tools[0].Name)
 	}
-	toolList.Tools[0].Print()
 
 	toolList = tools.Find("baz", false, true, false)
 	if len(toolList.Tools) != 2 {
@@ -143,7 +142,6 @@ func TestFind(t *testing.T) {
 	}
 
 	toolList = tools.Find("bar", false, false, true)
-	toolList.List()
 	if len(toolList.Tools) != 1 {
 		t.Errorf("Expected 1 tool, got %d", len(toolList.Tools))
 	}
