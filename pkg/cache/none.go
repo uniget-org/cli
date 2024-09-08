@@ -6,6 +6,7 @@ import (
 	"github.com/regclient/regclient"
 	"github.com/regclient/regclient/config"
 	rref "github.com/regclient/regclient/types/ref"
+	"github.com/uniget-org/cli/pkg/archive"
 	"github.com/uniget-org/cli/pkg/containers"
 )
 
@@ -33,7 +34,12 @@ func (c *NoneCache) Get(tool *containers.ToolRef) ([]byte, error) {
 	rc := regclient.New(rcOpts...)
 	defer rc.Close(ctx, r)
 
-	layer, err := containers.GetFirstLayerFromRegistry(ctx, rc, r)
+	layerGz, err := containers.GetFirstLayerFromRegistry(ctx, rc, r)
+	if err != nil {
+		panic(err)
+	}
+
+	layer, err := archive.Gunzip(layerGz)
 	if err != nil {
 		panic(err)
 	}

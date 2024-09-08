@@ -33,20 +33,21 @@ var (
 	altArch string = runtime.GOARCH
 	arch    string
 
-	cacheRoot           = "var/cache"
-	cacheDirectory      = cacheRoot + "/" + projectName
-	libRoot             = "var/lib"
-	libDirectory        = libRoot + "/" + projectName
-	configRoot          = "etc"
-	profileDDirectory   = configRoot + "/profile.d"
-	metadataFileName    = "metadata.json"
-	metadataFile        = cacheDirectory + "/" + metadataFileName
-	registry            = "ghcr.io"
-	projectRepository   = "uniget-org/cli"
-	imageRepository     = "uniget-org/tools"
-	toolSeparator       = "/"
-	registryImagePrefix = registry + "/" + imageRepository + toolSeparator
-	tools               = tool.Tools{
+	cacheRoot              = "var/cache"
+	cacheDirectory         = cacheRoot + "/" + projectName
+	downloadCacheDirectory = cacheDirectory + "/downloads"
+	libRoot                = "var/lib"
+	libDirectory           = libRoot + "/" + projectName
+	configRoot             = "etc"
+	profileDDirectory      = configRoot + "/profile.d"
+	metadataFileName       = "metadata.json"
+	metadataFile           = cacheDirectory + "/" + metadataFileName
+	registry               = "ghcr.io"
+	projectRepository      = "uniget-org/cli"
+	imageRepository        = "uniget-org/tools"
+	toolSeparator          = "/"
+	registryImagePrefix    = registry + "/" + imageRepository + toolSeparator
+	tools                  = tool.Tools{
 		Tools: make([]tool.Tool, 0),
 	}
 	pathRewriteRules = make([]tool.PathRewrite, 0)
@@ -408,6 +409,24 @@ func main() {
 			logging.Warning.Println("Metadata file is older than 24 hours")
 		}
 
+		switch viper.GetString("cache") {
+		case "none":
+			toolCache = cache.NewNoneCache()
+		case "file":
+			toolCache = cache.NewFileCache(downloadCacheDirectory)
+		case "docker":
+			toolCache, err = cache.NewDockerCache()
+			if err != nil {
+				return fmt.Errorf("error creating Docker cache: %s", err)
+			}
+		case "containerd":
+			toolCache, err = cache.NewContainerdCache(projectName)
+			if err != nil {
+				return fmt.Errorf("error creating Containerd cache: %s", err)
+			}
+		default:
+			logging.Error.Printfln("Unsupported cache backend: %s", viper.GetString("cache"))
+		}
 		toolCache = cache.NewNoneCache()
 
 		return nil
@@ -429,6 +448,8 @@ func main() {
 	viper.SetDefault("registry", registry)
 	viper.SetDefault("repository", imageRepository)
 	viper.SetDefault("toolseparator", toolSeparator)
+	viper.SetDefault("cache", "none")
+	viper.SetDefault("cachedirectory", downloadCacheDirectory)
 
 	pf := rootCmd.PersistentFlags()
 
@@ -448,6 +469,8 @@ func main() {
 	pf.String("registry", viper.GetString("registry"), "Registry for the image repository")
 	pf.String("repository", viper.GetString("repository"), "Repository for the image repository")
 	pf.String("tool-separator", viper.GetString("toolseparator"), "Separator between repository and tool name")
+	pf.String("cache", viper.GetString("cache"), "Cache backend to use (none, file, docker, containerd)")
+	pf.String("cache-directory", viper.GetString("cachedirectory"), "Directory for the file cache")
 
 	rootCmd.MarkFlagsMutuallyExclusive("prefix", "user")
 	rootCmd.MarkFlagsMutuallyExclusive("target", "user")
@@ -471,6 +494,8 @@ func main() {
 	addViperBindings(pf, "registry", "registry")
 	addViperBindings(pf, "repository", "repository")
 	addViperBindings(pf, "tool-separator", "toolseparator")
+	addViperBindings(pf, "cache", "cache")
+	addViperBindings(pf, "cache-directory", "cachedirectory")
 
 	err = rootCmd.Execute()
 	if err != nil {
