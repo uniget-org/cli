@@ -12,6 +12,14 @@ import (
 	"github.com/uniget-org/cli/pkg/archive"
 )
 
+func GetDockerClient() (*client.Client, error) {
+	cli, err := client.NewClientWithOpts(client.FromEnv)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create docker client: %s", err)
+	}
+	return cli, nil
+}
+
 func GetFirstLayerFromDockerImage(cli *client.Client, ref *ToolRef) ([]byte, error) {
 	shaString, err := GetFirstLayerShaFromRegistry(ref)
 	if err != nil {

@@ -12,6 +12,14 @@ import (
 	uarchive "github.com/uniget-org/cli/pkg/archive"
 )
 
+func GetContainerdClient() (*containerd.Client, error) {
+	client, err := containerd.New("/run/containerd/containerd.sock")
+	if err != nil {
+		return nil, fmt.Errorf("failed to create containerd client: %s", err)
+	}
+	return client, nil
+}
+
 func GetFirstLayerFromContainerdImage(client *containerd.Client, ref *ToolRef) ([]byte, error) {
 	shaString, err := GetFirstLayerShaFromRegistry(ref)
 	if err != nil {

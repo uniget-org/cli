@@ -1,6 +1,10 @@
 package containers
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/regclient/regclient/types/ref"
+)
 
 type ToolRef struct {
 	Registry      string
@@ -26,4 +30,12 @@ func (t *ToolRef) String() string {
 
 func (t *ToolRef) Key() string {
 	return fmt.Sprintf("%s-%s", t.Tool, t.Version)
+}
+
+func (t *ToolRef) GetRef() ref.Ref {
+	r, err := ref.New(t.String())
+	if err != nil {
+		panic(err)
+	}
+	return r
 }

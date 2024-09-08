@@ -1,6 +1,9 @@
 package containers
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestNewToolRef(t *testing.T) {
 	ref := NewToolRef("a", "b", "c", "d")
@@ -36,5 +39,28 @@ func TestNewToolRefKey(t *testing.T) {
 	)
 	if ref.Key() != "c-d" {
 		t.Errorf("expected key to be 'c-d', got '%s'", ref.Key())
+	}
+}
+
+func TestGetRef(t *testing.T) {
+	registry := "a"
+	imageRepository := "b"
+	tool := "c"
+	version := "d"
+
+	toolRef := NewToolRef(registry, imageRepository, tool, version)
+	ref := toolRef.GetRef()
+
+	if ref.Registry != registry {
+		t.Errorf("Registry is invalid, expected %s, got %s", registry, ref.Registry)
+	}
+
+	expectedImageRepository := fmt.Sprintf("%s/%s", imageRepository, tool)
+	if ref.Repository != expectedImageRepository {
+		t.Errorf("Repository is invalid, expected %s, got %s", imageRepository, ref.Repository)
+	}
+
+	if ref.Tag != version {
+		t.Errorf("Tag is invalid, expected %s, got %s", version, ref.Tag)
 	}
 }
