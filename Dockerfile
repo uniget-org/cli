@@ -79,7 +79,7 @@ EOF
 
 FROM base AS lint
 RUN --mount=target=. \
-    --mount=from=lint-base,src=/usr/bin/golangci-lint,target=/usr/bin/golangci-lint \
+    --mount=from=lint-base,src=/bin/golangci-lint,target=/usr/local/bin/golangci-lint \
     --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/root/.cache/golangci-lint <<EOF
