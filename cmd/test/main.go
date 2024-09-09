@@ -2,18 +2,92 @@ package main
 
 import (
 	"archive/tar"
+	"bytes"
 	"context"
 	"fmt"
 	"os"
 
+	"github.com/distribution/distribution/v3/configuration"
+	"github.com/distribution/distribution/v3/registry"
+	_ "github.com/distribution/distribution/v3/registry/storage/driver/filesystem"
+	_ "github.com/distribution/distribution/v3/registry/storage/driver/inmemory"
+	"github.com/regclient/regclient/types/ref"
 	"github.com/uniget-org/cli/pkg/archive"
 	"github.com/uniget-org/cli/pkg/containers"
 )
 
-func main() {
+// https://distribution.github.io/distribution/about/configuration/
+const distributionConfig = `
+version: 0.1
+log:
+  accesslog:
+    disabled: true
+  formatter: text
+storage:
+  inmemory:
+  #filesystem:
+  #  rootdirectory: /tmp/registry
+`
+
+var registryAddress = "127.0.0.1:5000"
+var registryRepository = "uniget-org/tools"
+var registryImage = "jq"
+var registryTag = "1.7.1"
+
+func startRegistry() {
 	ctx := context.Background()
 
-	r := containers.NewToolRef("ghcr.io", "uniget-org/tools", "jq", "1.7.1")
+	config, err := configuration.Parse(bytes.NewReader([]byte(distributionConfig)))
+	if err != nil {
+		panic(err)
+	}
+	config.HTTP.Addr = registryAddress
+
+	registry, err := registry.NewRegistry(ctx, config)
+	if err != nil {
+		panic(err)
+	}
+	err = registry.ListenAndServe()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("DONE")
+}
+
+func addTestData() error {
+	ctx := context.Background()
+	rSrc, err := ref.New(fmt.Sprintf("%s/%s/%s:%s", "ghcr.io", registryRepository, registryImage, registryTag))
+	if err != nil {
+		return err
+	}
+	rTgt, err := ref.New(fmt.Sprintf("%s/%s/%s:%s", registryAddress, registryRepository, registryImage, registryTag))
+	if err != nil {
+		return err
+	}
+
+	rc := containers.GetRegclient()
+	defer rc.Close(ctx, rSrc)
+	defer rc.Close(ctx, rTgt)
+
+	err = rc.ImageCopy(ctx, rSrc, rTgt)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func main() {
+	go startRegistry()
+
+	err := addTestData()
+	if err != nil {
+		panic(err)
+	}
+
+	ctx := context.Background()
+
+	r := containers.NewToolRef(registryAddress, registryRepository, registryImage, registryTag)
 	ref := r.GetRef()
 
 	fmt.Println("Registry:")
