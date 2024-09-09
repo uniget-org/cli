@@ -12,20 +12,8 @@ target "lint" {
     target = "lint"
 }
 
-target "vet" {
-    target = "vet"
-}
-
 target "test" {
     target = "unit-test"
-}
-
-target "gosec" {
-    target = "gosec"
-}
-
-target "staticcheck" {
-    target = "staticcheck"
 }
 
 target "cli-test" {
