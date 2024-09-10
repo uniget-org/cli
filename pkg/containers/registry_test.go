@@ -21,12 +21,7 @@ func TestGetRegclient(t *testing.T) {
 }
 
 func TestGetImageTags(t *testing.T) {
-	toolRef := NewToolRef(
-		"127.0.0.1:5000",
-		"uniget-org/tools",
-		"test",
-		"1.0.0",
-	)
+	toolRef = NewToolRef(registryAddress, registryRepository, registryImage, registryTag)
 	tags, err := GetImageTags(toolRef)
 	if err != nil {
 		t.Errorf("failed to get image tags: %s", err)
@@ -37,12 +32,7 @@ func TestGetImageTags(t *testing.T) {
 }
 
 func TestGetPlatformManifestOld(t *testing.T) {
-	toolRef := NewToolRef(
-		"127.0.0.1:5000",
-		"uniget-org/tools",
-		"test",
-		"1.0.0",
-	)
+	toolRef = NewToolRef(registryAddress, registryRepository, registryImage, registryTag)
 	r, err := ref.New(toolRef.String())
 	if err != nil {
 		t.Errorf("failed to parse image name <%s>: %s", toolRef.String(), err)
@@ -60,12 +50,7 @@ func TestGetPlatformManifestOld(t *testing.T) {
 }
 
 func TestGetManifestOld(t *testing.T) {
-	toolRef := NewToolRef(
-		"127.0.0.1:5000",
-		"uniget-org/tools",
-		"test",
-		"1.0.0",
-	)
+	toolRef = NewToolRef(registryAddress, registryRepository, registryImage, registryTag)
 
 	err := GetManifestOld(toolRef, func(blob blob.Reader) error {
 		layer, err := io.ReadAll(blob)
@@ -83,12 +68,7 @@ func TestGetManifestOld(t *testing.T) {
 }
 
 func TestProcessLayersCallback(t *testing.T) {
-	toolRef := NewToolRef(
-		"127.0.0.1:5000",
-		"uniget-org/tools",
-		"test",
-		"1.0.0",
-	)
+	toolRef = NewToolRef(registryAddress, registryRepository, registryImage, registryTag)
 	r, err := ref.New(toolRef.String())
 	if err != nil {
 		t.Errorf("failed to parse image name <%s>: %s", toolRef.String(), err)
@@ -117,12 +97,7 @@ func TestProcessLayersCallback(t *testing.T) {
 }
 
 func TestGetPlatformManifestForLocalPlatform(t *testing.T) {
-	toolRef := NewToolRef(
-		"127.0.0.1:5000",
-		"uniget-org/tools",
-		"test",
-		"1.0.0",
-	)
+	toolRef = NewToolRef(registryAddress, registryRepository, registryImage, registryTag)
 	r, err := ref.New(toolRef.String())
 	if err != nil {
 		t.Errorf("failed to parse image name <%s>: %s", toolRef.String(), err)
@@ -140,30 +115,19 @@ func TestGetPlatformManifestForLocalPlatform(t *testing.T) {
 }
 
 func TestGetFirstLayerShaFromRegistry(t *testing.T) {
-	toolRef := NewToolRef(
-		"127.0.0.1:5000",
-		"uniget-org/tools",
-		"test",
-		"1.0.0",
-	)
-	expectedLayerSha := "0f015b5bc195319dc5ae7eef10e4b7eb7903323793ed4b9461a38bf2948c64e6"
+	toolRef = NewToolRef(registryAddress, registryRepository, registryImage, registryTag)
 
 	layerSha, err := GetFirstLayerShaFromRegistry(toolRef)
 	if err != nil {
 		t.Errorf("failed to get first layer sha: %s", err)
 	}
-	if layerSha != fmt.Sprintf("sha256:%s", expectedLayerSha) {
-		t.Errorf("expected layer sha to be %s, got '%s'", expectedLayerSha, layerSha)
+	if layerSha != fmt.Sprintf("sha256:%s", expectedLayerGzSha256) {
+		t.Errorf("expected layer sha to be %s, got '%s'", expectedLayerGzSha256, layerSha)
 	}
 }
 
 func TestGetPlatformManifest(t *testing.T) {
-	toolRef := NewToolRef(
-		"127.0.0.1:5000",
-		"uniget-org/tools",
-		"test",
-		"1.0.0",
-	)
+	toolRef = NewToolRef(registryAddress, registryRepository, registryImage, registryTag)
 	r, err := ref.New(toolRef.String())
 	if err != nil {
 		t.Errorf("failed to parse image name <%s>: %s", toolRef.String(), err)
@@ -181,12 +145,7 @@ func TestGetPlatformManifest(t *testing.T) {
 }
 
 func TestGetManifest(t *testing.T) {
-	toolRef := NewToolRef(
-		"127.0.0.1:5000",
-		"uniget-org/tools",
-		"test",
-		"1.0.0",
-	)
+	toolRef = NewToolRef(registryAddress, registryRepository, registryImage, registryTag)
 	r, err := ref.New(toolRef.String())
 	if err != nil {
 		t.Errorf("failed to parse image name <%s>: %s", toolRef.String(), err)
@@ -204,13 +163,7 @@ func TestGetManifest(t *testing.T) {
 }
 
 func TestGetFirstLayerFromManifest(t *testing.T) {
-	toolRef := NewToolRef(
-		"127.0.0.1:5000",
-		"uniget-org/tools",
-		"test",
-		"1.0.0",
-	)
-	expectedLayerSha := "0f015b5bc195319dc5ae7eef10e4b7eb7903323793ed4b9461a38bf2948c64e6"
+	toolRef = NewToolRef(registryAddress, registryRepository, registryImage, registryTag)
 
 	r, err := ref.New(toolRef.String())
 	if err != nil {
@@ -239,19 +192,14 @@ func TestGetFirstLayerFromManifest(t *testing.T) {
 		t.Errorf("Hash is empty")
 	}
 	sha256 := hex.EncodeToString(h.Sum(nil))
-	if sha256 != expectedLayerSha {
+	if sha256 != expectedLayerGzSha256 {
 		t.Errorf("Hash is invalid %s", sha256)
 	}
 }
 
 func TestGetFirstLayerFromRegistry(t *testing.T) {
-	toolRef := NewToolRef(
-		"127.0.0.1:5000",
-		"uniget-org/tools",
-		"test",
-		"1.0.0",
-	)
-	expectedLayerSha := "0f015b5bc195319dc5ae7eef10e4b7eb7903323793ed4b9461a38bf2948c64e6"
+	toolRef = NewToolRef(registryAddress, registryRepository, registryImage, registryTag)
+	expectedLayerSha := "ba8f179e01e11eb5a78d8d8c2c85ce72beaece1ce32f366976d30e7f1b161eae"
 
 	r, err := ref.New(toolRef.String())
 	if err != nil {
@@ -277,6 +225,6 @@ func TestGetFirstLayerFromRegistry(t *testing.T) {
 	}
 	sha256 := hex.EncodeToString(h.Sum(nil))
 	if sha256 != expectedLayerSha {
-		t.Errorf("Hash is invalid %s", sha256)
+		t.Errorf("expected layer Sha256 %s but got %s", expectedLayerSha, sha256)
 	}
 }

@@ -43,13 +43,14 @@ func TestNewToolRefKey(t *testing.T) {
 }
 
 func TestGetRef(t *testing.T) {
-	registry := "a"
+	registry := "foo.com"
 	imageRepository := "b"
 	tool := "c"
 	version := "d"
 
 	toolRef := NewToolRef(registry, imageRepository, tool, version)
 	ref := toolRef.GetRef()
+	t.Logf("ref: %v", ref)
 
 	if ref.Registry != registry {
 		t.Errorf("Registry is invalid, expected %s, got %s", registry, ref.Registry)
