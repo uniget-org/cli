@@ -41,33 +41,27 @@ func TestCheckIfCacheDirectoryExists(t *testing.T) {
 
 func TestFileCacheGetManually(t *testing.T) {
 	cache := NewFileCache(t.TempDir())
-	ref := containers.NewToolRef(
-		"127.0.0.1:5000",
-		"uniget-org/tools",
-		"test",
-		"1.0.0",
-	)
 
-	if cache.checkDataInCache(ref.Key()) {
+	if cache.checkDataInCache(toolRef.Key()) {
 		t.Errorf("unexpected cache hit")
 	}
-	_, err := cache.readDataFromCache(ref.Key())
+	_, err := cache.readDataFromCache(toolRef.Key())
 	if err == nil {
 		t.Errorf("cache should be empty")
 	}
 
 	var testData = []byte("test")
 
-	err = cache.writeDataToCache(testData, ref.Key())
+	err = cache.writeDataToCache(testData, toolRef.Key())
 	if err != nil {
 		t.Errorf("failed to write data to cache: %v", err)
 	}
-	if !cache.checkDataInCache(ref.Key()) {
+	if !cache.checkDataInCache(toolRef.Key()) {
 		t.Errorf("cache miss")
 	}
-	data, err := cache.readDataFromCache(ref.Key())
+	data, err := cache.readDataFromCache(toolRef.Key())
 	if err != nil {
-		t.Errorf("failed to read key %s after cache hit: %v", ref.Key(), err)
+		t.Errorf("failed to read key %s after cache hit: %v", toolRef.Key(), err)
 	}
 	if string(data) != string(testData) {
 		t.Errorf("expected data to be 'test', got '%s'", string(data))
@@ -76,18 +70,12 @@ func TestFileCacheGetManually(t *testing.T) {
 
 func TestFileCacheGet(t *testing.T) {
 	cache := NewFileCache(t.TempDir())
-	ref := containers.NewToolRef(
-		"127.0.0.1:5000",
-		"uniget-org/tools",
-		"test",
-		"1.0.0",
-	)
 
-	if cache.checkDataInCache(ref.Key()) {
+	if cache.checkDataInCache(toolRef.Key()) {
 		t.Errorf("unexpected cache hit")
 	}
 
-	data, err := cache.Get(ref)
+	data, err := cache.Get(toolRef)
 	if err != nil {
 		t.Errorf("failed to get data from cache: %v", err)
 	}
@@ -95,11 +83,11 @@ func TestFileCacheGet(t *testing.T) {
 		t.Errorf("expected data to be non-empty (first attempt)")
 	}
 
-	if !cache.checkDataInCache(ref.Key()) {
+	if !cache.checkDataInCache(toolRef.Key()) {
 		t.Errorf("unexpected cache miss")
 	}
 
-	data, err = cache.Get(ref)
+	data, err = cache.Get(toolRef)
 	if err != nil {
 		t.Errorf("failed to get data from cache: %v", err)
 	}

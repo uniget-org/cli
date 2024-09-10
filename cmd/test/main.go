@@ -2,57 +2,21 @@ package main
 
 import (
 	"archive/tar"
-	"bytes"
 	"context"
 	"fmt"
 	"os"
 
-	"github.com/distribution/distribution/v3/configuration"
-	"github.com/distribution/distribution/v3/registry"
-	_ "github.com/distribution/distribution/v3/registry/storage/driver/filesystem"
-	_ "github.com/distribution/distribution/v3/registry/storage/driver/inmemory"
 	"github.com/regclient/regclient/types/ref"
 	"github.com/uniget-org/cli/pkg/archive"
 	"github.com/uniget-org/cli/pkg/containers"
 )
 
-// https://distribution.github.io/distribution/about/configuration/
-const distributionConfig = `
-version: 0.1
-log:
-  accesslog:
-    disabled: true
-  formatter: text
-storage:
-  inmemory:
-  #filesystem:
-  #  rootdirectory: /tmp/registry
-`
-
-var registryAddress = "127.0.0.1:5000"
-var registryRepository = "uniget-org/tools"
-var registryImage = "jq"
-var registryTag = "1.7.1"
-
-func startRegistry() {
-	ctx := context.Background()
-
-	config, err := configuration.Parse(bytes.NewReader([]byte(distributionConfig)))
-	if err != nil {
-		panic(err)
-	}
-	config.HTTP.Addr = registryAddress
-
-	registry, err := registry.NewRegistry(ctx, config)
-	if err != nil {
-		panic(err)
-	}
-	err = registry.ListenAndServe()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("DONE")
-}
+var (
+	registryAddress    = "127.0.0.1:5000"
+	registryRepository = "uniget-org/tools"
+	registryImage      = "jq"
+	registryTag        = "1.7.1"
+)
 
 func addTestData() error {
 	ctx := context.Background()
@@ -78,12 +42,12 @@ func addTestData() error {
 }
 
 func main() {
-	go startRegistry()
-
-	err := addTestData()
-	if err != nil {
-		panic(err)
-	}
+	containers.StartRegistryWithCallback("127.0.0.1:5000", func() {
+		err := addTestData()
+		if err != nil {
+			panic(err)
+		}
+	})
 
 	ctx := context.Background()
 

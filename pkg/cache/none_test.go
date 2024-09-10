@@ -4,8 +4,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"testing"
-
-	"github.com/uniget-org/cli/pkg/containers"
 )
 
 func TestNewNoneCache(t *testing.T) {
@@ -16,14 +14,8 @@ func TestNewNoneCache(t *testing.T) {
 }
 
 func TestNoneCacheGet(t *testing.T) {
-	ref := containers.NewToolRef(
-		"127.0.0.1:5000",
-		"uniget-org/tools",
-		"test",
-		"1.0.0",
-	)
 	c := NewNoneCache()
-	image, err := c.Get(ref)
+	image, err := c.Get(toolRef)
 	if err != nil {
 		t.Errorf("Error getting image: %v", err)
 	}
@@ -41,7 +33,7 @@ func TestNoneCacheGet(t *testing.T) {
 		t.Errorf("Hash is empty")
 	}
 	sha256 := hex.EncodeToString(h.Sum(nil))
-	if sha256 != "0f015b5bc195319dc5ae7eef10e4b7eb7903323793ed4b9461a38bf2948c64e6" {
-		t.Errorf("Hash is invalid %s", sha256)
+	if sha256 != expectedLayerSha256 {
+		t.Errorf("expected sha256 %s but got %s", expectedLayerSha256, sha256)
 	}
 }
