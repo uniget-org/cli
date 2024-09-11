@@ -3,13 +3,13 @@ package containers
 import (
 	"archive/tar"
 	"bytes"
+	"compress/gzip"
 	"context"
 	"fmt"
 	"io"
 
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
-	"github.com/uniget-org/cli/pkg/archive"
 )
 
 func GetDockerClient() (*client.Client, error) {
@@ -37,12 +37,18 @@ func GetFirstLayerFromDockerImage(cli *client.Client, ref *ToolRef) ([]byte, err
 		return nil, fmt.Errorf("failed to unpack layer: %s", err)
 	}
 
-	layer, err := archive.Gunzip(layerGzip)
+	reader, err := gzip.NewReader(bytes.NewReader(layerGzip))
 	if err != nil {
-		return nil, fmt.Errorf("failed to gunzip layer: %s", err)
+		return nil, fmt.Errorf("failed to create gzip reader: %s", err)
+	}
+	defer reader.Close()
+
+	buffer, err := io.ReadAll(reader)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read gzip: %s", err)
 	}
 
-	return layer, nil
+	return buffer, nil
 }
 
 func PullDockerImage(cli *client.Client, ref string) error {

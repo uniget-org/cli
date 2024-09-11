@@ -3,13 +3,14 @@ package containers
 import (
 	"bufio"
 	"bytes"
+	"compress/gzip"
 	"context"
 	"fmt"
+	"io"
 
 	"github.com/containerd/containerd"
 	"github.com/containerd/containerd/images/archive"
 	"github.com/containerd/platforms"
-	uarchive "github.com/uniget-org/cli/pkg/archive"
 )
 
 func GetContainerdClient() (*containerd.Client, error) {
@@ -37,12 +38,18 @@ func GetFirstLayerFromContainerdImage(client *containerd.Client, ref *ToolRef) (
 		return nil, fmt.Errorf("failed to unpack layer: %s", err)
 	}
 
-	layer, err := uarchive.Gunzip(layerGzip)
+	reader, err := gzip.NewReader(bytes.NewReader(layerGzip))
 	if err != nil {
-		return nil, fmt.Errorf("failed to gunzip layer: %s", err)
+		return nil, fmt.Errorf("failed to create gzip reader: %s", err)
+	}
+	defer reader.Close()
+
+	buffer, err := io.ReadAll(reader)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read gzip: %s", err)
 	}
 
-	return layer, nil
+	return buffer, nil
 }
 
 func CheckContainerdImageExists(client *containerd.Client, ref string) bool {

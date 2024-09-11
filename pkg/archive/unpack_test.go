@@ -2,14 +2,24 @@ package archive
 
 import (
 	"archive/tar"
+	"context"
 	"io"
 	"os"
+	"slices"
 	"testing"
+
+	"github.com/uniget-org/cli/pkg/containers"
 )
 
 var (
 	testTarGz = "../../testdata/foo.tar.gz"
 	testTar   = "../../testdata/foo.tar.gz"
+
+	registryAddress    = "ghcr.io"
+	registryRepository = "uniget-org/tools"
+	registryImage      = "jq"
+	registryTag        = "latest"
+	toolRef            = containers.NewToolRef(registryAddress, registryRepository, registryImage, registryTag)
 )
 
 func openTestArchive(testArchive string, t *testing.T) io.Reader {
@@ -56,6 +66,23 @@ func unpackTestArchive(testArchive string, t *testing.T) string {
 	}
 
 	return tempDir
+}
+
+func loadTool(t *testing.T) []byte {
+	ctx := context.Background()
+	r := toolRef.GetRef()
+	rc := containers.GetRegclient()
+	defer rc.Close(ctx, r)
+	tarData, err := containers.GetFirstLayerFromRegistry(ctx, rc, r)
+	if err != nil {
+		t.Errorf("failed to get first layer from registry: %v", err)
+	}
+	registryLayer, err := Gunzip(tarData)
+	if err != nil {
+		panic(err)
+	}
+
+	return registryLayer
 }
 
 func TestPathIsInsideTarget(t *testing.T) {
@@ -115,7 +142,11 @@ func TestListTarGz(t *testing.T) {
 	reader := openTestArchive(testTarGz, t)
 
 	tempDir := t.TempDir()
-	err := os.Chdir(tempDir)
+	curDir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("failed to get current directory: %v", err)
+	}
+	err = os.Chdir(tempDir)
 	if err != nil {
 		t.Errorf("failed to change directory to %s: %v", tempDir, err)
 	}
@@ -132,13 +163,85 @@ func TestListTarGz(t *testing.T) {
 	if files[0] != "foo" {
 		t.Errorf("expected foo, got %s", files[0])
 	}
+
+	err = os.Chdir(curDir)
+	if err != nil {
+		t.Errorf("failed to change directory to %s: %v", curDir, err)
+	}
 }
 
 func TestProcessTarContents(t *testing.T) {
-	tarData := readTestArchive(testTar, t)
-
-	err := ProcessTarContents(tarData, func(tar *tar.Reader, header *tar.Header) error { return nil })
+	registryLayer := loadTool(t)
+	err := ProcessTarContents(registryLayer, func(tar *tar.Reader, header *tar.Header) error { return nil })
 	if err != nil {
 		t.Errorf("failed to process tar contents: %v", err)
+	}
+}
+
+func TestProcessTarContentsCallback(t *testing.T) {
+	registryLayer := loadTool(t)
+	files := []string{
+		"bin/jq",
+		"share/man/man1/jq.1",
+		"var/lib/uniget/manifests/jq.json",
+		"var/lib/uniget/manifests/jq.txt",
+	}
+	err := ProcessTarContents(registryLayer, func(reader *tar.Reader, header *tar.Header) error {
+		if header.Typeflag != tar.TypeReg {
+			return nil
+		}
+
+		if !slices.Contains(files, header.Name) {
+			t.Errorf("expected %s to be in %v", header.Name, files)
+		}
+
+		return nil
+	})
+	if err != nil {
+		t.Errorf("failed to process tar contents: %v", err)
+	}
+}
+
+func TestProcessTarContentsDisplay(t *testing.T) {
+	registryLayer := loadTool(t)
+	err := ProcessTarContents(registryLayer, CallbackDisplayTarItem)
+	if err != nil {
+		t.Errorf("failed to process tar contents: %v", err)
+	}
+}
+
+func TestProcessTarContentsExtract(t *testing.T) {
+	registryLayer := loadTool(t)
+
+	tempDir := t.TempDir()
+	curDir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("failed to get current directory: %v", err)
+	}
+	err = os.Chdir(tempDir)
+	if err != nil {
+		t.Errorf("failed to change directory to %s: %v", tempDir, err)
+	}
+
+	files := []string{
+		"bin/jq",
+		"share/man/man1/jq.1",
+		"var/lib/uniget/manifests/jq.json",
+		"var/lib/uniget/manifests/jq.txt",
+	}
+	err = ProcessTarContents(registryLayer, CallbackExtractTarItem)
+	if err != nil {
+		t.Errorf("failed to process tar contents: %v", err)
+	}
+	for _, file := range files {
+		_, err := os.Stat(file)
+		if err != nil {
+			t.Errorf("expected %s to exist: %v", file, err)
+		}
+	}
+
+	err = os.Chdir(curDir)
+	if err != nil {
+		t.Errorf("failed to change directory to %s: %v", curDir, err)
 	}
 }
