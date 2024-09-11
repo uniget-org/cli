@@ -79,7 +79,7 @@ func StartRegistryWithCallback(registryAddress string, callback func()) {
 		startTimestamp := time.Now().Unix()
 		for {
 			url := fmt.Sprintf("http://%s/v2/", registryAddress)
-			res, err := http.Get(url)
+			res, err := http.Get(url) // #nosec G107 -- This is only a test and registryAddress is hardcoded
 			if err == nil {
 				if res.StatusCode == http.StatusOK {
 					break
