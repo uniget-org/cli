@@ -20,14 +20,46 @@ func TestGetRegclient(t *testing.T) {
 	}
 }
 
+func TestGetImageTagsInvalidImage(t *testing.T) {
+	registryAddress := "127.0.0.1:5000:5001"
+	toolRef := NewToolRef(registryAddress, "a/b", "c", "d+e")
+	_, err := GetImageTags(toolRef)
+	if err == nil {
+		t.Errorf("expected error due to invalid registry host %s: %s", registryAddress, err)
+	}
+}
+
+func TestGetImageTagsUnreachableRegistry(t *testing.T) {
+	registryAddress := "127.0.0.1:5001"
+	toolRef := NewToolRef(registryAddress, registryRepository, registryImage, registryTag)
+	_, err := GetImageTags(toolRef)
+	if err == nil {
+		t.Errorf("expected error due to unreachable registry %s: %s", registryAddress, err)
+	}
+}
+
 func TestGetImageTags(t *testing.T) {
-	toolRef = NewToolRef(registryAddress, registryRepository, registryImage, registryTag)
 	tags, err := GetImageTags(toolRef)
 	if err != nil {
 		t.Errorf("failed to get image tags: %s", err)
 	}
 	if len(tags) == 0 {
 		t.Errorf("no tags found")
+	}
+}
+
+func TestGetPlatformManifestOldMissingManifest(t *testing.T) {
+	toolRef := NewToolRef(registryAddress, registryRepository, registryImage, "missing")
+	r, err := ref.New(toolRef.String())
+	if err != nil {
+		t.Errorf("failed to parse image name <%s>: %s", toolRef.String(), err)
+	}
+	rc := GetRegclient()
+	defer rc.Close(context.Background(), r)
+
+	_, err = GetPlatformManifestOld(context.Background(), rc, r)
+	if err == nil {
+		t.Errorf("expected error due to missing manifest: %s", err)
 	}
 }
 

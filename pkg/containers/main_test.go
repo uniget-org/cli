@@ -2,7 +2,6 @@ package containers
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/regclient/regclient/types/ref"
@@ -13,28 +12,32 @@ var (
 	registryRepository    = "uniget-org/tools"
 	registryImage         = "jq"
 	registryTag           = "1.7.1"
+	registryTags          = []string{"1.7.1", "latest"}
 	toolRef               = NewToolRef(registryAddress, registryRepository, registryImage, registryTag)
 	expectedLayerGzSha256 = "ba8f179e01e11eb5a78d8d8c2c85ce72beaece1ce32f366976d30e7f1b161eae"
 )
 
-func addTestData(registryAddress, registryRepository, registryImage, registryTag string) error {
+func copyImage(src, tgt ref.Ref) error {
 	ctx := context.Background()
-	rSrc, err := ref.New(fmt.Sprintf("%s/%s/%s:%s", "ghcr.io", registryRepository, registryImage, registryTag))
-	if err != nil {
-		return err
-	}
-	rTgt, err := ref.New(fmt.Sprintf("%s/%s/%s:%s", registryAddress, registryRepository, registryImage, registryTag))
-	if err != nil {
-		return err
-	}
-
 	rc := GetRegclient()
-	defer rc.Close(ctx, rSrc)
-	defer rc.Close(ctx, rTgt)
+	defer rc.Close(ctx, src)
+	defer rc.Close(ctx, tgt)
 
-	err = rc.ImageCopy(ctx, rSrc, rTgt)
+	err := rc.ImageCopy(ctx, src, tgt)
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func addTestData() error {
+	for _, tag := range registryTags {
+		src := NewToolRef("ghcr.io", registryRepository, registryImage, tag)
+		tgt := NewToolRef(registryAddress, registryRepository, registryImage, tag)
+		err := copyImage(src.GetRef(), tgt.GetRef())
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -43,7 +46,7 @@ func addTestData(registryAddress, registryRepository, registryImage, registryTag
 func TestMain(m *testing.M) {
 	var registryAddress = "127.0.0.1:5000"
 	StartRegistryWithCallback(registryAddress, func() {
-		err := addTestData(registryAddress, "uniget-org/tools", "jq", "1.7.1")
+		err := addTestData()
 		if err != nil {
 			panic(err)
 		}

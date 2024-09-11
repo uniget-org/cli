@@ -327,12 +327,12 @@ func ProcessTarContents(archive []byte, callback func(tar *tar.Reader, header *t
 		if err == io.EOF {
 			break
 		} else if err != nil {
-			return fmt.Errorf("ExtractTarGz: Next() failed: %s", err.Error())
+			return fmt.Errorf("failed to read next item: %s", err.Error())
 		}
 
 		err = callback(tarReader, header)
 		if err != nil {
-			return fmt.Errorf("ExtractTarGz: ExtractItem() failed: %s", err.Error())
+			return fmt.Errorf("failed to process item through callback: %s", err.Error())
 		}
 	}
 
