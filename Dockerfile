@@ -1,6 +1,6 @@
 #syntax=docker/dockerfile:1.10.0
 
-FROM ghcr.io/uniget-org/tools/goreleaser:2.2.0@sha256:744c3af45765f16fd44eedbf8b80e0df756ed1306698c9cb1fdd9c5f003a927c AS uniget-goreleaser
+FROM ghcr.io/uniget-org/tools/goreleaser:2.3.0@sha256:f1d54578e255574861a206d8cc5947f910d96c89c68e26f16035154de9f870ab AS uniget-goreleaser
 FROM ghcr.io/uniget-org/tools/cosign:2.4.0@sha256:f98cc3d9f9a8c8ddddd3d77ee0bb80a4950b7874ffe1cd490162372a0217592a AS uniget-cosign
 FROM ghcr.io/uniget-org/tools/syft:1.12.2@sha256:87147dd49c87b41a3f55751adc9d5c0b87a0f69c97ae524811a876c577fd9617 AS uniget-syft
 FROM ghcr.io/uniget-org/tools/gh:2.56.0@sha256:8883a288a0178514731db3148e4e6cd247dad5cf03aba5ce9393fad24d33ffad AS uniget-gh
