@@ -15,7 +15,7 @@ var (
 	registryImage       = "jq"
 	registryTag         = "1.7.1"
 	toolRef             = containers.NewToolRef(registryAddress, registryRepository, registryImage, registryTag)
-	expectedLayerSha256 = "856b78ac4575c4cf8be9942e3b6100e27d150497cd90c2eb041aa7bc2017c300"
+	expectedLayerSha256 = "2940229e769548ce754f6dad80a33a9dc6d51f38ac6ca08fac6f33a496dd6bd9"
 )
 
 func addTestData(registryAddress, registryRepository, registryImage, registryTag string) error {

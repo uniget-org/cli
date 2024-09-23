@@ -231,7 +231,6 @@ func TestGetFirstLayerFromManifest(t *testing.T) {
 
 func TestGetFirstLayerFromRegistry(t *testing.T) {
 	toolRef = NewToolRef(registryAddress, registryRepository, registryImage, registryTag)
-	expectedLayerSha := "ba8f179e01e11eb5a78d8d8c2c85ce72beaece1ce32f366976d30e7f1b161eae"
 
 	r, err := ref.New(toolRef.String())
 	if err != nil {
@@ -256,7 +255,7 @@ func TestGetFirstLayerFromRegistry(t *testing.T) {
 		t.Errorf("Hash is empty")
 	}
 	sha256 := hex.EncodeToString(h.Sum(nil))
-	if sha256 != expectedLayerSha {
-		t.Errorf("expected layer Sha256 %s but got %s", expectedLayerSha, sha256)
+	if sha256 != expectedLayerGzSha256 {
+		t.Errorf("expected layer Sha256 %s but got %s", expectedLayerGzSha256, sha256)
 	}
 }
