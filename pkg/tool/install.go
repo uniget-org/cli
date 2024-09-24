@@ -156,7 +156,7 @@ func (tool *Tool) Install(registry, imageRepository string, prefix string, targe
 	return nil
 }
 
-func (tool *Tool) Inspect(w io.Writer, registry, imageRepository string, raw bool) error {
+func (tool *Tool) InspectOld(w io.Writer, registry, imageRepository string, raw bool) error {
 	// Fetch manifest for tool
 	toolRef := containers.NewToolRef(registry, imageRepository, tool.Name, strings.Replace(tool.Version, "+", "-", -1))
 	err := containers.GetManifestOld(toolRef, func(blob blob.Reader) error {
@@ -188,7 +188,7 @@ func (tool *Tool) Inspect(w io.Writer, registry, imageRepository string, raw boo
 	return nil
 }
 
-func (tool *Tool) InspectWithPathRewrites(w io.Writer, registry, imageRepository string, raw bool, rules []PathRewrite) error {
+func (tool *Tool) InspectWithPathRewritesOld(w io.Writer, registry, imageRepository string, raw bool, rules []PathRewrite) error {
 	// Fetch manifest for tool
 	toolRef := containers.NewToolRef(registry, imageRepository, tool.Name, strings.Replace(tool.Version, "+", "-", -1))
 	err := containers.GetManifestOld(toolRef, func(blob blob.Reader) error {
@@ -211,4 +211,8 @@ func (tool *Tool) InspectWithPathRewrites(w io.Writer, registry, imageRepository
 	}
 
 	return nil
+}
+
+func (tool *Tool) Inspect(w io.Writer, layer []byte) error {
+	return archive.ProcessTarContents(layer, archive.CallbackDisplayTarItem)
 }

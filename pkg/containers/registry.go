@@ -1,8 +1,11 @@
 package containers
 
 import (
+	"bytes"
+	"compress/gzip"
 	"context"
 	"fmt"
+	"io"
 	"time"
 
 	_ "crypto/sha256"
@@ -291,11 +294,36 @@ func GetLayerFromManifestByIndex(ctx context.Context, rc *regclient.RegClient, m
 	return nil, fmt.Errorf("unsupported layer media type %s", layer.MediaType)
 }
 
+func gunzip(layer []byte) ([]byte, error) {
+	reader, err := gzip.NewReader(bytes.NewReader(layer))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create gzip reader: %s", err)
+	}
+	defer reader.Close()
+
+	buffer, err := io.ReadAll(reader)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read gzip: %s", err)
+	}
+
+	return buffer, nil
+}
+
 func GetFirstLayerFromRegistry(ctx context.Context, rc *regclient.RegClient, r ref.Ref) ([]byte, error) {
 	m, err := GetManifest(ctx, rc, r)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get manifest: %s", err)
 	}
 
-	return GetFirstLayerFromManifest(ctx, rc, m)
+	imageGz, err := GetFirstLayerFromManifest(ctx, rc, m)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get first layer: %s", err)
+	}
+
+	image, err := gunzip(imageGz)
+	if err != nil {
+		return nil, fmt.Errorf("failed to gunzip layer: %s", err)
+	}
+
+	return image, nil
 }
