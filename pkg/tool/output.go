@@ -36,7 +36,7 @@ func (tools *Tools) List(w io.Writer) {
 	t.Style().Options.SeparateHeader = false
 	t.Style().Options.SeparateRows = false
 
-	t.AppendHeader(table.Row{"Name", "Version", "Description"})
+	t.AppendHeader(table.Row{"#", "Name", "Version", "Description"})
 
 	for index, tool := range tools.Tools {
 		t.AppendRows([]table.Row{
