@@ -87,7 +87,7 @@ var searchCmd = &cobra.Command{
 			return nil
 		}
 
-		results.List()
+		results.List(cmd.OutOrStdout())
 
 		return nil
 	},

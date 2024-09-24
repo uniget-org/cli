@@ -18,16 +18,16 @@ var debugCmd = &cobra.Command{
 	Long:    header + "\nDebug parameters",
 	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Printf("prefix: %s\n", viper.GetString("prefix"))
-		fmt.Printf("target: %s\n", viper.GetString("target"))
-		fmt.Printf("cacheRoot: %s\n", cacheRoot)
-		fmt.Printf("cacheDirectory: %s\n", cacheDirectory)
-		fmt.Printf("libRoot: %s\n", libRoot)
-		fmt.Printf("libDirectory: %s\n", libDirectory)
-		fmt.Printf("metadataFile: %s\n", metadataFile)
+		fmt.Fprintf(cmd.OutOrStdout(), "prefix: %s\n", viper.GetString("prefix"))
+		fmt.Fprintf(cmd.OutOrStdout(), "target: %s\n", viper.GetString("target"))
+		fmt.Fprintf(cmd.OutOrStdout(), "cacheRoot: %s\n", cacheRoot)
+		fmt.Fprintf(cmd.OutOrStdout(), "cacheDirectory: %s\n", cacheDirectory)
+		fmt.Fprintf(cmd.OutOrStdout(), "libRoot: %s\n", libRoot)
+		fmt.Fprintf(cmd.OutOrStdout(), "libDirectory: %s\n", libDirectory)
+		fmt.Fprintf(cmd.OutOrStdout(), "metadataFile: %s\n", metadataFile)
 
 		for _, key := range viper.AllKeys() {
-			fmt.Printf("viper key: %s, value: %v\n", key, viper.Get(key))
+			fmt.Fprintf(cmd.OutOrStdout(), "viper key: %s, value: %v\n", key, viper.Get(key))
 		}
 
 		return nil

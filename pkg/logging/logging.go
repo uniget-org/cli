@@ -2,17 +2,33 @@ package logging
 
 import (
 	"fmt"
+	"io"
+	"os"
 
 	"github.com/pterm/pterm"
 )
 
 var (
+	OutputWriter io.Writer      = os.Stdout
+	ErrorWriter  io.Writer      = os.Stderr
+	Level        pterm.LogLevel = pterm.LogLevelInfo
+	Description  pterm.PrefixPrinter
+	Info         pterm.PrefixPrinter
+	Success      pterm.PrefixPrinter
+	Error        pterm.PrefixPrinter
+	Fatal        pterm.PrefixPrinter
+	Warning      pterm.PrefixPrinter
+	Skip         pterm.PrefixPrinter
+)
+
+func Init() {
 	Description = pterm.PrefixPrinter{
 		MessageStyle: &pterm.ThemeDefault.DescriptionMessageStyle,
 		Prefix: pterm.Prefix{
 			Style: &pterm.ThemeDefault.DescriptionPrefixStyle,
-			Text:  "Description",
+			Text:  "DESCRIPTION",
 		},
+		Writer: OutputWriter,
 	}
 
 	Info = pterm.PrefixPrinter{
@@ -21,6 +37,7 @@ var (
 			Style: &pterm.ThemeDefault.InfoPrefixStyle,
 			Text:  "INFO",
 		},
+		Writer: OutputWriter,
 	}
 
 	Success = pterm.PrefixPrinter{
@@ -29,6 +46,7 @@ var (
 			Style: &pterm.ThemeDefault.SuccessPrefixStyle,
 			Text:  "SUCCESS",
 		},
+		Writer: OutputWriter,
 	}
 
 	Error = pterm.PrefixPrinter{
@@ -37,6 +55,7 @@ var (
 			Style: &pterm.ThemeDefault.ErrorPrefixStyle,
 			Text:  " ERROR ",
 		},
+		Writer: ErrorWriter,
 	}
 
 	Fatal = pterm.PrefixPrinter{
@@ -45,7 +64,8 @@ var (
 			Style: &pterm.ThemeDefault.FatalPrefixStyle,
 			Text:  " FATAL ",
 		},
-		Fatal: true,
+		Writer: ErrorWriter,
+		Fatal:  true,
 	}
 
 	Warning = pterm.PrefixPrinter{
@@ -54,6 +74,7 @@ var (
 			Style: &pterm.ThemeDefault.WarningPrefixStyle,
 			Text:  "WARNING",
 		},
+		Writer: OutputWriter,
 	}
 
 	Skip = pterm.PrefixPrinter{
@@ -62,16 +83,16 @@ var (
 			Style: pterm.NewStyle(pterm.FgBlack, pterm.BgGray),
 			Text:  "SKIP",
 		},
+		Writer: OutputWriter,
 	}
-)
-
-var Level pterm.LogLevel = pterm.LogLevelInfo
+}
 
 func Debug(message string) {
 	pterm.DefaultLogger.
 		WithLevel(Level).
 		WithTime(false).
 		WithMaxWidth(1000).
+		WithWriter(OutputWriter).
 		Debug(message)
 }
 
@@ -86,6 +107,7 @@ func Trace(message string) {
 		WithLevel(Level).
 		WithTime(false).
 		WithMaxWidth(1000).
+		WithWriter(OutputWriter).
 		Trace(message)
 }
 

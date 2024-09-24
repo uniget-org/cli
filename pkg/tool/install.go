@@ -2,6 +2,7 @@ package tool
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -155,7 +156,7 @@ func (tool *Tool) Install(registry, imageRepository string, prefix string, targe
 	return nil
 }
 
-func (tool *Tool) Inspect(registry, imageRepository string, raw bool) error {
+func (tool *Tool) Inspect(w io.Writer, registry, imageRepository string, raw bool) error {
 	// Fetch manifest for tool
 	toolRef := containers.NewToolRef(registry, imageRepository, tool.Name, strings.Replace(tool.Version, "+", "-", -1))
 	err := containers.GetManifestOld(toolRef, func(blob blob.Reader) error {
@@ -174,7 +175,8 @@ func (tool *Tool) Inspect(registry, imageRepository string, raw bool) error {
 
 		// Display contents of tool image
 		for _, file := range result {
-			fmt.Printf("%s\n", file)
+			//fmt.Printf("%s\n", file)
+			fmt.Fprintf(w, "%s\n", file)
 		}
 
 		return nil
@@ -186,7 +188,7 @@ func (tool *Tool) Inspect(registry, imageRepository string, raw bool) error {
 	return nil
 }
 
-func (tool *Tool) InspectWithPathRewrites(registry, imageRepository string, raw bool, rules []PathRewrite) error {
+func (tool *Tool) InspectWithPathRewrites(w io.Writer, registry, imageRepository string, raw bool, rules []PathRewrite) error {
 	// Fetch manifest for tool
 	toolRef := containers.NewToolRef(registry, imageRepository, tool.Name, strings.Replace(tool.Version, "+", "-", -1))
 	err := containers.GetManifestOld(toolRef, func(blob blob.Reader) error {
@@ -199,7 +201,7 @@ func (tool *Tool) InspectWithPathRewrites(registry, imageRepository string, raw 
 
 		// Display contents of tool image
 		for _, file := range result {
-			fmt.Printf("%s\n", file)
+			fmt.Fprintf(w, "%s\n", file)
 		}
 
 		return nil

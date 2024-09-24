@@ -2,15 +2,15 @@ package tool
 
 import (
 	"fmt"
-	"os"
+	"io"
 	"strings"
 
 	"github.com/jedib0t/go-pretty/v6/table"
 )
 
-func (tool *Tool) List() {
+func (tool *Tool) List(w io.Writer) {
 	t := table.NewWriter()
-	t.SetOutputMirror(os.Stdout)
+	t.SetOutputMirror(w)
 
 	t.AppendHeader(table.Row{"#", "Name", "Version"})
 
@@ -21,9 +21,9 @@ func (tool *Tool) List() {
 	t.Render()
 }
 
-func (tools *Tools) List() {
+func (tools *Tools) List(w io.Writer) {
 	t := table.NewWriter()
-	t.SetOutputMirror(os.Stdout)
+	t.SetOutputMirror(w)
 	t.SetColumnConfigs([]table.ColumnConfig{
 		{
 			Number:   4,
@@ -47,9 +47,9 @@ func (tools *Tools) List() {
 	t.Render()
 }
 
-func (tools *Tools) ListWithStatus() {
+func (tools *Tools) ListWithStatus(w io.Writer) {
 	t := table.NewWriter()
-	t.SetOutputMirror(os.Stdout)
+	t.SetOutputMirror(w)
 
 	t.AppendHeader(table.Row{"#", "Name", "Version", "Binary?", "Installed", "Matches?", "Skip?", "IsReq?"})
 
@@ -98,63 +98,63 @@ func (tool *Tool) ShowUpdate(indentation int) string {
 	return result
 }
 
-func (tool *Tool) Print() {
-	fmt.Printf("Name: %s\n", tool.Name)
+func (tool *Tool) Print(w io.Writer) {
+	fmt.Fprintf(w, "Name: %s\n", tool.Name)
 	if len(tool.SchemaVersion) > 0 {
-		fmt.Printf("  Schema version: %s\n", tool.SchemaVersion)
+		fmt.Fprintf(w, "  Schema version: %s\n", tool.SchemaVersion)
 	}
-	fmt.Printf("  Description: %s\n", tool.Description)
-	fmt.Printf("  Homepage: %s\n", tool.Homepage)
-	fmt.Printf("  Repository: %s\n", tool.Repository)
-	fmt.Printf("  License: %s", tool.License.Name)
+	fmt.Fprintf(w, "  Description: %s\n", tool.Description)
+	fmt.Fprintf(w, "  Homepage: %s\n", tool.Homepage)
+	fmt.Fprintf(w, "  Repository: %s\n", tool.Repository)
+	fmt.Fprintf(w, "  License: %s", tool.License.Name)
 	if len(tool.License.Link) > 0 {
-		fmt.Printf(" (%s)", tool.License.Link)
+		fmt.Fprintf(w, " (%s)", tool.License.Link)
 	}
 	fmt.Print("\n")
-	fmt.Printf("  Version: %s\n", tool.Version)
+	fmt.Fprintf(w, "  Version: %s\n", tool.Version)
 
 	if tool.Binary != "" {
-		fmt.Printf("  Binary: %s\n", tool.Binary)
+		fmt.Fprintf(w, "  Binary: %s\n", tool.Binary)
 	}
 
 	if len(tool.Check) > 0 {
-		fmt.Printf("  Check: <%s>\n", tool.Check)
+		fmt.Fprintf(w, "  Check: <%s>\n", tool.Check)
 	}
 
-	fmt.Printf("  Tags:\n")
+	fmt.Fprintf(w, "  Tags:\n")
 	for _, tag := range tool.Tags {
-		fmt.Printf("    %s\n", tag)
+		fmt.Fprintf(w, "    %s\n", tag)
 	}
 
 	if tool.BuildDependencies != nil {
-		fmt.Printf("  Build dependencies:\n")
+		fmt.Fprintf(w, "  Build dependencies:\n")
 		for _, dep := range tool.BuildDependencies {
-			fmt.Printf("    %s\n", dep)
+			fmt.Fprintf(w, "    %s\n", dep)
 		}
 	}
 
 	if tool.RuntimeDependencies != nil {
-		fmt.Printf("  Runtime dependencies:\n")
+		fmt.Fprintf(w, "  Runtime dependencies:\n")
 		for _, dep := range tool.RuntimeDependencies {
-			fmt.Printf("    %s\n", dep)
+			fmt.Fprintf(w, "    %s\n", dep)
 		}
 	}
 
 	if tool.ConflictsWith != nil {
-		fmt.Printf("  Conflicts with:\n")
+		fmt.Fprintf(w, "  Conflicts with:\n")
 		for _, conflict := range tool.ConflictsWith {
-			fmt.Printf("    %s\n", conflict)
+			fmt.Fprintf(w, "    %s\n", conflict)
 		}
 	}
 
 	if tool.Platforms != nil {
-		fmt.Printf("  Platforms:\n")
+		fmt.Fprintf(w, "  Platforms:\n")
 		for _, dep := range tool.Platforms {
-			fmt.Printf("    %s\n", dep)
+			fmt.Fprintf(w, "    %s\n", dep)
 		}
 	}
 
-	fmt.Printf("  Messages:\n")
+	fmt.Fprintf(w, "  Messages:\n")
 	if tool.Messages.Internals != "" {
 		fmt.Println("    Internals:")
 		fmt.Print(tool.ShowInternals(6))
@@ -169,31 +169,31 @@ func (tool *Tool) Print() {
 	}
 
 	if tool.Renovate.Datasource != "" {
-		fmt.Printf("  Renovate:\n")
-		fmt.Printf("    Datasource: %s\n", tool.Renovate.Datasource)
-		fmt.Printf("    Package: %s\n", tool.Renovate.Package)
+		fmt.Fprintf(w, "  Renovate:\n")
+		fmt.Fprintf(w, "    Datasource: %s\n", tool.Renovate.Datasource)
+		fmt.Fprintf(w, "    Package: %s\n", tool.Renovate.Package)
 		if tool.Renovate.ExtractVersion != "" {
-			fmt.Printf("    ExtractVersion: %s\n", tool.Renovate.ExtractVersion)
+			fmt.Fprintf(w, "    ExtractVersion: %s\n", tool.Renovate.ExtractVersion)
 		}
 		if tool.Renovate.Versioning != "" {
-			fmt.Printf("    Versioning: %s\n", tool.Renovate.Versioning)
+			fmt.Fprintf(w, "    Versioning: %s\n", tool.Renovate.Versioning)
 		}
 	}
 
-	fmt.Printf("  Status\n")
-	fmt.Printf("    Binary present: %t\n", tool.Status.BinaryPresent)
-	fmt.Printf("    Version: %s\n", tool.Status.Version)
-	fmt.Printf("    Version matches: %t\n", tool.Status.VersionMatches)
-	fmt.Printf("    Marker file present: %t\n", tool.Status.MarkerFilePresent)
-	fmt.Printf("    Marker file version: %s\n", tool.Status.MarkerFileVersion)
-	fmt.Printf("    Skip: %t\n", tool.Status.SkipDueToConflicts || !tool.Status.IsRequested)
-	fmt.Printf("    Is requested: %t\n", tool.Status.IsRequested)
+	fmt.Fprintf(w, "  Status\n")
+	fmt.Fprintf(w, "    Binary present: %t\n", tool.Status.BinaryPresent)
+	fmt.Fprintf(w, "    Version: %s\n", tool.Status.Version)
+	fmt.Fprintf(w, "    Version matches: %t\n", tool.Status.VersionMatches)
+	fmt.Fprintf(w, "    Marker file present: %t\n", tool.Status.MarkerFilePresent)
+	fmt.Fprintf(w, "    Marker file version: %s\n", tool.Status.MarkerFileVersion)
+	fmt.Fprintf(w, "    Skip: %t\n", tool.Status.SkipDueToConflicts || !tool.Status.IsRequested)
+	fmt.Fprintf(w, "    Is requested: %t\n", tool.Status.IsRequested)
 }
 
-func (tools *Tools) Describe(name string) error {
+func (tools *Tools) Describe(w io.Writer, name string) error {
 	for _, tool := range tools.Tools {
 		if tool.Name == name {
-			fmt.Printf("%+v\n", tool)
+			fmt.Fprintf(w, "%+v\n", tool)
 			return nil
 		}
 	}

@@ -25,10 +25,10 @@ func initReleaseNotesCmd() {
 }
 
 var releaseNotesCmd = &cobra.Command{
-	Use:     "release-notes",
-	Short:   "Show release notes for a tool",
-	Long:    header + "\nShow release notes for a tool",
-	Args:    cobra.ExactArgs(1),
+	Use:   "release-notes",
+	Short: "Show release notes for a tool",
+	Long:  header + "\nShow release notes for a tool",
+	Args:  cobra.ExactArgs(1),
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},
@@ -66,43 +66,43 @@ var releaseNotesCmd = &cobra.Command{
 		}
 		logging.Debugf("Using version tag %s for release notes", versionTag)
 		switch tool.Renovate.Datasource {
-			case "github-releases":
-				payload, err = fetchBodyFromGitHubRelease(tool.Renovate.Package, versionTag)
-				if err != nil {
-					return fmt.Errorf("failed to fetch body of GitHub release for tool %s: %s", tool.Name, err)
-				}
-				bodyFieldName = "body"
+		case "github-releases":
+			payload, err = fetchBodyFromGitHubRelease(tool.Renovate.Package, versionTag)
+			if err != nil {
+				return fmt.Errorf("failed to fetch body of GitHub release for tool %s: %s", tool.Name, err)
+			}
+			bodyFieldName = "body"
 
-			case "gitlab-releases":
-				payload, err = fetchBodyFromGitLabRelease(tool.Renovate.Package, versionTag)
-				if err != nil {
-					return fmt.Errorf("failed to fetch body of GitLab release for tool %s: %s", tool.Name, err)
-				}
-				bodyFieldName = "description"
+		case "gitlab-releases":
+			payload, err = fetchBodyFromGitLabRelease(tool.Renovate.Package, versionTag)
+			if err != nil {
+				return fmt.Errorf("failed to fetch body of GitLab release for tool %s: %s", tool.Name, err)
+			}
+			bodyFieldName = "description"
 
-			case "gitea-releases":
-				payload, err = fetchBodyFromGiteaRelease(tool.Renovate.Package, versionTag)
-				if err != nil {
-					return fmt.Errorf("failed to fetch body of Gitea release for tool %s: %s", tool.Name, err)
-				}
-				bodyFieldName = "body"
+		case "gitea-releases":
+			payload, err = fetchBodyFromGiteaRelease(tool.Renovate.Package, versionTag)
+			if err != nil {
+				return fmt.Errorf("failed to fetch body of Gitea release for tool %s: %s", tool.Name, err)
+			}
+			bodyFieldName = "body"
 
-			case "npm":
-				payload, err = fetchBodyFromNpm(tool.Renovate.Package, versionTag)
-				if err != nil {
-					return fmt.Errorf("failed to fetch body from npm for tool %s: %s", tool.Name, err)
-				}
-				bodyFieldName = "body"
+		case "npm":
+			payload, err = fetchBodyFromNpm(tool.Renovate.Package, versionTag)
+			if err != nil {
+				return fmt.Errorf("failed to fetch body from npm for tool %s: %s", tool.Name, err)
+			}
+			bodyFieldName = "body"
 
-			case "pypi":
-				payload, err = fetchBodyFromPypi(tool.Renovate.Package, versionTag)
-				if err != nil {
-					return fmt.Errorf("failed to fetch body from pypi for tool %s: %s", tool.Name, err)
-				}
-				bodyFieldName = "body"
-		
-			default:
-				return fmt.Errorf("release notes are not available for datasource %s", tool.Renovate.Datasource)
+		case "pypi":
+			payload, err = fetchBodyFromPypi(tool.Renovate.Package, versionTag)
+			if err != nil {
+				return fmt.Errorf("failed to fetch body from pypi for tool %s: %s", tool.Name, err)
+			}
+			bodyFieldName = "body"
+
+		default:
+			return fmt.Errorf("release notes are not available for datasource %s", tool.Renovate.Datasource)
 		}
 
 		var result map[string]interface{}

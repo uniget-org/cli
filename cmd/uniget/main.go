@@ -218,8 +218,9 @@ func main() {
 	var err error
 
 	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
-		logging.Error.Writer = os.Stderr
-		logging.Warning.Writer = os.Stderr
+		logging.OutputWriter = cmd.OutOrStdout()
+		logging.ErrorWriter = cmd.ErrOrStderr()
+		logging.Init()
 
 		if viper.GetBool("trace") {
 			pterm.EnableDebugMessages()

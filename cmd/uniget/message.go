@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"html/template"
-	"os"
+	"io"
 
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
@@ -60,22 +60,22 @@ var messageCmd = &cobra.Command{
 		} else if find {
 			for index, tool := range tools.Tools {
 				checkClientVersionRequirement(&tools.Tools[index])
-				
+
 				if tool.Messages.Internals != "" || tool.Messages.Usage != "" || tool.Messages.Update != "" {
 					fmt.Println(tool.Name)
 				}
 			}
 
 		} else {
-			err := printToolInternals(toolName)
+			err := printToolInternals(cmd.OutOrStdout(), toolName)
 			if err != nil {
 				return fmt.Errorf("failed to print tool internals: %s", err)
 			}
-			err = printToolUsage(toolName)
+			err = printToolUsage(cmd.OutOrStdout(), toolName)
 			if err != nil {
 				return fmt.Errorf("failed to print tool usage: %s", err)
 			}
-			err = printToolUpdate(toolName)
+			err = printToolUpdate(cmd.OutOrStdout(), toolName)
 			if err != nil {
 				return fmt.Errorf("failed to print tool update: %s", err)
 			}
@@ -105,15 +105,15 @@ func createTemplateVariablesForToolByName(toolName string) (map[string]interface
 	return createTemplateVariablesForTool(tool)
 }
 
-func printToolInternals(toolName string) error {
+func printToolInternals(w io.Writer, toolName string) error {
 	values, err := createTemplateVariablesForToolByName(toolName)
 	if err != nil {
 		return fmt.Errorf("failed to create template variables: %s", err)
 	}
-	return printToolInternalsWithIndentation(toolName, 2, values)
+	return printToolInternalsWithIndentation(w, toolName, 2, values)
 }
 
-func printToolInternalsWithIndentation(toolName string, indentation int, values map[string]interface{}) error {
+func printToolInternalsWithIndentation(w io.Writer, toolName string, indentation int, values map[string]interface{}) error {
 	tool, err := tools.GetByName(toolName)
 	if err != nil {
 		return fmt.Errorf("failed to get tool: %s", err)
@@ -130,7 +130,7 @@ func printToolInternalsWithIndentation(toolName string, indentation int, values 
 		if err != nil {
 			return fmt.Errorf("failed to parse template: %s", err)
 		}
-		err = tmpl.Execute(os.Stdout, values)
+		err = tmpl.Execute(w, values)
 		if err != nil {
 			return fmt.Errorf("failed to execute template: %s", err)
 		}
@@ -139,15 +139,15 @@ func printToolInternalsWithIndentation(toolName string, indentation int, values 
 	return nil
 }
 
-func printToolUsage(toolName string) error {
+func printToolUsage(w io.Writer, toolName string) error {
 	values, err := createTemplateVariablesForToolByName(toolName)
 	if err != nil {
 		return fmt.Errorf("failed to create template variables: %s", err)
 	}
-	return printToolUsageWithIndentation(toolName, 2, values)
+	return printToolUsageWithIndentation(w, toolName, 2, values)
 }
 
-func printToolUsageWithIndentation(toolName string, indentation int, values map[string]interface{}) error {
+func printToolUsageWithIndentation(w io.Writer, toolName string, indentation int, values map[string]interface{}) error {
 	tool, err := tools.GetByName(toolName)
 	if err != nil {
 		return fmt.Errorf("failed to get tool: %s", err)
@@ -164,7 +164,7 @@ func printToolUsageWithIndentation(toolName string, indentation int, values map[
 		if err != nil {
 			return fmt.Errorf("failed to parse template: %s", err)
 		}
-		err = tmpl.Execute(os.Stdout, values)
+		err = tmpl.Execute(w, values)
 		if err != nil {
 			return fmt.Errorf("failed to execute template: %s", err)
 		}
@@ -173,15 +173,15 @@ func printToolUsageWithIndentation(toolName string, indentation int, values map[
 	return nil
 }
 
-func printToolUpdate(toolName string) error {
+func printToolUpdate(w io.Writer, toolName string) error {
 	values, err := createTemplateVariablesForToolByName(toolName)
 	if err != nil {
 		return fmt.Errorf("failed to create template variables: %s", err)
 	}
-	return printToolUpdateWithIndentation(toolName, 2, values)
+	return printToolUpdateWithIndentation(w, toolName, 2, values)
 }
 
-func printToolUpdateWithIndentation(toolName string, indentation int, values map[string]interface{}) error {
+func printToolUpdateWithIndentation(w io.Writer, toolName string, indentation int, values map[string]interface{}) error {
 	tool, err := tools.GetByName(toolName)
 	if err != nil {
 		return fmt.Errorf("failed to get tool: %s", err)
@@ -198,7 +198,7 @@ func printToolUpdateWithIndentation(toolName string, indentation int, values map
 		if err != nil {
 			return fmt.Errorf("failed to parse template: %s", err)
 		}
-		err = tmpl.Execute(os.Stdout, values)
+		err = tmpl.Execute(w, values)
 		if err != nil {
 			return fmt.Errorf("failed to execute template: %s", err)
 		}

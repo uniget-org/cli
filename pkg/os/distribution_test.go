@@ -13,7 +13,7 @@ func TestGetOsVendor(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = os.WriteFile(tempDir+"/etc/os-release", []byte("ID=\"debian\""), 0644)
+	err = os.WriteFile(tempDir+"/etc/os-release", []byte("ID=\"debian\""), 0600)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -29,7 +29,7 @@ func TestGetOsVendor(t *testing.T) {
 func TestGetOsVendorFromMissingFile(t *testing.T) {
 	tempDir := t.TempDir()
 
-	err := os.WriteFile(tempDir+"/etc/os-release", []byte("ID=\"debian\""), 0644)
+	err := os.WriteFile(tempDir+"/etc/os-release", []byte("ID=\"debian\""), 0600)
 	if err == nil {
 		t.Errorf("expected error, got nil")
 	}

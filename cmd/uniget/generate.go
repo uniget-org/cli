@@ -14,8 +14,8 @@ var imageTarget string
 func initGenerateCmd() {
 	rootCmd.AddCommand(generateCmd)
 
-	generateCmd.Flags().StringVar(&baseImage,   "base", "ubuntu:24.04", "Base image to use")
-	generateCmd.Flags().StringVar(&imageTarget, "root", "usr/local",    "Root directory to install tools")
+	generateCmd.Flags().StringVar(&baseImage, "base", "ubuntu:24.04", "Base image to use")
+	generateCmd.Flags().StringVar(&imageTarget, "root", "usr/local", "Root directory to install tools")
 }
 
 var generateCmd = &cobra.Command{
@@ -62,7 +62,7 @@ var generateCmd = &cobra.Command{
 			result = append(result, fmt.Sprintf("COPY --link --from=%s%s:%s / /%s", registryImagePrefix, tool.Name, strings.Replace(toolVersion, "+", "-", -1), imageTarget))
 		}
 
-		fmt.Printf("%s", strings.Join(result, "\n"))
+		fmt.Fprintf(cmd.OutOrStdout(), "%s", strings.Join(result, "\n"))
 
 		return nil
 	},

@@ -29,7 +29,10 @@ var selfUpgradeCmd = &cobra.Command{
 	Long:  header + "\nUpgrade " + projectName + " to latest version",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		versionRegex := regexp.MustCompile(`^\d+\.\d+\.\d+(-[a-z]+\.\d+)?$`)
+		versionRegex, err := regexp.Compile(`^\d+\.\d+\.\d+(-[a-z]+\.\d+)?$`)
+		if err != nil {
+			return fmt.Errorf("cannot compile regexp: %w", err)
+		}
 		if !versionRegex.MatchString(version) {
 			return fmt.Errorf("invalid version %s", version)
 		}

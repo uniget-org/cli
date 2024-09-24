@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -9,13 +10,12 @@ import (
 )
 
 func TestInspect(t *testing.T) {
-	tempDir := t.TempDir()
-
-	tools = tool.Tools{
-		tool.Tool{
-			Name: "jq",
-		},
+	tool := tool.Tool{
+		Name:    "jq",
+		Version: "1.7.1",
+		Binary:  "jq",
 	}
+	tools.Tools = append(tools.Tools, tool)
 
 	tt := []struct {
 		name        string
@@ -25,15 +25,26 @@ func TestInspect(t *testing.T) {
 		outContains bool
 	}{
 		{
+			name:      "tool exists",
+			args:      []string{"inspect", "foo"},
+			expectErr: fmt.Errorf("error getting tool foo"),
+			expectOut: "bar",
+		},
+		{
 			name:      "foo",
 			args:      []string{"inspect", "jq"},
-			expectOut: "ocidir://" + tempDir + "testrepo:v2",
+			expectErr: nil,
+			expectOut: "bin/jq" + "\n" +
+				"share/man/man1/jq.1" + "\n" +
+				"var/lib/uniget/manifests/jq.json" + "\n" +
+				"var/lib/uniget/manifests/jq.txt",
 		},
 	}
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			out, err := cobraTest(t, nil, tc.args...)
+
 			if tc.expectErr != nil {
 				if err == nil {
 					t.Errorf("did not receive expected error: %v", tc.expectErr)

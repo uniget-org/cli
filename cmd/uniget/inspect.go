@@ -58,9 +58,9 @@ var inspectCmd = &cobra.Command{
 
 		logging.Info.Printfln("Inspecting %s %s\n", inspectTool.Name, inspectTool.Version)
 		if viper.GetBool("usepathrewrite") {
-			err = inspectTool.InspectWithPathRewrites(registry, imageRepository, rawInspect, pathRewriteRules)
+			err = inspectTool.InspectWithPathRewrites(cmd.OutOrStdout(), registry, imageRepository, rawInspect, pathRewriteRules)
 		} else {
-			err = inspectTool.Inspect(registry, imageRepository, rawInspect)
+			err = inspectTool.Inspect(cmd.OutOrStdout(), registry, imageRepository, rawInspect)
 		}
 		if err != nil {
 			return fmt.Errorf("unable to inspect %s: %s", inspectTool.Name, err)

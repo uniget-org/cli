@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"sort"
 
 	"github.com/jedib0t/go-pretty/v6/table"
@@ -50,7 +49,7 @@ var tagsCmd = &cobra.Command{
 		sort.Strings(keys)
 
 		t := table.NewWriter()
-		t.SetOutputMirror(os.Stdout)
+		t.SetOutputMirror(cmd.OutOrStdout())
 		t.Style().Options.DrawBorder = false
 		t.Style().Options.SeparateColumns = false
 		t.Style().Options.SeparateFooter = false
