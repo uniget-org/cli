@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/uniget-org/cli/pkg/containers"
 	"github.com/uniget-org/cli/pkg/logging"
 
 	"github.com/uniget-org/cli/pkg/tool"
@@ -58,9 +59,15 @@ var inspectCmd = &cobra.Command{
 
 		logging.Info.Printfln("Inspecting %s %s\n", inspectTool.Name, inspectTool.Version)
 		if viper.GetBool("usepathrewrite") {
-			err = inspectTool.InspectWithPathRewrites(cmd.OutOrStdout(), registry, imageRepository, rawInspect, pathRewriteRules)
+			err = inspectTool.InspectWithPathRewritesOld(cmd.OutOrStdout(), registry, imageRepository, rawInspect, pathRewriteRules)
+
 		} else {
-			err = inspectTool.Inspect(cmd.OutOrStdout(), registry, imageRepository, rawInspect)
+			var layer []byte
+			layer, err = toolCache.Get(containers.NewToolRef(registry, imageRepository, inspectTool.Name, inspectTool.Version))
+			if err != nil {
+				return fmt.Errorf("unable to get image: %s", err)
+			}
+			err = inspectTool.Inspect(cmd.OutOrStdout(), layer)
 		}
 		if err != nil {
 			return fmt.Errorf("unable to inspect %s: %s", inspectTool.Name, err)

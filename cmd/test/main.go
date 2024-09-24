@@ -1,7 +1,6 @@
 package main
 
 import (
-	"archive/tar"
 	"context"
 	"fmt"
 	"os"
@@ -11,10 +10,11 @@ import (
 )
 
 var (
-	registryAddress    = "127.0.0.1:5000"
+	//registryAddress    = "127.0.0.1:5000"
+	registryAddress    = "ghcr.io"
 	registryRepository = "uniget-org/tools"
-	registryImage      = "jq"
-	registryTag        = "1.7.1"
+	registryImage      = "gojq"
+	registryTag        = "0.12.16"
 	r                  = containers.NewToolRef(registryAddress, registryRepository, registryImage, registryTag)
 )
 
@@ -26,22 +26,12 @@ func main() {
 	fmt.Println("Registry:")
 	rc := containers.GetRegclient()
 	defer rc.Close(ctx, ref)
-	registryLayerGz, err := containers.GetFirstLayerFromRegistry(ctx, rc, ref)
+	registryLayer, err := containers.GetFirstLayerFromRegistry(ctx, rc, ref)
 	if err != nil {
 		panic(err)
 	}
-	registryLayer, err := archive.Gunzip(registryLayerGz)
-	if err != nil {
-		panic(err)
-	}
-	err = archive.ProcessTarContents(registryLayer, func(reader *tar.Reader, header *tar.Header) error {
-		//err := os.Chdir("/tmp")
-		//if err != nil {
-		//	return err
-		//}
 
-		return archive.CallbackExtractTarItem(reader, header)
-	})
+	err = archive.ProcessTarContents(registryLayer, archive.CallbackExtractTarItem)
 	if err != nil {
 		panic(err)
 	}
