@@ -114,8 +114,6 @@ func removeCron() error {
 		lines = lines[:len(lines)-1]
 	}
 
-	fmt.Printf("Line count: %d\n", len(lines))
-
 	err = setUserCrontab(lines)
 	if err != nil {
 		return fmt.Errorf("cannot set user crontab: %w", err)

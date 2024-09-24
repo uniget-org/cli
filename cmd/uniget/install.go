@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"html/template"
+	"io"
 	"os"
 	"strings"
 	"syscall"
@@ -121,7 +122,7 @@ var installCmd = &cobra.Command{
 		}
 		logging.Debugf("Requested %d tool(s)", len(requestedTools.Tools))
 
-		return installTools(requestedTools, check, plan, reinstall, skipDependencies, skipConflicts)
+		return installTools(cmd.OutOrStdout(), requestedTools, check, plan, reinstall, skipDependencies, skipConflicts)
 	},
 }
 
@@ -150,7 +151,7 @@ func findInstalledTools(tools tool.Tools) (tool.Tools, error) {
 	return requestedTools, nil
 }
 
-func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bool, skipDependencies bool, skipConflicts bool) error {
+func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool, reinstall bool, skipDependencies bool, skipConflicts bool) error {
 	var plannedTools tool.Tools
 
 	// Add dependencies of requested tools
@@ -223,7 +224,7 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 		}
 	}
 	if conflictsDetected {
-		plannedTools.ListWithStatus()
+		plannedTools.ListWithStatus(w)
 	}
 	if len(conflictsWithInstalled.Tools) > 0 {
 		logging.Error.Printfln("Conflicts with installed tools:")
@@ -249,7 +250,7 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 		//       - Show version status (installed, outdated, missing)
 		//       - Use color and emoji
 		if !conflictsDetected {
-			plannedTools.ListWithStatus()
+			plannedTools.ListWithStatus(w)
 		}
 	}
 	if check {
@@ -296,7 +297,7 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 				logging.Warning.Printfln("Unable to uninstall %s: %s", plannedTool.Name, err)
 				continue
 			}
-			err = printToolUpdate(plannedTool.Name)
+			err = printToolUpdate(w, plannedTool.Name)
 			if err != nil {
 				logging.Warning.Printfln("Unable to print tool update: %s", err)
 				continue
@@ -363,7 +364,7 @@ func installTools(requestedTools tool.Tools, check bool, plan bool, reinstall bo
 			installSpinner.Success()
 		}
 
-		err = printToolUsage(plannedTool.Name)
+		err = printToolUsage(w, plannedTool.Name)
 		if err != nil {
 			logging.Warning.Printfln("Unable to print tool usage: %s", err)
 			continue

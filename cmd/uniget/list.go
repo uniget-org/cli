@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -69,7 +68,7 @@ var listCmd = &cobra.Command{
 		}
 
 		if listOutput == "pretty" {
-			listTools.List()
+			listTools.List(cmd.OutOrStdout())
 
 		} else if listOutput == "json" {
 			data, err := json.Marshal(listTools)
@@ -79,7 +78,7 @@ var listCmd = &cobra.Command{
 			fmt.Println(string(data))
 
 		} else if listOutput == "yaml" {
-			yamlEncoder := yaml.NewEncoder(os.Stdout)
+			yamlEncoder := yaml.NewEncoder(cmd.OutOrStdout())
 			yamlEncoder.SetIndent(2)
 			defer yamlEncoder.Close()
 			err := yamlEncoder.Encode(listTools)

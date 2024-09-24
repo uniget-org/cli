@@ -14,6 +14,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/uniget-org/cli/pkg/containers"
 	"github.com/uniget-org/cli/pkg/logging"
+	"github.com/uniget-org/cli/pkg/semver"
 )
 
 var describeOutput string
@@ -69,7 +70,7 @@ var describeCmd = &cobra.Command{
 		}
 
 		if describeOutput == "pretty" {
-			tool.Print()
+			tool.Print(cmd.OutOrStdout())
 
 		} else if describeOutput == "json" {
 			data, err := json.Marshal(tool)
@@ -79,7 +80,7 @@ var describeCmd = &cobra.Command{
 			fmt.Println(string(data))
 
 		} else if describeOutput == "yaml" {
-			yamlEncoder := yaml.NewEncoder(os.Stdout)
+			yamlEncoder := yaml.NewEncoder(cmd.OutOrStdout())
 			yamlEncoder.SetIndent(2)
 			defer yamlEncoder.Close()
 			err := yamlEncoder.Encode(tool)
@@ -98,10 +99,10 @@ var describeCmd = &cobra.Command{
 				return fmt.Errorf("failed to get image tags: %s", err)
 			}
 
-			sort.Sort(sort.Reverse(byVersion(tags)))
-			fmt.Printf("  Available versions:\n")
+			sort.Sort(sort.Reverse(semver.ByVersion(tags)))
+			fmt.Fprintf(cmd.OutOrStdout(), "  Available versions:\n")
 			for _, tag := range tags {
-				fmt.Printf("    %s\n", tag)
+				fmt.Fprintf(cmd.OutOrStdout(), "    %s\n", tag)
 			}
 		}
 
@@ -143,14 +144,14 @@ var describeCmd = &cobra.Command{
 			}
 
 			if len(releaseTags) > 0 {
-				fmt.Println("  Upstream versions (most recent):")
-				sort.Sort(sort.Reverse(byVersion(releaseTags)))
+				fmt.Fprintln(cmd.OutOrStdout(), "  Upstream versions (most recent):")
+				sort.Sort(sort.Reverse(semver.ByVersion(releaseTags)))
 				for _, releaseTag := range releaseTags {
 					version, err := extractVersionfromTag(releaseTag, tool.Renovate.ExtractVersion)
 					if err != nil {
 						return fmt.Errorf("failed to extract version from tag: %s", err)
 					}
-					fmt.Printf("    %s\n", version)
+					fmt.Fprintf(cmd.OutOrStdout(), "    %s\n", version)
 				}
 
 			} else {
