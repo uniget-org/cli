@@ -5,10 +5,8 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"io"
 	"testing"
 
-	"github.com/regclient/regclient/types/blob"
 	"github.com/regclient/regclient/types/platform"
 	"github.com/regclient/regclient/types/ref"
 )
@@ -45,86 +43,6 @@ func TestGetImageTags(t *testing.T) {
 	}
 	if len(tags) == 0 {
 		t.Errorf("no tags found")
-	}
-}
-
-func TestGetPlatformManifestOldMissingManifest(t *testing.T) {
-	toolRef := NewToolRef(registryAddress, registryRepository, registryImage, "missing")
-	r, err := ref.New(toolRef.String())
-	if err != nil {
-		t.Errorf("failed to parse image name <%s>: %s", toolRef.String(), err)
-	}
-	rc := GetRegclient()
-	defer rc.Close(context.Background(), r)
-
-	_, err = GetPlatformManifestOld(context.Background(), rc, r)
-	if err == nil {
-		t.Errorf("expected error due to missing manifest: %s", err)
-	}
-}
-
-func TestGetPlatformManifestOld(t *testing.T) {
-	toolRef = NewToolRef(registryAddress, registryRepository, registryImage, registryTag)
-	r, err := ref.New(toolRef.String())
-	if err != nil {
-		t.Errorf("failed to parse image name <%s>: %s", toolRef.String(), err)
-	}
-	rc := GetRegclient()
-	defer rc.Close(context.Background(), r)
-
-	m, err := GetPlatformManifestOld(context.Background(), rc, r)
-	if err != nil {
-		t.Errorf("failed to get platform manifest: %s", err)
-	}
-	if m == nil {
-		t.Errorf("no platform manifest found")
-	}
-}
-
-func TestGetManifestOld(t *testing.T) {
-	toolRef = NewToolRef(registryAddress, registryRepository, registryImage, registryTag)
-
-	err := GetManifestOld(toolRef, func(blob blob.Reader) error {
-		layer, err := io.ReadAll(blob)
-		if err != nil {
-			return fmt.Errorf("failed to read layer: %s", err)
-		}
-		if len(layer) == 0 {
-			return fmt.Errorf("layer is empty")
-		}
-		return nil
-	})
-	if err != nil {
-		t.Errorf("failed to get and process manifest: %s", err)
-	}
-}
-
-func TestProcessLayersCallback(t *testing.T) {
-	toolRef = NewToolRef(registryAddress, registryRepository, registryImage, registryTag)
-	r, err := ref.New(toolRef.String())
-	if err != nil {
-		t.Errorf("failed to parse image name <%s>: %s", toolRef.String(), err)
-	}
-	rc := GetRegclient()
-	defer rc.Close(context.Background(), r)
-
-	m, err := GetPlatformManifestOld(context.Background(), rc, r)
-	if err != nil {
-		t.Errorf("failed to get platform manifest: %s", err)
-	}
-
-	err = ProcessLayersCallback(rc, m, r, func(blob blob.Reader) error {
-		layer, err := io.ReadAll(blob)
-		if err != nil {
-			return fmt.Errorf("failed to read layer: %s", err)
-		}
-		if len(layer) == 0 {
-			return fmt.Errorf("layer is empty")
-		}
-		return nil
-	})
-	if err != nil {
-		t.Errorf("failed to process layers: %s", err)
 	}
 }
 

@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/uniget-org/cli/pkg/containers"
 	"github.com/uniget-org/cli/pkg/logging"
 	"github.com/uniget-org/cli/pkg/tool"
 )
@@ -344,15 +345,32 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 		}
 
 		assertDirectory(viper.GetString("prefix") + "/" + viper.GetString("target"))
-		var err error
-		if viper.GetBool("usepathrewrite") {
-			logging.Debug("Using path rewrite rules")
-			err = plannedTool.InstallWithPathRewrites(registry, imageRepository, viper.GetString("prefix"), pathRewriteRules, createPatchFileCallback(plannedTool))
-
-		} else {
-			logging.Debug("Not using path rewrite rules")
-			err = plannedTool.Install(registry, imageRepository, viper.GetString("prefix"), viper.GetString("target"), libDirectory, cacheDirectory, createPatchFileCallback(plannedTool))
+		ref := containers.NewToolRef(registry, imageRepository, plannedTool.Name, plannedTool.Version)
+		logging.Debugf("Getting image %s", ref)
+		layer, err := toolCache.Get(ref)
+		if err != nil {
+			return fmt.Errorf("unable to get image: %s", err)
 		}
+		logging.Debug("Using path rewrite rules")
+
+		// Change working directory to prefix
+		// so that unpacking can ignore the target directory
+		prefix := viper.GetString("prefix")
+		installDir := prefix
+		if len(prefix) == 0 {
+			installDir = "/"
+		}
+		err = os.Chdir(installDir)
+		if err != nil {
+			return fmt.Errorf("error changing directory to %s: %s", prefix, err)
+		}
+		dir, err := os.Getwd()
+		if err != nil {
+			return fmt.Errorf("error getting working directory")
+		}
+		logging.Debugf("Current directory: %s", dir)
+
+		err = plannedTool.Install(w, layer, pathRewriteRules, createPatchFileCallback(plannedTool))
 		if err != nil {
 			if installSpinner != nil {
 				installSpinner.Fail()
@@ -405,6 +423,7 @@ func createPatchFileCallback(tool tool.Tool) func(path string) {
 
 		filePath := strings.TrimSuffix(templatePath, ".go-template")
 		logging.Info.Printfln("Patching file %s <- %s", filePath, templatePath)
+		logging.Debugf("values = %v", values)
 
 		templathPathInfo, err := os.Stat(templatePath)
 		if err != nil {

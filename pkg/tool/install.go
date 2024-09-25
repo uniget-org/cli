@@ -2,17 +2,11 @@ package tool
 
 import (
 	"archive/tar"
-	"fmt"
 	"io"
-	"os"
 	"strings"
 
-	"github.com/pterm/pterm"
 	"github.com/uniget-org/cli/pkg/archive"
-	"github.com/uniget-org/cli/pkg/containers"
 	"github.com/uniget-org/cli/pkg/logging"
-
-	"github.com/regclient/regclient/types/blob"
 )
 
 type PathRewrite struct {
@@ -53,117 +47,21 @@ func applyPathRewrites(path string, rules []PathRewrite) string {
 	return newPath
 }
 
-func (tool *Tool) InstallWithPathRewrites(registry, imageRepository string, prefix string, rules []PathRewrite, patchFile func(path string)) error {
-	// Fetch manifest for tool
-	toolRef := containers.NewToolRef(registry, imageRepository, tool.Name, strings.Replace(tool.Version, "+", "-", -1))
-	err := containers.GetManifestOld(toolRef, func(blob blob.Reader) error {
-		logging.Debugf("Extracting with prefix=%s", prefix)
-
-		// Change working directory to prefix
-		// so that unpacking can ignore the target directory
-		installDir := prefix
-		if len(prefix) == 0 {
-			installDir = "/"
-		}
-		err := os.Chdir(installDir)
-		if err != nil {
-			return fmt.Errorf("error changing directory to %s: %s", prefix, err)
-		}
-		dir, err := os.Getwd()
-		if err != nil {
-			return fmt.Errorf("error getting working directory")
-		}
-		logging.Debugf("Current directory: %s", dir)
-
-		// Unpack tool
-		err = archive.ExtractTarGz(blob, func(path string) string {
-			return applyPathRewrites(path, rules)
-		}, patchFile)
-		if err != nil {
-			return fmt.Errorf("failed to extract layer: %s", err)
-		}
-
-		return nil
-	})
-	if err != nil {
-		return fmt.Errorf("failed to get manifest: %s", err)
-	}
-
-	return nil
-}
-
-func (tool *Tool) Install(registry, imageRepository string, prefix string, target string, libDirectory string, cacheDirectory string, patchFile func(path string)) error {
-	// Fetch manifest for tool
-	toolRef := containers.NewToolRef(registry, imageRepository, tool.Name, strings.Replace(tool.Version, "+", "-", -1))
-	err := containers.GetManifestOld(toolRef, func(blob blob.Reader) error {
-		logging.Debugf("Extracting with prefix=%s and target=%s", prefix, target)
-
-		// Change working directory to prefix
-		// so that unpacking can ignore the target directory
-		installDir := prefix
-		if len(prefix) == 0 {
-			installDir = "/"
-		}
-		err := os.Chdir(installDir)
-		if err != nil {
-			return fmt.Errorf("error changing directory to %s: %s", prefix, err)
-		}
-		dir, err := os.Getwd()
-		if err != nil {
-			return fmt.Errorf("error getting working directory")
-		}
-		logging.Debugf("Current directory: %s", dir)
-
-		// Unpack tool
-		err = archive.ExtractTarGz(blob, func(path string) string {
-			// Skip paths that are a prefix of usr/local/
-			// Necessary as long as tools are still installed in hardcoded /usr/local
-			if strings.HasPrefix("usr/local/", path) {
-				pterm.Debug.Println("Path is prefix of usr/local/")
-				return ""
-			}
-
-			// Remove prefix usr/local/ to support arbitrary target directories
-			fixedPath := strings.TrimPrefix(path, "usr/local/")
-
-			// Fix lib directory
-			if strings.HasPrefix(fixedPath, "var/lib/uniget/") {
-				logging.Debugf("Replacing lib directory with %s", libDirectory)
-				fixedPath = libDirectory + "/" + strings.TrimPrefix(fixedPath, "var/lib/uniget/")
-
-				// Fix cache directory
-			} else if strings.HasPrefix(fixedPath, "var/cache/uniget/") {
-				logging.Debugf("Replacing cache directory with %s", cacheDirectory)
-				fixedPath = cacheDirectory + "/" + strings.TrimPrefix(fixedPath, "var/cache/uniget/")
-
-				// Prepending target
-			} else if len(target) > 0 {
-				logging.Debugf("Prepending target to %s", fixedPath)
-				fixedPath = target + "/" + fixedPath
-			}
-
-			return fixedPath
-		}, patchFile)
-		if err != nil {
-			return fmt.Errorf("failed to extract layer: %s", err)
-		}
-
-		return nil
-	})
-	if err != nil {
-		return fmt.Errorf("failed to get manifest: %s", err)
-	}
-
-	return nil
-}
-
-func (tool *Tool) Inspect(w io.Writer, layer []byte) error {
-	return archive.ProcessTarContents(layer, archive.CallbackDisplayTarItem)
-}
-
-func (tool *Tool) InspectWithPathRewrites(w io.Writer, layer []byte, rules []PathRewrite) error {
+func (tool *Tool) Inspect(w io.Writer, layer []byte, rules []PathRewrite) error {
 	return archive.ProcessTarContents(layer, func(reader *tar.Reader, header *tar.Header) error {
 		header.Name = applyPathRewrites(header.Name, rules)
 		return archive.CallbackDisplayTarItem(reader, header)
+	})
+}
+
+func (tool *Tool) Install(w io.Writer, layer []byte, rules []PathRewrite, patchFile func(path string)) error {
+	return archive.ProcessTarContents(layer, func(reader *tar.Reader, header *tar.Header) error {
+		header.Name = applyPathRewrites(header.Name, rules)
+		err := archive.CallbackExtractTarItem(reader, header)
+		if err != nil {
+			return err
+		}
+		patchFile(header.Name)
+		return nil
 	})
 }

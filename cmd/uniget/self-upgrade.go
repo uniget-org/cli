@@ -1,7 +1,9 @@
 package main
 
 import (
+	"archive/tar"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -115,7 +117,22 @@ var selfUpgradeCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("failed to remove %s: %s", selfExe, err)
 		}
-		err = archive.ExtractTarGz(resp.Body, func(path string) string { return path }, func(path string) {})
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return fmt.Errorf("failed to read body: %s", err)
+		}
+		err = archive.ProcessTarContents(body, func(tar *tar.Reader, header *tar.Header) error {
+			if header.Name == "uniget" {
+				logging.Debugf("Extracting %s", header.Name)
+				err := archive.CallbackExtractTarItem(tar, header)
+				if err != nil {
+					return fmt.Errorf("failed to extract %s: %s", header.Name, err)
+				}
+			}
+
+			return nil
+		})
 		if err != nil {
 			return fmt.Errorf("failed to extract tar.gz: %s", err)
 		}
