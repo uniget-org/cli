@@ -4,15 +4,41 @@ import (
 	"bytes"
 	"io"
 	"testing"
+
+	"github.com/pterm/pterm"
 )
+
+func TestDefaultLevel(t *testing.T) {
+	Init()
+
+	if Level != pterm.LogLevelInfo {
+		t.Errorf("Level = %v; want %v", Level, pterm.LogLevelInfo)
+	}
+}
+
+func TestDebugLevel(t *testing.T) {
+	Level = pterm.LogLevelDebug
+	Init()
+
+	if Level != pterm.LogLevelDebug {
+		t.Errorf("Level = %v; want %v", Level, pterm.LogLevelDebug)
+	}
+}
+
+func TestTraceLevel(t *testing.T) {
+	Level = pterm.LogLevelTrace
+	Init()
+
+	if Level != pterm.LogLevelTrace {
+		t.Errorf("Level = %v; want %v", Level, pterm.LogLevelTrace)
+	}
+}
 
 func TestInit(t *testing.T) {
 	var outWriter io.Writer
 	var errWriter io.Writer
-
 	OutputWriter = outWriter
 	ErrorWriter = errWriter
-
 	Init()
 
 	if Description.Writer != outWriter {
@@ -40,11 +66,9 @@ func TestInit(t *testing.T) {
 
 func TestPrefixWriters(t *testing.T) {
 	var outBuffer bytes.Buffer
-	OutputWriter = &outBuffer
-
 	var errBuffer bytes.Buffer
+	OutputWriter = &outBuffer
 	ErrorWriter = &errBuffer
-
 	Init()
 
 	Description.Println("description")
@@ -73,18 +97,33 @@ func TestPrefixWriters(t *testing.T) {
 	strippedOut := StripAnsi(outBuffer.String())
 	strippedErr := StripAnsi(errBuffer.String())
 
-	if strippedOut != expectedOut {
+	if string(strippedOut) != expectedOut {
 		t.Errorf("outBuffer = %s; want %s", strippedOut, expectedOut)
 	}
-	if strippedErr != expectedErr {
+	if string(strippedErr) != expectedErr {
 		t.Errorf("errBuffer = %s; want %s", strippedErr, expectedErr)
 	}
 }
 
-func TestLoggers(t *testing.T) {
+func TestLoggersInfoLevel(t *testing.T) {
 	var outBuffer bytes.Buffer
 	OutputWriter = &outBuffer
 
+	Init()
+
+	Debug("foo")
+	Trace("bar")
+
+	expectedOut := ""
+	if outBuffer.String() != expectedOut {
+		t.Errorf("outBuffer = <%s>; want <%s>", outBuffer.String(), expectedOut)
+	}
+}
+
+func TestLoggersDebugLevel(t *testing.T) {
+	var outBuffer bytes.Buffer
+	OutputWriter = &outBuffer
+	Level = pterm.LogLevelDebug
 	Init()
 
 	Debug("foo")
@@ -95,10 +134,31 @@ func TestLoggers(t *testing.T) {
 	}
 
 	expectedOut := "" +
-		"DEBUG foo" + "\n" +
-		"TRACE bar" + "\n"
+		"DEBUG foo " + "\n"
 	strippedOut := StripAnsi(outBuffer.String())
-	if strippedOut != expectedOut {
+	if string(strippedOut) != expectedOut {
+		t.Errorf("outBuffer = <%s>; want <%s>", strippedOut, expectedOut)
+	}
+}
+
+func TestLoggersTraceLevel(t *testing.T) {
+	var outBuffer bytes.Buffer
+	OutputWriter = &outBuffer
+	Level = pterm.LogLevelTrace
+	Init()
+
+	Debug("foo")
+	Trace("bar")
+
+	if len(outBuffer.String()) == 0 {
+		t.Errorf("outBuffer is empty")
+	}
+
+	expectedOut := "" +
+		"DEBUG foo " + "\n" +
+		"TRACE bar " + "\n"
+	strippedOut := StripAnsi(outBuffer.String())
+	if string(strippedOut) != expectedOut {
 		t.Errorf("outBuffer = <%s>; want <%s>", strippedOut, expectedOut)
 	}
 }
