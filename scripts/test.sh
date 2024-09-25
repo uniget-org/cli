@@ -33,7 +33,7 @@ function check_file() {
 
 TEMP_DIR=$(mktemp -d)
 echo "Using temp dir: ${TEMP_DIR}"
-trap "rm -rf $TEMP_DIR" EXIT
+trap "find $TEMP_DIR -type f; rm -rf $TEMP_DIR" EXIT
 
 uniget --prefix=${TEMP_DIR} update
 check_file "${TEMP_DIR}/var/cache/uniget/metadata.json" "Metadata" || exit 1
