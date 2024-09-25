@@ -1,6 +1,7 @@
 package tool
 
 import (
+	"archive/tar"
 	"fmt"
 	"io"
 	"os"
@@ -156,63 +157,13 @@ func (tool *Tool) Install(registry, imageRepository string, prefix string, targe
 	return nil
 }
 
-func (tool *Tool) InspectOld(w io.Writer, registry, imageRepository string, raw bool) error {
-	// Fetch manifest for tool
-	toolRef := containers.NewToolRef(registry, imageRepository, tool.Name, strings.Replace(tool.Version, "+", "-", -1))
-	err := containers.GetManifestOld(toolRef, func(blob blob.Reader) error {
-		result, err := archive.ListTarGz(blob, func(path string) string {
-			// Remove prefix usr/local/ to support arbitrary target directories
-			// Necessary as long as tools are still installed in hardcoded /usr/local
-			fixedPath := path
-			if !raw {
-				fixedPath = strings.TrimPrefix(path, "usr/local/")
-			}
-			return fixedPath
-		})
-		if err != nil {
-			return fmt.Errorf("failed to extract layer: %s", err)
-		}
-
-		// Display contents of tool image
-		for _, file := range result {
-			//fmt.Printf("%s\n", file)
-			fmt.Fprintf(w, "%s\n", file)
-		}
-
-		return nil
-	})
-	if err != nil {
-		return fmt.Errorf("failed to get manifest: %s", err)
-	}
-
-	return nil
-}
-
-func (tool *Tool) InspectWithPathRewritesOld(w io.Writer, registry, imageRepository string, raw bool, rules []PathRewrite) error {
-	// Fetch manifest for tool
-	toolRef := containers.NewToolRef(registry, imageRepository, tool.Name, strings.Replace(tool.Version, "+", "-", -1))
-	err := containers.GetManifestOld(toolRef, func(blob blob.Reader) error {
-		result, err := archive.ListTarGz(blob, func(path string) string {
-			return applyPathRewrites(path, rules)
-		})
-		if err != nil {
-			return fmt.Errorf("failed to extract layer: %s", err)
-		}
-
-		// Display contents of tool image
-		for _, file := range result {
-			fmt.Fprintf(w, "%s\n", file)
-		}
-
-		return nil
-	})
-	if err != nil {
-		return fmt.Errorf("failed to get manifest: %s", err)
-	}
-
-	return nil
-}
-
 func (tool *Tool) Inspect(w io.Writer, layer []byte) error {
 	return archive.ProcessTarContents(layer, archive.CallbackDisplayTarItem)
+}
+
+func (tool *Tool) InspectWithPathRewrites(w io.Writer, layer []byte, rules []PathRewrite) error {
+	return archive.ProcessTarContents(layer, func(reader *tar.Reader, header *tar.Header) error {
+		header.Name = applyPathRewrites(header.Name, rules)
+		return archive.CallbackDisplayTarItem(reader, header)
+	})
 }
