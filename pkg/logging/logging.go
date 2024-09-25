@@ -12,8 +12,7 @@ var (
 	OutputWriter io.Writer      = os.Stdout
 	ErrorWriter  io.Writer      = os.Stderr
 	Level        pterm.LogLevel = pterm.LogLevelInfo
-	DebugLogger  *pterm.Logger
-	TraceLogger  *pterm.Logger
+	CustomLogger *pterm.Logger
 	Description  pterm.PrefixPrinter
 	Info         pterm.PrefixPrinter
 	Success      pterm.PrefixPrinter
@@ -24,14 +23,8 @@ var (
 )
 
 func Init() {
-	DebugLogger = &pterm.Logger{
-		Level:    pterm.LogLevelDebug,
-		Writer:   OutputWriter,
-		MaxWidth: 1000,
-	}
-
-	TraceLogger = &pterm.Logger{
-		Level:    pterm.LogLevelTrace,
+	CustomLogger = &pterm.Logger{
+		Level:    Level,
 		Writer:   OutputWriter,
 		MaxWidth: 1000,
 	}
@@ -102,7 +95,7 @@ func Init() {
 }
 
 func Debug(message string) {
-	DebugLogger.
+	CustomLogger.
 		WithTime(false).
 		Debug(message)
 }
@@ -114,7 +107,7 @@ func Debugf(message string, args ...interface{}) {
 }
 
 func Trace(message string) {
-	TraceLogger.
+	CustomLogger.
 		WithTime(false).
 		Trace(message)
 }

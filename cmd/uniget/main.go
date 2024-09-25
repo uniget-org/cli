@@ -220,23 +220,21 @@ func main() {
 	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
 		logging.OutputWriter = cmd.OutOrStdout()
 		logging.ErrorWriter = cmd.ErrOrStderr()
-		logging.Init()
 
 		if viper.GetBool("trace") {
 			pterm.EnableDebugMessages()
-			pterm.DefaultLogger.Level = pterm.LogLevelTrace
 			logging.Level = pterm.LogLevelTrace
 
 		} else if viper.GetBool("debug") {
 			pterm.EnableDebugMessages()
-			pterm.DefaultLogger.Level = pterm.LogLevelDebug
 			logging.Level = pterm.LogLevelDebug
 
 		} else {
 			pterm.DisableDebugMessages()
-			pterm.DefaultLogger.Level = pterm.LogLevelInfo
 			logging.Level = pterm.LogLevelInfo
 		}
+
+		logging.Init()
 
 		if len(viper.GetString("prefix")) > 0 {
 			re, err := regexp.Compile(`^\/`)
