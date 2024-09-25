@@ -58,15 +58,14 @@ var inspectCmd = &cobra.Command{
 		}
 
 		logging.Info.Printfln("Inspecting %s %s\n", inspectTool.Name, inspectTool.Version)
+		layer, err := toolCache.Get(containers.NewToolRef(registry, imageRepository, inspectTool.Name, inspectTool.Version))
+		if err != nil {
+			return fmt.Errorf("unable to get image: %s", err)
+		}
 		if viper.GetBool("usepathrewrite") {
-			err = inspectTool.InspectWithPathRewritesOld(cmd.OutOrStdout(), registry, imageRepository, rawInspect, pathRewriteRules)
+			err = inspectTool.InspectWithPathRewrites(cmd.OutOrStdout(), layer, pathRewriteRules)
 
 		} else {
-			var layer []byte
-			layer, err = toolCache.Get(containers.NewToolRef(registry, imageRepository, inspectTool.Name, inspectTool.Version))
-			if err != nil {
-				return fmt.Errorf("unable to get image: %s", err)
-			}
 			err = inspectTool.Inspect(cmd.OutOrStdout(), layer)
 		}
 		if err != nil {

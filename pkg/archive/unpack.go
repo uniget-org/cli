@@ -343,13 +343,13 @@ func CallbackDisplayTarItem(reader *tar.Reader, header *tar.Header) error {
 	switch header.Typeflag {
 	case tar.TypeDir:
 	case tar.TypeReg:
-		logging.Info.Printfln("File: %s", header.Name)
+		fmt.Fprintf(logging.OutputWriter, "%s\n", header.Name)
 	case tar.TypeSymlink:
-		logging.Info.Printfln("Symlink: %s -> %s", header.Name, header.Linkname)
+		fmt.Fprintf(logging.OutputWriter, "%s -> %s\n", header.Name, header.Linkname)
 	case tar.TypeLink:
-		logging.Info.Printfln("Link: %s -> %s", header.Name, header.Linkname)
+		fmt.Fprintf(logging.OutputWriter, "%s -> %s\n", header.Name, header.Linkname)
 	default:
-		logging.Info.Printfln("Unknown: %s", header.Name)
+		fmt.Fprintf(logging.ErrorWriter, "Unknown: %s\n", header.Name)
 	}
 	return nil
 }
