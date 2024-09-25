@@ -62,12 +62,7 @@ var inspectCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("unable to get image: %s", err)
 		}
-		if viper.GetBool("usepathrewrite") {
-			err = inspectTool.InspectWithPathRewrites(cmd.OutOrStdout(), layer, pathRewriteRules)
-
-		} else {
-			err = inspectTool.Inspect(cmd.OutOrStdout(), layer)
-		}
+		err = inspectTool.Inspect(cmd.OutOrStdout(), layer, pathRewriteRules)
 		if err != nil {
 			return fmt.Errorf("unable to inspect %s: %s", inspectTool.Name, err)
 		}

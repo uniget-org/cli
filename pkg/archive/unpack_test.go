@@ -55,9 +55,13 @@ func unpackTestArchive(testArchive string, t *testing.T) string {
 		t.Errorf("failed to change directory to %s: %v", tempDir, err)
 	}
 
-	err = ExtractTarGz(reader, func(path string) string { return path }, func(path string) {})
+	archive, err := io.ReadAll(reader)
 	if err != nil {
-		t.Errorf("failed to extract tar.gz: %v", err)
+		t.Errorf("failed to read %s: %v", testArchive, err)
+	}
+	err = ProcessTarContents(archive, CallbackExtractTarItem)
+	if err != nil {
+		t.Errorf("failed to extract %s: %v", testArchive, err)
 	}
 
 	err = os.Chdir(curDir)
@@ -135,38 +139,6 @@ func TestExtractTarGz(t *testing.T) {
 	}
 	if string(data) != "bar\n" {
 		t.Errorf("expected bar, got %s", string(data))
-	}
-}
-
-func TestListTarGz(t *testing.T) {
-	reader := openTestArchive(testTarGz, t)
-
-	tempDir := t.TempDir()
-	curDir, err := os.Getwd()
-	if err != nil {
-		t.Errorf("failed to get current directory: %v", err)
-	}
-	err = os.Chdir(tempDir)
-	if err != nil {
-		t.Errorf("failed to change directory to %s: %v", tempDir, err)
-	}
-
-	files, err := ListTarGz(reader, func(path string) string { return path })
-	if err != nil {
-		t.Errorf("failed to extract tar.gz: %v", err)
-	}
-
-	if len(files) != 1 {
-		t.Errorf("expected 1 file, got %d", len(files))
-	}
-
-	if files[0] != "foo" {
-		t.Errorf("expected foo, got %s", files[0])
-	}
-
-	err = os.Chdir(curDir)
-	if err != nil {
-		t.Errorf("failed to change directory to %s: %v", curDir, err)
 	}
 }
 

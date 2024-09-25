@@ -1,6 +1,8 @@
 package main
 
 import (
+	"archive/tar"
+	"context"
 	"fmt"
 	"os"
 
@@ -11,8 +13,6 @@ import (
 	"github.com/uniget-org/cli/pkg/containers"
 	"github.com/uniget-org/cli/pkg/logging"
 	"github.com/uniget-org/cli/pkg/tool"
-
-	"github.com/regclient/regclient/types/blob"
 )
 
 var quiet bool
@@ -59,22 +59,26 @@ var updateCmd = &cobra.Command{
 
 func downloadMetadata() error {
 	assertCacheDirectory()
-	t := containers.NewToolRef(registry, imageRepository, "main", "latest")
-	err := containers.GetManifestOld(t, func(blob blob.Reader) error {
-		logging.Debugf("Changing directory to %s", viper.GetString("prefix")+"/"+cacheDirectory)
-		err := os.Chdir(viper.GetString("prefix") + "/" + cacheDirectory)
-		if err != nil {
-			return fmt.Errorf("error changing directory to %s: %s", viper.GetString("prefix")+"/"+cacheDirectory, err)
-		}
+	t := containers.NewToolRef(registry, imageRepository, "metadata", "main")
+	rc := containers.GetRegclient()
+	defer rc.Close(context.Background(), t.GetRef())
 
-		logging.Debugf("Extracting archive to %s", viper.GetString("prefix")+"/"+cacheDirectory)
-		err = archive.ExtractTarGz(blob, func(path string) string { return path }, func(path string) {})
-		if err != nil {
-			return fmt.Errorf("error extracting archive: %s", err)
-		}
+	layer, err := containers.GetFirstLayerFromRegistry(context.Background(), rc, t.GetRef())
+	if err != nil {
+		return fmt.Errorf("error getting first layer from registry: %s", err)
+	}
 
-		return nil
+	logging.Debugf("Changing directory to %s", viper.GetString("prefix")+"/"+cacheDirectory)
+	err = os.Chdir(viper.GetString("prefix") + "/" + cacheDirectory)
+	if err != nil {
+		return fmt.Errorf("error changing directory to %s: %s", viper.GetString("prefix")+"/"+cacheDirectory, err)
+	}
+
+	logging.Debugf("Extracting archive to %s", viper.GetString("prefix")+"/"+cacheDirectory)
+	err = archive.ProcessTarContents(layer, func(reader *tar.Reader, header *tar.Header) error {
+		return archive.CallbackExtractTarItem(reader, header)
 	})
+
 	if err != nil {
 		return fmt.Errorf("error getting manifest: %s", err)
 	}
