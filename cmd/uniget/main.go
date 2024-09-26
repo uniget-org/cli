@@ -251,7 +251,13 @@ func main() {
 			}
 		}
 
-		if viper.GetBool("user") {
+		if !viper.GetBool("user") {
+			cacheDirectory = cacheRoot + "/" + projectName
+			libDirectory = libRoot + "/" + projectName
+			profileDDirectory = configRoot + "/profile.d"
+			metadataFile = cacheDirectory + "/" + metadataFileName
+
+		} else {
 			viper.Set("prefix", os.Getenv("HOME"))
 			viper.Set("target", ".local")
 
@@ -310,11 +316,13 @@ func main() {
 				Source:    "var/lib/uniget/",
 				Target:    libDirectory + "/",
 				Operation: "REPLACE",
+				Abort:     true,
 			},
 			{
 				Source:    "var/cache/uniget/",
 				Target:    cacheDirectory + "/",
 				Operation: "REPLACE",
+				Abort:     true,
 			},
 		}
 		if !viper.GetBool("user") {
@@ -342,40 +350,50 @@ func main() {
 			if viper.GetBool("integratedockercliplugins") || viper.GetBool("integrateall") {
 				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
 					Source:    "libexec/docker/cli-plugins/",
-					Target:    "./.docker/cli-plugins/",
+					Target:    ".docker/cli-plugins/",
 					Operation: "REPLACE",
+					Abort:     true,
 				})
 			}
 
 			if viper.GetBool("integratesystemd") || viper.GetBool("integrateall") {
 				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
 					Source:    "etc/systemd/user/",
-					Target:    "./.config/systemd/user/",
+					Target:    ".config/systemd/user/",
 					Operation: "REPLACE",
+					Abort:     true,
 				})
 			}
 
 			if viper.GetBool("integrateprofiled") || viper.GetBool("integrateall") {
 				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
 					Source:    "etc/profile.d/",
-					Target:    "./.config/profile.d/",
+					Target:    ".config/profile.d/",
 					Operation: "REPLACE",
+					Abort:     true,
 				})
 			}
 
 			if viper.GetBool("integrateetc") || viper.GetBool("integrateall") {
 				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
 					Source:    "etc/",
-					Target:    "./.config/",
+					Target:    ".config/",
 					Operation: "REPLACE",
+					Abort:     true,
 				})
 			}
 		}
-		pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-			Source:    "",
-			Target:    viper.GetString("target") + "/",
-			Operation: "PREPEND",
-		})
+		if len(viper.GetString("target")) > 0 {
+			targetPath := viper.GetString("target")
+			if !strings.HasSuffix(targetPath, "/") {
+				targetPath += "/"
+			}
+			pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
+				Source:    "",
+				Target:    targetPath,
+				Operation: "PREPEND",
+			})
+		}
 		if viper.GetBool("debug") {
 			logging.Debug("Path rewrite rules:")
 			for _, rule := range pathRewriteRules {
