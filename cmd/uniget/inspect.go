@@ -62,7 +62,11 @@ var inspectCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("unable to get image: %s", err)
 		}
-		err = inspectTool.Inspect(cmd.OutOrStdout(), layer, pathRewriteRules)
+		effectivePathRewriteRules := pathRewriteRules
+		if rawInspect {
+			effectivePathRewriteRules = []tool.PathRewrite{}
+		}
+		err = inspectTool.Inspect(cmd.OutOrStdout(), layer, effectivePathRewriteRules)
 		if err != nil {
 			return fmt.Errorf("unable to inspect %s: %s", inspectTool.Name, err)
 		}
