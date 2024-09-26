@@ -12,23 +12,11 @@ var (
 	OutputWriter io.Writer      = os.Stdout
 	ErrorWriter  io.Writer      = os.Stderr
 	Level        pterm.LogLevel = pterm.LogLevelInfo
-	CustomLogger *pterm.Logger
-	Description  pterm.PrefixPrinter
-	Info         pterm.PrefixPrinter
-	Success      pterm.PrefixPrinter
-	Error        pterm.PrefixPrinter
-	Fatal        pterm.PrefixPrinter
-	Warning      pterm.PrefixPrinter
-	Skip         pterm.PrefixPrinter
-)
-
-func Init() {
-	CustomLogger = &pterm.Logger{
+	CustomLogger                = &pterm.Logger{
 		Level:    Level,
 		Writer:   OutputWriter,
 		MaxWidth: 1000,
 	}
-
 	Description = pterm.PrefixPrinter{
 		MessageStyle: &pterm.ThemeDefault.DescriptionMessageStyle,
 		Prefix: pterm.Prefix{
@@ -37,7 +25,6 @@ func Init() {
 		},
 		Writer: OutputWriter,
 	}
-
 	Info = pterm.PrefixPrinter{
 		MessageStyle: &pterm.ThemeDefault.InfoMessageStyle,
 		Prefix: pterm.Prefix{
@@ -46,7 +33,6 @@ func Init() {
 		},
 		Writer: OutputWriter,
 	}
-
 	Success = pterm.PrefixPrinter{
 		MessageStyle: &pterm.ThemeDefault.SuccessMessageStyle,
 		Prefix: pterm.Prefix{
@@ -55,7 +41,6 @@ func Init() {
 		},
 		Writer: OutputWriter,
 	}
-
 	Error = pterm.PrefixPrinter{
 		MessageStyle: &pterm.ThemeDefault.ErrorMessageStyle,
 		Prefix: pterm.Prefix{
@@ -64,7 +49,6 @@ func Init() {
 		},
 		Writer: ErrorWriter,
 	}
-
 	Fatal = pterm.PrefixPrinter{
 		MessageStyle: &pterm.ThemeDefault.FatalMessageStyle,
 		Prefix: pterm.Prefix{
@@ -74,7 +58,6 @@ func Init() {
 		Writer: ErrorWriter,
 		Fatal:  true,
 	}
-
 	Warning = pterm.PrefixPrinter{
 		MessageStyle: &pterm.ThemeDefault.WarningMessageStyle,
 		Prefix: pterm.Prefix{
@@ -83,7 +66,6 @@ func Init() {
 		},
 		Writer: OutputWriter,
 	}
-
 	Skip = pterm.PrefixPrinter{
 		MessageStyle: pterm.NewStyle(pterm.FgDarkGray),
 		Prefix: pterm.Prefix{
@@ -92,6 +74,17 @@ func Init() {
 		},
 		Writer: OutputWriter,
 	}
+)
+
+func Init() {
+	CustomLogger.Writer = OutputWriter
+	Description.Writer = OutputWriter
+	Info.Writer = OutputWriter
+	Success.Writer = OutputWriter
+	Error.Writer = OutputWriter
+	Fatal.Writer = OutputWriter
+	Warning.Writer = OutputWriter
+	Skip.Writer = OutputWriter
 }
 
 func Debug(message string) {
