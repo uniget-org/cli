@@ -50,7 +50,6 @@ func TestGetRef(t *testing.T) {
 
 	toolRef := NewToolRef(registry, imageRepository, tool, version)
 	ref := toolRef.GetRef()
-	t.Logf("ref: %v", ref)
 
 	if ref.Registry != registry {
 		t.Errorf("Registry is invalid, expected %s, got %s", registry, ref.Registry)
