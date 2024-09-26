@@ -67,11 +67,11 @@ func TestToolsListOne(t *testing.T) {
 		t.Errorf("outBuffer is empty")
 	}
 
-	t.Logf("%s", outBuffer.String())
+	t.Logf("%x", outBuffer.String())
 
 	expectedOut := "" +
-		" #  NAME  VERSION  DESCRIPTION" + "\n" +
-		" 1  foo   1.2.3    bar" + "\n"
+		" #  NAME  VERSION  DESCRIPTION " + "\n" +
+		" 1  foo   1.2.3    bar         " + "\n"
 
 	if outBuffer.String() != expectedOut {
 		t.Errorf("Expected <%s>, got <%s>", expectedOut, outBuffer.String())
@@ -89,7 +89,7 @@ func TestToolsListNone(t *testing.T) {
 	}
 
 	expectedOut := "" +
-		" #  NAME  VERSION  DESCRIPTION" + "\n"
+		" #  NAME  VERSION  DESCRIPTION " + "\n"
 
 	if outBuffer.String() != expectedOut {
 		t.Errorf("Expected <%s>, got <%s>", expectedOut, outBuffer.String())
@@ -117,9 +117,9 @@ func TestToolsListMultiple(t *testing.T) {
 	}
 
 	expectedOut := "" +
-		" #  NAME  VERSION  DESCRIPTION" + "\n" +
-		" 1  foo   1.2.3    bar" + "\n" +
-		" 2  baz   1.2.3    blarg" + "\n"
+		" #  NAME  VERSION  DESCRIPTION " + "\n" +
+		" 1  foo   1.2.3    bar         " + "\n" +
+		" 2  baz   1.2.3    blarg       " + "\n"
 
 	if outBuffer.String() != expectedOut {
 		t.Errorf("Expected <%s>, got <%s>", expectedOut, outBuffer.String())

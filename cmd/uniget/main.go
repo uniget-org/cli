@@ -425,7 +425,6 @@ func main() {
 		default:
 			logging.Error.Printfln("Unsupported cache backend: %s", viper.GetString("cache"))
 		}
-		toolCache = cache.NewNoneCache()
 
 		return nil
 	}
