@@ -143,7 +143,7 @@ func TestGetFirstLayerFromManifest(t *testing.T) {
 	}
 	sha256 := hex.EncodeToString(h.Sum(nil))
 	if sha256 != expectedLayerGzSha256 {
-		t.Errorf("Hash is invalid %s", sha256)
+		t.Errorf("Hash is invalid. Expected %s, but got %s", expectedLayerGzSha256, sha256)
 	}
 }
 
@@ -173,7 +173,7 @@ func TestGetFirstLayerFromRegistry(t *testing.T) {
 		t.Errorf("Hash is empty")
 	}
 	sha256 := hex.EncodeToString(h.Sum(nil))
-	if sha256 != expectedLayerGzSha256 {
-		t.Errorf("expected layer Sha256 %s but got %s", expectedLayerGzSha256, sha256)
+	if sha256 != expectedLayerSha256 {
+		t.Errorf("expected layer sha256 %s but got %s", expectedLayerSha256, sha256)
 	}
 }

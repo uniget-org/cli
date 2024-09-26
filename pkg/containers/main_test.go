@@ -15,6 +15,7 @@ var (
 	registryTags          = []string{"1.7.1", "latest"}
 	toolRef               = NewToolRef(registryAddress, registryRepository, registryImage, registryTag)
 	expectedLayerGzSha256 = "8f6a01445b829e82a8e6d5a66d646c1d884d0917df2c9a415a194cf273ac189d"
+	expectedLayerSha256   = "2940229e769548ce754f6dad80a33a9dc6d51f38ac6ca08fac6f33a496dd6bd9"
 )
 
 func copyImage(src, tgt ref.Ref) error {
