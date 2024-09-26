@@ -42,48 +42,14 @@ func readTestArchive(testArchive string, t *testing.T) []byte {
 	return data
 }
 
-func unpackTestArchive(testArchive string, t *testing.T) string {
-	reader := openTestArchive(testArchive, t)
-
-	tempDir := t.TempDir()
-	curDir, err := os.Getwd()
-	if err != nil {
-		t.Errorf("failed to get current directory: %v", err)
-	}
-	err = os.Chdir(tempDir)
-	if err != nil {
-		t.Errorf("failed to change directory to %s: %v", tempDir, err)
-	}
-
-	archive, err := io.ReadAll(reader)
-	if err != nil {
-		t.Errorf("failed to read %s: %v", testArchive, err)
-	}
-	err = ProcessTarContents(archive, CallbackExtractTarItem)
-	if err != nil {
-		t.Errorf("failed to extract %s: %v", testArchive, err)
-	}
-
-	err = os.Chdir(curDir)
-	if err != nil {
-		t.Errorf("failed to change directory to %s: %v", curDir, err)
-	}
-
-	return tempDir
-}
-
 func loadTool(t *testing.T) []byte {
 	ctx := context.Background()
 	r := toolRef.GetRef()
 	rc := containers.GetRegclient()
 	defer rc.Close(ctx, r)
-	tarData, err := containers.GetFirstLayerFromRegistry(ctx, rc, r)
+	registryLayer, err := containers.GetFirstLayerFromRegistry(ctx, rc, r)
 	if err != nil {
 		t.Errorf("failed to get first layer from registry: %v", err)
-	}
-	registryLayer, err := Gunzip(tarData)
-	if err != nil {
-		panic(err)
 	}
 
 	return registryLayer
@@ -122,23 +88,6 @@ func TestGunzip(t *testing.T) {
 	}
 	if string(tarGzBytes) != string(tarBytes) {
 		t.Errorf("gunzip'ed data does not match expected data")
-	}
-}
-
-func TestExtractTarGz(t *testing.T) {
-	tempDir := unpackTestArchive(testTarGz, t)
-
-	_, err := os.Stat(tempDir + "/foo")
-	if err != nil {
-		t.Errorf("expected foo to exist: %v", err)
-	}
-
-	data, err := os.ReadFile(tempDir + "/foo")
-	if err != nil {
-		t.Errorf("failed to read foo: %v", err)
-	}
-	if string(data) != "bar\n" {
-		t.Errorf("expected bar, got %s", string(data))
 	}
 }
 

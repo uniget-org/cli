@@ -77,12 +77,14 @@ var (
 )
 
 func Init() {
+	CustomLogger.Level = Level
+
 	CustomLogger.Writer = OutputWriter
 	Description.Writer = OutputWriter
 	Info.Writer = OutputWriter
 	Success.Writer = OutputWriter
-	Error.Writer = OutputWriter
-	Fatal.Writer = OutputWriter
+	Error.Writer = ErrorWriter
+	Fatal.Writer = ErrorWriter
 	Warning.Writer = OutputWriter
 	Skip.Writer = OutputWriter
 }
