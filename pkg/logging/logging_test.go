@@ -108,7 +108,7 @@ func TestPrefixWriters(t *testing.T) {
 func TestLoggersInfoLevel(t *testing.T) {
 	var outBuffer bytes.Buffer
 	OutputWriter = &outBuffer
-
+	Level = pterm.LogLevelInfo
 	Init()
 
 	Debug("foo")
