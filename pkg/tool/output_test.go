@@ -67,8 +67,6 @@ func TestToolsListOne(t *testing.T) {
 		t.Errorf("outBuffer is empty")
 	}
 
-	t.Logf("%x", outBuffer.String())
-
 	expectedOut := "" +
 		" #  NAME  VERSION  DESCRIPTION " + "\n" +
 		" 1  foo   1.2.3    bar         " + "\n"
