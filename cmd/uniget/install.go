@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
@@ -370,13 +371,28 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 		}
 		logging.Debugf("Current directory: %s", dir)
 
-		err = plannedTool.Install(w, layer, pathRewriteRules, createPatchFileCallback(plannedTool))
+		installedFiles, err := plannedTool.Install(w, layer, pathRewriteRules, createPatchFileCallback(plannedTool))
 		if err != nil {
 			if installSpinner != nil {
 				installSpinner.Fail()
 			}
 			logging.Warning.Printfln("Unable to install %s: %s", plannedTool.Name, err)
 			continue
+		}
+		logging.Debugf("Installed files: %d", len(installedFiles))
+		logging.Tracef("Installed files: %v", installedFiles)
+		err = writeInstalledFiles(&plannedTool, installedFiles)
+		if err != nil {
+			logging.Error.Printfln("Unable to write installed files: %s", err)
+		}
+		plannedToolJson, err := json.MarshalIndent(plannedTool, "", "  ")
+		if err != nil {
+			logging.Error.Printfln("Unable to marshal tool: %s", err)
+		}
+		manifestFilename := viper.GetString("prefix") + "/" + libDirectory + "/manifests/" + plannedTool.Name + ".json"
+		err = os.WriteFile(manifestFilename, []byte(plannedToolJson), 0644)
+		if err != nil {
+			logging.Error.Printfln("Unable to write manifest file: %s", err)
 		}
 		if installSpinner != nil {
 			installSpinner.Success()
@@ -407,12 +423,12 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 	return nil
 }
 
-func createPatchFileCallback(tool tool.Tool) func(path string) {
-	var patchFile = func(templatePath string) {
+func createPatchFileCallback(tool tool.Tool) func(path string) string {
+	var patchFile = func(templatePath string) string {
 		if strings.HasSuffix(templatePath, ".go-template") {
 		} else {
 			logging.Debugf("Skipping file %s. Will not patch.", templatePath)
-			return
+			return templatePath
 		}
 
 		values := make(map[string]interface{})
@@ -428,44 +444,46 @@ func createPatchFileCallback(tool tool.Tool) func(path string) {
 		templathPathInfo, err := os.Stat(templatePath)
 		if err != nil {
 			logging.Error.Printfln("Unable to get file info: %s", err)
-			return
+			return templatePath
 		}
 
 		file, err := os.Create(filePath) // #nosec G304 -- File path was checked before callback
 		if err != nil {
 			logging.Error.Printfln("Unable to create file: %s", err)
-			return
+			return templatePath
 		}
 		defer file.Close()
 		if stat, ok := templathPathInfo.Sys().(*syscall.Stat_t); ok {
 			err = file.Chown(int(stat.Uid), int(stat.Gid))
 			if err != nil {
 				logging.Error.Printfln("Unable to set file ownership: %s", err)
-				return
+				return templatePath
 			}
 		}
 		err = file.Chmod(templathPathInfo.Mode())
 		if err != nil {
 			logging.Error.Printfln("Unable to set file permissions: %s", err)
-			return
+			return templatePath
 		}
 
 		tmpl, err := template.ParseFiles(templatePath)
 		if err != nil {
 			logging.Error.Printfln("Unable to parse template file: %s", err)
-			return
+			return templatePath
 		}
 		err = tmpl.Execute(file, values)
 		if err != nil {
 			logging.Error.Printfln("Unable to execute template: %s", err)
-			return
+			return templatePath
 		}
 
 		err = os.Remove(templatePath)
 		if err != nil {
 			logging.Error.Printfln("Unable to remove template file: %s", err)
-			return
+			return templatePath
 		}
+
+		return filePath
 	}
 
 	return patchFile

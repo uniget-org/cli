@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/uniget-org/cli/pkg/logging"
+	"github.com/uniget-org/cli/pkg/tool"
 )
 
 var force bool
@@ -67,6 +68,22 @@ var uninstallCmd = &cobra.Command{
 
 		return nil
 	},
+}
+
+func writeInstalledFiles(tool *tool.Tool, installedFiles []string) error {
+	fileListDirectory := viper.GetString("prefix") + "/" + libDirectory + "/manifests"
+	fileListFilename := fileListDirectory + "/" + tool.Name + ".txt"
+	err := os.MkdirAll(fileListDirectory, 0755)
+	if err != nil {
+		return fmt.Errorf("unable to create directory %s: %s", fileListDirectory, err)
+	}
+
+	err = os.WriteFile(fileListFilename, []byte(strings.Join(installedFiles, "\n")), 0644)
+	if err != nil {
+		return fmt.Errorf("unable to open %s: %s", fileListFilename, err)
+	}
+
+	return nil
 }
 
 func uninstallTool(toolName string) error {
