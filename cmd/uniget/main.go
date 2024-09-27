@@ -57,11 +57,261 @@ var (
 		Version:      version,
 		Short:        header + "The universal installer and updater to (container) tools",
 		SilenceUsage: true,
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			logging.OutputWriter = cmd.OutOrStdout()
+			logging.ErrorWriter = cmd.ErrOrStderr()
+
+			if viper.GetBool("trace") {
+				pterm.EnableDebugMessages()
+				logging.Level = pterm.LogLevelTrace
+
+			} else if viper.GetBool("debug") {
+				pterm.EnableDebugMessages()
+				logging.Level = pterm.LogLevelDebug
+
+			} else {
+				pterm.DisableDebugMessages()
+				logging.Level = pterm.LogLevelInfo
+			}
+
+			logging.Init()
+
+			if len(viper.GetString("prefix")) > 0 {
+				re, err := regexp.Compile(`^\/`)
+				if err != nil {
+					return fmt.Errorf("cannot compile regexp: %w", err)
+				}
+				if !re.MatchString(viper.GetString("prefix")) {
+					wd, err := os.Getwd()
+					if err != nil {
+						return fmt.Errorf("cannot determine working directory: %w", err)
+					}
+					viper.Set("prefix", wd+"/"+viper.GetString("prefix"))
+					logging.Debugf("Converted prefix to absolute path %s", viper.GetString("prefix"))
+				}
+			}
+
+			if !viper.GetBool("user") {
+				cacheDirectory = cacheRoot + "/" + projectName
+				libDirectory = libRoot + "/" + projectName
+				profileDDirectory = configRoot + "/profile.d"
+				metadataFile = cacheDirectory + "/" + metadataFileName
+
+			} else {
+				viper.Set("prefix", os.Getenv("HOME"))
+				viper.Set("target", ".local")
+
+				cacheRoot = ".cache"
+				if os.Getenv("XDG_CACHE_HOME") != "" {
+					if strings.HasPrefix(os.Getenv("XDG_CACHE_HOME"), os.Getenv("HOME")) {
+						cacheRoot = strings.TrimPrefix(os.Getenv("XDG_CACHE_HOME"), os.Getenv("HOME")+"/")
+					}
+				}
+				cacheDirectory = cacheRoot + "/" + projectName
+
+				libRoot = ".local/state"
+				if os.Getenv("XDG_STATE_HOME") != "" {
+					if strings.HasPrefix(os.Getenv("XDG_STATE_HOME"), os.Getenv("HOME")) {
+						libRoot = strings.TrimPrefix(os.Getenv("XDG_STATE_HOME"), os.Getenv("HOME")+"/")
+					}
+				}
+				libDirectory = libRoot + "/" + projectName
+
+				configRoot = ".config"
+				if os.Getenv("XDG_CONFIG_HOME") != "" {
+					if strings.HasPrefix(os.Getenv("XDG_CONFIG_HOME"), os.Getenv("HOME")) {
+						configRoot = strings.TrimPrefix(os.Getenv("XDG_CONFIG_HOME"), os.Getenv("HOME")+"/")
+					}
+				}
+				profileDDirectory = configRoot + "/profile.d"
+
+				metadataFile = cacheDirectory + "/" + metadataFileName
+			}
+
+			if strings.HasPrefix(viper.GetString("target"), "/") {
+				viper.Set("target", strings.TrimLeft(viper.GetString("target"), "/"))
+			}
+
+			if viper.GetBool("debug") {
+				logging.Debugf("user: %t", viper.GetBool("prefix"))
+				logging.Debugf("prefix: %s", viper.GetString("prefix"))
+				logging.Debugf("target: %s", viper.GetString("target"))
+				logging.Debugf("cacheRoot: %s", cacheRoot)
+				logging.Debugf("cacheDirectory: %s", cacheDirectory)
+				logging.Debugf("libRoot: %s", libRoot)
+				logging.Debugf("libDirectory: %s", libDirectory)
+				logging.Debugf("metadataFile: %s", metadataFile)
+				logging.Debugf("registry: %s", viper.GetString("registry"))
+				logging.Debugf("repository: %s", viper.GetString("repository"))
+				logging.Debugf("tool-separator: %s", viper.GetString("toolseparator"))
+				logging.Debugf("cache: %s", viper.GetString("cache"))
+				logging.Debugf("cache-directory: %s", viper.GetString("cachedirectory"))
+				logging.Debugf("cache-retention: %d", viper.GetInt("cacheretention"))
+			}
+
+			pathRewriteRules = []tool.PathRewrite{
+				{
+					Source:    "usr/local/",
+					Target:    "",
+					Operation: "REPLACE",
+				},
+				{
+					Source:    "var/lib/uniget/",
+					Target:    libDirectory + "/",
+					Operation: "REPLACE",
+					Abort:     true,
+				},
+				{
+					Source:    "var/cache/uniget/",
+					Target:    cacheDirectory + "/",
+					Operation: "REPLACE",
+					Abort:     true,
+				},
+			}
+			if !viper.GetBool("user") {
+				logging.Debugf("Adding path rewrite rules for system installation")
+
+				if viper.GetBool("integratesystemd") || viper.GetBool("integrateall") {
+					pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
+						Source:    "etc/systemd/",
+						Target:    "/etc/systemd/",
+						Operation: "REPLACE",
+					})
+				}
+
+				if viper.GetBool("integrateprofiled") || viper.GetBool("integrateall") {
+					pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
+						Source:    "etc/profile.d/",
+						Target:    "/etc/profile.d/",
+						Operation: "REPLACE",
+					})
+				}
+
+			} else {
+				logging.Debugf("Adding path rewrite rules for user installation")
+
+				if viper.GetBool("integratedockercliplugins") || viper.GetBool("integrateall") {
+					pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
+						Source:    "libexec/docker/cli-plugins/",
+						Target:    ".docker/cli-plugins/",
+						Operation: "REPLACE",
+						Abort:     true,
+					})
+				}
+
+				if viper.GetBool("integratesystemd") || viper.GetBool("integrateall") {
+					pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
+						Source:    "etc/systemd/user/",
+						Target:    ".config/systemd/user/",
+						Operation: "REPLACE",
+						Abort:     true,
+					})
+				}
+
+				if viper.GetBool("integrateprofiled") || viper.GetBool("integrateall") {
+					pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
+						Source:    "etc/profile.d/",
+						Target:    ".config/profile.d/",
+						Operation: "REPLACE",
+						Abort:     true,
+					})
+				}
+
+				if viper.GetBool("integrateetc") || viper.GetBool("integrateall") {
+					pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
+						Source:    "etc/",
+						Target:    ".config/",
+						Operation: "REPLACE",
+						Abort:     true,
+					})
+				}
+			}
+			if len(viper.GetString("target")) > 0 {
+				targetPath := viper.GetString("target")
+				if !strings.HasSuffix(targetPath, "/") {
+					targetPath += "/"
+				}
+				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
+					Source:    "",
+					Target:    targetPath,
+					Operation: "PREPEND",
+				})
+			}
+			if viper.GetBool("debug") {
+				logging.Debug("Path rewrite rules:")
+				for _, rule := range pathRewriteRules {
+					logging.Debugf("  %s -> %s (%s)", rule.Source, rule.Target, rule.Operation)
+				}
+			}
+
+			if !fileExists(viper.GetString("prefix") + "/" + metadataFile) {
+				logging.Debugf("Metadata file does not exist. Downloading...")
+				err := downloadMetadata()
+				if err != nil {
+					return fmt.Errorf("error downloading metadata: %s", err)
+				}
+			} else {
+				logging.Debugf("Metadata file exists")
+			}
+			err := loadMetadata()
+			if err != nil {
+				return fmt.Errorf("error loading metadata: %s", err)
+			}
+
+			file, err := os.Stat(viper.GetString("prefix") + "/" + metadataFile)
+			if err != nil {
+				return fmt.Errorf("error stating metadata file: %s", err)
+			}
+			now := time.Now()
+			modifiedtime := file.ModTime()
+			if now.Sub(modifiedtime).Hours() > 24 {
+				logging.Warning.Println("Metadata file is older than 24 hours")
+			}
+
+			switch viper.GetString("cache") {
+			case "none":
+				logging.Debug("Using no cache")
+				toolCache = cache.NewNoneCache()
+
+			case "file":
+				logging.Debug("Using file cache")
+				toolCache = cache.NewFileCache(downloadCacheDirectory, viper.GetInt("cacheretention"))
+
+			case "docker":
+				if containers.DockerIsAvailable() {
+					logging.Debug("Using docker cache")
+					toolCache, err = cache.NewDockerCache()
+					if err != nil {
+						return fmt.Errorf("error creating Docker cache: %s", err)
+					}
+				} else {
+					logging.Warning.Println("Docker is not available. Falling back to no cache")
+					toolCache = cache.NewNoneCache()
+				}
+
+			case "containerd":
+				if containers.ContainerdIsAvailable() {
+					logging.Debug("Using containerd cache")
+					toolCache, err = cache.NewContainerdCache(projectName)
+					if err != nil {
+						return fmt.Errorf("error creating Containerd cache: %s", err)
+					}
+				} else {
+					logging.Warning.Println("Containerd is not available. Falling back to no cache")
+					toolCache = cache.NewNoneCache()
+				}
+
+			default:
+				logging.Error.Printfln("Unsupported cache backend: %s", viper.GetString("cache"))
+			}
+
+			return nil
+		},
 	}
 	minimumCliVersionForSchemaVersion = map[string]string{
 		"1": "0.1.0",
 	}
-	toolCache cache.Cache
+	toolCache cache.Cache = cache.NewNoneCache()
 )
 
 func checkClientVersionRequirement(tool *tool.Tool) {
@@ -217,257 +467,6 @@ func addViperBindings(flags *flag.FlagSet, cobraLongName string, viperName strin
 
 func main() {
 	var err error
-
-	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
-		logging.OutputWriter = cmd.OutOrStdout()
-		logging.ErrorWriter = cmd.ErrOrStderr()
-
-		if viper.GetBool("trace") {
-			pterm.EnableDebugMessages()
-			logging.Level = pterm.LogLevelTrace
-
-		} else if viper.GetBool("debug") {
-			pterm.EnableDebugMessages()
-			logging.Level = pterm.LogLevelDebug
-
-		} else {
-			pterm.DisableDebugMessages()
-			logging.Level = pterm.LogLevelInfo
-		}
-
-		logging.Init()
-
-		if len(viper.GetString("prefix")) > 0 {
-			re, err := regexp.Compile(`^\/`)
-			if err != nil {
-				return fmt.Errorf("cannot compile regexp: %w", err)
-			}
-			if !re.MatchString(viper.GetString("prefix")) {
-				wd, err := os.Getwd()
-				if err != nil {
-					return fmt.Errorf("cannot determine working directory: %w", err)
-				}
-				viper.Set("prefix", wd+"/"+viper.GetString("prefix"))
-				logging.Debugf("Converted prefix to absolute path %s", viper.GetString("prefix"))
-			}
-		}
-
-		if !viper.GetBool("user") {
-			cacheDirectory = cacheRoot + "/" + projectName
-			libDirectory = libRoot + "/" + projectName
-			profileDDirectory = configRoot + "/profile.d"
-			metadataFile = cacheDirectory + "/" + metadataFileName
-
-		} else {
-			viper.Set("prefix", os.Getenv("HOME"))
-			viper.Set("target", ".local")
-
-			cacheRoot = ".cache"
-			if os.Getenv("XDG_CACHE_HOME") != "" {
-				if strings.HasPrefix(os.Getenv("XDG_CACHE_HOME"), os.Getenv("HOME")) {
-					cacheRoot = strings.TrimPrefix(os.Getenv("XDG_CACHE_HOME"), os.Getenv("HOME")+"/")
-				}
-			}
-			cacheDirectory = cacheRoot + "/" + projectName
-
-			libRoot = ".local/state"
-			if os.Getenv("XDG_STATE_HOME") != "" {
-				if strings.HasPrefix(os.Getenv("XDG_STATE_HOME"), os.Getenv("HOME")) {
-					libRoot = strings.TrimPrefix(os.Getenv("XDG_STATE_HOME"), os.Getenv("HOME")+"/")
-				}
-			}
-			libDirectory = libRoot + "/" + projectName
-
-			configRoot = ".config"
-			if os.Getenv("XDG_CONFIG_HOME") != "" {
-				if strings.HasPrefix(os.Getenv("XDG_CONFIG_HOME"), os.Getenv("HOME")) {
-					configRoot = strings.TrimPrefix(os.Getenv("XDG_CONFIG_HOME"), os.Getenv("HOME")+"/")
-				}
-			}
-			profileDDirectory = configRoot + "/profile.d"
-
-			metadataFile = cacheDirectory + "/" + metadataFileName
-		}
-
-		if strings.HasPrefix(viper.GetString("target"), "/") {
-			viper.Set("target", strings.TrimLeft(viper.GetString("target"), "/"))
-		}
-
-		if viper.GetBool("debug") {
-			logging.Debugf("user: %t", viper.GetBool("prefix"))
-			logging.Debugf("prefix: %s", viper.GetString("prefix"))
-			logging.Debugf("target: %s", viper.GetString("target"))
-			logging.Debugf("cacheRoot: %s", cacheRoot)
-			logging.Debugf("cacheDirectory: %s", cacheDirectory)
-			logging.Debugf("libRoot: %s", libRoot)
-			logging.Debugf("libDirectory: %s", libDirectory)
-			logging.Debugf("metadataFile: %s", metadataFile)
-			logging.Debugf("registry: %s", viper.GetString("registry"))
-			logging.Debugf("repository: %s", viper.GetString("repository"))
-			logging.Debugf("tool-separator: %s", viper.GetString("toolseparator"))
-			logging.Debugf("cache: %s", viper.GetString("cache"))
-			logging.Debugf("cache-directory: %s", viper.GetString("cachedirectory"))
-			logging.Debugf("cache-retention: %d", viper.GetInt("cacheretention"))
-		}
-
-		pathRewriteRules = []tool.PathRewrite{
-			{
-				Source:    "usr/local/",
-				Target:    "",
-				Operation: "REPLACE",
-			},
-			{
-				Source:    "var/lib/uniget/",
-				Target:    libDirectory + "/",
-				Operation: "REPLACE",
-				Abort:     true,
-			},
-			{
-				Source:    "var/cache/uniget/",
-				Target:    cacheDirectory + "/",
-				Operation: "REPLACE",
-				Abort:     true,
-			},
-		}
-		if !viper.GetBool("user") {
-			logging.Debugf("Adding path rewrite rules for system installation")
-
-			if viper.GetBool("integratesystemd") || viper.GetBool("integrateall") {
-				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-					Source:    "etc/systemd/",
-					Target:    "/etc/systemd/",
-					Operation: "REPLACE",
-				})
-			}
-
-			if viper.GetBool("integrateprofiled") || viper.GetBool("integrateall") {
-				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-					Source:    "etc/profile.d/",
-					Target:    "/etc/profile.d/",
-					Operation: "REPLACE",
-				})
-			}
-
-		} else {
-			logging.Debugf("Adding path rewrite rules for user installation")
-
-			if viper.GetBool("integratedockercliplugins") || viper.GetBool("integrateall") {
-				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-					Source:    "libexec/docker/cli-plugins/",
-					Target:    ".docker/cli-plugins/",
-					Operation: "REPLACE",
-					Abort:     true,
-				})
-			}
-
-			if viper.GetBool("integratesystemd") || viper.GetBool("integrateall") {
-				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-					Source:    "etc/systemd/user/",
-					Target:    ".config/systemd/user/",
-					Operation: "REPLACE",
-					Abort:     true,
-				})
-			}
-
-			if viper.GetBool("integrateprofiled") || viper.GetBool("integrateall") {
-				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-					Source:    "etc/profile.d/",
-					Target:    ".config/profile.d/",
-					Operation: "REPLACE",
-					Abort:     true,
-				})
-			}
-
-			if viper.GetBool("integrateetc") || viper.GetBool("integrateall") {
-				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-					Source:    "etc/",
-					Target:    ".config/",
-					Operation: "REPLACE",
-					Abort:     true,
-				})
-			}
-		}
-		if len(viper.GetString("target")) > 0 {
-			targetPath := viper.GetString("target")
-			if !strings.HasSuffix(targetPath, "/") {
-				targetPath += "/"
-			}
-			pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-				Source:    "",
-				Target:    targetPath,
-				Operation: "PREPEND",
-			})
-		}
-		if viper.GetBool("debug") {
-			logging.Debug("Path rewrite rules:")
-			for _, rule := range pathRewriteRules {
-				logging.Debugf("  %s -> %s (%s)", rule.Source, rule.Target, rule.Operation)
-			}
-		}
-
-		if !fileExists(viper.GetString("prefix") + "/" + metadataFile) {
-			logging.Debugf("Metadata file does not exist. Downloading...")
-			err := downloadMetadata()
-			if err != nil {
-				return fmt.Errorf("error downloading metadata: %s", err)
-			}
-		} else {
-			logging.Debugf("Metadata file exists")
-		}
-		err := loadMetadata()
-		if err != nil {
-			return fmt.Errorf("error loading metadata: %s", err)
-		}
-
-		file, err := os.Stat(viper.GetString("prefix") + "/" + metadataFile)
-		if err != nil {
-			return fmt.Errorf("error stating metadata file: %s", err)
-		}
-		now := time.Now()
-		modifiedtime := file.ModTime()
-		if now.Sub(modifiedtime).Hours() > 24 {
-			logging.Warning.Println("Metadata file is older than 24 hours")
-		}
-
-		switch viper.GetString("cache") {
-		case "none":
-			logging.Debug("Using no cache")
-			toolCache = cache.NewNoneCache()
-
-		case "file":
-			logging.Debug("Using file cache")
-			toolCache = cache.NewFileCache(downloadCacheDirectory, viper.GetInt("cacheretention"))
-
-		case "docker":
-			if containers.DockerIsAvailable() {
-				logging.Debug("Using docker cache")
-				toolCache, err = cache.NewDockerCache()
-				if err != nil {
-					return fmt.Errorf("error creating Docker cache: %s", err)
-				}
-			} else {
-				logging.Warning.Println("Docker is not available. Falling back to no cache")
-				toolCache = cache.NewNoneCache()
-			}
-
-		case "containerd":
-			if containers.ContainerdIsAvailable() {
-				logging.Debug("Using containerd cache")
-				toolCache, err = cache.NewContainerdCache(projectName)
-				if err != nil {
-					return fmt.Errorf("error creating Containerd cache: %s", err)
-				}
-			} else {
-				logging.Warning.Println("Containerd is not available. Falling back to no cache")
-				toolCache = cache.NewNoneCache()
-			}
-
-		default:
-			logging.Error.Printfln("Unsupported cache backend: %s", viper.GetString("cache"))
-		}
-
-		return nil
-	}
 
 	viper.SetDefault("loglevel", pterm.LogLevelInfo.String())
 	viper.SetDefault("debug", false)
