@@ -305,6 +305,9 @@ func main() {
 			logging.Debugf("registry: %s", viper.GetString("registry"))
 			logging.Debugf("repository: %s", viper.GetString("repository"))
 			logging.Debugf("tool-separator: %s", viper.GetString("toolseparator"))
+			logging.Debugf("cache: %s", viper.GetString("cache"))
+			logging.Debugf("cache-directory: %s", viper.GetString("cachedirectory"))
+			logging.Debugf("cache-retention: %d", viper.GetInt("cacheretention"))
 		}
 
 		pathRewriteRules = []tool.PathRewrite{
@@ -433,7 +436,7 @@ func main() {
 
 		case "file":
 			logging.Debug("Using file cache")
-			toolCache = cache.NewFileCache(downloadCacheDirectory)
+			toolCache = cache.NewFileCache(downloadCacheDirectory, viper.GetInt("cacheretention"))
 
 		case "docker":
 			if containers.DockerIsAvailable() {
@@ -483,6 +486,7 @@ func main() {
 	viper.SetDefault("toolseparator", toolSeparator)
 	viper.SetDefault("cache", "none")
 	viper.SetDefault("cachedirectory", downloadCacheDirectory)
+	viper.SetDefault("cacheretention", 24*time.Hour)
 
 	pf := rootCmd.PersistentFlags()
 
@@ -503,6 +507,7 @@ func main() {
 	pf.String("tool-separator", viper.GetString("toolseparator"), "Separator between repository and tool name")
 	pf.String("cache", viper.GetString("cache"), "Cache backend to use (none, file, docker, containerd)")
 	pf.String("cache-directory", viper.GetString("cachedirectory"), "Directory for the file cache")
+	pf.Int("cache-retention", viper.GetInt("cacheretention"), "Retention in seconds for the file cache")
 
 	rootCmd.MarkFlagsMutuallyExclusive("prefix", "user")
 	rootCmd.MarkFlagsMutuallyExclusive("target", "user")
@@ -527,6 +532,7 @@ func main() {
 	addViperBindings(pf, "tool-separator", "toolseparator")
 	addViperBindings(pf, "cache", "cache")
 	addViperBindings(pf, "cache-directory", "cachedirectory")
+	addViperBindings(pf, "cache-retention", "cacheretention")
 
 	err = rootCmd.Execute()
 	if err != nil {
