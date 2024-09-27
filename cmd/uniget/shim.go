@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"strings"
@@ -28,11 +30,11 @@ func initShimCmd() {
 }
 
 var shimCmd = &cobra.Command{
-	Use:   "shim",
+	Use:     "shim",
 	Aliases: []string{"postinstall"},
-	Short: "Install shims for profile.d and completion scripts",
-	Long:  header + "\nInstall shims for profile.d and completion scripts",
-	Args:  cobra.NoArgs,
+	Short:   "Install shims for profile.d and completion scripts",
+	Long:    header + "\nInstall shims for profile.d and completion scripts",
+	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if cmd.CalledAs() == "postinstall" {
 			logging.Warning.Println("The 'postinstall' command is deprecated and will be removed in a future release. Please use 'shim' instead.")
@@ -61,16 +63,41 @@ func installProfileDShim() error {
 		profileDScript = strings.Replace(completionShim, "${target}", viper.GetString("prefix")+"/"+viper.GetString("target"), -1)
 	}
 
-	logging.Info.Printfln("Installing shim for profile.d in %s", profileDShimFile)
-		
-	if directoryIsWritable(profileDShimFile) {
-		err := os.WriteFile(
-			profileDShimFile,
-			[]byte(profileDScript),
-			0644,
-		) // #nosec G306 -- File must be executable
+	if fileExists(profileDShimFile) {
+		file, err := os.ReadFile(profileDShimFile)
 		if err != nil {
-			return fmt.Errorf("cannot write profile.d shim: %w", err)
+			return fmt.Errorf("cannot read profile.d shim: %w", err)
+		}
+
+		h := sha256.New()
+		_, err = h.Write(file)
+		if err != nil {
+			return fmt.Errorf("cannot hash profile.d shim: %w", err)
+		}
+		fileSha256 := hex.EncodeToString(h.Sum(nil))
+
+		h = sha256.New()
+		_, err = h.Write([]byte(profileDScript))
+		if err != nil {
+			return fmt.Errorf("cannot hash profile.d shim: %w", err)
+		}
+		profileDScriptSha256 := hex.EncodeToString(h.Sum(nil))
+
+		if fileSha256 == profileDScriptSha256 {
+			logging.Info.Printfln("Profile.d shim is up to date")
+			return nil
+		}
+
+		logging.Info.Printfln("Installing shim for profile.d in %s", profileDShimFile)
+		if directoryIsWritable(profileDShimFile) {
+			err := os.WriteFile(
+				profileDShimFile,
+				[]byte(profileDScript),
+				0644,
+			) // #nosec G306 -- File must be world-readable
+			if err != nil {
+				return fmt.Errorf("cannot write profile.d shim: %w", err)
+			}
 		}
 	}
 
@@ -92,16 +119,41 @@ func installCompletionShim() error {
 		completionScript = strings.Replace(completionShim, "${target}", viper.GetString("prefix")+"/.local", -1)
 	}
 
-	logging.Info.Printfln("Installing shim for completion in %s", completionShimFile)
-
-	if directoryIsWritable(completionShimFile) {
-		err := os.WriteFile(
-			completionShimFile,
-			[]byte(completionScript),
-			0644,
-		) // #nosec G306 -- File must be executable
+	if fileExists(completionShimFile) {
+		file, err := os.ReadFile(completionShimFile)
 		if err != nil {
-			return fmt.Errorf("cannot write completion shim: %w", err)
+			return fmt.Errorf("cannot read profile.d shim: %w", err)
+		}
+
+		h := sha256.New()
+		_, err = h.Write(file)
+		if err != nil {
+			return fmt.Errorf("cannot hash profile.d shim: %w", err)
+		}
+		fileSha256 := hex.EncodeToString(h.Sum(nil))
+
+		h = sha256.New()
+		_, err = h.Write([]byte(completionScript))
+		if err != nil {
+			return fmt.Errorf("cannot hash profile.d shim: %w", err)
+		}
+		completionScriptSha256 := hex.EncodeToString(h.Sum(nil))
+
+		if fileSha256 == completionScriptSha256 {
+			logging.Info.Printfln("Profile.d shim is up to date")
+			return nil
+		}
+
+		logging.Info.Printfln("Installing shim for profile.d in %s", completionShimFile)
+		if directoryIsWritable(completionShimFile) {
+			err := os.WriteFile(
+				completionShimFile,
+				[]byte(completionScript),
+				0644,
+			) // #nosec G306 -- File must be world-readable
+			if err != nil {
+				return fmt.Errorf("cannot write profile.d shim: %w", err)
+			}
 		}
 	}
 
