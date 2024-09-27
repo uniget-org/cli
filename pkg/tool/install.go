@@ -63,16 +63,25 @@ func (tool *Tool) Inspect(w io.Writer, layer []byte, rules []PathRewrite) error 
 	})
 }
 
-func (tool *Tool) Install(w io.Writer, layer []byte, rules []PathRewrite, patchFile func(path string)) error {
-	return archive.ProcessTarContents(layer, func(reader *tar.Reader, header *tar.Header) error {
+func (tool *Tool) Install(w io.Writer, layer []byte, rules []PathRewrite, patchFile func(path string) string) ([]string, error) {
+	installedFiles := []string{}
+
+	err := archive.ProcessTarContents(layer, func(reader *tar.Reader, header *tar.Header) error {
 		if header.Typeflag != tar.TypeDir {
 			header.Name = applyPathRewrites(header.Name, rules)
 			err := archive.CallbackExtractTarItem(reader, header)
 			if err != nil {
 				return err
 			}
-			patchFile(header.Name)
+			header.Name = patchFile(header.Name)
+
+			installedFiles = append(installedFiles, header.Name)
 		}
 		return nil
 	})
+	if err != nil {
+		return installedFiles, err
+	}
+
+	return installedFiles, nil
 }
