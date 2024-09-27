@@ -3,20 +3,23 @@ package cache
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/uniget-org/cli/pkg/containers"
 	"github.com/uniget-org/cli/pkg/logging"
 )
 
 type FileCache struct {
-	n              *NoneCache
-	cacheDirectory string
+	n                *NoneCache
+	cacheDirectory   string
+	retentionSeconds int
 }
 
-func NewFileCache(directory string) *FileCache {
+func NewFileCache(directory string, retentionSeconds int) *FileCache {
 	return &FileCache{
-		n:              NewNoneCache(),
-		cacheDirectory: directory,
+		n:                NewNoneCache(),
+		cacheDirectory:   directory,
+		retentionSeconds: retentionSeconds,
 	}
 }
 
@@ -49,8 +52,18 @@ func (c *FileCache) checkDataInCache(ref string) bool {
 	}
 
 	logging.Tracef("Checking cache for ref %s", ref)
-	_, err := os.Stat(fmt.Sprintf("%s/%s", c.cacheDirectory, ref))
-	return !os.IsNotExist(err)
+	stat, err := os.Stat(fmt.Sprintf("%s/%s", c.cacheDirectory, ref))
+	if !os.IsNotExist(err) {
+		return false
+	}
+
+	expiredTime := stat.ModTime().Add(time.Duration(c.retentionSeconds) * time.Second)
+	if expiredTime.Before(time.Now()) {
+		logging.Debugf("Cache entry for ref %s expired", ref)
+		return false
+	}
+
+	return true
 }
 
 func (c *FileCache) readDataFromCache(ref string) ([]byte, error) {

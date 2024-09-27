@@ -78,7 +78,7 @@ func writeInstalledFiles(tool *tool.Tool, installedFiles []string) error {
 		return fmt.Errorf("unable to create directory %s: %s", fileListDirectory, err)
 	}
 
-	err = os.WriteFile(fileListFilename, []byte(strings.Join(installedFiles, "\n")), 0644)
+	err = os.WriteFile(fileListFilename, []byte(strings.Join(installedFiles, "\n")), 0644) // #nosec G306 -- File must be world-readable
 	if err != nil {
 		return fmt.Errorf("unable to open %s: %s", fileListFilename, err)
 	}

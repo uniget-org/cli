@@ -20,7 +20,7 @@ func TestToolRefKey(t *testing.T) {
 }
 
 func TestNewFileCache(t *testing.T) {
-	cache := NewFileCache("test")
+	cache := NewFileCache("test", 300)
 	if cache.cacheDirectory != "test" {
 		t.Errorf("expected cache directory to be 'test', got '%s'", cache.cacheDirectory)
 	}
@@ -33,14 +33,14 @@ func TestCheckIfCacheDirectoryExists(t *testing.T) {
 		t.Errorf("go testing failed to provide temporary directory %s", dir)
 	}
 
-	cache := NewFileCache(dir)
+	cache := NewFileCache(dir, 300)
 	if !cache.cacheDirectoryExists() {
 		t.Errorf("temporary cache directory does not exist %s", cache.cacheDirectory)
 	}
 }
 
 func TestFileCacheGetManually(t *testing.T) {
-	cache := NewFileCache(t.TempDir())
+	cache := NewFileCache(t.TempDir(), 300)
 
 	if cache.checkDataInCache(toolRef.Key()) {
 		t.Errorf("unexpected cache hit")
@@ -69,7 +69,7 @@ func TestFileCacheGetManually(t *testing.T) {
 }
 
 func TestFileCacheGet(t *testing.T) {
-	cache := NewFileCache(t.TempDir())
+	cache := NewFileCache(t.TempDir(), 300)
 
 	if cache.checkDataInCache(toolRef.Key()) {
 		t.Errorf("unexpected cache hit")

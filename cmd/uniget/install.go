@@ -390,7 +390,7 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 			logging.Error.Printfln("Unable to marshal tool: %s", err)
 		}
 		manifestFilename := viper.GetString("prefix") + "/" + libDirectory + "/manifests/" + plannedTool.Name + ".json"
-		err = os.WriteFile(manifestFilename, []byte(plannedToolJson), 0644)
+		err = os.WriteFile(manifestFilename, []byte(plannedToolJson), 0644) // #nosec G306 -- File must be world-readable
 		if err != nil {
 			logging.Error.Printfln("Unable to write manifest file: %s", err)
 		}
