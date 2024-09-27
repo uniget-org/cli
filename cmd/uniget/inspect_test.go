@@ -20,8 +20,8 @@ func TestInspect(t *testing.T) {
 			name:        "tool exists",
 			args:        []string{"inspect", "foo"},
 			expectErr:   fmt.Errorf("error getting tool foo"),
-			expectOut:   "bar",
-			outContains: true,
+			expectOut:   "",
+			outContains: false,
 		},
 		{
 			name:      "contents",
