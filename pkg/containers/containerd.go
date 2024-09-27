@@ -21,6 +21,21 @@ func GetContainerdClient() (*containerd.Client, error) {
 	return client, nil
 }
 
+func ContainerdIsAvailable() bool {
+	client, err := GetContainerdClient()
+	if err != nil {
+		return false
+	}
+	defer client.Close()
+
+	version, err := client.Version(context.Background())
+	if err != nil {
+		return false
+	}
+
+	return version.Version != ""
+}
+
 func GetFirstLayerFromContainerdImage(client *containerd.Client, ref *ToolRef) ([]byte, error) {
 	shaString, err := GetFirstLayerShaFromRegistry(ref)
 	if err != nil {

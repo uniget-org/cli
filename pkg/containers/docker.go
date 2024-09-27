@@ -10,6 +10,7 @@ import (
 
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
+	"github.com/uniget-org/cli/pkg/logging"
 )
 
 func GetDockerClient() (*client.Client, error) {
@@ -20,7 +21,24 @@ func GetDockerClient() (*client.Client, error) {
 	return cli, nil
 }
 
+func DockerIsAvailable() bool {
+	cli, err := GetDockerClient()
+	if err != nil {
+		return false
+	}
+	defer cli.Close()
+
+	ping, err := cli.Ping(context.Background())
+	if err != nil {
+		return false
+	}
+
+	return ping.APIVersion != ""
+}
+
 func GetFirstLayerFromDockerImage(cli *client.Client, ref *ToolRef) ([]byte, error) {
+	logging.Tracef("Getting first layer for %s using docker", ref)
+
 	shaString, err := GetFirstLayerShaFromRegistry(ref)
 	if err != nil {
 		panic(err)

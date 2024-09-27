@@ -14,6 +14,7 @@ import (
 	flag "github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"github.com/uniget-org/cli/pkg/cache"
+	"github.com/uniget-org/cli/pkg/containers"
 	"github.com/uniget-org/cli/pkg/logging"
 	"github.com/uniget-org/cli/pkg/tool"
 	"golang.org/x/sys/unix"
@@ -427,19 +428,37 @@ func main() {
 
 		switch viper.GetString("cache") {
 		case "none":
+			logging.Debug("Using no cache")
 			toolCache = cache.NewNoneCache()
+
 		case "file":
+			logging.Debug("Using file cache")
 			toolCache = cache.NewFileCache(downloadCacheDirectory)
+
 		case "docker":
-			toolCache, err = cache.NewDockerCache()
-			if err != nil {
-				return fmt.Errorf("error creating Docker cache: %s", err)
+			if containers.DockerIsAvailable() {
+				logging.Debug("Using docker cache")
+				toolCache, err = cache.NewDockerCache()
+				if err != nil {
+					return fmt.Errorf("error creating Docker cache: %s", err)
+				}
+			} else {
+				logging.Warning.Println("Docker is not available. Falling back to no cache")
+				toolCache = cache.NewNoneCache()
 			}
+
 		case "containerd":
-			toolCache, err = cache.NewContainerdCache(projectName)
-			if err != nil {
-				return fmt.Errorf("error creating Containerd cache: %s", err)
+			if containers.ContainerdIsAvailable() {
+				logging.Debug("Using containerd cache")
+				toolCache, err = cache.NewContainerdCache(projectName)
+				if err != nil {
+					return fmt.Errorf("error creating Containerd cache: %s", err)
+				}
+			} else {
+				logging.Warning.Println("Containerd is not available. Falling back to no cache")
+				toolCache = cache.NewNoneCache()
 			}
+
 		default:
 			logging.Error.Printfln("Unsupported cache backend: %s", viper.GetString("cache"))
 		}

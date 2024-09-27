@@ -7,6 +7,7 @@ import (
 	"github.com/regclient/regclient/config"
 	rref "github.com/regclient/regclient/types/ref"
 	"github.com/uniget-org/cli/pkg/containers"
+	"github.com/uniget-org/cli/pkg/logging"
 )
 
 type NoneCache struct{}
@@ -32,6 +33,8 @@ func (c *NoneCache) Get(tool *containers.ToolRef) ([]byte, error) {
 	}))
 	rc := regclient.New(rcOpts...)
 	defer rc.Close(ctx, r)
+
+	logging.Debugf("NoneCache: Pulling %s", r)
 
 	layer, err := containers.GetFirstLayerFromRegistry(ctx, rc, r)
 	if err != nil {
