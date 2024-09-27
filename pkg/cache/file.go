@@ -53,7 +53,7 @@ func (c *FileCache) checkDataInCache(ref string) bool {
 
 	logging.Tracef("Checking cache for ref %s", ref)
 	stat, err := os.Stat(fmt.Sprintf("%s/%s", c.cacheDirectory, ref))
-	if !os.IsNotExist(err) {
+	if os.IsNotExist(err) {
 		return false
 	}
 
