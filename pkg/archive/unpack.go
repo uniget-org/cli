@@ -105,12 +105,12 @@ func CallbackExtractTarItem(reader *tar.Reader, header *tar.Header) error {
 	if err != nil {
 		return fmt.Errorf("error getting working directory")
 	}
-	logging.Info.Printfln("Current directory: %s", dir)
+	logging.Debugf("Current directory: %s", dir)
 
 	switch header.Typeflag {
 
 	case tar.TypeReg:
-		logging.Info.Printfln("File: %s", header.Name)
+		logging.Debugf("File: %s", header.Name)
 
 		path := filepath.Clean(header.Name)
 
