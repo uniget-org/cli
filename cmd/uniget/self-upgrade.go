@@ -2,6 +2,7 @@ package main
 
 import (
 	"archive/tar"
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,7 +11,9 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"sort"
 
+	"github.com/google/go-github/github"
 	goversion "github.com/hashicorp/go-version"
 	"github.com/spf13/cobra"
 	"github.com/uniget-org/cli/pkg/archive"
@@ -18,11 +21,15 @@ import (
 )
 
 var requestedVersion string
+var allowPrereleaseVersion bool
+var dryRun bool
 
 func initSelfUpgradeCmd() {
 	rootCmd.AddCommand(selfUpgradeCmd)
 
 	selfUpgradeCmd.Flags().StringVar(&requestedVersion, "version", "latest", "Upgrade to a specific version")
+	selfUpgradeCmd.Flags().BoolVar(&allowPrereleaseVersion, "allow-prerelease", false, "Allow upgrading to prerelease version")
+	selfUpgradeCmd.Flags().BoolVar(&dryRun, "dry-run", false, "Do not perform the upgrade, only show what would be done")
 }
 
 var selfUpgradeCmd = &cobra.Command{
@@ -56,6 +63,28 @@ var selfUpgradeCmd = &cobra.Command{
 		logging.Debugf("%s is available at %s\n", selfExe, path)
 		selfDir := filepath.Dir(path)
 
+		if allowPrereleaseVersion && requestedVersion == "latest" {
+			logging.Debugf("Allowing prerelease version")
+
+			githubClient := github.NewClient(nil)
+			releases, _, err := githubClient.Repositories.ListReleases(context.Background(), githubOrganization, "cli", &github.ListOptions{PerPage: 100})
+			if err != nil {
+				return fmt.Errorf("failed to list releases: %s", err)
+			}
+
+			versions := make([]*goversion.Version, 0)
+			for _, release := range releases {
+				version, err := goversion.NewSemver(*release.TagName)
+				if err != nil {
+					continue
+				}
+
+				versions = append(versions, version)
+				sort.Sort(goversion.Collection(versions))
+			}
+			requestedVersion = versions[len(versions)-1].String()
+		}
+
 		var url string
 		if requestedVersion == "latest" {
 			url = fmt.Sprintf("https://github.com/%s/releases/%s/download/uniget_%s_%s.tar.gz", projectRepository, requestedVersion, runtime.GOOS, arch)
@@ -64,27 +93,13 @@ var selfUpgradeCmd = &cobra.Command{
 			url = fmt.Sprintf("https://github.com/%s/releases/download/v%s/uniget_%s_%s.tar.gz", projectRepository, requestedVersion, runtime.GOOS, arch)
 		}
 
-		logging.Debugf("Downloading %s", url)
-		client := &http.Client{
-			CheckRedirect: func(req *http.Request, via []*http.Request) error {
-				re, err := regexp.Compile(`\/uniget-org\/cli\/releases\/download\/(v\d+\.\d+\.\d+)\/`)
-				if err != nil {
-					return fmt.Errorf("cannot compile regexp: %w", err)
-				}
+		logging.Debugf("Downloading from %s", url)
+		if dryRun {
+			logging.Info.Printfln("Would download version %s from %s", requestedVersion, url)
+			return nil
+		}
 
-				if re.MatchString(req.URL.Path) {
-					requestedVersion = re.FindStringSubmatch(req.URL.Path)[1]
-				}
-				return nil
-			},
-		}
-		req, err := http.NewRequest("GET", url, nil)
-		if err != nil {
-			return fmt.Errorf("failed to create request: %s", err)
-		}
-		req.Header.Set("Accept", "application/octet-stream")
-		req.Header.Set("User-Agent", fmt.Sprintf("%s/%s", projectName, version))
-		resp, err := client.Do(req)
+		resp, err := downloadReleaseAsset(url)
 		if err != nil {
 			return fmt.Errorf("failed to download %s: %s", url, err)
 		}
@@ -94,16 +109,15 @@ var selfUpgradeCmd = &cobra.Command{
 			return fmt.Errorf("failed to download %s: %s", url, resp.Status)
 		}
 
-		v1, err := goversion.NewVersion(requestedVersion)
+		requestedVersionVersion, err := goversion.NewVersion(requestedVersion)
 		if err != nil {
-			panic(err)
+			return fmt.Errorf("failed to parse version %s: %s", requestedVersion, err)
 		}
-		v2, err := goversion.NewVersion(version)
+		versionVersion, err := goversion.NewVersion(version)
 		if err != nil {
-			panic(err)
+			return fmt.Errorf("failed to parse current version %s: %s", version, err)
 		}
-
-		if v1.LessThanOrEqual(v2) {
+		if requestedVersionVersion.LessThanOrEqual(versionVersion) {
 			logging.Info.Printfln("Latest version %s already installed.", version)
 			return nil
 		}
@@ -139,4 +153,31 @@ var selfUpgradeCmd = &cobra.Command{
 
 		return nil
 	},
+}
+
+func downloadReleaseAsset(url string) (*http.Response, error) {
+	client := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			re, err := regexp.Compile(`\/uniget-org\/cli\/releases\/download\/(v\d+\.\d+\.\d+)\/`)
+			if err != nil {
+				return fmt.Errorf("cannot compile regexp: %w", err)
+			}
+
+			if re.MatchString(req.URL.Path) {
+				requestedVersion = re.FindStringSubmatch(req.URL.Path)[1]
+			}
+			return nil
+		},
+	}
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %s", err)
+	}
+	req.Header.Set("Accept", "application/octet-stream")
+	req.Header.Set("User-Agent", fmt.Sprintf("%s/%s", projectName, version))
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to download %s: %s", url, err)
+	}
+	return resp, nil
 }
