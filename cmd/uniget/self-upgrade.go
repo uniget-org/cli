@@ -132,9 +132,13 @@ var selfUpgradeCmd = &cobra.Command{
 			return fmt.Errorf("failed to remove %s: %s", selfExe, err)
 		}
 
-		body, err := io.ReadAll(resp.Body)
+		bodyGz, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return fmt.Errorf("failed to read body: %s", err)
+		}
+		body, err := archive.Gunzip(bodyGz)
+		if err != nil {
+			return fmt.Errorf("failed to gunzip body: %s", err)
 		}
 		err = archive.ProcessTarContents(body, func(tar *tar.Reader, header *tar.Header) error {
 			if header.Name == "uniget" {
