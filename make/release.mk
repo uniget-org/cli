@@ -16,7 +16,7 @@ major: ; $(info $(M) Creating major release...)
 	@make tag--$$(semver bump major $(LATEST_VERSION))
 
 .PHONY:
-next-prerel: \
+next-pre: \
 		$(HELPER)/var/lib/uniget/manifests/semver.json \
 		; $(info $(M) Creating next prerelease...)
 	@make tag--$$( semver bump prerelease rc.. $(LATEST_VERSION) )
