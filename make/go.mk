@@ -28,8 +28,8 @@ cover: \
 snapshot: \
 		make/go.mk \
 		$(GO_SOURCES) \
-		; $(info $(M) Building snapshot of uniget with version $(GO_VERSION)...)
-	@docker buildx bake binary --set binary.args.version=$(GO_VERSION)-dev
+		; $(info $(M) Building snapshot of uniget...)
+	@docker buildx bake binary
 
 release: \
 		$(HELPER)/var/lib/uniget/manifests/go.json \
