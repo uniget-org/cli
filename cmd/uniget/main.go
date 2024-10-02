@@ -40,8 +40,9 @@ var profileDDirectory = configRoot + "/profile.d"
 var metadataFileName = "metadata.json"
 var metadataFile = cacheDirectory + "/" + metadataFileName
 var registry = "ghcr.io"
-var projectRepository = "uniget-org/cli"
-var imageRepository = "uniget-org/tools"
+var githubOrganization = "uniget-org"
+var projectRepository = githubOrganization + "/cli"
+var imageRepository = githubOrganization + "/tools"
 var toolSeparator = "/"
 var registryImagePrefix = registry + "/" + imageRepository + toolSeparator
 var tools tool.Tools
@@ -75,17 +76,17 @@ func checkClientVersionRequirement(tool *tool.Tool) {
 	}
 
 	logging.Debugf("Checking if client version %s is at least %s", version, requiredCliVersion)
-	
-    v1, err := goversion.NewVersion(requiredCliVersion)
-    if err != nil {
-        panic(err)
-    }
-    v2, err := goversion.NewVersion(version)
-    if err != nil {
-        panic(err)
-    }
 
-    if v1.GreaterThan(v2) {
+	v1, err := goversion.NewVersion(requiredCliVersion)
+	if err != nil {
+		panic(err)
+	}
+	v2, err := goversion.NewVersion(version)
+	if err != nil {
+		panic(err)
+	}
+
+	if v1.GreaterThan(v2) {
 		logging.Error.Printfln("The tool %s requires at least version %s but you have %s", tool.Name, requiredCliVersion, version)
 		os.Exit(1)
 	}
@@ -204,7 +205,7 @@ func addViperBindings(flags *flag.FlagSet, cobraLongName string, viperName strin
 	}
 
 	if viperName != cobraLongName {
-		err = viper.BindEnv(viperName, strings.ToUpper(viper.GetEnvPrefix() + "_" + strings.ReplaceAll(cobraLongName, "-", "_")))
+		err = viper.BindEnv(viperName, strings.ToUpper(viper.GetEnvPrefix()+"_"+strings.ReplaceAll(cobraLongName, "-", "_")))
 		if err != nil {
 			fmt.Printf("unable to bind environment variable for flag %s: %s", cobraLongName, err)
 			os.Exit(1)
@@ -299,36 +300,36 @@ func main() {
 
 		pathRewriteRules = []tool.PathRewrite{
 			{
-				Source: "usr/local/",
-				Target: "",
+				Source:    "usr/local/",
+				Target:    "",
 				Operation: "REPLACE",
 			},
 			{
-				Source: "var/lib/uniget/",
-				Target: libDirectory + "/",
+				Source:    "var/lib/uniget/",
+				Target:    libDirectory + "/",
 				Operation: "REPLACE",
 			},
 			{
-				Source: "var/cache/uniget/",
-				Target: cacheDirectory + "/",
+				Source:    "var/cache/uniget/",
+				Target:    cacheDirectory + "/",
 				Operation: "REPLACE",
 			},
 		}
-		if ! viper.GetBool("user") {
+		if !viper.GetBool("user") {
 			logging.Debugf("Adding path rewrite rules for system installation")
 
 			if viper.GetBool("integratesystemd") || viper.GetBool("integrateall") {
 				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-					Source: "etc/systemd/",
-					Target: "/etc/systemd/",
+					Source:    "etc/systemd/",
+					Target:    "/etc/systemd/",
 					Operation: "REPLACE",
 				})
 			}
 
 			if viper.GetBool("integrateprofiled") || viper.GetBool("integrateall") {
 				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-					Source: "etc/profile.d/",
-					Target: "/etc/profile.d/",
+					Source:    "etc/profile.d/",
+					Target:    "/etc/profile.d/",
 					Operation: "REPLACE",
 				})
 			}
@@ -338,39 +339,39 @@ func main() {
 
 			if viper.GetBool("integratedockercliplugins") || viper.GetBool("integrateall") {
 				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-					Source: "libexec/docker/cli-plugins/",
-					Target: "./.docker/cli-plugins/",
+					Source:    "libexec/docker/cli-plugins/",
+					Target:    "./.docker/cli-plugins/",
 					Operation: "REPLACE",
 				})
 			}
 
 			if viper.GetBool("integratesystemd") || viper.GetBool("integrateall") {
 				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-					Source: "etc/systemd/user/",
-					Target: "./.config/systemd/user/",
+					Source:    "etc/systemd/user/",
+					Target:    "./.config/systemd/user/",
 					Operation: "REPLACE",
 				})
 			}
 
 			if viper.GetBool("integrateprofiled") || viper.GetBool("integrateall") {
 				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-					Source: "etc/profile.d/",
-					Target: "./.config/profile.d/",
+					Source:    "etc/profile.d/",
+					Target:    "./.config/profile.d/",
 					Operation: "REPLACE",
 				})
 			}
 
 			if viper.GetBool("integrateetc") || viper.GetBool("integrateall") {
 				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-					Source: "etc/",
-					Target: "./.config/",
+					Source:    "etc/",
+					Target:    "./.config/",
 					Operation: "REPLACE",
 				})
 			}
 		}
 		pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-			Source: "",
-			Target: viper.GetString("target") + "/",
+			Source:    "",
+			Target:    viper.GetString("target") + "/",
 			Operation: "PREPEND",
 		})
 		if viper.GetBool("debug") {
