@@ -12,7 +12,7 @@ require (
 	github.com/docker/docker v27.3.1+incompatible
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/hashicorp/go-version v1.7.0
-	github.com/jedib0t/go-pretty/v6 v6.5.9
+	github.com/jedib0t/go-pretty/v6 v6.6.0
 	github.com/muesli/mango-cobra v1.2.0
 	github.com/muesli/roff v0.1.0
 	github.com/opencontainers/go-digest v1.0.0
