@@ -115,37 +115,5 @@ COPY --from=ca-certificates /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=bin /uniget /uniget
 ENTRYPOINT [ "/uniget"]
 
-# docker run -d --name systemd --security-opt seccomp=unconfined --tmpfs /run --tmpfs /run/lock -v /sys/fs/cgroup:/sys/fs/cgroup:ro -t systemd
-# docker run -dt --privileged -v /sys/fs/cgroup:/sys/fs/cgroup systemd
-FROM latest-ubuntu AS systemd
-ENV container=docker \
-    LC_ALL=C \
-    DEBIAN_FRONTEND=noninteractive
-RUN <<EOF
-apt-get update
-apt-get -y install --no-install-recommends \
-    ca-certificates \
-    systemd \
-    systemd-sysv \
-    systemd-cron \
-    dbus \
-    sudo
-cd /lib/systemd/system/sysinit.target.wants/
-ls | grep -v systemd-tmpfiles-setup | xargs rm -f $1
-rm -f /lib/systemd/system/multi-user.target.wants/*
-rm -f /etc/systemd/system/*.wants/*
-rm -f /lib/systemd/system/local-fs.target.wants/*
-rm -f /lib/systemd/system/sockets.target.wants/*udev*
-rm -f /lib/systemd/system/sockets.target.wants/*initctl*
-rm -f /lib/systemd/system/basic.target.wants/*
-rm -f /lib/systemd/system/anaconda.target.wants/*
-rm -f /lib/systemd/system/plymouth*
-rm -f /lib/systemd/system/systemd-update-utmp*
-systemctl set-default multi-user.target
-EOF
-STOPSIGNAL SIGRTMIN+3
-VOLUME [ "/sys/fs/cgroup" ]
-CMD ["/bin/bash", "-c", "exec /sbin/init --log-target=journal 3>&1"]
-
-FROM systemd AS systemd-uniget
-COPY --from=bin /uniget /uniget
+FROM ghcr.io/uniget-org/images/systemd:ubuntu24.04 AS systemd-uniget
+COPY --from=bin /uniget /usr/local/bin/uniget
