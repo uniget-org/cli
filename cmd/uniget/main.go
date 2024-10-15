@@ -170,13 +170,11 @@ var (
 			if !viper.GetBool("user") {
 				logging.Debugf("Adding path rewrite rules for system installation")
 
-				if viper.GetBool("integratesystemd") || viper.GetBool("integrateall") {
-					pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-						Source:    "etc/systemd/",
-						Target:    "/etc/systemd/",
-						Operation: "REPLACE",
-					})
-				}
+				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
+					Source:    "etc/systemd/",
+					Target:    "/etc/systemd/",
+					Operation: "REPLACE",
+				})
 
 				if viper.GetBool("integrateprofiled") || viper.GetBool("integrateall") {
 					pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
@@ -198,14 +196,12 @@ var (
 					})
 				}
 
-				if viper.GetBool("integratesystemd") || viper.GetBool("integrateall") {
-					pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-						Source:    "etc/systemd/user/",
-						Target:    ".config/systemd/user/",
-						Operation: "REPLACE",
-						Abort:     true,
-					})
-				}
+				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
+					Source:    "etc/systemd/user/",
+					Target:    ".config/systemd/user/",
+					Operation: "REPLACE",
+					Abort:     true,
+				})
 
 				if viper.GetBool("integrateprofiled") || viper.GetBool("integrateall") {
 					pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
@@ -474,7 +470,6 @@ func main() {
 	viper.SetDefault("target", "usr/local")
 	viper.SetDefault("user", false)
 	viper.SetDefault("autoupdate", false)
-	viper.SetDefault("integratesystemd", false)
 	viper.SetDefault("integrateprofiled", false)
 	viper.SetDefault("integrateetc", false)
 	viper.SetDefault("integratedockercliplugins", false)
@@ -495,7 +490,6 @@ func main() {
 	pf.StringP("target", "t", viper.GetString("target"), "Target directory for installation relative to PREFIX")
 	pf.BoolP("user", "u", viper.GetBool("user"), "Install in user context")
 	pf.Bool("auto-update", viper.GetBool("autoupdate"), "Automatically update metadata")
-	pf.Bool("integrate-systemd", viper.GetBool("integratesystemd"), "Integrate systemd unit files")
 	pf.Bool("integrate-profiled", viper.GetBool("integrateprofiled"), "Integrate profile.d scripts")
 	pf.Bool("integrate-etc", viper.GetBool("integrateetc"), "Integrate configuration files from /etc")
 	pf.Bool("integrate-docker-cli-plugins", viper.GetBool("integratedockercliplugins"), "Integrate Docker CLI plugins")
@@ -520,7 +514,6 @@ func main() {
 	addViperBindings(pf, "target", "target")
 	addViperBindings(pf, "user", "user")
 	addViperBindings(pf, "auto-update", "autoupdate")
-	addViperBindings(pf, "integrate-systemd", "integratesystemd")
 	addViperBindings(pf, "integrate-profiled", "integrateprofiled")
 	addViperBindings(pf, "integrate-etc", "integrateetc")
 	addViperBindings(pf, "integrate-docker-cli-plugins", "integratedockercliplugins")
