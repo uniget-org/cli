@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "embed"
 	"fmt"
 	"os"
 	"regexp"
@@ -23,13 +24,10 @@ import (
 var (
 	projectName        = "uniget"
 	version     string = "main"
-	header      string = "" +
-		"             _            _\n" +
-		" _   _ _ __ (_) __ _  ___| |_\n" +
-		"| | | | '_ \\| |/ _` |/ _ \\ __|\n" +
-		"| |_| | | | | | (_| |  __/ |_\n" +
-		" \\__,_|_| |_|_|\\__, |\\___|\\__|\n" +
-		"               |___/\n"
+
+	//go:embed logo.txt
+	header string
+	slogan string = "The universal installer and updater for (container) tools"
 
 	altArch string = runtime.GOARCH
 	arch    string
@@ -56,7 +54,7 @@ var (
 	rootCmd          = &cobra.Command{
 		Use:          projectName,
 		Version:      version,
-		Short:        header + "The universal installer and updater to (container) tools",
+		Short:        header + slogan,
 		SilenceUsage: true,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			logging.OutputWriter = cmd.OutOrStdout()
