@@ -55,6 +55,7 @@ func setHandleFunc(mux *http.ServeMux, path string, contentType string, content 
 func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/v2", getV2)
+	mux.HandleFunc("/v2/", getV2)
 	setHandleFunc(mux, "/v2/uniget-org/tools/jq/manifests/latest", "application/vnd.oci.image.index.v1+json", index)
 	setHandleFunc(mux, "/v2/uniget-org/tools/jq/manifests/sha256:be2ea365585029e1fe8b5d1b871f5da3b3f1b228afea8e78d4833cf92138d695", "application/vnd.oci.image.manifest.v1+json", manifestAmd64)
 	setHandleFunc(mux, "/v2/uniget-org/tools/jq/manifests/sha256:9fdf2c55f9079be137c4c03ba8038f89319f0964c098f48fc57f35645b9ecb0f", "application/vnd.oci.image.manifest.v1+json", manifestArm64)
