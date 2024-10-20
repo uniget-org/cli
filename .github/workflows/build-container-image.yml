@@ -1,7 +1,18 @@
 name: Build container image
 
 on:
+  workflow_call:
+    inputs:
+      version:
+        description: 'uniget version to build container image for'
+        type: string
+        required: true
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'uniget version to build container image for'
+        type: string
+        required: true
 
 permissions:
   contents: read
@@ -38,7 +49,7 @@ jobs:
 
     - name: Fetch release asset
       run: |
-        VERSION="${GITHUB_REF_NAME/v/}"
+        VERSION="${{ inputs.version }}"
         echo "### Downloading from release ${VERSION}"
 
         for ARCH in x86_64 aarch64; do
@@ -53,7 +64,7 @@ jobs:
 
     - name: Build container image
       run: |
-        VERSION="${GITHUB_REF_NAME/v/}"
+        VERSION="${{ inputs.version }}"
         echo "### Building container image for version ${VERSION}"
 
         docker build . \
