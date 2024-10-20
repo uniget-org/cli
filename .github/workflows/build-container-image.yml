@@ -69,7 +69,7 @@ jobs:
             echo "### Downloading for architecture ${ARCH} (${ALT_ARCH})"
             mkdir -p "dist/default_linux_${ALT_ARCH}"
 
-            url="https://github.com/uniget-org/cli/releases/download/v${VERSION}/uniget_Linux_${ALT_ARCH}.tar.gz"
+            url="https://github.com/uniget-org/cli/releases/download/v${VERSION}/uniget_Linux_${ARCH}.tar.gz"
             echo "### Downloading from ${url}"
             curl --silent --show-error --location --fail "${url}" \
             | tar --extract --gzip --directory "dist/default_linux_${ALT_ARCH}" uniget
