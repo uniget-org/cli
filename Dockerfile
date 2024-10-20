@@ -121,6 +121,5 @@ ARG TARGETARCH
 COPY dist/default_linux_${TARGETARCH}/uniget /usr/local/bin/uniget
 LABEL \
     org.opencontainers.image.source="https://github.com/uniget-org/cli" \
-    org.opencontainers.image.title="uniget CLI" \
     org.opencontainers.image.description="The universal installer and updater for (container) tools" \
     org.opencontainers.image.version="${version}"
