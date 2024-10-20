@@ -80,6 +80,16 @@ jobs:
             --build-arg GITHUB_REF_NAME \
             .
 
+  image:
+    name: Build container image
+    needs:
+    - release
+    runs-on: ubuntu-24.04
+    steps:
+
+    - name: Checkout code
+      uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4
+
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
 
@@ -99,26 +109,17 @@ jobs:
         prefix: helper
         tools: jq regclient
 
+    - name: Fetch release asset
+      run: |
+        for ARCH in x86_64 aarch64; do
+            mkdir -p "dist/default_linux_${ARCH}"
+            curl --silent --show-error --location --fail \
+                "https://github.com/uniget-org/cli/releases/download/v${GITHUB_REF_NAME}/uniget_Linux_${ARCH}.tar.gz" \
+            | tar --extract --gzip --directory "dist/default_linux_${ARCH}" uniget
+        done
+
     - name: Build container image
       run: |
-        case "$( uname -m )" in
-            x86_64)
-                ARCH=amd64
-                ;;
-            aarch64)
-                ARCH=arm64
-                ;;
-            *)
-                echo "Unsupported architecture: $( uname -m )"
-                exit 1
-                ;;
-        esac
-        UNIGET_PATH="$(
-            ./helper/usr/local/bin/jq --raw-output --arg arch "${ARCH}" '.[] | select(.goarch == $arch) | .path' dist/artifacts.json \
-            | cut -d/ -f-2
-        )"
-
-        mv "${UNIGET_PATH}" "dist/default_linux_${ARCH}"
         VERSION="$(
             "dist/default_linux_${ARCH}/uniget" --version \
             | cut -d' ' -f3
