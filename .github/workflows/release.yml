@@ -111,8 +111,12 @@ jobs:
 
     - name: Fetch release asset
       run: |
+        echo "### Downloading from release ${GITHUB_REF_NAME}"
+
         for ARCH in x86_64 aarch64; do
+            echo "### Downloading for architecture ${ARCH}"
             mkdir -p "dist/default_linux_${ARCH}"
+
             curl --silent --show-error --location --fail \
                 "https://github.com/uniget-org/cli/releases/download/v${GITHUB_REF_NAME}/uniget_Linux_${ARCH}.tar.gz" \
             | tar --extract --gzip --directory "dist/default_linux_${ARCH}" uniget
