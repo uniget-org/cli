@@ -14,16 +14,14 @@ on:
         type: string
         required: true
 
-permissions:
-  contents: read
-  id-token: write
-  packages: write
-
 jobs:
 
   image:
     name: Build container image
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
     steps:
 
     - name: Checkout code
