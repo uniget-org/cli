@@ -54,13 +54,25 @@ jobs:
         echo "### Downloading from release ${VERSION}"
 
         for ARCH in x86_64 aarch64; do
-            echo "### Downloading for architecture ${ARCH}"
-            mkdir -p "dist/default_linux_${ARCH}"
+            case "${ARCH}" in
+                x86_64)
+                    ALT_ARCH=amd64
+                    ;;
+                aarch64)
+                    ALT_ARCH=arm64
+                    ;;
+                *)
+                    echo "### Unsupported architecture ${ARCH}"
+                    exit 1
+                    ;;
+            esac
+            echo "### Downloading for architecture ${ARCH} (${ALT_ARCH})"
+            mkdir -p "dist/default_linux_${ALT_ARCH}"
 
-            url="https://github.com/uniget-org/cli/releases/download/v${VERSION}/uniget_Linux_${ARCH}.tar.gz"
+            url="https://github.com/uniget-org/cli/releases/download/v${VERSION}/uniget_Linux_${ALT_ARCH}.tar.gz"
             echo "### Downloading from ${url}"
             curl --silent --show-error --location --fail "${url}" \
-            | tar --extract --gzip --directory "dist/default_linux_${ARCH}" uniget
+            | tar --extract --gzip --directory "dist/default_linux_${ALT_ARCH}" uniget
         done
 
     - name: Build container image
