@@ -49,7 +49,8 @@ jobs:
 
     - name: Fetch release asset
       run: |
-        VERSION="${{ inputs.version }}"
+        INPUT_VERSION="${{ inputs.version }}"
+        VERSION="${INPUT_VERSION#v}"
         echo "### Downloading from release ${VERSION}"
 
         for ARCH in x86_64 aarch64; do
@@ -64,7 +65,8 @@ jobs:
 
     - name: Build container image
       run: |
-        VERSION="${{ inputs.version }}"
+        INPUT_VERSION="${{ inputs.version }}"
+        VERSION="${INPUT_VERSION#v}"
         echo "### Building container image for version ${VERSION}"
 
         docker build . \
