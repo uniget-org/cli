@@ -116,4 +116,11 @@ COPY --from=bin /uniget /uniget
 ENTRYPOINT [ "/uniget"]
 
 FROM ghcr.io/uniget-org/images/systemd:ubuntu24.04 AS systemd-uniget
-COPY --from=bin /uniget /usr/local/bin/uniget
+ARG version
+ARG TARGETARCH
+COPY dist/default_linux_${TARGETARCH}/uniget /usr/local/bin/uniget
+LABEL \
+    org.opencontainers.image.source="https://github.com/uniget-org/cli" \
+    org.opencontainers.image.title="uniget" \
+    org.opencontainers.image.description="The universal installer and updater for (container) tools" \
+    org.opencontainers.image.version="${version}"
