@@ -93,10 +93,14 @@ jobs:
             | sort -Vr \
             | head -n 1
         )"
+        if test -z "${LATEST_VERSION}"; then
+            echo "### No tags found"
+            exit
+        fi
         echo "### Tagging ${LATEST_VERSION} as latest"
         if ! ./helper/usr/local/bin/regctl manifest get ghcr.io/uniget-org/cli:${LATEST_VERSION}; then
             echo "    Tag ${LATEST_VERSION} does not exist"
-            exit 1
+            exit
         fi
         ./helper/usr/local/bin/regctl image copy \
             "ghcr.io/uniget-org/cli:${VERSION}" \
