@@ -11,8 +11,6 @@ jobs:
 
   image:
     name: Build container image
-    needs:
-    - release
     runs-on: ubuntu-24.04
     steps:
 
