@@ -115,11 +115,21 @@ COPY --from=ca-certificates /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=bin /uniget /uniget
 ENTRYPOINT [ "/uniget"]
 
-FROM ghcr.io/uniget-org/images/systemd:ubuntu24.04 AS systemd-uniget
+FROM ghcr.io/uniget-org/images/systemd:ubuntu22.04 AS systemd-uniget
 ARG version
 ARG TARGETARCH
-COPY dist/default_linux_${TARGETARCH}/uniget /usr/local/bin/uniget
+RUN <<EOF
+case "${TARGETARCH}" in
+    amd64) ARCH="x86_64" ;;
+    arm64) ARCH="aarch64" ;;
+    *) ARCH="${TARGETARCH}" ;;
+esac
+curl --silent --show-error --location --fail \
+    "https://github.com/uniget-org/cli/releases/download/v${version}/uniget_Linux_${ARCH}.tar.gz" \
+| tar --extract --gzip --directory=/usr/local/bin uniget
+EOF
 LABEL \
     org.opencontainers.image.source="https://github.com/uniget-org/cli" \
+    org.opencontainers.image.title="uniget CLI" \
     org.opencontainers.image.description="The universal installer and updater for (container) tools" \
     org.opencontainers.image.version="${version}"
