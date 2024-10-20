@@ -3,14 +3,14 @@ name: Build container image
 on:
   workflow_call:
     inputs:
-      version:
-        description: 'uniget version to build container image for'
+      tag:
+        description: 'Tag to build container image for'
         type: string
         required: true
   workflow_dispatch:
     inputs:
-      version:
-        description: 'uniget version to build container image for'
+      tag:
+        description: 'Tag to build container image for'
         type: string
         required: true
 
@@ -48,7 +48,7 @@ jobs:
 
     - name: Fetch release asset
       run: |
-        INPUT_VERSION="${{ inputs.version }}"
+        INPUT_VERSION="${{ inputs.tag }}"
         VERSION="${INPUT_VERSION#v}"
         echo "### Downloading from release ${VERSION}"
 
@@ -76,7 +76,7 @@ jobs:
 
     - name: Build container image
       run: |
-        INPUT_VERSION="${{ inputs.version }}"
+        INPUT_VERSION="${{ inputs.tag }}"
         VERSION="${INPUT_VERSION#v}"
         echo "### Building container image for version ${VERSION}"
 
@@ -84,7 +84,7 @@ jobs:
             --target systemd-uniget \
             --platform linux/amd64,linux/arm64 \
             --build-arg version="${VERSION}" \
-            --tag ghcr.io/uniget-org/uniget:${VERSION} \
+            --tag "ghcr.io/uniget-org/cli:${VERSION}" \
             --push
 
         LATEST_VERSION="$(
