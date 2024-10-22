@@ -11,6 +11,8 @@ require (
 	github.com/distribution/distribution/v3 v3.0.0-beta.1
 	github.com/docker/docker v27.3.1+incompatible
 	github.com/google/go-github v17.0.0+incompatible
+	github.com/google/safearchive v0.0.0-20240116084542-70159a5fe202
+	github.com/google/safeopen v0.0.0-20240125081138-66b54d5181c6
 	github.com/hashicorp/go-version v1.7.0
 	github.com/jedib0t/go-pretty/v6 v6.6.1
 	github.com/muesli/mango-cobra v1.2.0

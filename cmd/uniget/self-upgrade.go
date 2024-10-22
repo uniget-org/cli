@@ -1,7 +1,6 @@
 package main
 
 import (
-	"archive/tar"
 	"context"
 	"fmt"
 	"io"
@@ -14,8 +13,10 @@ import (
 	"sort"
 
 	"github.com/google/go-github/github"
+	"github.com/google/safearchive/tar"
 	goversion "github.com/hashicorp/go-version"
 	"github.com/spf13/cobra"
+
 	"github.com/uniget-org/cli/pkg/archive"
 	"github.com/uniget-org/cli/pkg/logging"
 )

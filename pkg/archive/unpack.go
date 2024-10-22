@@ -1,50 +1,18 @@
 package archive
 
 import (
-	"archive/tar"
 	"bytes"
 	"compress/gzip"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
-	"strings"
+
+	"github.com/google/safearchive/tar"
+	"github.com/google/safeopen"
 
 	"github.com/uniget-org/cli/pkg/logging"
 )
-
-func pathIsInsideTarget(target string, candidate string) error {
-	absTarget, err := filepath.Abs(target)
-	if err != nil {
-		return fmt.Errorf("pathIsInsideTarget(): Abs() failed: %s", err.Error())
-	}
-
-	logging.Debugf("Checking if %s works", filepath.Join(absTarget, candidate))
-	cleanPath := filepath.Clean(filepath.Join(absTarget, candidate))
-	logging.Debugf("Cleaned path is %s", cleanPath)
-
-	realPath, err := filepath.EvalSymlinks(cleanPath)
-	if os.IsNotExist(err) {
-		logging.Tracef("Path does not exist (yet): %s", cleanPath)
-		realPath = cleanPath
-
-	} else if err != nil {
-		return fmt.Errorf("pathIsInsideTarget(): EvalSymlinks() failed: %s", err.Error())
-	}
-	logging.Debugf("Realpath of %s is %s", candidate, realPath)
-
-	relPath, err := filepath.Rel(absTarget, realPath)
-	if err != nil {
-		return fmt.Errorf("pathIsInsideTarget(): Rel() failed: %s", err.Error())
-	}
-	logging.Debugf("Relative path of %s is %s", realPath, relPath)
-
-	if strings.Contains(relPath, "..") {
-		return fmt.Errorf("pathIsInsideTarget(): symlink target contains '..': %s", relPath)
-	}
-
-	return nil
-}
 
 func Gunzip(layer []byte) ([]byte, error) {
 	reader, err := gzip.NewReader(bytes.NewReader(layer))
@@ -101,11 +69,11 @@ func CallbackExtractTarItem(reader *tar.Reader, header *tar.Header) error {
 		return nil
 	}
 
-	dir, err := os.Getwd()
+	workDir, err := os.Getwd()
 	if err != nil {
 		return fmt.Errorf("error getting working directory")
 	}
-	logging.Debugf("Current directory: %s", dir)
+	logging.Debugf("Current directory: %s", workDir)
 
 	switch header.Typeflag {
 
@@ -120,7 +88,7 @@ func CallbackExtractTarItem(reader *tar.Reader, header *tar.Header) error {
 			return fmt.Errorf("ExtractTarGz: MkdirAll() failed: %s", err.Error())
 		}
 
-		outFile, err := os.Create(path)
+		outFile, err := safeopen.CreateBeneath(workDir, path)
 		if err != nil {
 			return fmt.Errorf("ExtractTarGz: Create() failed: %s", err.Error())
 		}

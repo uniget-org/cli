@@ -1,11 +1,11 @@
 package main
 
 import (
-	"archive/tar"
 	"context"
 	"fmt"
 	"os"
 
+	"github.com/google/safearchive/tar"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
