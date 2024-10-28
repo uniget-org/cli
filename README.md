@@ -13,6 +13,8 @@
 
 The universal installer and updater to (container) tools
 
+⚠️ uniget is in the process of being migrated [to GitLab](https://gitlab.com/uniget-org). The migration is being tracked [here](https://gitlab.com/uniget-org/migration-gh2gl). There is only one thing, you need to do: regularly update the uniget CLI using `uniget self-update`. ⚠️
+
 ## Purpose
 
 `uniget` is inspired by the [convenience script](https://docs.docker.com/engine/install/ubuntu/#install-using-the-convenience-script) to install the Docker daemon. But the scope is much larger.
