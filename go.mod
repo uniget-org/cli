@@ -9,7 +9,7 @@ require (
 	github.com/containerd/containerd v1.7.23
 	github.com/containerd/containerd/v2 v2.0.0
 	github.com/containerd/platforms v1.0.0-rc.0
-	github.com/distribution/distribution/v3 v3.0.0-beta.1
+	github.com/distribution/distribution/v3 v3.0.0-rc.1
 	github.com/docker/docker v27.3.1+incompatible
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/safearchive v0.0.0-20241025131057-f7ce9d7b6f9c
@@ -59,6 +59,7 @@ require (
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/distribution/reference v0.6.0 // indirect
 	github.com/dlclark/regexp2 v1.11.4 // indirect
+	github.com/docker/docker-credential-helpers v0.8.2 // indirect
 	github.com/docker/go-connections v0.5.0 // indirect
 	github.com/docker/go-events v0.0.0-20241017185736-969db071c880 // indirect
 	github.com/docker/go-metrics v0.0.1 // indirect
