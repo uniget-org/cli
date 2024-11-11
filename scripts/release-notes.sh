@@ -5,17 +5,21 @@ export NO_COLOR=true
 
 TAG="$(
     git tag \
+    | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+' \
     | sort -V \
     | tail -n 1
 )"
-PREVIOUS_TAG="$(
-    git tag --list v* \
-    | grep -v -- - \
-    | sort -V \
-    | head -n -1 \
-    | sort -Vr \
-    | head -n 1
-)"
+if test -z "${PREVIOUS_TAG}"; then
+    PREVIOUS_TAG="$(
+        git tag --list v* \
+        | grep -v -- - \
+        | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+' \
+        | sort -V \
+        | head -n -1 \
+        | sort -Vr \
+        | head -n 1
+    )"
+fi
 echo "Creating release notes for ${PREVIOUS_TAG} -> ${TAG}" >&2
 
 TIMESTAMP="$(
