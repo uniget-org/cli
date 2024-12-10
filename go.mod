@@ -19,7 +19,7 @@ require (
 	github.com/muesli/roff v0.1.0
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/pterm/pterm v0.12.80
-	github.com/regclient/regclient v0.7.2
+	github.com/regclient/regclient v0.8.0
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.19.0
@@ -156,7 +156,7 @@ require (
 	golang.org/x/exp v0.0.0-20241108190413-2d47ceb2692f // indirect
 	golang.org/x/net v0.31.0 // indirect
 	golang.org/x/sync v0.9.0 // indirect
-	golang.org/x/term v0.26.0 // indirect
+	golang.org/x/term v0.27.0 // indirect
 	golang.org/x/text v0.20.0 // indirect
 	google.golang.org/genproto v0.0.0-20241118233622-e639e219e697 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20241118233622-e639e219e697 // indirect
