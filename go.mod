@@ -6,7 +6,7 @@ toolchain go1.23.4
 
 require (
 	github.com/charmbracelet/glamour v0.8.0
-	github.com/containerd/containerd v1.7.23
+	github.com/containerd/containerd v1.7.24
 	github.com/containerd/platforms v1.0.0-rc.0
 	github.com/distribution/distribution/v3 v3.0.0-rc.2
 	github.com/docker/docker v27.4.1+incompatible
