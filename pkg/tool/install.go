@@ -2,6 +2,7 @@ package tool
 
 import (
 	"io"
+	"path/filepath"
 	"strings"
 
 	"github.com/google/safearchive/tar"
@@ -69,7 +70,27 @@ func (tool *Tool) Install(w io.Writer, layer []byte, rules []PathRewrite, patchF
 
 	err := archive.ProcessTarContents(layer, func(reader *tar.Reader, header *tar.Header) error {
 		if header.Typeflag != tar.TypeDir {
+			if header.Typeflag == tar.TypeLink && len(header.Linkname) > 0 {
+				var err error
+
+				absName, err := filepath.Abs(header.Name)
+				if err != nil {
+					return err
+				}
+				absLinkname, err := filepath.Abs(header.Linkname)
+				if err != nil {
+					return err
+				}
+
+				logging.Tracef("Name: %s, Linkname: %s", absName, absLinkname)
+				header.Linkname, err = filepath.Rel(filepath.Dir(absName), absLinkname)
+				if err != nil {
+					return err
+				}
+				logging.Tracef("    Relative linkname is %s", header.Linkname)
+			}
 			header.Name = applyPathRewrites(header.Name, rules)
+
 			err := archive.CallbackExtractTarItem(reader, header)
 			if err != nil {
 				return err

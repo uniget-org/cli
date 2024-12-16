@@ -107,8 +107,8 @@ apk add ca-certificates
 EOF
 
 FROM ca-certificates AS uniget
-COPY --from=bin /uniget /uniget
-ENTRYPOINT [ "/uniget"]
+COPY --from=bin /uniget /usr/local/bin/uniget
+ENTRYPOINT [ "/usr/local/bin/uniget"]
 
 FROM scratch AS scratch-uniget
 COPY --from=ca-certificates /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/

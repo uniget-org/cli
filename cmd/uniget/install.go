@@ -356,14 +356,13 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 
 		// Change working directory to prefix
 		// so that unpacking can ignore the target directory
-		prefix := viper.GetString("prefix")
-		installDir := prefix
-		if len(prefix) == 0 {
+		installDir := viper.GetString("prefix")
+		if len(installDir) == 0 {
 			installDir = "/"
 		}
 		err = os.Chdir(installDir)
 		if err != nil {
-			return fmt.Errorf("error changing directory to %s: %s", prefix, err)
+			return fmt.Errorf("error changing directory to %s: %s", installDir, err)
 		}
 		dir, err := os.Getwd()
 		if err != nil {
