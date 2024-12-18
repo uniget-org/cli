@@ -8,7 +8,7 @@ require (
 	github.com/charmbracelet/glamour v0.8.0
 	github.com/containerd/containerd v1.7.23
 	github.com/containerd/platforms v1.0.0-rc.0
-	github.com/distribution/distribution/v3 v3.0.0-rc.1
+	github.com/distribution/distribution/v3 v3.0.0-rc.2
 	github.com/docker/docker v27.4.1+incompatible
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/safearchive v0.0.0-20241025131057-f7ce9d7b6f9c
@@ -152,7 +152,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.32.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.3.1 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/crypto v0.29.0 // indirect
+	golang.org/x/crypto v0.31.0 // indirect
 	golang.org/x/exp v0.0.0-20241108190413-2d47ceb2692f // indirect
 	golang.org/x/net v0.31.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
