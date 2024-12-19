@@ -29,7 +29,7 @@ var generateCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var result []string
 
-		result = append(result, "# syntax=docker/dockerfile:1.8.1")
+		result = append(result, "#syntax=docker/dockerfile:1")
 		result = append(result, fmt.Sprintf("FROM %s", baseImage))
 
 		for _, toolName := range args {
