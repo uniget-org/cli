@@ -64,7 +64,7 @@ var (
 			Style: &pterm.ThemeDefault.WarningPrefixStyle,
 			Text:  "WARNING",
 		},
-		Writer: OutputWriter,
+		Writer: ErrorWriter,
 	}
 	Skip = pterm.PrefixPrinter{
 		MessageStyle: pterm.NewStyle(pterm.FgDarkGray),
