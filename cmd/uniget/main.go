@@ -187,14 +187,12 @@ var (
 			} else {
 				logging.Debugf("Adding path rewrite rules for user installation")
 
-				if viper.GetBool("integratedockercliplugins") || viper.GetBool("integrateall") {
-					pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-						Source:    "libexec/docker/cli-plugins/",
-						Target:    ".docker/cli-plugins/",
-						Operation: "REPLACE",
-						Abort:     true,
-					})
-				}
+				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
+					Source:    "libexec/docker/cli-plugins/",
+					Target:    ".docker/cli-plugins/",
+					Operation: "REPLACE",
+					Abort:     true,
+				})
 
 				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
 					Source:    "etc/systemd/user/",
@@ -472,7 +470,6 @@ func main() {
 	viper.SetDefault("autoupdate", false)
 	viper.SetDefault("integrateprofiled", false)
 	viper.SetDefault("integrateetc", false)
-	viper.SetDefault("integratedockercliplugins", false)
 	viper.SetDefault("integrateall", false)
 	viper.SetDefault("registry", registry)
 	viper.SetDefault("repository", imageRepository)
@@ -492,7 +489,6 @@ func main() {
 	pf.Bool("auto-update", viper.GetBool("autoupdate"), "Automatically update metadata")
 	pf.Bool("integrate-profiled", viper.GetBool("integrateprofiled"), "Integrate profile.d scripts")
 	pf.Bool("integrate-etc", viper.GetBool("integrateetc"), "Integrate configuration files from /etc")
-	pf.Bool("integrate-docker-cli-plugins", viper.GetBool("integratedockercliplugins"), "Integrate Docker CLI plugins")
 	pf.Bool("integrate-all", viper.GetBool("integrateall"), "Integrate all available integrations")
 	pf.String("registry", viper.GetString("registry"), "Registry for the image repository")
 	pf.String("repository", viper.GetString("repository"), "Repository for the image repository")
@@ -516,7 +512,6 @@ func main() {
 	addViperBindings(pf, "auto-update", "autoupdate")
 	addViperBindings(pf, "integrate-profiled", "integrateprofiled")
 	addViperBindings(pf, "integrate-etc", "integrateetc")
-	addViperBindings(pf, "integrate-docker-cli-plugins", "integratedockercliplugins")
 	addViperBindings(pf, "integrate-all", "integrateall")
 	addViperBindings(pf, "registry", "registry")
 	addViperBindings(pf, "repository", "repository")
