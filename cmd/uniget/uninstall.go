@@ -109,36 +109,13 @@ func uninstallTool(toolName string) error {
 			}
 			return fmt.Errorf("unable to read file %s: %s", filename, err)
 		}
-		for _, line := range strings.Split(string(data), "\n") {
-			line = strings.TrimSuffix(line, ".go-template")
-			logging.Debugf("processing %s", line)
-			strippedLine := strings.TrimPrefix(line, "./")
-			strippedLine = strings.TrimPrefix(strippedLine, "usr/local/")
-			logging.Debugf("stripped line %s", strippedLine)
-			if strippedLine == "" {
-				continue
+		installedFiles := strings.Split(string(data), "\n")
+		err = uninstallFiles(installedFiles)
+		if err != nil {
+			if uninstallSpinner != nil {
+				uninstallSpinner.Fail()
 			}
-			if strings.HasPrefix(strippedLine, "/") {
-				logging.Warning.Printfln("Skipping %s because it is not safe to remove", strippedLine)
-				continue
-			}
-
-			prefixedLine := viper.GetString("prefix") + "/" + viper.GetString("target") + "/" + strippedLine
-			logging.Debugf("prefixed line %s", prefixedLine)
-
-			_, err := os.Lstat(prefixedLine)
-			if err != nil {
-				logging.Debugf("Unable to stat %s: %s", prefixedLine, err)
-				continue
-			}
-
-			err = os.Remove(prefixedLine)
-			if err != nil {
-				if uninstallSpinner != nil {
-					uninstallSpinner.Fail()
-				}
-				return fmt.Errorf("unable to remove %s: %s", prefixedLine, err)
-			}
+			return fmt.Errorf("unable to uninstall files: %s", err)
 		}
 
 	} else {
@@ -211,6 +188,37 @@ func uninstallTool(toolName string) error {
 
 	if uninstallSpinner != nil {
 		uninstallSpinner.Success()
+	}
+
+	return nil
+}
+
+func uninstallFiles(installedFiles []string) error {
+	for _, file := range installedFiles {
+		logging.Debugf("processing %s", file)
+
+		logging.Debugf("stripped line %s", file)
+		if file == "" {
+			continue
+		}
+		if strings.HasPrefix(file, "/") {
+			logging.Warning.Printfln("Skipping %s because it is not safe to remove", file)
+			continue
+		}
+
+		prefixedFile := viper.GetString("prefix") + "/" + viper.GetString("target") + "/" + file
+		logging.Debugf("prefixed line %s", prefixedFile)
+
+		_, err := os.Lstat(prefixedFile)
+		if err != nil {
+			logging.Debugf("Unable to stat %s: %s", prefixedFile, err)
+			continue
+		}
+
+		err = os.Remove(prefixedFile)
+		if err != nil {
+			return fmt.Errorf("unable to remove %s: %s", prefixedFile, err)
+		}
 	}
 
 	return nil

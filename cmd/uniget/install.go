@@ -375,7 +375,12 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 			if installSpinner != nil {
 				installSpinner.Fail()
 			}
-			logging.Warning.Printfln("Unable to install %s: %s", plannedTool.Name, err)
+			logging.Error.Printfln("Unable to install %s: %s", plannedTool.Name, err)
+			logging.Warning.Printfln("Removing partial installation")
+			err = uninstallFiles(installedFiles)
+			if err != nil {
+				logging.Warning.Printfln("Unable to remove partial installation: %s", err)
+			}
 			continue
 		}
 		logging.Debugf("Installed files: %d", len(installedFiles))
