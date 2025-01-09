@@ -115,7 +115,7 @@ COPY --from=ca-certificates /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=bin /uniget /uniget
 ENTRYPOINT [ "/uniget"]
 
-FROM ghcr.io/uniget-org/images/systemd:ubuntu24.04@sha256:2aac68e243079e99733ce04ee2f0515e9cd0902b1488e35f1f0345db279f31d9 AS systemd-uniget
+FROM ghcr.io/uniget-org/images/systemd:ubuntu24.04@sha256:b708601bc5c55191550f5e9bb3ce90dd07056cd1c430ef48dfc5eff93b74e18a AS systemd-uniget
 ARG version
 ARG TARGETARCH
 RUN <<EOF
