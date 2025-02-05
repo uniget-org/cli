@@ -93,7 +93,11 @@ var describeCmd = &cobra.Command{
 		}
 
 		if versions {
-			toolRef := containers.NewToolRef(registry, imageRepository, tool.Name, tool.Version)
+			registries, repositories := tool.GetSourcesWithFallback(registry, imageRepository)
+			toolRef, err := containers.FindToolRef(registries, repositories, tool.Name, tool.Version)
+			if err != nil {
+				return fmt.Errorf("unable to find tool ref: %s", err)
+			}
 			tags, err := containers.GetImageTags(toolRef)
 			if err != nil {
 				return fmt.Errorf("failed to get image tags: %s", err)

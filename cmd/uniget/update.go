@@ -59,7 +59,10 @@ var updateCmd = &cobra.Command{
 
 func downloadMetadata() error {
 	assertCacheDirectory()
-	t := containers.NewToolRef(registry, imageRepository, "metadata", "main")
+	t, err := containers.FindToolRef([]string{registry}, []string{imageRepository}, "metadata", "main")
+	if err != nil {
+		return fmt.Errorf("error finding metadata: %s", err)
+	}
 	rc := containers.GetRegclient()
 	defer rc.Close(context.Background(), t.GetRef())
 

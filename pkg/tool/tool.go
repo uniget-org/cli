@@ -226,3 +226,19 @@ func (tool *Tool) GetVersionStatus() error {
 
 	return nil
 }
+
+func (tool *Tool) GetSources() (registries, repositories []string) {
+	for _, source := range tool.Sources {
+		registries = append(registries, source.Registry)
+		repositories = append(repositories, source.Repository)
+	}
+
+	return
+}
+
+func (tool *Tool) GetSourcesWithFallback(registry, repository string) (registries, repositories []string) {
+	registries, repositories = tool.GetSources()
+	registries = append(registries, registry)
+	repositories = append(repositories, repository)
+	return
+}

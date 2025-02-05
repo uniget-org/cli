@@ -180,6 +180,13 @@ func (tool *Tool) Print(w io.Writer) {
 		}
 	}
 
+	if len(tool.Sources) > 0 {
+		fmt.Fprintf(w, "  Sources:\n")
+		for _, source := range tool.Sources {
+			fmt.Fprintf(w, "    %s/%s\n", source.Registry, source.Repository)
+		}
+	}
+
 	fmt.Fprintf(w, "  Status\n")
 	fmt.Fprintf(w, "    Binary present: %t\n", tool.Status.BinaryPresent)
 	fmt.Fprintf(w, "    Version: %s\n", tool.Status.Version)

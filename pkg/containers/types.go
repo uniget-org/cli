@@ -1,6 +1,7 @@
 package containers
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/regclient/regclient/types/ref"
@@ -22,6 +23,41 @@ func NewToolRef(registry, repository, tool, version string) *ToolRef {
 		Tool:          tool,
 		Version:       version,
 	}
+}
+
+func FindToolRef(registries, repositories []string, tool, version string) (*ToolRef, error) {
+	if len(registries) == 0 {
+		return nil, fmt.Errorf("no registries provided")
+	}
+	if len(repositories) == 0 {
+		return nil, fmt.Errorf("no repositories provided")
+	}
+	if len(registries) != len(repositories) {
+		return nil, fmt.Errorf("number of registries and repositories do not match")
+	}
+
+	for index := range registries {
+		toolRef := NewToolRef(registries[index], repositories[index], tool, version)
+		if toolRef.ManifestExists() {
+			return toolRef, nil
+		}
+	}
+	return nil, fmt.Errorf("tool %s:%s not found in sources", tool, version)
+}
+
+func (t *ToolRef) ManifestExists() bool {
+	ref := t.GetRef()
+
+	ctx := context.Background()
+	rc := GetRegclient()
+	defer rc.Close(ctx, ref)
+
+	b, err := HeadPlatformManifestForLocalPlatform(ctx, rc, ref)
+	if err != nil {
+		return false
+	}
+
+	return b
 }
 
 func (t *ToolRef) String() string {

@@ -110,8 +110,33 @@ func GetFirstLayerShaFromRegistry(image *ToolRef) (string, error) {
 	return "", fmt.Errorf("unknown media type encountered: %s", layer.MediaType)
 }
 
+func HeadPlatformManifestForLocalPlatform(ctx context.Context, rc *regclient.RegClient, r ref.Ref) (bool, error) {
+	return HeadPlatformManifest(ctx, rc, r, platform.Local())
+}
+
 func GetPlatformManifestForLocalPlatform(ctx context.Context, rc *regclient.RegClient, r ref.Ref) (manifest.Manifest, error) {
 	return GetPlatformManifest(ctx, rc, r, platform.Local())
+}
+
+func HeadPlatformManifest(ctx context.Context, rc *regclient.RegClient, r ref.Ref, p platform.Platform) (bool, error) {
+	m, err := rc.ManifestHead(ctx, r)
+	if err != nil {
+		return false, fmt.Errorf("failed to get manifest: %s", err)
+	}
+
+	if m.IsList() {
+		desc, err := manifest.GetPlatformDesc(m, &p)
+		if err != nil {
+			return false, fmt.Errorf("error getting platform descriptor")
+		}
+
+		m, err = rc.ManifestHead(ctx, r, regclient.WithManifestDesc(*desc))
+		if err != nil {
+			return false, fmt.Errorf("failed to get manifest: %s", err)
+		}
+	}
+
+	return true, nil
 }
 
 func GetPlatformManifest(ctx context.Context, rc *regclient.RegClient, r ref.Ref, p platform.Platform) (manifest.Manifest, error) {
@@ -126,13 +151,25 @@ func GetPlatformManifest(ctx context.Context, rc *regclient.RegClient, r ref.Ref
 			return nil, fmt.Errorf("error getting platform descriptor")
 		}
 
-		m, err = rc.ManifestGet(ctx, r, regclient.WithManifestDesc(*desc))
+		_, err = rc.ManifestGet(ctx, r, regclient.WithManifestDesc(*desc))
 		if err != nil {
 			return nil, fmt.Errorf("failed to get manifest: %s", err)
 		}
 	}
 
 	return m, nil
+}
+
+func HeadManifest(ctx context.Context, rc *regclient.RegClient, r ref.Ref) (bool, error) {
+	manifestCtx, manifestCancel := context.WithTimeout(ctx, 60*time.Second)
+	defer manifestCancel()
+
+	_, err := HeadPlatformManifestForLocalPlatform(manifestCtx, rc, r)
+	if err != nil {
+		return false, fmt.Errorf("failed to get manifest: %s", err)
+	}
+
+	return true, nil
 }
 
 func GetManifest(ctx context.Context, rc *regclient.RegClient, r ref.Ref) (manifest.Manifest, error) {

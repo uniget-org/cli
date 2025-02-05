@@ -18,10 +18,15 @@ type License struct {
 	Link string `json:"link" yaml:"link"`
 }
 
+type Source struct {
+	Registry   string `json:"registry" yaml:"registry"`
+	Repository string `json:"repository" yaml:"repository"`
+}
+
 type Tool struct {
-	SchemaVersion		string	   `json:"schema_version,omitempty" yaml:"schema_version,omitempty"`
+	SchemaVersion       string     `json:"schema_version,omitempty" yaml:"schema_version,omitempty"`
 	Name                string     `json:"name" yaml:"name"`
-	License			    License    `json:"license" yaml:"license"`
+	License             License    `json:"license" yaml:"license"`
 	Version             string     `json:"version" yaml:"version"`
 	Binary              string     `json:"binary,omitempty" yaml:"binary,omitempty"`
 	Check               string     `json:"check,omitempty" yaml:"check"`
@@ -35,6 +40,7 @@ type Tool struct {
 	Description         string     `json:"description" yaml:"description"`
 	Messages            Messages   `json:"messages,omitempty" yaml:"messages,omitempty"`
 	Renovate            Renovate   `json:"renovate,omitempty" yaml:"renovate,omitempty"`
+	Sources             []Source   `json:"sources" yaml:"sources"`
 	Status              ToolStatus `json:"status,omitempty" yaml:"status,omitempty"`
 }
 

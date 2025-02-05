@@ -346,7 +346,11 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 		}
 
 		assertDirectory(viper.GetString("prefix") + "/" + viper.GetString("target"))
-		ref := containers.NewToolRef(registry, imageRepository, plannedTool.Name, plannedTool.Version)
+		registries, repositories := plannedTool.GetSourcesWithFallback(registry, imageRepository)
+		ref, err := containers.FindToolRef(registries, repositories, plannedTool.Name, plannedTool.Version)
+		if err != nil {
+			return fmt.Errorf("error finding tool %s:%s: %s", plannedTool.Name, plannedTool.Version, err)
+		}
 		logging.Debugf("Getting image %s", ref)
 		layer, err := toolCache.Get(ref)
 		if err != nil {

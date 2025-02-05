@@ -58,7 +58,12 @@ var inspectCmd = &cobra.Command{
 		}
 
 		logging.Info.Printfln("Inspecting %s %s\n", inspectTool.Name, inspectTool.Version)
-		layer, err := toolCache.Get(containers.NewToolRef(registry, imageRepository, inspectTool.Name, inspectTool.Version))
+		registries, repositories := inspectTool.GetSourcesWithFallback(registry, imageRepository)
+		toolRef, err := containers.FindToolRef(registries, repositories, inspectTool.Name, inspectTool.Version)
+		if err != nil {
+			return fmt.Errorf("error finding tool %s:%s: %s", inspectTool.Name, inspectTool.Version, err)
+		}
+		layer, err := toolCache.Get(toolRef)
 		if err != nil {
 			return fmt.Errorf("unable to get image: %s", err)
 		}
