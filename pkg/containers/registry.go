@@ -130,7 +130,7 @@ func HeadPlatformManifest(ctx context.Context, rc *regclient.RegClient, r ref.Re
 			return false, fmt.Errorf("error getting platform descriptor")
 		}
 
-		m, err = rc.ManifestHead(ctx, r, regclient.WithManifestDesc(*desc))
+		_, err = rc.ManifestHead(ctx, r, regclient.WithManifestDesc(*desc))
 		if err != nil {
 			return false, fmt.Errorf("failed to get manifest: %s", err)
 		}
