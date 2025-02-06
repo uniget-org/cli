@@ -85,16 +85,16 @@ func CallbackExtractTarItem(reader *tar.Reader, header *tar.Header) error {
 		dir := filepath.Dir(path)
 		err := os.MkdirAll(dir, 0755) // #nosec G301 -- Tools must be world readable
 		if err != nil {
-			return fmt.Errorf("ExtractTarGz: MkdirAll() failed: %s", err.Error())
+			return fmt.Errorf("ExtractTarGz: MkdirAll() failed for %s: %s", dir, err.Error())
 		}
 
 		outFile, err := safeopen.CreateBeneath(workDir, path)
 		if err != nil {
-			return fmt.Errorf("ExtractTarGz: Create() failed: %s", err.Error())
+			return fmt.Errorf("ExtractTarGz: Create() failed for %s in %s: %s", path, workDir, err.Error())
 		}
 		defer outFile.Close()
 		if _, err := io.Copy(outFile, reader); err != nil {
-			return fmt.Errorf("ExtractTarGz: Copy() failed: %s", err.Error())
+			return fmt.Errorf("ExtractTarGz: Copy() failed for %s: %s", path, err.Error())
 		}
 
 		mode := os.FileMode(header.Mode) // #nosec G115 -- Must be addressed upstream
@@ -104,7 +104,7 @@ func CallbackExtractTarItem(reader *tar.Reader, header *tar.Header) error {
 		}
 		err = outFile.Chmod(mode)
 		if err != nil {
-			return fmt.Errorf("ExtractTarGz: Chmod() failed: %s", err.Error())
+			return fmt.Errorf("ExtractTarGz: Chmod() failed for %s: %s", path, err.Error())
 		}
 
 	case tar.TypeSymlink:
@@ -124,25 +124,25 @@ func CallbackExtractTarItem(reader *tar.Reader, header *tar.Header) error {
 			logging.Tracef("Creating directory %s", dir)
 			err := os.MkdirAll(dir, 0755) // #nosec G301 -- Tools must be world readable
 			if err != nil {
-				return fmt.Errorf("ExtractTarGz: MkdirAll() failed: %s", err.Error())
+				return fmt.Errorf("ExtractTarGz: MkdirAll() failed for %s: %s", dir, err.Error())
 			}
 
 			_, err = os.Stat(header.Linkname)
 			if err != nil {
 				if !os.IsNotExist(err) {
-					return fmt.Errorf("ExtractTarGz: Stat() failed for TypeSymlink: %s", err.Error())
+					return fmt.Errorf("ExtractTarGz: Stat() failed for TypeSymlink for %s: %s", header.Linkname, err.Error())
 				}
 			} else {
 				err = os.Remove(header.Linkname)
 				if err != nil {
-					return fmt.Errorf("ExtractTarGz: Remove() failed for TypeSymlink: %s", err.Error())
+					return fmt.Errorf("ExtractTarGz: Remove() failed for TypeSymlink for %s: %s", header.Linkname, err.Error())
 				}
 			}
 
 			// Create symlink
 			err = os.Symlink(header.Linkname, header.Name)
 			if err != nil {
-				return fmt.Errorf("ExtractTarGz: Symlink() failed: %s", err.Error())
+				return fmt.Errorf("ExtractTarGz: Symlink() failed for %s -> %s: %s", header.Linkname, header.Name, err.Error())
 			}
 		}
 
@@ -163,25 +163,25 @@ func CallbackExtractTarItem(reader *tar.Reader, header *tar.Header) error {
 			logging.Tracef("Creating directory %s", dir)
 			err := os.MkdirAll(dir, 0755) // #nosec G301 -- Tools must be world readable
 			if err != nil {
-				return fmt.Errorf("ExtractTarGz: MkdirAll() failed: %s", err.Error())
+				return fmt.Errorf("ExtractTarGz: MkdirAll() failed for %s: %s", dir, err.Error())
 			}
 
 			_, err = os.Stat(header.Linkname)
 			if err != nil {
 				if !os.IsNotExist(err) {
-					return fmt.Errorf("ExtractTarGz: Stat() failed for TypeLink: %s", err.Error())
+					return fmt.Errorf("ExtractTarGz: Stat() failed for TypeLink for %s: %s", header.Linkname, err.Error())
 				}
 			} else {
 				err = os.Remove(header.Linkname)
 				if err != nil {
-					return fmt.Errorf("ExtractTarGz: Remove() failed for TypeLink: %s", err.Error())
+					return fmt.Errorf("ExtractTarGz: Remove() failed for TypeLink for %s: %s", header.Linkname, err.Error())
 				}
 			}
 
 			// Create symlink
 			err = os.Symlink(header.Linkname, header.Name)
 			if err != nil {
-				return fmt.Errorf("ExtractTarGz: Symlink() failed: %s", err.Error())
+				return fmt.Errorf("ExtractTarGz: Symlink() failed for %s -> %s: %s", header.Linkname, header.Name, err.Error())
 			}
 		}
 
