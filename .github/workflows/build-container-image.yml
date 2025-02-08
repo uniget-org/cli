@@ -1,18 +1,10 @@
 name: Build container image
 
 on:
+  schedule:
+  - cron: "55 4 * * *"
   workflow_call:
-    inputs:
-      tag:
-        description: 'Tag to build container image for'
-        type: string
-        required: true
   workflow_dispatch:
-    inputs:
-      tag:
-        description: 'Tag to build container image for'
-        type: string
-        required: true
 
 permissions:
   contents: read
@@ -52,6 +44,10 @@ jobs:
     - name: Fetch release asset
       run: |
         INPUT_VERSION="${{ inputs.tag }}"
+        if test -z "${INPUT_VERSION}"; then
+            INPUT_VERSION="v$( uniget --version | cut -d' ' -f3 )"
+        fi
+
         VERSION="${INPUT_VERSION#v}"
         echo "### Downloading from release ${VERSION}"
 
@@ -77,7 +73,7 @@ jobs:
             | tar --extract --gzip --directory "dist/default_linux_${ALT_ARCH}" uniget
         done
 
-    - name: Build container image
+    - name: Build systemd container image
       run: |
         INPUT_VERSION="${{ inputs.tag }}"
         VERSION="${INPUT_VERSION#v}"
@@ -108,3 +104,29 @@ jobs:
         ./helper/usr/local/bin/regctl image copy \
             "ghcr.io/uniget-org/cli:${VERSION}" \
             "ghcr.io/uniget-org/cli:${LATEST_VERSION}"
+
+    - name: Build alpine container image
+      run: |
+        INPUT_VERSION="${{ inputs.tag }}"
+        VERSION="${INPUT_VERSION#v}"
+        echo "### Building container image for version ${VERSION}"
+
+        docker buildx build . \
+            --target alpine-uniget \
+            --platform linux/amd64,linux/arm64 \
+            --build-arg version="${VERSION}" \
+            --tag "ghcr.io/uniget-org/cli:alpine-${VERSION}" \
+            --push
+
+    - name: Build noble container image
+      run: |
+        INPUT_VERSION="${{ inputs.tag }}"
+        VERSION="${INPUT_VERSION#v}"
+        echo "### Building container image for version ${VERSION}"
+
+        docker buildx build . \
+            --target ubuntu2404-uniget \
+            --platform linux/amd64,linux/arm64 \
+            --build-arg version="${VERSION}" \
+            --tag "ghcr.io/uniget-org/cli:noble-${VERSION}" \
+            --push
