@@ -44,11 +44,16 @@ jobs:
     - name: Fetch release asset
       run: |
         INPUT_VERSION="${{ inputs.tag }}"
-        if test -z "${INPUT_VERSION}"; then
-            INPUT_VERSION="v$( uniget --version | cut -d' ' -f3 )"
+        if test -n "${INPUT_VERSION}"; then
+            VERSION="${INPUT_VERSION#v}"
+        else
+            VERSION="$( uniget --version | cut -d' ' -f3 )"
         fi
-
-        VERSION="${INPUT_VERSION#v}"
+        if test -z "${VERSION}"; then
+            echo "### Unable to determine version from input (${INPUT_VERSION}) or uniget"
+            exit 1
+        fi
+        echo "version=${VERSION}" >$GITHUB_ENV
         echo "### Downloading from release ${VERSION}"
 
         for ARCH in x86_64 aarch64; do
@@ -75,8 +80,7 @@ jobs:
 
     - name: Build systemd container image
       run: |
-        INPUT_VERSION="${{ inputs.tag }}"
-        VERSION="${INPUT_VERSION#v}"
+        VERSION="${{ steps.fetch_release_asset.outputs.version }}"
         echo "### Building container image for version ${VERSION}"
 
         docker buildx build . \
@@ -107,8 +111,7 @@ jobs:
 
     - name: Build alpine container image
       run: |
-        INPUT_VERSION="${{ inputs.tag }}"
-        VERSION="${INPUT_VERSION#v}"
+        VERSION="${{ steps.fetch_release_asset.outputs.version }}"
         echo "### Building container image for version ${VERSION}"
 
         docker buildx build . \
@@ -120,8 +123,7 @@ jobs:
 
     - name: Build noble container image
       run: |
-        INPUT_VERSION="${{ inputs.tag }}"
-        VERSION="${INPUT_VERSION#v}"
+        VERSION="${{ steps.fetch_release_asset.outputs.version }}"
         echo "### Building container image for version ${VERSION}"
 
         docker buildx build . \
