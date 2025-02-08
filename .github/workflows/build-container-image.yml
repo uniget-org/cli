@@ -53,7 +53,7 @@ jobs:
             echo "### Unable to determine version from input (${INPUT_VERSION}) or uniget"
             exit 1
         fi
-        echo "version=${VERSION}" >$GITHUB_ENV
+        echo "VERSION=${VERSION}" >>"${GITHUB_ENV}"
         echo "### Downloading from release ${VERSION}"
 
         for ARCH in x86_64 aarch64; do
@@ -80,7 +80,6 @@ jobs:
 
     - name: Build systemd container image
       run: |
-        VERSION="${{ steps.fetch_release_asset.outputs.version }}"
         echo "### Building container image for version ${VERSION}"
 
         docker buildx build . \
@@ -111,7 +110,6 @@ jobs:
 
     - name: Build alpine container image
       run: |
-        VERSION="${{ steps.fetch_release_asset.outputs.version }}"
         echo "### Building container image for version ${VERSION}"
 
         docker buildx build . \
@@ -123,7 +121,6 @@ jobs:
 
     - name: Build noble container image
       run: |
-        VERSION="${{ steps.fetch_release_asset.outputs.version }}"
         echo "### Building container image for version ${VERSION}"
 
         docker buildx build . \
