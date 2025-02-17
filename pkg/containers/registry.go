@@ -119,21 +119,9 @@ func GetPlatformManifestForLocalPlatform(ctx context.Context, rc *regclient.RegC
 }
 
 func HeadPlatformManifest(ctx context.Context, rc *regclient.RegClient, r ref.Ref, p platform.Platform) (bool, error) {
-	m, err := rc.ManifestHead(ctx, r)
+	_, err := rc.ManifestHead(ctx, r)
 	if err != nil {
 		return false, fmt.Errorf("failed to get manifest: %s", err)
-	}
-
-	if m.IsList() {
-		desc, err := manifest.GetPlatformDesc(m, &p)
-		if err != nil {
-			return false, fmt.Errorf("error getting platform descriptor")
-		}
-
-		_, err = rc.ManifestHead(ctx, r, regclient.WithManifestDesc(*desc))
-		if err != nil {
-			return false, fmt.Errorf("failed to get manifest: %s", err)
-		}
 	}
 
 	return true, nil
@@ -151,7 +139,7 @@ func GetPlatformManifest(ctx context.Context, rc *regclient.RegClient, r ref.Ref
 			return nil, fmt.Errorf("error getting platform descriptor")
 		}
 
-		_, err = rc.ManifestGet(ctx, r, regclient.WithManifestDesc(*desc))
+		m, err = rc.ManifestGet(ctx, r, regclient.WithManifestDesc(*desc))
 		if err != nil {
 			return nil, fmt.Errorf("failed to get manifest: %s", err)
 		}

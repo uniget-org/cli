@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/regclient/regclient/types/ref"
+	"github.com/uniget-org/cli/pkg/logging"
 )
 
 type ToolRef struct {
@@ -38,7 +39,9 @@ func FindToolRef(registries, repositories []string, tool, version string) (*Tool
 
 	for index := range registries {
 		toolRef := NewToolRef(registries[index], repositories[index], tool, version)
+		logging.Tracef("Checking %s", toolRef)
 		if toolRef.ManifestExists() {
+			logging.Tracef("Found %s", toolRef)
 			return toolRef, nil
 		}
 	}
