@@ -386,6 +386,8 @@ github.com/redis/go-redis/v9 v9.7.0 h1:HhLSs+B6O021gwzl+locl0zEDnyNkxMtf/Z3NNBMa
 github.com/redis/go-redis/v9 v9.7.0/go.mod h1:f6zhXITC7JUJIlPEiBOTXxJgPLdZcA93GewI7inzyWw=
 github.com/regclient/regclient v0.8.0 h1:xNAMDlADcyMvFAlGXoqDOxlSUBG4mqWBFgjQqVTP8Og=
 github.com/regclient/regclient v0.8.0/go.mod h1:h9+Y6dBvqBkdlrj6EIhbTOv0xUuIFl7CdI1bZvEB42g=
+github.com/regclient/regclient v0.8.2 h1:23BQ3jWgKYHHIXUhp/S9laVJDHDoOQaQCzXMJ4undVE=
+github.com/regclient/regclient v0.8.2/go.mod h1:uGyetv0o6VLyRDjtfeBqp/QBwRLJ3Hcn07/+8QbhNcM=
 github.com/rivo/uniseg v0.1.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=
 github.com/rivo/uniseg v0.2.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=
 github.com/rivo/uniseg v0.4.7 h1:WUdvkW8uEhrYfLC4ZzdpI2ztxP1I582+49Oc5Mq64VQ=
