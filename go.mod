@@ -10,7 +10,7 @@ require (
 	github.com/containerd/containerd/v2 v2.0.2
 	github.com/containerd/platforms v1.0.0-rc.1
 	github.com/distribution/distribution/v3 v3.0.0-rc.3
-	github.com/docker/docker v27.5.1+incompatible
+	github.com/docker/docker v28.0.0+incompatible
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/safearchive v0.0.0-20241025131057-f7ce9d7b6f9c
 	github.com/google/safeopen v0.0.0-20240125081138-66b54d5181c6
