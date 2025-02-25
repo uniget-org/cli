@@ -88,7 +88,7 @@ func PullDockerImage(cli *client.Client, ref string) error {
 func CheckDockerImageExists(cli *client.Client, ref string) bool {
 	ctx := context.Background()
 
-	_, _, err := cli.ImageInspectWithRaw(ctx, ref)
+	_, err := cli.ImageInspect(ctx, ref)
 	return err == nil
 }
 
@@ -100,7 +100,7 @@ func ReadDockerImage(cli *client.Client, ref string) ([]byte, error) {
 		return nil, fmt.Errorf("failed to pull image: %s", err)
 	}
 
-	imageInspect, _, err := cli.ImageInspectWithRaw(ctx, ref)
+	imageInspect, err := cli.ImageInspect(ctx, ref)
 	if err != nil {
 		return nil, fmt.Errorf("failed to inspect image: %s", err)
 	}
