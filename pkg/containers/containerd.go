@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/containerd/containerd"
-	"github.com/containerd/containerd/images/archive"
+	containerd "github.com/containerd/containerd/v2/client"
+	"github.com/containerd/containerd/v2/core/images/archive"
 	"github.com/containerd/platforms"
 )
 

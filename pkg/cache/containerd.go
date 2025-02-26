@@ -3,7 +3,7 @@ package cache
 import (
 	"fmt"
 
-	"github.com/containerd/containerd"
+	containerd "github.com/containerd/containerd/v2/client"
 	"github.com/uniget-org/cli/pkg/containers"
 )
 
