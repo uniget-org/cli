@@ -156,6 +156,7 @@ var selfUpgradeCmd = &cobra.Command{
 			return fmt.Errorf("failed to extract tar.gz: %s", err)
 		}
 
+		logging.Info.Printfln("Upgraded to version %s", requestedVersion)
 		return nil
 	},
 }
