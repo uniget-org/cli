@@ -4,7 +4,7 @@ FROM ghcr.io/uniget-org/tools/goreleaser:2.7.0@sha256:1bec8203b24450ce6575e2b57e
 FROM ghcr.io/uniget-org/tools/cosign:2.4.3@sha256:1baf9150c8c05af201017fc80077615e5e9058739061c344b38e69142387c2c6 AS uniget-cosign
 FROM ghcr.io/uniget-org/tools/syft:1.20.0@sha256:1ad80844b812a2e547487168b898c0897eee2780f8ea14410de4936647b0c940 AS uniget-syft
 FROM ghcr.io/uniget-org/tools/gh:2.67.0@sha256:f37a846456854eac5345e0f6dc2784432557aeac8865f81d44a5bd8ffc6ec690 AS uniget-gh
-FROM ghcr.io/uniget-org/tools/gosec:2.22.1@sha256:bad3515ce30f5bb379664665f7dd727c1bc94654b09b7a24bbc5874a56b3054d AS uniget-gosec
+FROM ghcr.io/uniget-org/tools/gosec:2.22.2@sha256:0c19597257b4666a0a3bf55daf12cd8d27737d878325a27240ca03248b79a959 AS uniget-gosec
 FROM ghcr.io/uniget-org/tools/golangci-lint:1.64.6@sha256:f5f2b2841dd9610664ed559e8b1ed26c83bfa5f8c59ab6545bb90d4b5371a231 AS lint-base
 FROM golang:1.24.1@sha256:c5adecdb7b3f8c5ca3c88648a861882849cc8b02fed68ece31e25de88ad13418 AS latest-golang
 FROM alpine:3.21.3@sha256:a8560b36e8b8210634f77d9f7f9efd7ffa463e380b75e2e74aff4511df3ef88c AS latest-alpine
