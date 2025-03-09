@@ -123,7 +123,7 @@ FROM latest-ubuntu2404 AS ubuntu2404-uniget
 COPY --from=bin /uniget /usr/local/bin/uniget
 ENTRYPOINT [ "uniget"]
 
-FROM ghcr.io/uniget-org/images/systemd:ubuntu24.04@sha256:a57d36ff05c90f7984295605f7df4f45670da90a0fff6133310227ea570a6523 AS systemd-uniget
+FROM ghcr.io/uniget-org/images/systemd:ubuntu24.04@sha256:f790db6093bfef6bcf0d9f8752b3caccbdc5560a51fedb4671a89a8520d1fc30 AS systemd-uniget
 ARG version
 ARG TARGETARCH
 RUN <<EOF
