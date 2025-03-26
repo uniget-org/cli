@@ -61,8 +61,8 @@ var releaseNotesCmd = &cobra.Command{
 				return fmt.Errorf("cannot compile regexp: %w", err)
 			}
 			versionTag = re.ReplaceAllString(tool.Renovate.ExtractVersion, versionTag)
-			versionTag = strings.Replace(versionTag, "^", "", -1)
-			versionTag = strings.Replace(versionTag, "$", "", -1)
+			versionTag = strings.ReplaceAll(versionTag, "^", "")
+			versionTag = strings.ReplaceAll(versionTag, "$", "")
 		}
 		logging.Debugf("Using version tag %s for release notes", versionTag)
 		switch tool.Renovate.Datasource {
@@ -134,7 +134,12 @@ func fetchUrl(url string) ([]byte, error) {
 	if err != nil {
 		return []byte{}, fmt.Errorf("failed fetch url: %s", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		err := resp.Body.Close()
+		if err != nil {
+			logging.Warning.Printfln("failed to close response body: %s", err)
+		}
+	}()
 
 	if resp.StatusCode >= 400 {
 		return []byte{}, fmt.Errorf("failed to fetch url: %s", resp.Status)

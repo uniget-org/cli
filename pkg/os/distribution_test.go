@@ -8,7 +8,7 @@ import (
 func TestGetOsVendor(t *testing.T) {
 	tempDir := t.TempDir()
 
-	err := os.MkdirAll(tempDir+"/etc", 0755)
+	err := os.MkdirAll(tempDir+"/etc", 0755) // #nosec G301 Must be accessible by all users
 	if err != nil {
 		t.Fatal(err)
 	}

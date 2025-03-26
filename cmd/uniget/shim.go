@@ -56,11 +56,11 @@ var shimCmd = &cobra.Command{
 
 func installProfileDShim() error {
 	profileDShimFile := profileDDirectory + "/uniget-profile.d.sh"
-	profileDScript := strings.Replace(profileDShim, "${target}", "/"+viper.GetString("target"), -1)
+	profileDScript := strings.ReplaceAll(profileDShim, "${target}", "/"+viper.GetString("target"))
 
 	if viper.GetBool("user") {
 		profileDShimFile = viper.GetString("prefix") + "/.config/uniget/profile.d-shim.sh"
-		profileDScript = strings.Replace(completionShim, "${target}", viper.GetString("prefix")+"/"+viper.GetString("target"), -1)
+		profileDScript = strings.ReplaceAll(completionShim, "${target}", viper.GetString("prefix")+"/"+viper.GetString("target"))
 	}
 
 	if fileExists(profileDShimFile) {
@@ -106,7 +106,7 @@ func installProfileDShim() error {
 
 func installCompletionShim() error {
 	completionShimFile := profileDDirectory + "/uniget-completion.sh"
-	completionScript := strings.Replace(completionShim, "${target}", "/"+viper.GetString("target"), -1)
+	completionScript := strings.ReplaceAll(completionShim, "${target}", "/"+viper.GetString("target"))
 
 	if viper.GetBool("user") {
 		dataDirectory := ".local/share"
@@ -116,7 +116,7 @@ func installCompletionShim() error {
 			}
 		}
 		completionShimFile = viper.GetString("prefix") + dataDirectory + "/bash-completion/uniget-shim.sh"
-		completionScript = strings.Replace(completionShim, "${target}", viper.GetString("prefix")+"/.local", -1)
+		completionScript = strings.ReplaceAll(completionShim, "${target}", viper.GetString("prefix")+"/.local")
 	}
 
 	if fileExists(completionShimFile) {

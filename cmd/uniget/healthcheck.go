@@ -31,7 +31,7 @@ var healthcheckCmd = &cobra.Command{
 			return fmt.Errorf("error getting tool %s", toolName)
 		}
 		checkClientVersionRequirement(tool)
-		
+
 		tool.ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
 		err = tool.GetMarkerFileStatus(viper.GetString("prefix") + "/" + cacheDirectory)
 		if err != nil {
@@ -62,11 +62,7 @@ var healthcheckCmd = &cobra.Command{
 			testFailed = true
 		}
 
-		markerFilePresent := false
-		if fileExists(viper.GetString("prefix") + "/" + libDirectory + "/manifests/" + tool.Name + ".txt") {
-			markerFilePresent = true
-		}
-
+		markerFilePresent := fileExists(viper.GetString("prefix") + "/" + libDirectory + "/manifests/" + tool.Name + ".txt")
 		if !tool.Status.MarkerFilePresent && !tool.Status.BinaryPresent && !markerFilePresent {
 			logging.Warning.Printfln("Tool %s is not installed", tool.Name)
 			testFailed = true

@@ -15,13 +15,7 @@ func (s ByVersion) Swap(i, j int) {
 }
 
 func (s ByVersion) Less(i, j int) bool {
-	v1, err := goversion.NewVersion(s[i])
-	if err != nil {
-		panic(err)
-	}
-	v2, err := goversion.NewVersion(s[j])
-	if err != nil {
-		panic(err)
-	}
+	v1, _ := goversion.NewVersion(s[i])
+	v2, _ := goversion.NewVersion(s[j])
 	return v1.LessThan(v2)
 }

@@ -26,6 +26,7 @@ func ContainerdIsAvailable() bool {
 	if err != nil {
 		return false
 	}
+	//nolint:errcheck
 	defer client.Close()
 
 	version, err := client.Version(context.Background())
@@ -39,7 +40,7 @@ func ContainerdIsAvailable() bool {
 func GetFirstLayerFromContainerdImage(client *containerd.Client, ref *ToolRef) ([]byte, error) {
 	shaString, err := GetFirstLayerShaFromRegistry(ref)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("failed to get first layer sha: %s", err)
 	}
 	sha := shaString[7:]
 
@@ -57,6 +58,7 @@ func GetFirstLayerFromContainerdImage(client *containerd.Client, ref *ToolRef) (
 	if err != nil {
 		return nil, fmt.Errorf("failed to create gzip reader: %s", err)
 	}
+	//nolint:errcheck
 	defer reader.Close()
 
 	buffer, err := io.ReadAll(reader)

@@ -409,13 +409,12 @@ func assertMetadataIsLoaded() {
 }
 
 func init() {
-	if altArch == "amd64" {
+	switch altArch {
+	case "amd64":
 		arch = "x86_64"
-
-	} else if altArch == "arm64" {
+	case "arm64":
 		arch = "aarch64"
-
-	} else {
+	default:
 		logging.Error.Printfln("Unsupported architecture: %s", arch)
 		os.Exit(1)
 	}

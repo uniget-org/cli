@@ -73,7 +73,7 @@ var uninstallCmd = &cobra.Command{
 func writeInstalledFiles(tool *tool.Tool, installedFiles []string) error {
 	fileListDirectory := viper.GetString("prefix") + "/" + libDirectory + "/manifests"
 	fileListFilename := fileListDirectory + "/" + tool.Name + ".txt"
-	err := os.MkdirAll(fileListDirectory, 0755)
+	err := os.MkdirAll(fileListDirectory, 0755) // #nosec G301 -- Directory must be accessible by all users
 	if err != nil {
 		return fmt.Errorf("unable to create directory %s: %s", fileListDirectory, err)
 	}

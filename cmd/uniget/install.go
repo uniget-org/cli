@@ -460,7 +460,12 @@ func createPatchFileCallback(tool tool.Tool) func(path string) string {
 			logging.Error.Printfln("Unable to create file: %s", err)
 			return templatePath
 		}
-		defer file.Close()
+		defer func() {
+			err := file.Close()
+			if err != nil {
+				logging.Warning.Printfln("Unable to close file: %s", err)
+			}
+		}()
 		if stat, ok := templathPathInfo.Sys().(*syscall.Stat_t); ok {
 			err = file.Chown(int(stat.Uid), int(stat.Gid))
 			if err != nil {

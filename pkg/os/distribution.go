@@ -13,6 +13,7 @@ func GetOsVendorFromFile(filename string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("cannot read /etc/os-release: %w", err)
 	}
+	//nolint:errcheck
 	defer f.Close()
 
 	s := bufio.NewScanner(f)

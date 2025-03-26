@@ -26,6 +26,7 @@ func DockerIsAvailable() bool {
 	if err != nil {
 		return false
 	}
+	//nolint:errcheck
 	defer cli.Close()
 
 	ping, err := cli.Ping(context.Background())
@@ -41,7 +42,7 @@ func GetFirstLayerFromDockerImage(cli *client.Client, ref *ToolRef) ([]byte, err
 
 	shaString, err := GetFirstLayerShaFromRegistry(ref)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("failed to get first layer sha: %s", err)
 	}
 	sha := shaString[7:]
 
@@ -59,6 +60,7 @@ func GetFirstLayerFromDockerImage(cli *client.Client, ref *ToolRef) ([]byte, err
 	if err != nil {
 		return nil, fmt.Errorf("failed to create gzip reader: %s", err)
 	}
+	//nolint:errcheck
 	defer reader.Close()
 
 	buffer, err := io.ReadAll(reader)
@@ -76,6 +78,7 @@ func PullDockerImage(cli *client.Client, ref string) error {
 	if err != nil {
 		return fmt.Errorf("failed to pull image: %s", err)
 	}
+	//nolint:errcheck
 	defer events.Close()
 	_, err = io.Copy(io.Discard, events)
 	if err != nil {
@@ -110,6 +113,7 @@ func ReadDockerImage(cli *client.Client, ref string) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to save image: %s", err)
 	}
+	//nolint:errcheck
 	defer reader.Close()
 
 	buffer, err := io.ReadAll(reader)

@@ -2,6 +2,7 @@ package cache
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/regclient/regclient"
 	"github.com/regclient/regclient/config"
@@ -21,7 +22,7 @@ func (c *NoneCache) Get(tool *containers.ToolRef) ([]byte, error) {
 
 	r, err := rref.New(tool.String())
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("failed to create reference for %s: %w", tool, err)
 	}
 
 	rcOpts := []regclient.Opt{}
@@ -32,13 +33,14 @@ func (c *NoneCache) Get(tool *containers.ToolRef) ([]byte, error) {
 		TLS:  config.TLSDisabled,
 	}))
 	rc := regclient.New(rcOpts...)
+	//nolint:errcheck
 	defer rc.Close(ctx, r)
 
 	logging.Debugf("NoneCache: Pulling %s", r)
 
 	layer, err := containers.GetFirstLayerFromRegistry(ctx, rc, r)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("failed to get layer for ref %s: %w", tool, err)
 	}
 
 	return layer, nil

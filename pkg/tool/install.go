@@ -27,21 +27,20 @@ func applyPathRewrites(path string, rules []PathRewrite) string {
 
 		ruleWasApplied := false
 
-		if rule.Operation == "REPLACE" {
+		switch rule.Operation {
+		case "REPLACE":
 			if strings.HasPrefix(newPath, rule.Source) {
 				newPath = rule.Target + strings.TrimPrefix(newPath, rule.Source)
 				logging.Debugf("    Applied rule")
 				ruleWasApplied = true
 			}
-
-		} else if rule.Operation == "PREPEND" {
+		case "PREPEND":
 			if !strings.HasPrefix(newPath, rule.Target) {
 				newPath = rule.Target + newPath
 				logging.Debugf("    Applied rule")
 				ruleWasApplied = true
 			}
-
-		} else {
+		default:
 			logging.Debugf("Operation %s not supported", rule.Operation)
 		}
 

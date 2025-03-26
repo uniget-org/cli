@@ -53,7 +53,12 @@ func TestGetPlatformManifestForLocalPlatform(t *testing.T) {
 		t.Errorf("failed to parse image name <%s>: %s", toolRef.String(), err)
 	}
 	rc := GetRegclient()
-	defer rc.Close(context.Background(), r)
+	defer func() {
+		err := rc.Close(context.Background(), r)
+		if err != nil {
+			t.Errorf("failed to close ref %s: %s", r, err)
+		}
+	}()
 
 	m, err := GetPlatformManifestForLocalPlatform(context.Background(), rc, r)
 	if err != nil {
@@ -83,7 +88,12 @@ func TestGetPlatformManifest(t *testing.T) {
 		t.Errorf("failed to parse image name <%s>: %s", toolRef.String(), err)
 	}
 	rc := GetRegclient()
-	defer rc.Close(context.Background(), r)
+	defer func() {
+		err := rc.Close(context.Background(), r)
+		if err != nil {
+			t.Errorf("failed to close ref %s: %s", r, err)
+		}
+	}()
 
 	m, err := GetPlatformManifest(context.Background(), rc, r, platform.Local())
 	if err != nil {
@@ -101,7 +111,12 @@ func TestGetManifest(t *testing.T) {
 		t.Errorf("failed to parse image name <%s>: %s", toolRef.String(), err)
 	}
 	rc := GetRegclient()
-	defer rc.Close(context.Background(), r)
+	defer func() {
+		err := rc.Close(context.Background(), r)
+		if err != nil {
+			t.Errorf("failed to close ref %s: %s", r, err)
+		}
+	}()
 
 	m, err := GetManifest(context.Background(), rc, r)
 	if err != nil {
@@ -120,7 +135,12 @@ func TestGetFirstLayerFromManifest(t *testing.T) {
 		t.Errorf("failed to parse image name <%s>: %s", toolRef.String(), err)
 	}
 	rc := GetRegclient()
-	defer rc.Close(context.Background(), r)
+	defer func() {
+		err := rc.Close(context.Background(), r)
+		if err != nil {
+			t.Errorf("failed to close ref %s: %s", r, err)
+		}
+	}()
 
 	m, err := GetPlatformManifest(context.Background(), rc, r, platform.Local())
 	if err != nil {
@@ -156,7 +176,12 @@ func TestGetFirstLayerFromRegistry(t *testing.T) {
 	}
 
 	rc := GetRegclient()
-	defer rc.Close(context.Background(), r)
+	defer func() {
+		err := rc.Close(context.Background(), r)
+		if err != nil {
+			t.Errorf("failed to close ref %s: %s", r, err)
+		}
+	}()
 
 	layer, err := GetFirstLayerFromRegistry(context.Background(), rc, r)
 	if err != nil {

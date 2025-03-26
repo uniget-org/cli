@@ -51,7 +51,7 @@ var manCmd = &cobra.Command{
 func writeManpage(cobraCmd *cobra.Command, name string, manDirectory string) error {
 	manPage, err := mcobra.NewManPage(1, cobraCmd)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("unable to create manpage: %w", err)
 	}
 
 	manPage = manPage.WithSection(
@@ -77,7 +77,12 @@ func writeManpage(cobraCmd *cobra.Command, name string, manDirectory string) err
 	if err != nil {
 		return fmt.Errorf("failed to create manpage: %w", err)
 	}
-	defer file.Close()
+	defer func() {
+		err := file.Close()
+		if err != nil {
+			logging.Warning.Printfln("failed to close manpage file: %s", err)
+		}
+	}()
 
 	_, err = file.WriteString(manPage.Build(roff.NewDocument()))
 	return err

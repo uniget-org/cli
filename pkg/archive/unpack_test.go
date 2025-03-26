@@ -24,7 +24,7 @@ var (
 )
 
 func openTestArchive(testArchive string, t *testing.T) io.Reader {
-	reader, err := os.Open(testArchive)
+	reader, err := os.Open(testArchive) // #nosec G304 This is only a test
 	if err != nil {
 		t.Errorf("failed to open %s: %v", testTarGz, err)
 	}
@@ -47,7 +47,12 @@ func loadTool(t *testing.T) []byte {
 	ctx := context.Background()
 	r := toolRef.GetRef()
 	rc := containers.GetRegclient()
-	defer rc.Close(ctx, r)
+	defer func() {
+		err := rc.Close(ctx, r)
+		if err != nil {
+			t.Errorf("failed to close ref %s: %v", r, err)
+		}
+	}()
 	registryLayer, err := containers.GetFirstLayerFromRegistry(ctx, rc, r)
 	if err != nil {
 		t.Errorf("failed to get first layer from registry: %v", err)

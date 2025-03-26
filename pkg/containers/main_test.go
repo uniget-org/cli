@@ -21,8 +21,18 @@ var (
 func copyImage(src, tgt ref.Ref) error {
 	ctx := context.Background()
 	rc := GetRegclient()
-	defer rc.Close(ctx, src)
-	defer rc.Close(ctx, tgt)
+	defer func() {
+		err := rc.Close(ctx, src)
+		if err != nil {
+			panic(err)
+		}
+	}()
+	defer func() {
+		err := rc.Close(ctx, tgt)
+		if err != nil {
+			panic(err)
+		}
+	}()
 
 	err := rc.ImageCopy(ctx, src, tgt)
 	if err != nil {

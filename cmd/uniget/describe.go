@@ -69,26 +69,29 @@ var describeCmd = &cobra.Command{
 			return fmt.Errorf("error getting version status: %s", err)
 		}
 
-		if describeOutput == "pretty" {
+		switch describeOutput {
+		case "pretty":
 			tool.Print(cmd.OutOrStdout())
-
-		} else if describeOutput == "json" {
+		case "json":
 			data, err := json.Marshal(tool)
 			if err != nil {
 				return fmt.Errorf("failed to marshal to json: %s", err)
 			}
 			fmt.Println(string(data))
-
-		} else if describeOutput == "yaml" {
+		case "yaml":
 			yamlEncoder := yaml.NewEncoder(cmd.OutOrStdout())
 			yamlEncoder.SetIndent(2)
-			defer yamlEncoder.Close()
+			defer func() {
+				err := yamlEncoder.Close()
+				if err != nil {
+					logging.Warning.Printfln("failed to close yaml encoder: %s", err)
+				}
+			}()
 			err := yamlEncoder.Encode(tool)
 			if err != nil {
 				return fmt.Errorf("failed to encode yaml: %s", err)
 			}
-
-		} else {
+		default:
 			return fmt.Errorf("invalid output format: %s", describeOutput)
 		}
 
@@ -104,8 +107,10 @@ var describeCmd = &cobra.Command{
 			}
 
 			sort.Sort(sort.Reverse(semver.ByVersion(tags)))
+			//nolint:errcheck
 			fmt.Fprintf(cmd.OutOrStdout(), "  Available versions:\n")
 			for _, tag := range tags {
+				//nolint:errcheck
 				fmt.Fprintf(cmd.OutOrStdout(), "    %s\n", tag)
 			}
 		}
@@ -148,13 +153,17 @@ var describeCmd = &cobra.Command{
 			}
 
 			if len(releaseTags) > 0 {
-				fmt.Fprintln(cmd.OutOrStdout(), "  Upstream versions (most recent):")
+				_, err := fmt.Fprintln(cmd.OutOrStdout(), "  Upstream versions (most recent):")
+				if err != nil {
+					return fmt.Errorf("failed to write upstream versions: %s", err)
+				}
 				sort.Sort(sort.Reverse(semver.ByVersion(releaseTags)))
 				for _, releaseTag := range releaseTags {
 					version, err := extractVersionfromTag(releaseTag, tool.Renovate.ExtractVersion)
 					if err != nil {
 						return fmt.Errorf("failed to extract version from tag: %s", err)
 					}
+					//nolint:errcheck
 					fmt.Fprintf(cmd.OutOrStdout(), "    %s\n", version)
 				}
 
@@ -201,7 +210,7 @@ func fetchGitHubReleases(project string) ([]string, error) {
 		return []string{}, fmt.Errorf("failed to parse body of GitHub releases: %s", err)
 	}
 
-	var releaseTags []string = make([]string, 0)
+	var releaseTags = make([]string, 0)
 	for index := range releases {
 		release := releases[index].(map[string]interface{})
 		releaseTags = append(releaseTags, release["tag_name"].(string))
@@ -226,7 +235,7 @@ func fetchGitLabReleases(project string) ([]string, error) {
 		return []string{}, fmt.Errorf("failed to parse body of GitLab releases: %s", err)
 	}
 
-	var releaseTags []string = make([]string, 0)
+	var releaseTags = make([]string, 0)
 	for index := range releases {
 		release := releases[index].(map[string]interface{})
 		releaseTags = append(releaseTags, release["tag_name"].(string))
@@ -250,7 +259,7 @@ func fetchGiteaReleases(project string) ([]string, error) {
 		return []string{}, fmt.Errorf("failed to parse body of Gitea releases: %s", err)
 	}
 
-	var releaseTags []string = make([]string, 0)
+	var releaseTags = make([]string, 0)
 	for index := range releases {
 		release := releases[index].(map[string]interface{})
 		releaseTags = append(releaseTags, release["tag_name"].(string))
@@ -274,7 +283,7 @@ func fetchNpmReleases(project string) ([]string, error) {
 		return []string{}, fmt.Errorf("failed to parse body of npm releases: %s", err)
 	}
 
-	var versionTags []string = make([]string, 0)
+	var versionTags = make([]string, 0)
 	versions := npmPackage["versions"].(map[string]interface{})
 	for versionTag := range versions {
 		versionTags = append(versionTags, versionTag)
@@ -298,7 +307,7 @@ func fetchPypiReleases(project string) ([]string, error) {
 		return []string{}, fmt.Errorf("failed to parse body of pypi releases: %s", err)
 	}
 
-	var versionTags []string = make([]string, 0)
+	var versionTags = make([]string, 0)
 	versions := pypiPackage["releases"].(map[string]interface{})
 	for versionTag := range versions {
 		versionTags = append(versionTags, versionTag)

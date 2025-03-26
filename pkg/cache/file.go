@@ -85,20 +85,20 @@ func (c *FileCache) Get(tool *containers.ToolRef) ([]byte, error) {
 		logging.Debugf("FileCache: Cache miss for %s", tool.String())
 		layer, err := c.n.Get(tool)
 		if err != nil {
-			panic(err)
+			return nil, fmt.Errorf("failed to get layer for ref %s: %w", tool, err)
 		}
 
 		logging.Debugf("FileCache: Caching %s", tool.String())
 		err = c.writeDataToCache(layer, cacheKey)
 		if err != nil {
-			panic(err)
+			return nil, fmt.Errorf("failed to cache layer for ref %s: %w", tool, err)
 		}
 	}
 
 	logging.Debugf("FileCache: Using cache for %s", tool.String())
 	layer, err := c.readDataFromCache(cacheKey)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("failed to read layer for ref %s: %w", tool, err)
 	}
 
 	return layer, nil

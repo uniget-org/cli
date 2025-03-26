@@ -15,8 +15,9 @@ type ContainerdCache struct {
 func NewContainerdCache(namespace string) (*ContainerdCache, error) {
 	client, err := containerd.New("/run/containerd/containerd.sock", containerd.WithDefaultNamespace(namespace))
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("failed to create containerd client: %w", err)
 	}
+	//nolint:errcheck
 	defer client.Close()
 
 	return &ContainerdCache{

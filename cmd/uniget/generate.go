@@ -59,9 +59,10 @@ var generateCmd = &cobra.Command{
 			} else if toolVersion != "latest" {
 				result = append(result, fmt.Sprintf("# Warning: Unable to check if %s has version %s", toolName, toolVersion))
 			}
-			result = append(result, fmt.Sprintf("COPY --link --from=%s%s:%s / /%s", registryImagePrefix, tool.Name, strings.Replace(toolVersion, "+", "-", -1), imageTarget))
+			result = append(result, fmt.Sprintf("COPY --link --from=%s%s:%s / /%s", registryImagePrefix, tool.Name, strings.ReplaceAll(toolVersion, "+", "-"), imageTarget))
 		}
 
+		//nolint:errcheck
 		fmt.Fprintf(cmd.OutOrStdout(), "%s", strings.Join(result, "\n"))
 
 		return nil

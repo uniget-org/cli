@@ -64,7 +64,12 @@ func downloadMetadata() error {
 		return fmt.Errorf("error finding metadata: %s", err)
 	}
 	rc := containers.GetRegclient()
-	defer rc.Close(context.Background(), t.GetRef())
+	defer func() {
+		err := rc.Close(context.Background(), t.GetRef())
+		if err != nil {
+			logging.Warning.Printfln("error closing registry client: %s", err)
+		}
+	}()
 
 	layer, err := containers.GetFirstLayerFromRegistry(context.Background(), rc, t.GetRef())
 	if err != nil {

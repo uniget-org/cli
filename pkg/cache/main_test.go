@@ -30,7 +30,9 @@ func addTestData(registryAddress, registryRepository, registryImage, registryTag
 	}
 
 	rc := containers.GetRegclient()
+	//nolint:errcheck
 	defer rc.Close(ctx, rSrc)
+	//nolint:errcheck
 	defer rc.Close(ctx, rTgt)
 
 	err = rc.ImageCopy(ctx, rSrc, rTgt)

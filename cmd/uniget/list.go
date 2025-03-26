@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/uniget-org/cli/pkg/logging"
 	"github.com/uniget-org/cli/pkg/tool"
 	"gopkg.in/yaml.v3"
 )
@@ -67,26 +68,29 @@ var listCmd = &cobra.Command{
 			listTools = tools
 		}
 
-		if listOutput == "pretty" {
+		switch listOutput {
+		case "pretty":
 			listTools.List(cmd.OutOrStdout())
-
-		} else if listOutput == "json" {
+		case "json":
 			data, err := json.Marshal(listTools)
 			if err != nil {
 				return fmt.Errorf("failed to marshal to json: %s", err)
 			}
 			fmt.Println(string(data))
-
-		} else if listOutput == "yaml" {
+		case "yaml":
 			yamlEncoder := yaml.NewEncoder(cmd.OutOrStdout())
 			yamlEncoder.SetIndent(2)
-			defer yamlEncoder.Close()
+			defer func() {
+				err := yamlEncoder.Close()
+				if err != nil {
+					logging.Warning.Printfln("failed to close yaml encoder: %s", err)
+				}
+			}()
 			err := yamlEncoder.Encode(listTools)
 			if err != nil {
 				return fmt.Errorf("failed to encode yaml: %s", err)
 			}
-
-		} else {
+		default:
 			return fmt.Errorf("invalid output format: %s", listOutput)
 		}
 

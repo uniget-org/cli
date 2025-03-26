@@ -43,6 +43,7 @@ func GetImageTags(t *ToolRef) ([]string, error) {
 	}
 
 	rc := GetRegclient()
+	//nolint:errcheck
 	defer rc.Close(ctx, r)
 
 	tags, err := rc.TagList(ctx, r)
@@ -71,6 +72,7 @@ func GetFirstLayerShaFromRegistry(image *ToolRef) (string, error) {
 	}
 
 	rc := GetRegclient()
+	//nolint:errcheck
 	defer rc.Close(ctx, r)
 
 	manifestCtx, manifestCancel := context.WithTimeout(ctx, 60*time.Second)
@@ -210,6 +212,7 @@ func GetLayerFromManifestByIndex(ctx context.Context, rc *regclient.RegClient, m
 		if err != nil {
 			return nil, fmt.Errorf("failed to get blob for digest %s: %s", layer.Digest, err)
 		}
+		//nolint:errcheck
 		defer blob.Close()
 
 		layerData, err := blob.RawBody()
@@ -228,6 +231,7 @@ func gunzip(layer []byte) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create gzip reader: %s", err)
 	}
+	//nolint:errcheck
 	defer reader.Close()
 
 	buffer, err := io.ReadAll(reader)

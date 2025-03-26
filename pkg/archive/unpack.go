@@ -19,7 +19,12 @@ func Gunzip(layer []byte) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create gzip reader: %s", err)
 	}
-	defer reader.Close()
+	defer func() {
+		err := reader.Close()
+		if err != nil {
+			logging.Warning.Printfln("failed to close gzip reader: %s", err)
+		}
+	}()
 
 	buffer, err := io.ReadAll(reader)
 	if err != nil {
@@ -53,12 +58,16 @@ func CallbackDisplayTarItem(reader *tar.Reader, header *tar.Header) error {
 	switch header.Typeflag {
 	case tar.TypeDir:
 	case tar.TypeReg:
+		//nolint:errcheck
 		fmt.Fprintf(logging.OutputWriter, "%s\n", header.Name)
 	case tar.TypeSymlink:
+		//nolint:errcheck
 		fmt.Fprintf(logging.OutputWriter, "%s -> %s\n", header.Name, header.Linkname)
 	case tar.TypeLink:
+		//nolint:errcheck
 		fmt.Fprintf(logging.OutputWriter, "%s -> %s\n", header.Name, header.Linkname)
 	default:
+		//nolint:errcheck
 		fmt.Fprintf(logging.ErrorWriter, "Unknown: %s\n", header.Name)
 	}
 	return nil
@@ -92,7 +101,12 @@ func CallbackExtractTarItem(reader *tar.Reader, header *tar.Header) error {
 		if err != nil {
 			return fmt.Errorf("ExtractTarGz: Create() failed for %s in %s: %s", path, workDir, err.Error())
 		}
-		defer outFile.Close()
+		defer func() {
+			err := outFile.Close()
+			if err != nil {
+				logging.Warning.Printfln("failed to close file: %s", err)
+			}
+		}()
 		if _, err := io.Copy(outFile, reader); err != nil {
 			return fmt.Errorf("ExtractTarGz: Copy() failed for %s: %s", path, err.Error())
 		}

@@ -53,6 +53,7 @@ func (t *ToolRef) ManifestExists() bool {
 
 	ctx := context.Background()
 	rc := GetRegclient()
+	//nolint:errcheck
 	defer rc.Close(ctx, ref)
 
 	b, err := HeadPlatformManifestForLocalPlatform(ctx, rc, ref)
@@ -74,7 +75,7 @@ func (t *ToolRef) Key() string {
 func (t *ToolRef) GetRef() ref.Ref {
 	r, err := ref.New(t.String())
 	if err != nil {
-		panic(err)
+		return ref.Ref{}
 	}
 	return r
 }

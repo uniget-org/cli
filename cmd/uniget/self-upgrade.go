@@ -104,7 +104,12 @@ var selfUpgradeCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("failed to download %s: %s", url, err)
 		}
-		defer resp.Body.Close()
+		defer func() {
+			err := resp.Body.Close()
+			if err != nil {
+				logging.Warning.Printfln("failed to close response body: %s", err)
+			}
+		}()
 
 		if resp.StatusCode != 200 {
 			return fmt.Errorf("failed to download %s: %s", url, resp.Status)

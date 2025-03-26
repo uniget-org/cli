@@ -80,7 +80,7 @@ func replaceVariables(source string, variables []string, values []string) (resul
 	result = source
 
 	for index := range variables {
-		result = strings.Replace(result, variables[index], values[index], -1)
+		result = strings.ReplaceAll(result, variables[index], values[index])
 	}
 
 	return
