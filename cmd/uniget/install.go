@@ -441,9 +441,14 @@ func createPatchFileCallback(tool tool.Tool) func(path string) string {
 
 		values := make(map[string]interface{})
 		values["Target"] = viper.GetString("target")
+		values["RelativeTarget"] = viper.GetString("target")
 		values["Prefix"] = viper.GetString("prefix")
 		values["Name"] = tool.Name
 		values["Version"] = tool.Version
+
+		if viper.GetBool("user") {
+			values["Target"] = viper.GetString("prefix") + "/" + viper.GetString("target")
+		}
 
 		filePath := strings.TrimSuffix(templatePath, ".go-template")
 		logging.Info.Printfln("Patching file %s <- %s", filePath, templatePath)
