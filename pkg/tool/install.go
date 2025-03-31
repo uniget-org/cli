@@ -23,7 +23,7 @@ func applyPathRewrites(path string, rules []PathRewrite) string {
 
 	newPath := path
 	for _, rule := range rules {
-		logging.Debugf("  Checking rule %v", rule)
+		logging.Tracef("  Checking rule %v", rule)
 
 		ruleWasApplied := false
 
@@ -31,17 +31,17 @@ func applyPathRewrites(path string, rules []PathRewrite) string {
 		case "REPLACE":
 			if strings.HasPrefix(newPath, rule.Source) {
 				newPath = rule.Target + strings.TrimPrefix(newPath, rule.Source)
-				logging.Debugf("    Applied rule")
+				logging.Tracef("    Applied rule")
 				ruleWasApplied = true
 			}
 		case "PREPEND":
 			if !strings.HasPrefix(newPath, rule.Target) {
 				newPath = rule.Target + newPath
-				logging.Debugf("    Applied rule")
+				logging.Tracef("    Applied rule")
 				ruleWasApplied = true
 			}
 		default:
-			logging.Debugf("Operation %s not supported", rule.Operation)
+			logging.Tracef("Operation %s not supported", rule.Operation)
 		}
 
 		if ruleWasApplied && rule.Abort {
