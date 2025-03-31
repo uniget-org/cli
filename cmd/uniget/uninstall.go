@@ -206,7 +206,7 @@ func uninstallFiles(installedFiles []string) error {
 			continue
 		}
 
-		prefixedFile := viper.GetString("prefix") + "/" + viper.GetString("target") + "/" + file
+		prefixedFile := viper.GetString("prefix") + "/" + file
 		logging.Debugf("prefixed line %s", prefixedFile)
 
 		_, err := os.Lstat(prefixedFile)
