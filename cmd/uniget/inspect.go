@@ -39,6 +39,7 @@ var inspectCmd = &cobra.Command{
 		var err error
 		var inspectTool *tool.Tool
 
+		inspectToolImageTag := "main"
 		if len(toolVersion) == 0 {
 			assertMetadataFileExists()
 			assertMetadataIsLoaded()
@@ -55,11 +56,12 @@ var inspectCmd = &cobra.Command{
 				Name:    args[0],
 				Version: toolVersion,
 			}
+			inspectToolImageTag = toolVersion
 		}
 
 		logging.Info.Printfln("Inspecting %s %s\n", inspectTool.Name, inspectTool.Version)
 		registries, repositories := inspectTool.GetSourcesWithFallback(registry, imageRepository)
-		toolRef, err := containers.FindToolRef(registries, repositories, inspectTool.Name, inspectTool.Version)
+		toolRef, err := containers.FindToolRef(registries, repositories, inspectTool.Name, inspectToolImageTag)
 		if err != nil {
 			return fmt.Errorf("error finding tool %s:%s: %s", inspectTool.Name, inspectTool.Version, err)
 		}
