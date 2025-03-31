@@ -59,7 +59,12 @@ func applyPathRewrites(path string, rules []PathRewrite) string {
 
 func (tool *Tool) Inspect(w io.Writer, layer []byte, rules []PathRewrite) error {
 	return archive.ProcessTarContents(layer, func(reader *tar.Reader, header *tar.Header) error {
-		header.Name = applyPathRewrites(header.Name, rules)
+		if header.Typeflag == tar.TypeDir {
+			return nil
+		}
+		if len(rules) > 0 {
+			header.Name = applyPathRewrites(header.Name, rules)
+		}
 		return archive.CallbackDisplayTarItem(reader, header)
 	})
 }
