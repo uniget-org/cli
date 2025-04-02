@@ -8,7 +8,7 @@ require (
 	github.com/charmbracelet/glamour v0.9.1
 	github.com/containerd/containerd/v2 v2.0.4
 	github.com/containerd/platforms v1.0.0-rc.1
-	github.com/distribution/distribution/v3 v3.0.0-rc.4
+	github.com/distribution/distribution/v3 v3.0.0
 	github.com/docker/docker v28.0.4+incompatible
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/safearchive v0.0.0-20241025131057-f7ce9d7b6f9c
