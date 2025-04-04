@@ -127,19 +127,19 @@ func CallbackExtractTarItem(reader *tar.Reader, header *tar.Header) error {
 			return fmt.Errorf("ExtractTarGz: Chmod() failed for %s: %s", path, err.Error())
 		}
 
-	case tar.TypeSymlink:
-		logging.Tracef("Untarring symlink %s", header.Name)
+	case tar.TypeSymlink, tar.TypeLink:
+		logging.Tracef("Untarring (sym)link %s -> %s", header.Name, header.Linkname)
 
-		// Check if symlink already exists
+		// Check if (sym)link already exists
 		_, err := os.Lstat(header.Name)
 		if err == nil {
 			logging.Debugf("Symlink %s already exists", header.Name)
 		}
-		// Continue if symlink does not exist
+		// Continue if (sym)link does not exist
 		if os.IsNotExist(err) {
 			logging.Debugf("Symlink %s does not exist", header.Name)
 
-			// Create directories for symlink
+			// Create directories for (sym)link
 			dir := filepath.Dir(header.Name)
 			logging.Tracef("Creating directory %s", dir)
 			err := os.MkdirAll(dir, 0755) // #nosec G301 -- Tools must be world readable
@@ -147,58 +147,7 @@ func CallbackExtractTarItem(reader *tar.Reader, header *tar.Header) error {
 				return fmt.Errorf("ExtractTarGz: MkdirAll() failed for %s: %s", dir, err.Error())
 			}
 
-			_, err = os.Stat(header.Linkname)
-			if err != nil {
-				if !os.IsNotExist(err) {
-					return fmt.Errorf("ExtractTarGz: Stat() failed for TypeSymlink for %s: %s", header.Linkname, err.Error())
-				}
-			} else {
-				err = os.Remove(header.Linkname)
-				if err != nil {
-					return fmt.Errorf("ExtractTarGz: Remove() failed for TypeSymlink for %s: %s", header.Linkname, err.Error())
-				}
-			}
-
-			// Create symlink
-			err = os.Symlink(header.Linkname, header.Name)
-			if err != nil {
-				return fmt.Errorf("ExtractTarGz: Symlink() failed for %s -> %s: %s", header.Linkname, header.Name, err.Error())
-			}
-		}
-
-	case tar.TypeLink:
-		logging.Tracef("Untarring link %s to %s", header.Name, header.Linkname)
-
-		// Check if symlink already exists
-		_, err := os.Lstat(header.Name)
-		if err == nil {
-			logging.Debugf("Link %s already exists", header.Name)
-		}
-		// Continue if symlink does not exist
-		if os.IsNotExist(err) {
-			logging.Debugf("Link %s does not exist", header.Name)
-
-			// Create directories for symlink
-			dir := filepath.Dir(header.Name)
-			logging.Tracef("Creating directory %s", dir)
-			err := os.MkdirAll(dir, 0755) // #nosec G301 -- Tools must be world readable
-			if err != nil {
-				return fmt.Errorf("ExtractTarGz: MkdirAll() failed for %s: %s", dir, err.Error())
-			}
-
-			_, err = os.Stat(header.Linkname)
-			if err != nil {
-				if !os.IsNotExist(err) {
-					return fmt.Errorf("ExtractTarGz: Stat() failed for TypeLink for %s: %s", header.Linkname, err.Error())
-				}
-			} else {
-				err = os.Remove(header.Linkname)
-				if err != nil {
-					return fmt.Errorf("ExtractTarGz: Remove() failed for TypeLink for %s: %s", header.Linkname, err.Error())
-				}
-			}
-
-			// Create symlink
+			// Create (sym)link
 			err = os.Symlink(header.Linkname, header.Name)
 			if err != nil {
 				return fmt.Errorf("ExtractTarGz: Symlink() failed for %s -> %s: %s", header.Linkname, header.Name, err.Error())
