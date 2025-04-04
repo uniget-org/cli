@@ -27,10 +27,10 @@ func TestInspect(t *testing.T) {
 			name:      "contents",
 			args:      []string{"inspect", "jq", "--raw"},
 			expectErr: nil,
-			expectOut: "bin/jq" + "\n" +
-				"share/man/man1/jq.1" + "\n" +
-				"var/lib/uniget/manifests/jq.json" + "\n" +
-				"var/lib/uniget/manifests/jq.txt",
+			expectOut: "-rwxr-xr-x bin/jq" + "\n" +
+				"-rw-r--r-- share/man/man1/jq.1" + "\n" +
+				"-rw-r--r-- var/lib/uniget/manifests/jq.json" + "\n" +
+				"-rw-r--r-- var/lib/uniget/manifests/jq.txt",
 			outContains: true,
 		},
 	}

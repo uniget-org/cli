@@ -12,6 +12,7 @@ import (
 	"github.com/google/safeopen"
 
 	"github.com/uniget-org/cli/pkg/logging"
+	myos "github.com/uniget-org/cli/pkg/os"
 )
 
 func Gunzip(layer []byte) ([]byte, error) {
@@ -58,14 +59,19 @@ func CallbackDisplayTarItem(reader *tar.Reader, header *tar.Header) error {
 	switch header.Typeflag {
 	case tar.TypeDir:
 	case tar.TypeReg:
+		mode, err := myos.ConvertFileModeToString(header.Mode)
+		if err != nil {
+			return fmt.Errorf("unable to convert mode: %s", err)
+		}
 		//nolint:errcheck
-		fmt.Fprintf(logging.OutputWriter, "%s\n", header.Name)
-	case tar.TypeSymlink:
+		fmt.Fprintf(logging.OutputWriter, "-%s %s\n", mode, header.Name)
+	case tar.TypeSymlink, tar.TypeLink:
+		mode, err := myos.ConvertFileModeToString(header.Mode)
+		if err != nil {
+			return fmt.Errorf("unable to convert mode: %s", err)
+		}
 		//nolint:errcheck
-		fmt.Fprintf(logging.OutputWriter, "%s -> %s\n", header.Name, header.Linkname)
-	case tar.TypeLink:
-		//nolint:errcheck
-		fmt.Fprintf(logging.OutputWriter, "%s -> %s\n", header.Name, header.Linkname)
+		fmt.Fprintf(logging.OutputWriter, "l%s %s -> %s\n", mode, header.Name, header.Linkname)
 	default:
 		//nolint:errcheck
 		fmt.Fprintf(logging.ErrorWriter, "Unknown: %s\n", header.Name)
