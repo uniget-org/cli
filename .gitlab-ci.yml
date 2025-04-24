@@ -126,6 +126,28 @@ build-index:
   - .build-rules
   - .docker-index
 
+cleanup-intermediate-tags:
+  needs:
+  - prepare
+  - build-index
+  parallel:
+    matrix:
+    - TAG_SUFFIX:
+      - "noble"
+      - "noble-systemd"
+  extends:
+  - .build-rules
+  image: regclient/regctl:v0.8.3-alpine
+  script:
+  - |
+    echo "${CI_REGISTRY_PASSWORD}" \
+    | regctl registry login "${CI_REGISTRY}" \
+        --user "${CI_REGISTRY_USER}" \
+        --pass-stdin
+  - |
+    regctl manifest delete "${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-amd64"
+    regctl manifest delete "${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-arm64"
+
 build-default-tags:
   needs:
   - prepare
