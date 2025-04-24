@@ -118,6 +118,11 @@ build-index:
   needs:
   - prepare
   - build-build
+  parallel:
+    matrix:
+    - TAG_SUFFIX:
+      - "-noble"
+      - "-noble-systemd"
   extends:
   - .build-rules
   - .docker-index
