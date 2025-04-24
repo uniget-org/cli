@@ -26,7 +26,7 @@
         --username "${CI_REGISTRY_USER}" \
         --password-stdin
   - |
-    echo "### Building image ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${TAG}-${ARCH}"
+    echo "### Building image ${CI_REGISTRY_IMAGE}:${TAG}-${ARCH}"
     echo "    Architecture:     ${ARCH}"
     echo "    Build context:    ${BUILD_CONTEXT}"
     echo "    Using build args: ${BUILD_ARGS}"
@@ -38,8 +38,8 @@
         ${BUILD_ARG_PARAMETERS} \
         ${BUILD_EXTRA_ARGS} \
         --cache-to=type=inline,mode=min \
-        --cache-from=type=registry,ref="${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${TAG}${TAG_SUFFIX}-${ARCH}" \
-        --tag="${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${TAG}${TAG_SUFFIX}-${ARCH}" \
+        --cache-from=type=registry,ref="${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-${ARCH}" \
+        --tag="${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-${ARCH}" \
         --push="${PUSH}"
 
 .docker-index:
@@ -48,12 +48,12 @@
   - .docker-login
   script:
   - |
-    echo "### Building index for ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${TAG}"
+    echo "### Building index for ${CI_REGISTRY_IMAGE}:${TAG}"
   - |
-    echo "### Creating multi-arch image for ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${TAG}${TAG_SUFFIX}"
-    docker buildx imagetools create --tag "${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${TAG}${TAG_SUFFIX}" \
-        "${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${TAG}${TAG_SUFFIX}-amd64" \
-        "${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${TAG}${TAG_SUFFIX}-arm64"
+    echo "### Creating multi-arch image for ${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}"
+    docker buildx imagetools create --tag "${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}" \
+        "${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-amd64" \
+        "${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-arm64"
 
 .build-rules:
   rules:
@@ -110,7 +110,6 @@ build-build:
   - .build-rules
   - .docker-build
   variables:
-    IMAGE_NAME: cli
     BUILD_CONTEXT: .
     BUILD_ARGS: version
   tags:
@@ -128,5 +127,3 @@ build-index:
   extends:
   - .build-rules
   - .docker-index
-  variables:
-    IMAGE_NAME: cli
