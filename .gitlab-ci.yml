@@ -1,0 +1,116 @@
+.docker:
+  image: docker:28.1.1
+
+.docker-login:
+  extends:
+  - .docker
+  before_script:
+  - |
+    echo "${CI_REGISTRY_PASSWORD}" \
+    | docker login "${CI_REGISTRY}" \
+        --username "${CI_REGISTRY_USER}" \
+        --password-stdin
+
+.docker-build:
+  extends:
+  - .docker
+  services:
+  - docker:28.1.1-dind
+  script:
+  - |
+    SOURCE_DATE_EPOCH="$( git log -1 --pretty=%ct "${BUILD_CONTEXT}/Dockerfile" )"
+    export SOURCE_DATE_EPOCH
+  - |
+    echo "${CI_REGISTRY_PASSWORD}" \
+    | docker login "${CI_REGISTRY}" \
+        --username "${CI_REGISTRY_USER}" \
+        --password-stdin
+  - |
+    echo "### Building image ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${TAG}-${ARCH}"
+    echo "    Architecture:     ${ARCH}"
+    echo "    Build context:    ${BUILD_CONTEXT}"
+    echo "    Using build args: ${BUILD_ARGS}"
+    echo "    Pushing image:    ${PUSH}"
+    for BUILD_ARG in ${BUILD_ARGS}; do
+        BUILD_ARG_PARAMETERS="${BUILD_ARG_PARAMETERS} --build-arg=${BUILD_ARG}"
+    done
+    docker buildx build "${BUILD_CONTEXT}" \
+        ${BUILD_ARG_PARAMETERS} \
+        ${BUILD_EXTRA_ARGS} \
+        --cache-to=type=inline,mode=min \
+        --cache-from=type=registry,ref="${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${TAG}-${ARCH}" \
+        --tag="${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${TAG}-${ARCH}" \
+        --push="${PUSH}"
+
+.docker-index:
+  extends:
+  - .docker
+  - .docker-login
+  script:
+  - |
+    echo "### Building index for ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${TAG}"
+  - |
+    echo "### Creating multi-arch image for ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${TAG}"
+    docker buildx imagetools create --tag "${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${TAG}" \
+        "${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${TAG}-amd64" \
+        "${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${TAG}-arm64"
+
+.build-rules:
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    changes:
+    - Dockerfile
+    variables:
+      PUSH: "true"
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    changes:
+    - Dockerfile
+    variables:
+      PUSH: "false"
+  - if: $CI_PIPELINE_SOURCE == "web"
+    variables:
+      PUSH: "true"
+  - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULED_JOB == "daily_rebuild"
+    variables:
+      PUSH: "true"
+
+prepare:
+  script: |
+    version="$( git describe --tags --abbrev=0 | tr -d v )"
+    TAG="${version}"
+    BUILD_EXTRA_ARGS="--target=systemd-uniget"
+
+    echo "version=${version}" >>build.env
+    echo "TAG=${TAG}" >>build.env
+    echo "BUILD_EXTRA_ARGS=${BUILD_EXTRA_ARGS}" >>build.env
+  artifacts:
+    reports:
+      dotenv: build.env
+
+build-build:
+  needs:
+  - prepare
+  parallel:
+    matrix:
+    - ARCH:
+      - "amd64"
+      - "arm64"
+  extends:
+  - .build-rules
+  - .docker-build
+  variables:
+    IMAGE_NAME: cli
+    BUILD_CONTEXT: .
+    BUILD_ARGS: version
+  tags:
+  - saas-linux-medium-${ARCH}
+
+build-index:
+  needs:
+  - prepare
+  - build-build
+  extends:
+  - .build-rules
+  - .docker-index
+  variables:
+    IMAGE_NAME: cli
