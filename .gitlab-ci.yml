@@ -125,3 +125,44 @@ build-index:
   extends:
   - .build-rules
   - .docker-index
+
+build-default-tags:
+  needs:
+  - prepare
+  - build-index
+  parallel:
+    matrix:
+    - TAG_SUFFIX:
+      - "noble"
+      - "noble-systemd"
+  extends:
+  - .build-rules
+  image: regclient/regctl:v0.8.3-alpine
+  script:
+  - |
+    echo "${CI_REGISTRY_PASSWORD}" \
+    | regctl registry login "${CI_REGISTRY}" \
+        --user "${CI_REGISTRY_USER}" \
+        --pass-stdin
+  - |
+    regctl image copy \
+        "${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}" \
+        "${CI_REGISTRY_IMAGE}:${TAG_SUFFIX}"
+
+build-latest-tag:
+  needs:
+  - prepare
+  - build-index
+  extends:
+  - .build-rules
+  image: regclient/regctl:v0.8.3-alpine
+  script:
+  - |
+    echo "${CI_REGISTRY_PASSWORD}" \
+    | regctl registry login "${CI_REGISTRY}" \
+        --user "${CI_REGISTRY_USER}" \
+        --pass-stdin
+  - |
+    regctl image copy \
+        "${CI_REGISTRY_IMAGE}:${TAG}-noble" \
+        "${CI_REGISTRY_IMAGE}:latest"
