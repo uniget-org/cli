@@ -127,6 +127,12 @@ FROM ubuntu:latest AS uniget-release
 ARG version
 ARG TARGETARCH
 RUN <<EOF
+apt-get update
+apt-get install --yes --no-install-recommends \
+    ca-certificates \
+    curl \
+    tar \
+    gzip
 case "${TARGETARCH}" in
     amd64) ARCH="x86_64" ;;
     arm64) ARCH="aarch64" ;;
