@@ -38,8 +38,8 @@
         ${BUILD_ARG_PARAMETERS} \
         ${BUILD_EXTRA_ARGS} \
         --cache-to=type=inline,mode=min \
-        --cache-from=type=registry,ref="${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${TAG}-${ARCH}" \
-        --tag="${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${TAG}-${ARCH}" \
+        --cache-from=type=registry,ref="${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${TAG}${TAG_SUFFIX}-${ARCH}" \
+        --tag="${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${TAG}${TAG_SUFFIX}-${ARCH}" \
         --push="${PUSH}"
 
 .docker-index:
@@ -50,10 +50,10 @@
   - |
     echo "### Building index for ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${TAG}"
   - |
-    echo "### Creating multi-arch image for ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${TAG}"
-    docker buildx imagetools create --tag "${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${TAG}" \
-        "${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${TAG}-amd64" \
-        "${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${TAG}-arm64"
+    echo "### Creating multi-arch image for ${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${TAG}${TAG_SUFFIX}"
+    docker buildx imagetools create --tag "${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${TAG}${TAG_SUFFIX}" \
+        "${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${TAG}${TAG_SUFFIX}-amd64" \
+        "${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${TAG}${TAG_SUFFIX}-arm64"
 
 .build-rules:
   rules:
@@ -75,6 +75,8 @@
       PUSH: "true"
 
 prepare:
+  extends:
+  - .build-rules
   script: |
     version="$( git describe --tags --abbrev=0 | tr -d v )"
     TAG="${version}"
@@ -95,6 +97,13 @@ build-build:
     - ARCH:
       - "amd64"
       - "arm64"
+      BUILD_EXTRA_ARGS: "--target=noble-uniget"
+      TAG_SUFFIX: "-noble"
+    - ARCH:
+      - "amd64"
+      - "arm64"
+      BUILD_EXTRA_ARGS: "--target=systemd-uniget"
+      TAG_SUFFIX: "-noble-systemd"
   extends:
   - .build-rules
   - .docker-build

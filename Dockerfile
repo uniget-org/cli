@@ -123,7 +123,7 @@ FROM latest-ubuntu2404 AS ubuntu2404-uniget
 COPY --from=bin /uniget /usr/local/bin/uniget
 ENTRYPOINT [ "uniget"]
 
-FROM ghcr.io/uniget-org/images/systemd:ubuntu24.04@sha256:ef7de14dfda71529a6ae8b4b97626d34105df405eb10df656abf0f81802ea314 AS systemd-uniget
+FROM ubuntu:latest AS uniget-release
 ARG version
 ARG TARGETARCH
 RUN <<EOF
@@ -136,6 +136,17 @@ curl --silent --show-error --location --fail \
     "https://github.com/uniget-org/cli/releases/download/v${version}/uniget_Linux_${ARCH}.tar.gz" \
 | tar --extract --gzip --directory=/usr/local/bin uniget
 EOF
+
+FROM ghcr.io/uniget-org/images/ubuntu:24.04 AS noble-uniget
+COPY --from=uniget-release /usr/local/bin/uniget /usr/local/bin/uniget
+LABEL \
+    org.opencontainers.image.source="https://github.com/uniget-org/cli" \
+    org.opencontainers.image.title="uniget CLI" \
+    org.opencontainers.image.description="The universal installer and updater for (container) tools" \
+    org.opencontainers.image.version="${version}"
+
+FROM ghcr.io/uniget-org/images/systemd:ubuntu24.04@sha256:ef7de14dfda71529a6ae8b4b97626d34105df405eb10df656abf0f81802ea314 AS systemd-uniget
+COPY --from=uniget-release /usr/local/bin/uniget /usr/local/bin/uniget
 LABEL \
     org.opencontainers.image.source="https://github.com/uniget-org/cli" \
     org.opencontainers.image.title="uniget CLI" \
