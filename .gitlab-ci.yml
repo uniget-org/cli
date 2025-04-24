@@ -82,11 +82,9 @@ prepare:
   script: |
     version="$( git describe --tags --abbrev=0 | tr -d v )"
     TAG="${version}"
-    BUILD_EXTRA_ARGS="--target=systemd-uniget"
 
     echo "version=${version}" >>build.env
     echo "TAG=${TAG}" >>build.env
-    echo "BUILD_EXTRA_ARGS=${BUILD_EXTRA_ARGS}" >>build.env
   artifacts:
     reports:
       dotenv: build.env
