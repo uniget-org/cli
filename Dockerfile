@@ -123,7 +123,7 @@ FROM latest-ubuntu2404 AS ubuntu2404-uniget
 COPY --from=bin /uniget /usr/local/bin/uniget
 ENTRYPOINT [ "uniget"]
 
-FROM ubuntu:latest AS uniget-release
+FROM ubuntu:rolling AS uniget-release
 ARG version
 ARG TARGETARCH
 RUN <<EOF
