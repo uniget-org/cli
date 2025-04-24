@@ -77,6 +77,8 @@
 prepare:
   extends:
   - .build-rules
+  variables:
+    GIT_DEPTH: 0
   script: |
     version="$( git describe --tags --abbrev=0 | tr -d v )"
     TAG="${version}"
