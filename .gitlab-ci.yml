@@ -1,9 +1,10 @@
 .docker:
   image: docker:28.1.1
 
+.regctl:
+  image: regclient/regctl:v0.8.3-alpine
+
 .docker-login:
-  extends:
-  - .docker
   before_script:
   - |
     echo "${CI_REGISTRY_PASSWORD}" \
@@ -11,20 +12,24 @@
         --username "${CI_REGISTRY_USER}" \
         --password-stdin
 
+.regctl-login:
+  before_script:
+  - |
+    echo "${CI_REGISTRY_PASSWORD}" \
+    | regctl registry login "${CI_REGISTRY}" \
+        --user "${CI_REGISTRY_USER}" \
+        --pass-stdin
+
 .docker-build:
   extends:
   - .docker
+  - .docker-login
   services:
   - docker:28.1.1-dind
   script:
   - |
     SOURCE_DATE_EPOCH="$( git log -1 --pretty=%ct "${BUILD_CONTEXT}/Dockerfile" )"
     export SOURCE_DATE_EPOCH
-  - |
-    echo "${CI_REGISTRY_PASSWORD}" \
-    | docker login "${CI_REGISTRY}" \
-        --username "${CI_REGISTRY_USER}" \
-        --password-stdin
   - |
     echo "### Building image ${CI_REGISTRY_IMAGE}:${TAG}-${ARCH}"
     echo "    Architecture:     ${ARCH}"
@@ -37,12 +42,20 @@
     docker buildx build "${BUILD_CONTEXT}" \
         ${BUILD_ARG_PARAMETERS} \
         ${BUILD_EXTRA_ARGS} \
+        --platform="linux/${ARCH}" \
         --cache-to=type=inline,mode=min \
         --cache-from=type=registry,ref="${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-${ARCH}" \
         --tag="${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-${ARCH}" \
+        --metadata-file=metadata-${TAG]${TAG_SUFFIX}-${ARCH}.json \
         --push="${PUSH}"
+  - |
+    jq --raw-output '."containerimage.digest"' metadata-${TAG]${TAG_SUFFIX}-${ARCH}.json >image-digest-${TAG}${TAG_SUFFIX}-${ARCH}.json
+  artifacts:
+    paths:
+    - metadata-${TAG}${TAG_SUFFIX}-${ARCH}.json
+    - image-digest-${TAG}${TAG_SUFFIX}-${ARCH}.json
 
-.docker-index:
+.build-multi-arch-index:
   extends:
   - .docker
   - .docker-login
@@ -50,10 +63,21 @@
   - |
     echo "### Building index for ${CI_REGISTRY_IMAGE}:${TAG}"
   - |
-    echo "### Creating multi-arch image for ${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}"
-    docker buildx imagetools create --tag "${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}" \
-        "${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-amd64" \
-        "${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-arm64"
+    DIGEST_AMD64="$( cat image-digest-${TAG}${TAG_SUFFIX}-amd64.json )"
+    DIGEST_ARM64="$( cat image-digest-${TAG}${TAG_SUFFIX}-arm64.json )"
+    echo "    Digest amd64: ${DIGEST_AMD64}"
+    echo "    Digest arm64: ${DIGEST_ARM64}"
+  - |
+    echo "### Creating multi-arch image index for ${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}"
+    regctl index create "${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}" \
+        --format='{{json .Manifest}}' \
+        "${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-amd64@${DIGEST_AMD64}" \
+        "${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-arm64@${DIGEST_ARM64}" \
+    | tr -d '\n' \
+    >index-digest-${TAG}${TAG_SUFFIX}.json
+  artifacts:
+    paths:
+    - index-digest-${TAG}${TAG_SUFFIX}.json
 
 .build-rules:
   rules:
@@ -89,7 +113,7 @@ prepare:
     reports:
       dotenv: build.env
 
-build-build:
+build-image:
   needs:
   - prepare
   parallel:
@@ -116,7 +140,7 @@ build-build:
 build-index:
   needs:
   - prepare
-  - build-build
+  - build-image
   parallel:
     matrix:
     - TAG_SUFFIX:
@@ -124,7 +148,7 @@ build-index:
       - "-noble-systemd"
   extends:
   - .build-rules
-  - .docker-index
+  - .build-multi-arch-index
 
 cleanup-intermediate-tags:
   needs:
@@ -137,18 +161,21 @@ cleanup-intermediate-tags:
       - "noble-systemd"
   extends:
   - .build-rules
-  image: regclient/regctl:v0.8.3-alpine
+  - .regctl
+  - .regctl-login
   script:
   - |
-    echo "${CI_REGISTRY_PASSWORD}" \
-    | regctl registry login "${CI_REGISTRY}" \
-        --user "${CI_REGISTRY_USER}" \
-        --pass-stdin
+    echo "### Removing intermediate tags for ${CI_REGISTRY_IMAGE}:${TAG}"
   - |
-    regctl manifest delete "${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-amd64"
-    regctl manifest delete "${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-arm64"
+    DIGEST_AMD64="$( cat image-digest-${TAG}${TAG_SUFFIX}-amd64.json )"
+    DIGEST_ARM64="$( cat image-digest-${TAG}${TAG_SUFFIX}-arm64.json )"
+    echo "    Digest amd64: ${DIGEST_AMD64}"
+    echo "    Digest arm64: ${DIGEST_ARM64}"
+  - |
+    regctl manifest delete "${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-amd64@${DIGEST_AMD64}"
+    regctl manifest delete "${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-arm64@${DIGEST_ARM64}"
 
-build-default-tags:
+update-default-tags:
   needs:
   - prepare
   - build-index
@@ -159,31 +186,23 @@ build-default-tags:
       - "noble-systemd"
   extends:
   - .build-rules
-  image: regclient/regctl:v0.8.3-alpine
+  - .regctl
+  - .regctl-login
   script:
-  - |
-    echo "${CI_REGISTRY_PASSWORD}" \
-    | regctl registry login "${CI_REGISTRY}" \
-        --user "${CI_REGISTRY_USER}" \
-        --pass-stdin
   - |
     regctl image copy \
         "${CI_REGISTRY_IMAGE}:${TAG}-${TAG_SUFFIX}" \
         "${CI_REGISTRY_IMAGE}:${TAG_SUFFIX}"
 
-build-latest-tag:
+update-latest-tag:
   needs:
   - prepare
   - build-index
   extends:
   - .build-rules
-  image: regclient/regctl:v0.8.3-alpine
+  - .regctl
+  - .regctl-login
   script:
-  - |
-    echo "${CI_REGISTRY_PASSWORD}" \
-    | regctl registry login "${CI_REGISTRY}" \
-        --user "${CI_REGISTRY_USER}" \
-        --pass-stdin
   - |
     regctl image copy \
         "${CI_REGISTRY_IMAGE}:${TAG}-noble" \
