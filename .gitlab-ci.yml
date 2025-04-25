@@ -49,7 +49,7 @@
         --metadata-file=metadata-${TAG]${TAG_SUFFIX}-${ARCH}.json \
         --push="${PUSH}"
   - |
-    jq --raw-output '."containerimage.digest"' metadata-${TAG]${TAG_SUFFIX}-${ARCH}.json >image-digest-${TAG}${TAG_SUFFIX}-${ARCH}.json
+    jq --raw-output '."containerimage.digest"' metadata-${TAG}${TAG_SUFFIX}-${ARCH}.json >image-digest-${TAG}${TAG_SUFFIX}-${ARCH}.json
   artifacts:
     paths:
     - metadata-${TAG}${TAG_SUFFIX}-${ARCH}.json
