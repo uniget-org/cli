@@ -46,7 +46,7 @@
         --cache-to=type=inline,mode=min \
         --cache-from=type=registry,ref="${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-${ARCH}" \
         --tag="${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-${ARCH}" \
-        --metadata-file=metadata-${TAG]${TAG_SUFFIX}-${ARCH}.json \
+        --metadata-file=metadata-${TAG}${TAG_SUFFIX}-${ARCH}.json \
         --push="${PUSH}"
   - |
     jq --raw-output '."containerimage.digest"' metadata-${TAG}${TAG_SUFFIX}-${ARCH}.json >image-digest-${TAG}${TAG_SUFFIX}-${ARCH}.json
