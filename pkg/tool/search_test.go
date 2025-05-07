@@ -9,6 +9,7 @@ var testSearchToolsString = `{
 	"tools": [
 		{
 			"name":"foo",
+			"description: "foo",
 			"version":"1.0.0",
 			"runtime_dependencies": [
 				"bar"
@@ -20,6 +21,7 @@ var testSearchToolsString = `{
 		},
 		{
 			"name":"bar",
+			"description: "bar",
 			"version":"2.0.0",
 			"tags": [
 				"baz",
@@ -114,7 +116,7 @@ func TestFind(t *testing.T) {
 		t.Errorf("Error loading data: %s\n", err)
 	}
 
-	toolList := tools.Find("foo", true, false, false)
+	toolList := tools.Find("foo", true, false, false, false)
 	if len(toolList.Tools) != 1 {
 		t.Errorf("Expected 1 tool, got %d", len(toolList.Tools))
 	}
@@ -122,7 +124,15 @@ func TestFind(t *testing.T) {
 		t.Errorf("Expected tool foo, got %s", toolList.Tools[0].Name)
 	}
 
-	toolList = tools.Find("baz", false, true, false)
+	toolList = tools.Find("foo", false, true, false, false)
+	if len(toolList.Tools) != 1 {
+		t.Errorf("Expected 1 tools, got %d", len(toolList.Tools))
+	}
+	if toolList.Tools[0].Name != "foo" {
+		t.Errorf("Expected tool foo, got %s", toolList.Tools[0].Name)
+	}
+
+	toolList = tools.Find("baz", false, false, true, false)
 	if len(toolList.Tools) != 2 {
 		t.Errorf("Expected 2 tools, got %d", len(toolList.Tools))
 	}
@@ -133,7 +143,7 @@ func TestFind(t *testing.T) {
 		t.Errorf("Expected tool bar, got %s", toolList.Tools[1].Name)
 	}
 
-	toolList = tools.Find("blubb", false, true, false)
+	toolList = tools.Find("blubb", false, false, true, false)
 	if len(toolList.Tools) != 1 {
 		t.Errorf("Expected 1 tool, got %d", len(toolList.Tools))
 	}
@@ -141,7 +151,7 @@ func TestFind(t *testing.T) {
 		t.Errorf("Expected tool bar, got %s", toolList.Tools[0].Name)
 	}
 
-	toolList = tools.Find("bar", false, false, true)
+	toolList = tools.Find("bar", false, false, false, true)
 	if len(toolList.Tools) != 1 {
 		t.Errorf("Expected 1 tool, got %d", len(toolList.Tools))
 	}
