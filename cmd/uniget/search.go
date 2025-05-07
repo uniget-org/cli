@@ -13,10 +13,17 @@ func initSearchCmd() {
 
 	searchCmd.Flags().Bool("only-names", false, "Search only in names")
 	searchCmd.Flags().Bool("no-names", false, "Do not search in names")
+	searchCmd.Flags().Bool("only-description", false, "Search only in description")
+	searchCmd.Flags().Bool("no-description", false, "Do not search in description")
 	searchCmd.Flags().Bool("only-tags", false, "Search only on tags")
 	searchCmd.Flags().Bool("no-tags", false, "Do not search in tags")
 	searchCmd.Flags().Bool("only-deps", false, "Search only in dependencies")
 	searchCmd.Flags().Bool("no-deps", false, "Do not search in dependencies")
+
+	searchCmd.MarkFlagsMutuallyExclusive("only-names", "no-names")
+	searchCmd.MarkFlagsMutuallyExclusive("only-description", "no-description")
+	searchCmd.MarkFlagsMutuallyExclusive("only-tags", "no-tags")
+	searchCmd.MarkFlagsMutuallyExclusive("only-deps", "no-deps")
 }
 
 var searchCmd = &cobra.Command{
@@ -43,6 +50,14 @@ var searchCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("error retrieving no-names flag: %s", err)
 		}
+		onlySearchInDescription, err := cmd.Flags().GetBool("only-description")
+		if err != nil {
+			return fmt.Errorf("error retrieving only-description flag: %s", err)
+		}
+		noSearchInDescription, err := cmd.Flags().GetBool("no-description")
+		if err != nil {
+			return fmt.Errorf("error retrieving no-description flag: %s", err)
+		}
 		onlySearchInTags, err := cmd.Flags().GetBool("only-tags")
 		if err != nil {
 			return fmt.Errorf("error retrieving only-tags flag: %s", err)
@@ -60,27 +75,21 @@ var searchCmd = &cobra.Command{
 			return fmt.Errorf("error retrieving no-deps flag: %s", err)
 		}
 
-		if onlySearchInName && noSearchInName {
-			return fmt.Errorf("error: Cannot process only-names and no-names at the same time")
-		}
-		if onlySearchInTags && noSearchInTags {
-			return fmt.Errorf("error: Cannot process only-tags and no-tags at the same time")
-		}
-		if onlySearchInDeps && noSearchInDeps {
-			return fmt.Errorf("error: Cannot process only-deps and no-deps at the same time")
-		}
-
 		if (onlySearchInName && onlySearchInTags) ||
 			(onlySearchInName && onlySearchInDeps) ||
+			(onlySearchInName && noSearchInDescription) ||
+			(onlySearchInDescription && onlySearchInTags) ||
+			(onlySearchInDescription && onlySearchInDeps) ||
 			(onlySearchInTags && onlySearchInDeps) {
-			return fmt.Errorf("error: Can only process one of only-names, only-tags and only-deps at the same time")
+			return fmt.Errorf("error: Can only process one of only-names, only-description, only-tags and only-deps at the same time")
 		}
 
 		results := tools.Find(
 			args[0],
-			!noSearchInName && !onlySearchInTags && !onlySearchInDeps,
-			!noSearchInTags && !onlySearchInName && !onlySearchInDeps,
-			!noSearchInDeps && !onlySearchInName && !onlySearchInTags,
+			!noSearchInName && !onlySearchInDescription && !onlySearchInTags && !onlySearchInDeps,
+			!noSearchInDescription && !onlySearchInName && !onlySearchInTags && !onlySearchInDeps,
+			!noSearchInTags && !onlySearchInName && !onlySearchInDescription && !onlySearchInDeps,
+			!noSearchInDeps && !onlySearchInName && !onlySearchInDescription && !onlySearchInTags,
 		)
 		if len(results.Tools) == 0 {
 			logging.Info.Printfln("No tools found for term %s", args[0])

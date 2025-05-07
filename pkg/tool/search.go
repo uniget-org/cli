@@ -67,7 +67,7 @@ func (tools *Tools) GetByTags(tagNames []string) Tools {
 	return toolList
 }
 
-func (tools *Tools) Find(term string, searchInName bool, searchInTags bool, searchInDeps bool) Tools {
+func (tools *Tools) Find(term string, searchInName bool, searchInDesc bool, searchInTags bool, searchInDeps bool) Tools {
 	var results = Tools{}
 
 	for _, tool := range tools.Tools {
@@ -77,17 +77,25 @@ func (tools *Tools) Find(term string, searchInName bool, searchInTags bool, sear
 			matches = true
 		}
 
-		for _, tag := range tool.Tags {
-			match, err := regexp.MatchString(term, tag)
-			if err == nil && searchInTags && match {
-				matches = true
+		if searchInDesc && tool.MatchesDescription(term) {
+			matches = true
+		}
+
+		if searchInTags {
+			for _, tag := range tool.Tags {
+				match, err := regexp.MatchString(term, tag)
+				if err == nil && match {
+					matches = true
+				}
 			}
 		}
 
-		for _, dep := range tool.RuntimeDependencies {
-			match, err := regexp.MatchString(term, dep)
-			if err == nil && searchInDeps && match {
-				matches = true
+		if searchInDeps {
+			for _, dep := range tool.RuntimeDependencies {
+				match, err := regexp.MatchString(term, dep)
+				if err == nil && match {
+					matches = true
+				}
 			}
 		}
 

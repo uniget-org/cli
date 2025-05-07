@@ -16,6 +16,11 @@ func (tool *Tool) MatchesName(term string) bool {
 	return err == nil && match
 }
 
+func (tool *Tool) MatchesDescription(term string) bool {
+	match, err := regexp.MatchString(strings.ToLower(term), strings.ToLower(tool.Description))
+	return err == nil && match
+}
+
 func (tool *Tool) HasTag(term string) bool {
 	for _, tag := range tool.Tags {
 		if tag == term {
