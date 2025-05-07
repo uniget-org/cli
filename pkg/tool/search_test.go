@@ -9,7 +9,7 @@ var testSearchToolsString = `{
 	"tools": [
 		{
 			"name":"foo",
-			"description: "foo",
+			"description": "foo",
 			"version":"1.0.0",
 			"runtime_dependencies": [
 				"bar"
@@ -21,7 +21,7 @@ var testSearchToolsString = `{
 		},
 		{
 			"name":"bar",
-			"description: "bar",
+			"description": "bar",
 			"version":"2.0.0",
 			"tags": [
 				"baz",
