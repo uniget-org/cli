@@ -39,6 +39,7 @@ var (
 	libDirectory           = libRoot + "/" + projectName
 	configRoot             = "etc"
 	profileDDirectory      = configRoot + "/profile.d"
+	metadataImageTag       = "main"
 	metadataFileName       = "metadata.json"
 	metadataFile           = cacheDirectory + "/" + metadataFileName
 	registry               = "ghcr.io"
@@ -495,9 +496,11 @@ func main() {
 	pf.String("cache", viper.GetString("cache"), "Cache backend to use (none, file, docker, containerd)")
 	pf.String("cache-directory", viper.GetString("cachedirectory"), "Directory for the file cache")
 	pf.Int("cache-retention", viper.GetInt("cacheretention"), "Retention in seconds for the file cache")
+	pf.StringVar(&metadataImageTag, "metadata-image-tag", metadataImageTag, "Tag for the metadata image")
 
 	rootCmd.MarkFlagsMutuallyExclusive("prefix", "user")
 	rootCmd.MarkFlagsMutuallyExclusive("target", "user")
+	rootCmd.Flags().MarkHidden("metadata-image-tag")
 
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix("uniget")
