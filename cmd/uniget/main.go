@@ -500,7 +500,11 @@ func main() {
 
 	rootCmd.MarkFlagsMutuallyExclusive("prefix", "user")
 	rootCmd.MarkFlagsMutuallyExclusive("target", "user")
-	rootCmd.Flags().MarkHidden("metadata-image-tag")
+	err = rootCmd.Flags().MarkHidden("metadata-image-tag")
+	if err != nil {
+		logging.Error.Printfln("Unable to mark metadata-image-tag as hidden: %s", err)
+		os.Exit(1)
+	}
 
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix("uniget")
