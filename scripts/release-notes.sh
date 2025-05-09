@@ -56,7 +56,10 @@ gh issue list \
     --search="state:closed closed:>${TIMESTAMP} label:bug -label:wontfix" \
     --json=number,title,url \
     --template='{{range .}}- {{.title}} ([#{{.number}}]({{.url}})){{"\n"}}{{end}}'
-git log --after=2025-04-24 --pretty=format:'- %s [%h](https://github.com/uniget-org/cli/commit/%H)' | grep ^fix
+git log --after=${TIMESTAMP} --pretty=format:'- %s [%h](https://github.com/uniget-org/cli/commit/%H)' \
+| grep "^- fix" \
+| grep -v "^- fix(deps)" \
+|| true
 
 echo
 echo "## Features (since ${PREVIOUS_TAG})"
@@ -65,7 +68,9 @@ gh issue list \
     --search="state:closed closed:>${TIMESTAMP} label:enhancement -label:wontfix" \
     --json=number,title,url \
     --template='{{range .}}- {{.title}} ([#{{.number}}]({{.url}})){{"\n"}}{{end}}'
-git log --after=2025-04-24 --pretty=format:'- %s [%h](https://github.com/uniget-org/cli/commit/%H)' | grep ^feat
+git log --after=${TIMESTAMP} --pretty=format:'- %s [%h](https://github.com/uniget-org/cli/commit/%H)' \
+| grep "^- feat" \
+|| true
 
 echo
 echo "## Dependency updates (since ${PREVIOUS_TAG})"
@@ -75,7 +80,10 @@ gh pr list \
     --search="merged:>${TIMESTAMP} label:type/renovate" \
     --json=number,title,url \
     --template='{{range .}}- {{.title}} ([#{{.number}}]({{.url}})){{"\n"}}{{end}}'
-git log --after=2025-04-24 --pretty=format:'- %s [%h](https://github.com/uniget-org/cli/commit/%H) (%an)' | grep ^chore | grep -v 'renovate'
+git log --after=${TIMESTAMP} --pretty=format:'- %s [%h](https://github.com/uniget-org/cli/commit/%H) (%an)' \
+| grep ^chore \
+| grep -v 'renovate' \
+|| true
 
 echo
 cat <<EOF
