@@ -81,13 +81,14 @@ var searchCmd = &cobra.Command{
 			return nil
 		}
 
-		if output == "table" {
+		switch output {
+		case "table":
 			results.List(cmd.OutOrStdout())
-		} else if output == "name" {
+		case "name":
 			for _, tool := range results.Tools {
-				fmt.Fprintln(cmd.OutOrStdout(), tool.Name)
+				fmt.Println(tool.Name)
 			}
-		} else if output == "json" {
+		case "json":
 			data, err := json.Marshal(results)
 			if err != nil {
 				return fmt.Errorf("failed to marshal to json: %s", err)
