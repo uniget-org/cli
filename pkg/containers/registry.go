@@ -25,7 +25,6 @@ import (
 func GetRegclient() *regclient.RegClient {
 	rcOpts := []regclient.Opt{}
 	rcOpts = append(rcOpts, regclient.WithUserAgent("uniget"))
-	rcOpts = append(rcOpts, regclient.WithDockerCreds())
 	rcOpts = append(rcOpts, regclient.WithConfigHost(config.Host{
 		Name: "127.0.0.1:5000",
 		TLS:  config.TLSDisabled,
