@@ -446,6 +446,17 @@ func createPatchFileCallback(tool tool.Tool) func(path string) string {
 			values["Target"] = viper.GetString("prefix") + "/" + viper.GetString("target")
 		}
 
+		if len(tool.RuntimeDependencies) > 0 {
+			for _, depName := range tool.RuntimeDependencies {
+				depTool, err := tools.GetByName(depName)
+				if err != nil {
+					logging.Warning.Printfln("Unable to find dependency %s: %s", depName, err)
+				}
+				values[fmt.Sprintf("%s_Version", depName)] = depTool.Version
+			}
+		}
+		logging.Debugf("Patching file %s with values: %+v", templatePath, values)
+
 		filePath := strings.TrimSuffix(templatePath, ".go-template")
 		logging.Info.Printfln("Patching file %s <- %s", filePath, templatePath)
 		logging.Debugf("values = %v", values)
