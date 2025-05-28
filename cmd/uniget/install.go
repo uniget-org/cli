@@ -423,10 +423,6 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 	if err != nil {
 		return fmt.Errorf("unable to install profile.d shim: %s", err)
 	}
-	err = installCompletionShim()
-	if err != nil {
-		return fmt.Errorf("unable to install completion shim: %s", err)
-	}
 
 	return nil
 }
