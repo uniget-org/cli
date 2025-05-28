@@ -452,7 +452,8 @@ func createPatchFileCallback(tool tool.Tool) func(path string) string {
 				if err != nil {
 					logging.Warning.Printfln("Unable to find dependency %s: %s", depName, err)
 				}
-				values[fmt.Sprintf("%s_Version", depName)] = depTool.Version
+				camelCaseDepName := depTool.GetCamelCaseName()
+				values[fmt.Sprintf("%sVersion", camelCaseDepName)] = depTool.Version
 			}
 		}
 		logging.Debugf("Patching file %s with values: %+v", templatePath, values)

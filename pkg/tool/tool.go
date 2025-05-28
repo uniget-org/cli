@@ -11,6 +11,36 @@ import (
 	"github.com/uniget-org/cli/pkg/logging"
 )
 
+func (tool *Tool) GetCamelCaseName() string {
+	camelCaseName := ""
+	newWord := true
+	// iterate of characters in the name
+	for _, char := range tool.Name {
+
+		// if a new word was detected, uppercase the character
+		if newWord {
+			camelCaseName += strings.ToUpper(string(char))
+			newWord = false
+			continue
+		}
+
+		// if char is a word character, add it to the camelCaseName
+		isAlphaNumeric, err := regexp.MatchString("[a-zA-Z0-9]", string(char))
+		if err != nil {
+			logging.Error.Printfln("Error checking if character <%s> is alphanumeric: %s", string(char), err)
+			continue
+		}
+		if !isAlphaNumeric {
+			newWord = true
+			continue
+		}
+
+		// all other characters are added as lowercase
+		camelCaseName += strings.ToLower(string(char))
+	}
+	return camelCaseName
+}
+
 func (tool *Tool) MatchesName(term string) bool {
 	match, err := regexp.MatchString(term, tool.Name)
 	return err == nil && match

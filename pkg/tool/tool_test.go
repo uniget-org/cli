@@ -7,10 +7,10 @@ import (
 var testToolToolsString = `{
 	"tools": [
 		{
-			"name":"foo",
-			"version":"1.0.0",
-			"binary": "${target}/bin/foo",
-			"check": "${binary} --version",
+			"name":    "foo",
+			"version": "1.0.0",
+			"binary":  "${target}/bin/foo",
+			"check":   "${binary} --version",
 			"build_dependencies": [
 				"bar"
 			],
@@ -23,16 +23,67 @@ var testToolToolsString = `{
 			]
 		},
 		{
-			"name":"bar",
-			"version":"2.0.0",
-			"binary": "baz",
+			"name":    "bar",
+			"version": "2.0.0",
+			"binary":  "baz",
 			"tags": [
 				"baz",
 				"blubb"
 			]
+		},
+		{
+			"name": "myname1-suffix"
+		},
+		{
+			"name": "myname2_suffix"
+		},
+		{
+			"name": "myname3-suffix1-suffix2"
+		},
+		{
+			"name": "myname4_suffix1-suffix2"
 		}
 	]
 }`
+
+func TestTool_CamelCaseName(t *testing.T) {
+	tools, err := LoadFromBytes([]byte(testToolToolsString))
+	if err != nil {
+		t.Errorf("Error loading data: %s\n", err)
+	}
+
+	tool, err := tools.GetByName("myname1-suffix")
+	if err != nil {
+		t.Errorf("Error getting tool: %s\n", err)
+	}
+	if tool.GetCamelCaseName() != "Myname1Suffix" {
+		t.Errorf("Expected 'Myname1Suffix', got '%s'", tool.GetCamelCaseName())
+	}
+
+	tool, err = tools.GetByName("myname2_suffix")
+	if err != nil {
+		t.Errorf("Error getting tool: %s\n", err)
+	}
+	if tool.GetCamelCaseName() != "Myname2Suffix" {
+		t.Errorf("Expected 'Myname2Suffix', got '%s'", tool.GetCamelCaseName())
+	}
+
+	tool, err = tools.GetByName("myname3-suffix1-suffix2")
+	if err != nil {
+		t.Errorf("Error getting tool: %s\n", err)
+	}
+	if tool.GetCamelCaseName() != "Myname3Suffix1Suffix2" {
+		t.Errorf("Expected 'Myname3Suffix1Suffix2', got '%s'", tool.GetCamelCaseName())
+	}
+
+	tool, err = tools.GetByName("myname4_suffix1-suffix2")
+	if err != nil {
+		t.Errorf("Error getting tool: %s\n", err)
+	}
+	if tool.GetCamelCaseName() != "Myname4Suffix1Suffix2" {
+		t.Errorf("Expected 'Myname4Suffix1Suffix2', got '%s'", tool.GetCamelCaseName())
+	}
+}
 
 func TestTool_MatchesName(t *testing.T) {
 	tools, err := LoadFromBytes([]byte(testToolToolsString))
