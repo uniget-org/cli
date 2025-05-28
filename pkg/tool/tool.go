@@ -13,6 +13,11 @@ import (
 
 func (tool *Tool) GetCamelCaseName() string {
 	camelCaseName := ""
+	re, err := regexp.Compile("[a-zA-Z0-9]") // Ensure the regex is compiled
+	if err != nil {
+		logging.Error.Printfln("Error compiling regex: %s", err)
+		return tool.Name // Fallback to original name if regex fails
+	}
 	newWord := true
 	// iterate of characters in the name
 	for _, char := range tool.Name {
@@ -25,12 +30,7 @@ func (tool *Tool) GetCamelCaseName() string {
 		}
 
 		// if char is a word character, add it to the camelCaseName
-		isAlphaNumeric, err := regexp.MatchString("[a-zA-Z0-9]", string(char))
-		if err != nil {
-			logging.Error.Printfln("Error checking if character <%s> is alphanumeric: %s", string(char), err)
-			continue
-		}
-		if !isAlphaNumeric {
+		if !re.MatchString(string(char)) {
 			newWord = true
 			continue
 		}
