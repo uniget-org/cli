@@ -1,5 +1,5 @@
 .docker:
-  image: docker:28.2.1@sha256:4610d33c9a2b9c2bce10ce76c693ee7564506845dd190deb80c3c3afbb62296d
+  image: docker:28.2.2@sha256:bbc590727c1e4fe707877314ff4f0f977bdda2985c485f2b044db0e18979efb3
 
 .regctl:
   image: regclient/regctl:v0.8.3-alpine
@@ -25,7 +25,7 @@
   - .docker
   - .docker-login
   services:
-  - docker:28.2.1-dind@sha256:4610d33c9a2b9c2bce10ce76c693ee7564506845dd190deb80c3c3afbb62296d
+  - docker:28.2.2-dind@sha256:bbc590727c1e4fe707877314ff4f0f977bdda2985c485f2b044db0e18979efb3
   script:
   - |
     SOURCE_DATE_EPOCH="$( git log -1 --pretty=%ct "${BUILD_CONTEXT}/Dockerfile" )"
