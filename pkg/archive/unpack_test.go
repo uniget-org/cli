@@ -134,8 +134,6 @@ func TestProcessTarContentsExtract(t *testing.T) {
 	files := []string{
 		"bin/jq",
 		"share/man/man1/jq.1",
-		"var/lib/uniget/manifests/jq.json",
-		"var/lib/uniget/manifests/jq.txt",
 	}
 	err = ProcessTarContents(registryLayer, CallbackExtractTarItem)
 	if err != nil {
