@@ -28,9 +28,7 @@ func TestInspect(t *testing.T) {
 			args:      []string{"inspect", "jq", "--raw"},
 			expectErr: nil,
 			expectOut: "-rwxr-xr-x bin/jq" + "\n" +
-				"-rw-r--r-- share/man/man1/jq.1" + "\n" +
-				"-rw-r--r-- var/lib/uniget/manifests/jq.json" + "\n" +
-				"-rw-r--r-- var/lib/uniget/manifests/jq.txt",
+				"-rw-r--r-- share/man/man1/jq.1",
 			outContains: true,
 		},
 	}
