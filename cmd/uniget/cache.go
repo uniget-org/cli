@@ -33,7 +33,7 @@ var cacheCmd = &cobra.Command{
 			return err
 		}
 		if !cacheIsConfigured() {
-			return fmt.Errorf("Cache is not configured.")
+			return fmt.Errorf("cache is not configured")
 		}
 		return nil
 	},
@@ -72,7 +72,7 @@ var cacheStatsCmd = &cobra.Command{
 				viper.GetString("prefix") + "/" + viper.GetString("cachedirectory"),
 			)
 			if err != nil {
-				return fmt.Errorf("Error calculating cache size: %v", err)
+				return fmt.Errorf("error calculating cache size: %v", err)
 			}
 
 		case "docker":
@@ -92,7 +92,7 @@ var cacheStatsCmd = &cobra.Command{
 			}
 
 		case "containerd":
-			return fmt.Errorf("Cache type 'containerd' is not yet implemented. Please use one of the other cache types.")
+			return fmt.Errorf("cache type 'containerd' is not yet implemented")
 		}
 
 		fmt.Printf("Cache size     : %s\n", myos.ConvertBytesToHumanReadable(size))
@@ -115,7 +115,7 @@ var cacheListCmd = &cobra.Command{
 				viper.GetString("prefix") + "/" + viper.GetString("cachedirectory"),
 			)
 			if err != nil {
-				return fmt.Errorf("Error calculating cache size: %v", err)
+				return fmt.Errorf("error calculating cache size: %v", err)
 			}
 			for _, file := range files {
 				fmt.Println(file)
@@ -140,7 +140,7 @@ var cacheListCmd = &cobra.Command{
 			}
 
 		case "containerd":
-			return fmt.Errorf("Cache type 'containerd' is not yet implemented. Please use one of the other cache types.")
+			return fmt.Errorf("cache type 'containerd' is not yet implemented")
 		}
 
 		return nil
@@ -165,7 +165,7 @@ var cachePruneCmd = &cobra.Command{
 				viper.GetString("prefix") + "/" + viper.GetString("cachedirectory"),
 			)
 			if err != nil {
-				return fmt.Errorf("Error pruning cache: %v", err)
+				return fmt.Errorf("error pruning cache: %v", err)
 			}
 
 		case "docker":
@@ -191,7 +191,7 @@ var cachePruneCmd = &cobra.Command{
 			}
 
 		case "containerd":
-			return fmt.Errorf("Cache type 'containerd' is not yet implemented. Please use one of the other cache types.")
+			return fmt.Errorf("cache type 'containerd' is not yet implemented")
 		}
 
 		fmt.Printf("Removed %d cache entries.\n", count)
