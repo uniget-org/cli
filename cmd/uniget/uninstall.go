@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/uniget-org/cli/pkg/logging"
+	myos "github.com/uniget-org/cli/pkg/os"
 	"github.com/uniget-org/cli/pkg/tool"
 )
 
@@ -145,6 +146,17 @@ func uninstallTool(toolName string) error {
 					uninstallSpinner.Fail()
 				}
 				return fmt.Errorf("unable to remove %s: %s", info.Name(), err)
+			}
+
+			if myos.IsDirectoryEmpty(viper.GetString("prefix") + "/" + cacheDirectory + "/" + tool.Name) {
+				err = os.Remove(viper.GetString("prefix") + "/" + cacheDirectory + "/" + tool.Name)
+				if err != nil {
+					if uninstallSpinner != nil {
+						uninstallSpinner.Fail()
+					}
+					return fmt.Errorf("unable to remove empty directory %s: %s", viper.GetString("prefix")+"/"+cacheDirectory+"/"+tool.Name, err)
+				}
+				logging.Debugf("Removed empty directory %s", viper.GetString("prefix")+"/"+cacheDirectory+"/"+tool.Name)
 			}
 		}
 
