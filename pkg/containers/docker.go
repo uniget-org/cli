@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
@@ -152,4 +153,32 @@ func UnpackLayerFromDockerImage(buffer []byte, sha256 string) ([]byte, error) {
 	}
 
 	return layerBuffer, fmt.Errorf("failed to extract layer %s", sha256)
+}
+
+func ListDockerImagesByPrefix(cli *client.Client, prefix string) ([]image.Summary, error) {
+	ctx := context.Background()
+	images, err := cli.ImageList(ctx, image.ListOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list images: %w", err)
+	}
+
+	var filtered []image.Summary
+	for _, img := range images {
+		for _, tag := range img.RepoTags {
+			if strings.HasPrefix(tag, prefix) {
+				filtered = append(filtered, img)
+				break
+			}
+		}
+	}
+	return filtered, nil
+}
+
+func RemoveDockerImage(cli *client.Client, ref string) error {
+	ctx := context.Background()
+	_, err := cli.ImageRemove(ctx, ref, image.RemoveOptions{Force: true, PruneChildren: true})
+	if err != nil {
+		return fmt.Errorf("failed to remove image %s: %w", ref, err)
+	}
+	return nil
 }
