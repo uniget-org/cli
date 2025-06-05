@@ -159,14 +159,6 @@ func uninstallTool(toolName string) error {
 				logging.Debugf("Removed empty directory %s", viper.GetString("prefix")+"/"+cacheDirectory+"/"+tool.Name)
 			}
 		}
-
-		err = os.Remove(viper.GetString("prefix") + "/" + cacheDirectory + "/" + tool.Name)
-		if err != nil {
-			if uninstallSpinner != nil {
-				uninstallSpinner.Fail()
-			}
-			return fmt.Errorf("unable to remove %s: %s", viper.GetString("prefix")+"/"+cacheDirectory+"/"+tool.Name, err)
-		}
 	}
 
 	if fileExists(viper.GetString("prefix") + "/" + libDirectory + "/manifests/" + tool.Name + ".json") {
