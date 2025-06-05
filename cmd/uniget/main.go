@@ -34,7 +34,6 @@ var (
 
 	cacheRoot              = "var/cache"
 	cacheDirectory         = cacheRoot + "/" + projectName
-	downloadCacheDirectory = cacheDirectory + "/downloads"
 	libRoot                = "var/lib"
 	libDirectory           = libRoot + "/" + projectName
 	configRoot             = "etc"
@@ -42,6 +41,7 @@ var (
 	metadataImageTag       = "main"
 	metadataFileName       = "metadata.json"
 	metadataFile           = cacheDirectory + "/" + metadataFileName
+	fileCacheDirectoryName = "downloads"
 	registry               = "ghcr.io"
 	githubOrganization     = "uniget-org"
 	projectRepository      = githubOrganization + "/cli"
@@ -96,6 +96,7 @@ var (
 				libDirectory = libRoot + "/" + projectName
 				profileDDirectory = configRoot + "/profile.d"
 				metadataFile = cacheDirectory + "/" + metadataFileName
+				viper.Set("cachedirectory", cacheDirectory+"/"+fileCacheDirectoryName)
 
 			} else {
 				viper.Set("prefix", os.Getenv("HOME"))
@@ -126,6 +127,7 @@ var (
 				profileDDirectory = configRoot + "/profile.d"
 
 				metadataFile = cacheDirectory + "/" + metadataFileName
+				viper.Set("cachedirectory", cacheDirectory+"/"+fileCacheDirectoryName)
 			}
 
 			if strings.HasPrefix(viper.GetString("target"), "/") {
@@ -269,7 +271,9 @@ var (
 
 			case "file":
 				logging.Debug("Using file cache")
-				toolCache = cache.NewFileCache(downloadCacheDirectory, viper.GetInt("cacheretention"))
+				fileCacheDir := viper.GetString("prefix") + "/" + viper.GetString("cachedirectory")
+				assertDirectory(fileCacheDir)
+				toolCache = cache.NewFileCache(fileCacheDir, viper.GetInt("cacheretention"))
 
 			case "docker":
 				if containers.DockerIsAvailable() {
@@ -296,7 +300,7 @@ var (
 				}
 
 			default:
-				logging.Error.Printfln("Unsupported cache backend: %s", viper.GetString("cache"))
+				return fmt.Errorf("unsupported cache backend: %s", viper.GetString("cache"))
 			}
 
 			return nil
@@ -420,6 +424,7 @@ func init() {
 		os.Exit(1)
 	}
 
+	initCacheCmd()
 	initCronCmd()
 	initDebugCmd()
 	initDescribeCmd()
@@ -475,7 +480,7 @@ func main() {
 	viper.SetDefault("repository", imageRepository)
 	viper.SetDefault("toolseparator", toolSeparator)
 	viper.SetDefault("cache", "none")
-	viper.SetDefault("cachedirectory", downloadCacheDirectory)
+	viper.SetDefault("cachedirectory", cacheDirectory+"/"+fileCacheDirectoryName)
 	viper.SetDefault("cacheretention", 24*time.Hour)
 
 	pf := rootCmd.PersistentFlags()
