@@ -6,15 +6,14 @@ import (
 )
 
 func IsDirectoryEmpty(name string) bool {
+	//gosec:disable G304 -- This is a false positive
 	f, err := os.Open(name)
 	if err != nil {
 		return false
 	}
+	//nolint:errcheck
 	defer f.Close()
 
 	_, err = f.Readdirnames(1)
-	if err == io.EOF {
-		return true
-	}
-	return false
+	return err == io.EOF
 }
