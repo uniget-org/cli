@@ -144,6 +144,7 @@ curl --silent --show-error --location --fail \
 EOF
 
 FROM registry.gitlab.com/uniget-org/images/ubuntu:24.04 AS noble-uniget
+ARG version
 COPY --from=uniget-release /usr/local/bin/uniget /usr/local/bin/uniget
 LABEL \
     org.opencontainers.image.source="https://github.com/uniget-org/cli" \
@@ -151,7 +152,8 @@ LABEL \
     org.opencontainers.image.description="The universal installer and updater for (container) tools" \
     org.opencontainers.image.version="${version}"
 
-FROM registry.gitlab.com/uniget-org/images/systemd:ubuntu24.04 AS systemd-uniget
+FROM registry.gitlab.com/uniget-org/images/systemd:24.04 AS systemd-uniget
+ARG version
 COPY --from=uniget-release /usr/local/bin/uniget /usr/local/bin/uniget
 LABEL \
     org.opencontainers.image.source="https://github.com/uniget-org/cli" \
