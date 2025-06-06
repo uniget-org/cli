@@ -151,7 +151,7 @@ LABEL \
     org.opencontainers.image.description="The universal installer and updater for (container) tools" \
     org.opencontainers.image.version="${version}"
 
-FROM registry.gitlab.com/uniget-org/images/systemd:ubuntu24.04@sha256:ef7de14dfda71529a6ae8b4b97626d34105df405eb10df656abf0f81802ea314 AS systemd-uniget
+FROM registry.gitlab.com/uniget-org/images/systemd:ubuntu24.04 AS systemd-uniget
 COPY --from=uniget-release /usr/local/bin/uniget /usr/local/bin/uniget
 LABEL \
     org.opencontainers.image.source="https://github.com/uniget-org/cli" \
