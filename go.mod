@@ -2,7 +2,7 @@ module github.com/uniget-org/cli
 
 go 1.23.7
 
-toolchain go1.24.3
+toolchain go1.24.4
 
 require (
 	github.com/charmbracelet/glamour v0.10.0
