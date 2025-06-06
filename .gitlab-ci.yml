@@ -107,6 +107,8 @@ prepare:
     version="$( git describe --tags --abbrev=0 | tr -d v )"
     TAG="${version}"
 
+    echo "Found version: ${version}"
+
     echo "version=${version}" >>build.env
     echo "TAG=${TAG}" >>build.env
   artifacts:
