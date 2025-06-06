@@ -28,6 +28,9 @@
   - docker:28.2.2-dind@sha256:d4668861cabc1691635d98e827a81cfa834a416f8fe0f4efc609f9f806d86d82
   script:
   - |
+    apk add --update-cache \
+        jq
+  - |
     SOURCE_DATE_EPOCH="$( git log -1 --pretty=%ct "${BUILD_CONTEXT}/Dockerfile" )"
     export SOURCE_DATE_EPOCH
   - |
