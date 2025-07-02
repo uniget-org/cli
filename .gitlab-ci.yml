@@ -101,6 +101,14 @@
     variables:
       PUSH: "true"
 
+build-binary:
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_TAG
+  extends:
+  - .docker
+  script: |
+    git describe --tags --abbrev=0
+
 prepare:
   extends:
   - .build-rules
