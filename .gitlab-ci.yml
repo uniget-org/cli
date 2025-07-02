@@ -1,5 +1,5 @@
 .docker:
-  image: docker:28.3.0@sha256:c621e5090b92e66b7f2a668e80f4375c30f797fe60fdc16fdde3471c37acd0d7
+  image: docker:28.3.0@sha256:56e360024d7d35dac801b8fc87f869ccf5c89b88399dd266f7cfc1169690a86b
 
 .regctl:
   image: regclient/regctl:v0.9.0-alpine@sha256:9e5b4ad04dd7ee9b37b360289231eb4ebadfe3a72f3ddaa1cd6a585efb6d1e4c
