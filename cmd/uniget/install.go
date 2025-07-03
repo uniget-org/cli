@@ -44,7 +44,10 @@ func initInstallCmd() {
 	installCmd.Flags().StringToStringVar(&pathToTarMappings, "path-to-tar-mappings", nil, "Map paths in tar file to target paths (for debugging purposes)")
 	installCmd.MarkFlagsMutuallyExclusive("default", "tags", "installed", "all", "file")
 	installCmd.MarkFlagsMutuallyExclusive("check", "plan")
-	installCmd.Flags().MarkHidden("path-to-tar-mappings")
+	err := installCmd.Flags().MarkHidden("path-to-tar-mappings")
+	if err != nil {
+		logging.Error.Printfln("Unable to mark path-to-tar-mappings flag as hidden: %s", err)
+	}
 
 	rootCmd.AddCommand(installCmd)
 }
@@ -363,7 +366,7 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 			if _, err := os.Stat(pathToTar); os.IsNotExist(err) {
 				return fmt.Errorf("tar file %s does not exist", pathToTar)
 			}
-			layer, err = os.ReadFile(pathToTar)
+			layer, err = os.ReadFile(pathToTar) // #nosec G304 -- Location supplied by user
 			if err != nil {
 				return fmt.Errorf("unable to read tar file %s: %s", pathToTar, err)
 			}
