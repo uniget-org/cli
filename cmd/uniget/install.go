@@ -28,6 +28,7 @@ var skipConflicts bool
 var check bool
 var plan bool
 var reinstall bool
+var pathToTarMappings map[string]string
 
 func initInstallCmd() {
 	installCmd.Flags().BoolVar(&defaultMode, "default", false, "Install default tools")
@@ -40,8 +41,10 @@ func initInstallCmd() {
 	installCmd.Flags().BoolVar(&skipConflicts, "skip-conflicts", false, "Skip conflicting tools")
 	installCmd.Flags().BoolVar(&check, "check", false, "Abort after checking versions")
 	installCmd.Flags().BoolVarP(&reinstall, "reinstall", "r", false, "Reinstall tool(s)")
+	installCmd.Flags().StringToStringVar(&pathToTarMappings, "path-to-tar-mappings", nil, "Map paths in tar file to target paths (for debugging purposes)")
 	installCmd.MarkFlagsMutuallyExclusive("default", "tags", "installed", "all", "file")
 	installCmd.MarkFlagsMutuallyExclusive("check", "plan")
+	installCmd.Flags().MarkHidden("path-to-tar-mappings")
 
 	rootCmd.AddCommand(installCmd)
 }
@@ -266,6 +269,11 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 		return nil
 	}
 
+	// Flag path-to-tar can only be used when installing a single tool
+	if len(pathToTarMappings) > 0 {
+		logging.Debugf("Using path-to-tar-mappings for installation: %+v", pathToTarMappings)
+	}
+
 	// Install
 	assertWritableTarget()
 	assertLibDirectory()
@@ -346,17 +354,33 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 		}
 
 		assertDirectory(viper.GetString("prefix") + "/" + viper.GetString("target"))
-		registries, repositories := plannedTool.GetSourcesWithFallback(registry, imageRepository)
-		ref, err := containers.FindToolRef(registries, repositories, plannedTool.Name, "main")
-		if err != nil {
-			return fmt.Errorf("error finding tool %s:%s: %s", plannedTool.Name, plannedTool.Version, err)
+		var err error
+		var pathToTar string
+		var layer []byte
+		pathToTar, ok := pathToTarMappings[plannedTool.Name]
+		if ok {
+			logging.Debugf("Using tar file mappings for installation")
+			if _, err := os.Stat(pathToTar); os.IsNotExist(err) {
+				return fmt.Errorf("tar file %s does not exist", pathToTar)
+			}
+			layer, err = os.ReadFile(pathToTar)
+			if err != nil {
+				return fmt.Errorf("unable to read tar file %s: %s", pathToTar, err)
+			}
+
+		} else {
+			logging.Debugf("Using default behaviour for installation")
+			registries, repositories := plannedTool.GetSourcesWithFallback(registry, imageRepository)
+			ref, err := containers.FindToolRef(registries, repositories, plannedTool.Name, "main")
+			if err != nil {
+				return fmt.Errorf("error finding tool %s:%s: %s", plannedTool.Name, plannedTool.Version, err)
+			}
+			logging.Debugf("Getting image %s", ref)
+			layer, err = toolCache.Get(ref)
+			if err != nil {
+				return fmt.Errorf("unable to get image: %s", err)
+			}
 		}
-		logging.Debugf("Getting image %s", ref)
-		layer, err := toolCache.Get(ref)
-		if err != nil {
-			return fmt.Errorf("unable to get image: %s", err)
-		}
-		logging.Debug("Using path rewrite rules")
 
 		// Change working directory to prefix
 		// so that unpacking can ignore the target directory
