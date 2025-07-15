@@ -45,10 +45,10 @@ var updateCmd = &cobra.Command{
 				oldTool, _ := oldTools.GetByName(tool.Name)
 
 				if oldTool == nil {
-					logging.Info.Printfln("New %s v%s", tool.Name, tool.Version)
+					logging.Info.Printfln("New %s %s", tool.Name, tool.Version)
 
 				} else if tool.Version != oldTool.Version {
-					logging.Info.Printfln("Update %s %s -> %s", tool.Name, oldTool.Version, tool.Version)
+					logging.Info.Printfln("Update %s to %s", tool.Name, tool.Version)
 				}
 			}
 		}
