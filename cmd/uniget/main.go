@@ -44,9 +44,8 @@ var (
 	metadataFile           = cacheDirectory + "/" + metadataFileName
 	fileCacheDirectoryName = "downloads"
 	registry               = "ghcr.io"
-	githubOrganization     = "uniget-org"
-	projectRepository      = githubOrganization + "/cli"
-	imageRepository        = githubOrganization + "/tools"
+	organization           = "uniget-org"
+	imageRepository        = organization + "/tools"
 	toolSeparator          = "/"
 	registryImagePrefix    = registry + "/" + imageRepository + toolSeparator
 	tools                  = tool.Tools{
