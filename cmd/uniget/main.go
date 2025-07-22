@@ -505,6 +505,27 @@ func main() {
 
 	rootCmd.MarkFlagsMutuallyExclusive("prefix", "user")
 	rootCmd.MarkFlagsMutuallyExclusive("target", "user")
+
+	err = rootCmd.Flags().MarkHidden("tool-separator")
+	if err != nil {
+		logging.Error.Printfln("Unable to mark tool-separator as hidden: %s", err)
+		os.Exit(1)
+	}
+	err = rootCmd.Flags().MarkHidden("integrate-profiled")
+	if err != nil {
+		logging.Error.Printfln("Unable to mark integrate-profiled as hidden: %s", err)
+		os.Exit(1)
+	}
+	err = rootCmd.Flags().MarkHidden("integrate-etc")
+	if err != nil {
+		logging.Error.Printfln("Unable to mark integrate-etc as hidden: %s", err)
+		os.Exit(1)
+	}
+	err = rootCmd.Flags().MarkHidden("integrate-all")
+	if err != nil {
+		logging.Error.Printfln("Unable to mark integrate-all as hidden: %s", err)
+		os.Exit(1)
+	}
 	err = rootCmd.Flags().MarkHidden("metadata-image-tag")
 	if err != nil {
 		logging.Error.Printfln("Unable to mark metadata-image-tag as hidden: %s", err)
