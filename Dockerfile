@@ -2,7 +2,7 @@
 
 FROM ghcr.io/uniget-org/tools/goreleaser:2.11.0@sha256:6f55ee9ea8d59149eade7dcea48bd62a6ea2b416e67ef047a7ec4cae8447f8de AS uniget-goreleaser
 FROM ghcr.io/uniget-org/tools/cosign:2.5.3@sha256:0dac9f5ab733ce3daad6a6abcfa064e2347ef7c36a464859d92f0203a52948d6 AS uniget-cosign
-FROM ghcr.io/uniget-org/tools/syft:1.28.0@sha256:6dee390d5ab3cd8627ae395044f73af10ef281168167943325a1677174ad5e58 AS uniget-syft
+FROM ghcr.io/uniget-org/tools/syft:1.29.0@sha256:5d2c62fd6fa7772f6510a4af84c9a85817fdab6d5022af10e7fe10256efb7b8d AS uniget-syft
 FROM ghcr.io/uniget-org/tools/gh:2.76.0@sha256:9176b49d4718c55be83e0df1f23aed3233b5141b9e12e63e44ffd6953bb73548 AS uniget-gh
 FROM ghcr.io/uniget-org/tools/glab:1.63.0@sha256:02fcd7420c8bb39ed4d7c1ad30e1283cf0e1036c42effcad65f11c38b99951cc AS uniget-glab
 FROM ghcr.io/uniget-org/tools/gosec:2.22.7@sha256:a68a95ee2a481defe64ce40094f0f85d812b955bf57f5b96e988e5ef064f1204 AS uniget-gosec
