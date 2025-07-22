@@ -73,9 +73,9 @@ jobs:
       run: |
         echo "Creating release for tag ${GITHUB_REF_NAME}"
         docker buildx build \
-            --target publish \
-            --build-arg GITHUB_TOKEN \
-            --build-arg ACTIONS_ID_TOKEN_REQUEST_URL \
-            --build-arg ACTIONS_ID_TOKEN_REQUEST_TOKEN \
-            --build-arg GITHUB_REF_NAME \
+            --target=publish-github \
+            --build-arg=GITHUB_TOKEN \
+            --build-arg=ACTIONS_ID_TOKEN_REQUEST_URL \
+            --build-arg=ACTIONS_ID_TOKEN_REQUEST_TOKEN \
+            --build-arg=GITHUB_REF_NAME \
             .

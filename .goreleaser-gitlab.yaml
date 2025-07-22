@@ -1,0 +1,78 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+version: 2
+
+project_name: uniget
+
+builds:
+- id: default
+  main: ./cmd/uniget
+  binary: uniget
+  env:
+  - CGO_ENABLED=0
+  ldflags:
+  - -s -w -X main.version={{.Version}}
+  goos:
+  - linux
+  goarch:
+  - amd64
+  - arm64
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-dev.0"
+
+checksum:
+  name_template: '{{ .ProjectName }}_v{{ .Version }}_checksums.txt'
+
+sboms:
+- id: sbom
+  cmd: syft
+  args:
+  - ${artifact}
+  - --output
+  - cyclonedx-json
+  - --file
+  - $document
+  documents:
+  - ${artifact}.cyclonedx.json
+
+archives:
+- id: uniget
+  formats: tar.gz
+  name_template: >-
+    {{ .ProjectName }}_
+    {{- title .Os }}_
+    {{- if eq .Arch "amd64" }}x86_64
+    {{- else if eq .Arch "arm64" }}aarch64
+    {{- else }}{{ .Arch }}{{ end }}
+  files:
+  - LICENSE
+
+signs:
+- id: cosign
+  cmd: cosign
+  signature: "${artifact}.sig"
+  certificate: "${artifact}.pem"
+  env:
+  - COSIGN_EXPERIMENTAL=1
+  args:
+  - sign-blob
+  - ${artifact}
+  - --output-certificate=${certificate}
+  - --output-signature=${signature}
+  - --yes
+  artifacts: all
+
+changelog:
+  disable: true
+
+release:
+  github:
+    owner: uniget-org
+    name: cli
+  ids:
+  - uniget
+  - sbom
+  - cosign
+  name_template: "{{ .Version }}"
+  mode: replace
+  prerelease: auto
