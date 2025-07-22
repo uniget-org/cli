@@ -27,7 +27,8 @@ var (
 
 	//go:embed logo.txt
 	header string
-	slogan string = "The universal installer and updater for (container) tools"
+	slogan string = "The universal installer and updater for (container) tools" + "\n" +
+		"                                       https://uniget.dev"
 
 	altArch string = runtime.GOARCH
 	arch    string
