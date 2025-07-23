@@ -151,6 +151,7 @@ test-release-notes:
   variables:
     GIT_DEPTH: 0
     UNIGET_USER: "1"
+    UNIGET_PREFIX: helper
   script: |
     curl -sLf https://github.com/uniget-org/cli/releases/latest/download/uniget_Linux_$(uname -m).tar.gz \
     | tar -xz uniget
@@ -158,6 +159,7 @@ test-release-notes:
     ./uniget install \
         glab \
         jq
+    export PATH="$PATH:$(pwd)/helper/bin"
     bash scripts/release-notes-gitlab.sh
 
 prepare:
