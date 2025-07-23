@@ -72,12 +72,13 @@ RUN --mount=target=.,readwrite \
     --mount=from=uniget-cosign,src=/bin/cosign,target=/usr/local/bin/cosign \
     --mount=from=uniget-syft,src=/bin/syft,target=/usr/local/bin/syft \
     --mount=from=uniget-glab,src=/bin/glab,target=/usr/local/bin/glab \
+    --mount=from=uniget-jq,src=/bin/jq,target=/usr/local/bin/jq \
     --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build <<EOF
 glab auth login --hostname="${CI_SERVER_HOST}" --job-token="${CI_JOB_TOKEN}"
-bash scripts/release-notes-gitlab.sh >release-notes.md
+bash scripts/release-notes-gitlab.sh >/tmp/release-notes.md
 goreleaser healthcheck --config=.goreleaser-gitlab.yaml
-goreleaser release --config=.goreleaser-gitlab.yaml --release-notes=release-notes.md
+goreleaser release --config=.goreleaser-gitlab.yaml --release-notes=/tmp/release-notes.md
 EOF
 
 FROM base AS unit-test
