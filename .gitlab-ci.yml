@@ -143,22 +143,11 @@ release:
   script: |
     docker buildx build \
         --target=publish-gitlab \
+        --build-arg=CI_SERVER_HOST \
+        --build-arg=CI_JOB_TOKEN \
         --build-arg=GITLAB_TOKEN \
         --build-arg=SIGSTORE_ID_TOKEN \
         .
-
-test-release-notes:
-  variables:
-    GIT_DEPTH: 0
-  script: |
-    curl -sLf https://github.com/uniget-org/cli/releases/latest/download/uniget_Linux_$(uname -m).tar.gz \
-    | tar -xz uniget
-    ./uniget update
-    ./uniget install \
-        glab \
-        jq
-    glab auth login --hostname="${CI_SERVER_HOST}" --job-token="${CI_JOB_TOKEN}"
-    bash scripts/release-notes-gitlab.sh
 
 prepare:
   extends:

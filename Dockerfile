@@ -60,6 +60,8 @@ gh release edit "${GITHUB_REF_NAME}" --notes-file release-notes.md
 EOF
 
 FROM base AS publish-gitlab
+ARG CI_SERVER_HOST
+ARG CI_JOB_TOKEN
 ARG GITLAB_TOKEN
 ARG SIGSTORE_ID_TOKEN
 WORKDIR /go/src/github.com/uniget-org/cli
@@ -70,8 +72,9 @@ RUN --mount=target=.,readwrite \
     --mount=from=uniget-glab,src=/bin/glab,target=/usr/local/bin/glab \
     --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build <<EOF
+glab auth login --hostname="${CI_SERVER_HOST}" --job-token="${CI_JOB_TOKEN}"
 goreleaser healthcheck --config=.goreleaser-gitlab.yaml
-goreleaser release --config=.goreleaser-gitlab.yaml #--release-notes <(bash scripts/release-notes-gitlab.sh)
+goreleaser release --config=.goreleaser-gitlab.yaml --release-notes <(bash scripts/release-notes-gitlab.sh)
 EOF
 
 FROM base AS unit-test
