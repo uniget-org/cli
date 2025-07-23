@@ -204,6 +204,7 @@ build:index:
 clean:intermediate_tags:
   needs:
   - prepare
+  - build:image
   - build:index
   parallel:
     matrix:
