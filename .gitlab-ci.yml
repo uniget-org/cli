@@ -157,6 +157,7 @@ test-release-notes:
     ./uniget install \
         glab \
         jq
+    glab auth status
     bash scripts/release-notes-gitlab.sh
 
 prepare:
