@@ -219,13 +219,13 @@ clean:intermediate_tags:
   - |
     echo "### Removing intermediate tags for ${CI_REGISTRY_IMAGE}:${TAG}"
   - |
-    DIGEST_AMD64="$( cat image-digest-${TAG}${TAG_SUFFIX}-amd64.json )"
-    DIGEST_ARM64="$( cat image-digest-${TAG}${TAG_SUFFIX}-arm64.json )"
+    DIGEST_AMD64="$( cat image-digest-${TAG}-${TAG_SUFFIX}-amd64.json )"
+    DIGEST_ARM64="$( cat image-digest-${TAG}-${TAG_SUFFIX}-arm64.json )"
     echo "    Digest amd64: ${DIGEST_AMD64}"
     echo "    Digest arm64: ${DIGEST_ARM64}"
   - |
-    regctl manifest delete "${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-amd64@${DIGEST_AMD64}"
-    regctl manifest delete "${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-arm64@${DIGEST_ARM64}"
+    regctl manifest delete "${CI_REGISTRY_IMAGE}:${TAG}-${TAG_SUFFIX}-amd64@${DIGEST_AMD64}"
+    regctl manifest delete "${CI_REGISTRY_IMAGE}:${TAG}-${TAG_SUFFIX}-arm64@${DIGEST_ARM64}"
 
 update:default_tag:
   needs:
