@@ -157,6 +157,7 @@ test-release-notes:
     ./uniget install \
         glab \
         jq
+    glab auth login --hostname="${CI_SERVER_HOST}" --job-token="${CI_JOB_TOKEN}"
     glab auth status
     bash scripts/release-notes-gitlab.sh
 
