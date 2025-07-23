@@ -5,6 +5,7 @@ FROM ghcr.io/uniget-org/tools/cosign:2.5.3@sha256:0dac9f5ab733ce3daad6a6abcfa064
 FROM ghcr.io/uniget-org/tools/syft:1.29.0@sha256:5d2c62fd6fa7772f6510a4af84c9a85817fdab6d5022af10e7fe10256efb7b8d AS uniget-syft
 FROM ghcr.io/uniget-org/tools/gh:2.76.0@sha256:9176b49d4718c55be83e0df1f23aed3233b5141b9e12e63e44ffd6953bb73548 AS uniget-gh
 FROM ghcr.io/uniget-org/tools/glab:1.64.0@sha256:867c0a84c0cc0936ce7878129960e8687918b6090d25818647f6aad0ca5ff94a AS uniget-glab
+FROM ghcr.io/uniget-org/tools/jq:1.8.1@sha256:79febf71d7a0b349a4a05653af6ecb76a0472d62b8d6e1e643af9dc060c7aad8 AS uniget-jq
 FROM ghcr.io/uniget-org/tools/gosec:2.22.7@sha256:a68a95ee2a481defe64ce40094f0f85d812b955bf57f5b96e988e5ef064f1204 AS uniget-gosec
 FROM ghcr.io/uniget-org/tools/golangci-lint:2.3.0@sha256:9f0993207d6a50837ba29ca11c2324b713d36fe5cc02aafa58e7c1abf385bc6d AS lint-base
 FROM golang:1.24.5@sha256:267159cb984d1d034fce6e9db8641bf347f80e5f2e913561ea98c40d5051cb67 AS latest-golang
@@ -50,6 +51,7 @@ RUN --mount=target=.,readwrite \
     --mount=from=uniget-cosign,src=/bin/cosign,target=/usr/local/bin/cosign \
     --mount=from=uniget-syft,src=/bin/syft,target=/usr/local/bin/syft \
     --mount=from=uniget-gh,src=/bin/gh,target=/usr/local/bin/gh \
+    --mount=from=uniget-jq,src=/bin/jq,target=/usr/local/bin/jq \
     --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build <<EOF
 goreleaser healthcheck
