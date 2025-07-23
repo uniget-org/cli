@@ -80,6 +80,7 @@ glab auth login --hostname="${CI_SERVER_HOST}" --job-token="${CI_JOB_TOKEN}"
 bash scripts/release-notes-gitlab.sh >/tmp/release-notes.md
 goreleaser healthcheck --config=.goreleaser-gitlab.yaml
 goreleaser release --config=.goreleaser-gitlab.yaml --release-notes=/tmp/release-notes.md
+cp /tmp/release-notes.md .
 EOF
 
 FROM base AS unit-test

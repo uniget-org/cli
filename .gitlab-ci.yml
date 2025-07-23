@@ -148,6 +148,9 @@ release:
         --build-arg=GITLAB_TOKEN \
         --build-arg=SIGSTORE_ID_TOKEN \
         .
+  artifacts:
+    paths:
+    - release-notes.md
 
 prepare:
   needs:
