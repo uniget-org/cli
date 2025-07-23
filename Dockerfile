@@ -73,8 +73,9 @@ RUN --mount=target=.,readwrite \
     --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build <<EOF
 glab auth login --hostname="${CI_SERVER_HOST}" --job-token="${CI_JOB_TOKEN}"
+bash scripts/release-notes-gitlab.sh >release-notes.md
 goreleaser healthcheck --config=.goreleaser-gitlab.yaml
-goreleaser release --config=.goreleaser-gitlab.yaml --release-notes <(bash scripts/release-notes-gitlab.sh)
+goreleaser release --config=.goreleaser-gitlab.yaml --release-notes=release-notes.md
 EOF
 
 FROM base AS unit-test
