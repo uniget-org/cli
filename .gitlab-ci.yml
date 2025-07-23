@@ -147,6 +147,14 @@ release:
         --build-arg=SIGSTORE_ID_TOKEN \
         .
 
+test-release-notes:
+  rules:
+  - if: $CI_COMMIT_TAG =~ /^v/
+  variables:
+    GIT_DEPTH: 0
+  script: |
+    bash scripts/release-notes-gitlab.sh
+
 prepare:
   extends:
   - .build:rules

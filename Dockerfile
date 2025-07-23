@@ -71,7 +71,7 @@ RUN --mount=target=.,readwrite \
     --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build <<EOF
 goreleaser healthcheck --config=.goreleaser-gitlab.yaml
-goreleaser release --config=.goreleaser-gitlab.yaml --release-notes <(bash scripts/release-notes-gitlab.sh)
+goreleaser release --config=.goreleaser-gitlab.yaml #--release-notes <(bash scripts/release-notes-gitlab.sh)
 EOF
 
 FROM base AS unit-test
