@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/google/safearchive/tar"
+	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -40,9 +41,14 @@ var updateCmd = &cobra.Command{
 			return fmt.Errorf("error loading metadata: %s", err)
 		}
 
+		newUnigetVersion := ""
 		if !quiet && len(oldTools.Tools) > 0 {
 			for _, tool := range tools.Tools {
 				oldTool, _ := oldTools.GetByName(tool.Name)
+
+				if tool.Name == "uniget" && tool.Version != version {
+					newUnigetVersion = tool.Version
+				}
 
 				if oldTool == nil {
 					logging.Info.Printfln("New %s %s", tool.Name, tool.Version)
@@ -51,6 +57,14 @@ var updateCmd = &cobra.Command{
 					logging.Info.Printfln("Update %s to %s", tool.Name, tool.Version)
 				}
 			}
+		}
+
+		if len(newUnigetVersion) > 0 {
+			prefix := pterm.NewStyle(pterm.FgBlack, pterm.BgYellow)
+			suffix := pterm.NewStyle(pterm.FgWhite)
+			prefix.Println()
+			prefix.Print(" NEWS ")
+			suffix.Printfln(" Update to uniget %s by running 'uniget self-upgrade'", newUnigetVersion)
 		}
 
 		return nil
