@@ -23,7 +23,7 @@ fi
 echo "Creating release notes for ${PREVIOUS_TAG} -> ${TAG}" >&2
 
 TIMESTAMP="$(
-    glab api "projects/:id/releases/${PREVIOUS_TAG}" | jq -r .released_at
+    git log --tags --simplify-by-decoration --pretty="format:%cI %D" | grep "v0.23.0$" | cut -d' ' -f1
 )";
 echo "Found timestamp: ${TIMESTAMP}" >&2
 
