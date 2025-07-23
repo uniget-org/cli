@@ -1,5 +1,5 @@
 .docker:
-  image: docker:28.3.2@sha256:5415fccf3da3aed821efb2258cb7dcf52fb9bb0627b02d45338e887c352c4bce
+  image: docker:28.3.2@sha256:569bb59d63caccc51537695be44a905d22f5252525d0a84f7f2eab39ba81ed21
 
 .docker:dind:
   services:
