@@ -145,7 +145,7 @@ release:
         --target=publish-gitlab \
         --build-arg=CI_SERVER_HOST \
         --build-arg=CI_JOB_TOKEN \
-        --build-arg=GITLAB_TOKEN \
+        --build-arg=GITLAB_TOKEN="${CI_JOB_TOKEN}" \
         --build-arg=SIGSTORE_ID_TOKEN \
         .
 
