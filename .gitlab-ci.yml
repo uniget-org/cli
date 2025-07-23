@@ -148,11 +148,16 @@ release:
         .
 
 test-release-notes:
-  rules:
-  - if: $CI_COMMIT_TAG =~ /^v/
   variables:
     GIT_DEPTH: 0
+    UNIGET_USER: "1"
   script: |
+    curl -sLf https://github.com/uniget-org/cli/releases/latest/download/uniget_Linux_$(uname -m).tar.gz \
+    | tar -xz uniget
+    ./uniget update
+    ./uniget install \
+        glab \
+        jq
     bash scripts/release-notes-gitlab.sh
 
 prepare:
