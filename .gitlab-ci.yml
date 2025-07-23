@@ -201,7 +201,7 @@ build:index:
   - .build:rules
   - .build:multi_arch_index
 
-clean:intermediate_tags:
+.clean:intermediate_tags:
   needs:
   - prepare
   - build:image
