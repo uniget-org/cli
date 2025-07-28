@@ -23,7 +23,7 @@ fi
 echo "Creating release notes for ${PREVIOUS_TAG} -> ${TAG}" >&2
 
 TIMESTAMP="$(
-    git log --tags --simplify-by-decoration --pretty="format:%cI %D" | grep "v0.23.0$" | cut -d' ' -f1
+    git log --tags --simplify-by-decoration --pretty="format:%cI %D" | grep "${PREVIOUS_TAG}$" | cut -d' ' -
 )";
 echo "Found timestamp: ${TIMESTAMP}" >&2
 

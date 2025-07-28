@@ -23,7 +23,7 @@ fi
 echo "Creating release notes for ${PREVIOUS_TAG} -> ${TAG}" >&2
 
 TIMESTAMP="$(
-    gh release view "${PREVIOUS_TAG}" --json=publishedAt --template='{{.publishedAt}}'
+    git log --tags --simplify-by-decoration --pretty="format:%cI %D" | grep "${PREVIOUS_TAG}$" | cut -d' ' -
 )";
 echo "Found timestamp: ${TIMESTAMP}" >&2
 
