@@ -3,7 +3,7 @@
 
 .docker:dind:
   services:
-  - docker:28.3.3-dind@sha256:852ddc126f12563e1a4460bf2ae5cf71b07500bedaf235e62dcf77a41adb0e57
+  - docker:28.3.3-dind@sha256:c0872aae4791ff427e6eda52769afa04f17b5cf756f8267e0d52774c99d5c9de
 
 .regctl:
   image: regclient/regctl:v0.9.0-alpine@sha256:9e5b4ad04dd7ee9b37b360289231eb4ebadfe3a72f3ddaa1cd6a585efb6d1e4c
