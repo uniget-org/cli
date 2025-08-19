@@ -38,5 +38,12 @@
       "datasourceTemplate":   "docker",
       "depNameTemplate":      "docker/dockerfile"
     }
+  ],
+  "packageRules": [
+    {
+      "matchManagers": ["gomod"],
+      "matchDepTypes": ["indirect"],
+      "enabled": true
+    }
   ]
 }
