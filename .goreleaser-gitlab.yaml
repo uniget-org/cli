@@ -4,9 +4,21 @@ version: 2
 project_name: uniget
 
 builds:
-- id: default
+- id: uniget
   main: ./cmd/uniget
   binary: uniget
+  env:
+  - CGO_ENABLED=0
+  ldflags:
+  - -s -w -X main.version={{.Version}}
+  goos:
+  - linux
+  goarch:
+  - amd64
+  - arm64
+- id: bump-dockerfile
+  main: ./cmd/bump-dockerfile
+  binary: bump-dockerfile
   env:
   - CGO_ENABLED=0
   ldflags:
@@ -71,6 +83,7 @@ release:
     name: cli
   ids:
   - uniget
+  - bump-dockerfile
   - sbom
   - cosign
   name_template: "{{ .Version }}"
