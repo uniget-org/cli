@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -65,19 +66,19 @@ var inspectCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("error finding tool %s:%s: %s", inspectTool.Name, inspectTool.Version, err)
 		}
-		layer, err := toolCache.Get(toolRef)
-		if err != nil {
-			return fmt.Errorf("unable to get image: %s", err)
-		}
-		//nolint:errcheck
-		defer layer.Close()
 		effectivePathRewriteRules := pathRewriteRules
 		if rawInspect {
 			effectivePathRewriteRules = []tool.PathRewrite{}
 		}
-		err = inspectTool.Inspect(cmd.OutOrStdout(), layer, effectivePathRewriteRules)
+		err = toolCache.Get(toolRef, func(reader io.ReadCloser) error {
+			err = inspectTool.Inspect(cmd.OutOrStdout(), reader, effectivePathRewriteRules)
+			if err != nil {
+				return fmt.Errorf("unable to inspect %s: %s", inspectTool.Name, err)
+			}
+			return nil
+		})
 		if err != nil {
-			return fmt.Errorf("unable to inspect %s: %s", inspectTool.Name, err)
+			return fmt.Errorf("unable to get image: %s", err)
 		}
 
 		return nil

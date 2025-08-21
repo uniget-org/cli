@@ -25,12 +25,14 @@ func NewDockerCache() (*DockerCache, error) {
 	}, nil
 }
 
-func (c *DockerCache) Get(tool *containers.ToolRef) (io.ReadCloser, error) {
+func (c *DockerCache) Get(tool *containers.ToolRef, callback func(reader io.ReadCloser) error) error {
 	logging.Debugf("DockerCache: Pulling %s", tool)
-	layer, err := containers.GetFirstLayerFromDockerImage(c.cli, tool)
+	err := containers.GetFirstLayerFromDockerImage(c.cli, tool, func(reader io.ReadCloser) error {
+		return callback(reader)
+	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to get layer for ref %s: %w", tool, err)
+		return fmt.Errorf("failed to get layer for ref %s: %w", tool, err)
 	}
 
-	return layer, nil
+	return nil
 }

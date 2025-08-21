@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/google/safearchive/tar"
@@ -85,11 +86,6 @@ func downloadMetadata() error {
 		}
 	}()
 
-	layer, err := containers.GetFirstLayerFromRegistry(context.Background(), rc, t.GetRef())
-	if err != nil {
-		return fmt.Errorf("error getting first layer from registry: %s", err)
-	}
-
 	logging.Debugf("Changing directory to %s", viper.GetString("prefix")+"/"+cacheDirectory)
 	err = os.Chdir(viper.GetString("prefix") + "/" + cacheDirectory)
 	if err != nil {
@@ -97,12 +93,13 @@ func downloadMetadata() error {
 	}
 
 	logging.Debugf("Extracting archive to %s", viper.GetString("prefix")+"/"+cacheDirectory)
-	err = archive.ProcessTarContents(layer, func(reader *tar.Reader, header *tar.Header) error {
-		return archive.CallbackExtractTarItem(reader, header)
+	err = containers.GetFirstLayerFromRegistry(context.Background(), rc, t.GetRef(), func(reader io.ReadCloser) error {
+		return archive.ProcessTarContents(reader, func(reader *tar.Reader, header *tar.Header) error {
+			return archive.CallbackExtractTarItem(reader, header)
+		})
 	})
-
 	if err != nil {
-		return fmt.Errorf("error getting manifest: %s", err)
+		return fmt.Errorf("error getting first layer from registry: %s", err)
 	}
 
 	return nil

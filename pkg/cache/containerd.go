@@ -27,11 +27,13 @@ func NewContainerdCache(namespace string) (*ContainerdCache, error) {
 	}, nil
 }
 
-func (c *ContainerdCache) Get(tool *containers.ToolRef) (io.ReadCloser, error) {
-	layer, err := containers.GetFirstLayerFromContainerdImage(c.client, tool)
+func (c *ContainerdCache) Get(tool *containers.ToolRef, callback func(reader io.ReadCloser) error) error {
+	err := containers.GetFirstLayerFromContainerdImage(c.client, tool, func(reader io.ReadCloser) error {
+		return callback(reader)
+	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to get layer for ref %s: %w", tool, err)
+		return fmt.Errorf("failed to get layer for ref %s: %w", tool, err)
 	}
 
-	return layer, nil
+	return nil
 }

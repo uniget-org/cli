@@ -20,7 +20,7 @@ var (
 	toolRef            = containers.NewToolRef(registryAddress, registryRepository, registryImage, registryTag)
 )
 
-func loadTool(t *testing.T) io.ReadCloser {
+func loadTool(t *testing.T, callback func(reader io.ReadCloser) error) error {
 	ctx := context.Background()
 	r := toolRef.GetRef()
 	rc := containers.GetRegclient()
@@ -30,57 +30,60 @@ func loadTool(t *testing.T) io.ReadCloser {
 			t.Errorf("failed to close ref %s: %v", r, err)
 		}
 	}()
-	registryLayer, err := containers.GetFirstLayerFromRegistry(ctx, rc, r)
+	err := containers.GetFirstLayerFromRegistry(ctx, rc, r, func(reader io.ReadCloser) error {
+		return callback(reader)
+	})
 	if err != nil {
 		t.Errorf("failed to get first layer from registry: %v", err)
 	}
 
-	return registryLayer
+	return nil
 }
 
 func TestProcessTarContents(t *testing.T) {
-	registryLayer := loadTool(t)
-	err := ProcessTarContents(registryLayer, func(tar *tar.Reader, header *tar.Header) error { return nil })
-	if err != nil {
-		t.Errorf("failed to process tar contents: %v", err)
-	}
-}
-
-func TestProcessTarContentsCallback(t *testing.T) {
-	registryLayer := loadTool(t)
-	files := []string{
-		"bin/jq",
-		"share/man/man1/jq.1",
-		"var/lib/uniget/manifests/jq.json",
-		"var/lib/uniget/manifests/jq.txt",
-	}
-	err := ProcessTarContents(registryLayer, func(reader *tar.Reader, header *tar.Header) error {
-		if header.Typeflag != tar.TypeReg {
-			return nil
-		}
-
-		if !slices.Contains(files, header.Name) {
-			t.Errorf("expected %s to be in %v", header.Name, files)
-		}
-
-		return nil
+	err := loadTool(t, func(reader io.ReadCloser) error {
+		return ProcessTarContents(reader, func(tar *tar.Reader, header *tar.Header) error { return nil })
 	})
 	if err != nil {
 		t.Errorf("failed to process tar contents: %v", err)
 	}
 }
 
+func TestProcessTarContentsCallback(t *testing.T) {
+	files := []string{
+		"bin/jq",
+		"share/man/man1/jq.1",
+		"var/lib/uniget/manifests/jq.json",
+		"var/lib/uniget/manifests/jq.txt",
+	}
+	err := loadTool(t, func(reader io.ReadCloser) error {
+		return ProcessTarContents(reader, func(reader *tar.Reader, header *tar.Header) error {
+			if header.Typeflag != tar.TypeReg {
+				return nil
+			}
+
+			if !slices.Contains(files, header.Name) {
+				t.Errorf("expected %s to be in %v", header.Name, files)
+			}
+
+			return nil
+		})
+	})
+	if err != nil {
+		t.Errorf("failed to load tool: %v", err)
+	}
+}
+
 func TestProcessTarContentsDisplay(t *testing.T) {
-	registryLayer := loadTool(t)
-	err := ProcessTarContents(registryLayer, CallbackDisplayTarItem)
+	err := loadTool(t, func(reader io.ReadCloser) error {
+		return ProcessTarContents(reader, CallbackDisplayTarItem)
+	})
 	if err != nil {
 		t.Errorf("failed to process tar contents: %v", err)
 	}
 }
 
 func TestProcessTarContentsExtract(t *testing.T) {
-	registryLayer := loadTool(t)
-
 	tempDir := t.TempDir()
 	curDir, err := os.Getwd()
 	if err != nil {
@@ -95,16 +98,21 @@ func TestProcessTarContentsExtract(t *testing.T) {
 		"bin/jq",
 		"share/man/man1/jq.1",
 	}
-	err = ProcessTarContents(registryLayer, CallbackExtractTarItem)
-	if err != nil {
-		t.Errorf("failed to process tar contents: %v", err)
-	}
-	for _, file := range files {
-		_, err := os.Stat(file)
+
+	err = loadTool(t, func(reader io.ReadCloser) error {
+		err = ProcessTarContents(reader, CallbackExtractTarItem)
 		if err != nil {
-			t.Errorf("expected %s to exist: %v", file, err)
+			t.Errorf("failed to process tar contents: %v", err)
 		}
-	}
+		for _, file := range files {
+			_, err := os.Stat(file)
+			if err != nil {
+				t.Errorf("expected %s to exist: %v", file, err)
+			}
+		}
+
+		return nil
+	})
 
 	err = os.Chdir(curDir)
 	if err != nil {

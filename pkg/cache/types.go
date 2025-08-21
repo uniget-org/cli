@@ -7,5 +7,5 @@ import (
 )
 
 type Cache interface {
-	Get(tool *containers.ToolRef) (io.ReadCloser, error)
+	Get(tool *containers.ToolRef, callback func(reader io.ReadCloser) error) error
 }

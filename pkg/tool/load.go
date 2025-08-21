@@ -66,21 +66,19 @@ func LoadMetadata(registry []string, repository []string, tag string) (*Tools, e
 		}
 	}()
 
-	layer, err := containers.GetFirstLayerFromRegistry(context.Background(), rc, t.GetRef())
-	if err != nil {
-		return nil, fmt.Errorf("error getting first layer from registry: %s", err)
-	}
-
 	var metadataJsonReader io.ReadCloser
-	err = archive.ProcessTarContents(layer, func(reader *tar.Reader, header *tar.Header) error {
-		if header.Typeflag == tar.TypeReg && header.Name == "metadata.json" {
-			metadataJsonReader = io.NopCloser(reader)
-		}
+	err = containers.GetFirstLayerFromRegistry(context.Background(), rc, t.GetRef(), func(reader io.ReadCloser) error {
+		return archive.ProcessTarContents(reader, func(reader *tar.Reader, header *tar.Header) error {
+			if header.Typeflag == tar.TypeReg && header.Name == "metadata.json" {
+				metadataJsonReader = io.NopCloser(reader)
+			}
 
-		return nil
+			return nil
+		})
+
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to extract tar.gz: %s", err)
+		return nil, fmt.Errorf("error getting first layer from registry: %s", err)
 	}
 
 	tools, err := LoadFromReader(metadataJsonReader)

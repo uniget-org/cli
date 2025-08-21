@@ -16,26 +16,29 @@ func TestNewNoneCache(t *testing.T) {
 
 func TestNoneCacheGet(t *testing.T) {
 	c := NewNoneCache()
-	imageReader, err := c.Get(toolRef)
+	err := c.Get(toolRef, func(reader io.ReadCloser) error {
+		image, err := io.ReadAll(reader)
+		if err != nil {
+			t.Errorf("Error reading image: %v", err)
+		}
+		if len(image) == 0 {
+			t.Errorf("Image is empty")
+		}
+
+		h := sha256.New()
+		h.Write(image)
+		bs := h.Sum(nil)
+		if len(bs) == 0 {
+			t.Errorf("Hash is empty")
+		}
+		sha256 := hex.EncodeToString(h.Sum(nil))
+		if sha256 != expectedLayerSha256 {
+			t.Errorf("expected sha256 %s but got %s", expectedLayerSha256, sha256)
+		}
+
+		return nil
+	})
 	if err != nil {
 		t.Errorf("Error getting image: %v", err)
-	}
-	image, err := io.ReadAll(imageReader)
-	if err != nil {
-		t.Errorf("Error reading image: %v", err)
-	}
-	if len(image) == 0 {
-		t.Errorf("Image is empty")
-	}
-
-	h := sha256.New()
-	h.Write(image)
-	bs := h.Sum(nil)
-	if len(bs) == 0 {
-		t.Errorf("Hash is empty")
-	}
-	sha256 := hex.EncodeToString(h.Sum(nil))
-	if sha256 != expectedLayerSha256 {
-		t.Errorf("expected sha256 %s but got %s", expectedLayerSha256, sha256)
 	}
 }

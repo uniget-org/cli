@@ -172,66 +172,68 @@ func GetManifest(ctx context.Context, rc *regclient.RegClient, r ref.Ref) (manif
 	return m, nil
 }
 
-func GetFirstLayerFromManifest(ctx context.Context, rc *regclient.RegClient, m manifest.Manifest) (io.Reader, error) {
-	return GetLayerFromManifestByIndex(ctx, rc, m, 0)
+func GetFirstLayerFromManifest(ctx context.Context, rc *regclient.RegClient, m manifest.Manifest, callback func(reader io.ReadCloser) error) error {
+	return GetLayerFromManifestByIndex(ctx, rc, m, 0, callback)
 }
 
-func GetLayerFromManifestByIndex(ctx context.Context, rc *regclient.RegClient, m manifest.Manifest, index int) (io.ReadCloser, error) {
+func GetLayerFromManifestByIndex(ctx context.Context, rc *regclient.RegClient, m manifest.Manifest, index int, callback func(reader io.ReadCloser) error) error {
 	if m.IsList() {
-		return nil, fmt.Errorf("manifest is a list")
+		return fmt.Errorf("manifest is a list")
 	}
 
 	mi, ok := m.(manifest.Imager)
 	if !ok {
-		return nil, fmt.Errorf("failed to get imager")
+		return fmt.Errorf("failed to get imager")
 	}
 
 	layers, err := mi.GetLayers()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get layers: %s", err)
+		return fmt.Errorf("failed to get layers: %s", err)
 	}
 
 	if len(layers) < index {
-		return nil, fmt.Errorf("image only has %d layers", len(layers))
+		return fmt.Errorf("image only has %d layers", len(layers))
 	}
 
 	layer := layers[index]
 	if layer.MediaType == mediatype.OCI1Layer || layer.MediaType == mediatype.OCI1LayerZstd {
-		return nil, fmt.Errorf("only layers with gzip compression are supported (not %s)", layer.MediaType)
+		return fmt.Errorf("only layers with gzip compression are supported (not %s)", layer.MediaType)
 	}
 	if layer.MediaType == mediatype.OCI1LayerGzip || layer.MediaType == mediatype.Docker2LayerGzip {
 
 		d, err := digest.Parse(string(layer.Digest))
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse digest %s: %s", layer.Digest, err)
+			return fmt.Errorf("failed to parse digest %s: %s", layer.Digest, err)
 		}
 
 		blob, err := rc.BlobGet(context.Background(), m.GetRef(), descriptor.Descriptor{Digest: d})
 		if err != nil {
-			return nil, fmt.Errorf("failed to get blob for digest %s: %s", layer.Digest, err)
+			return fmt.Errorf("failed to get blob for digest %s: %s", layer.Digest, err)
 		}
 
-		return blob, nil
+		return callback(blob)
 	}
 
-	return nil, fmt.Errorf("unsupported layer media type %s", layer.MediaType)
+	return fmt.Errorf("unsupported layer media type %s", layer.MediaType)
 }
 
-func GetFirstLayerFromRegistry(ctx context.Context, rc *regclient.RegClient, r ref.Ref) (io.ReadCloser, error) {
+func GetFirstLayerFromRegistry(ctx context.Context, rc *regclient.RegClient, r ref.Ref, callback func(reader io.ReadCloser) error) error {
 	m, err := GetManifest(ctx, rc, r)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get manifest: %s", err)
+		return fmt.Errorf("failed to get manifest: %s", err)
 	}
 
-	imageGzReader, err := GetFirstLayerFromManifest(ctx, rc, m)
+	err = GetFirstLayerFromManifest(ctx, rc, m, func(reader io.ReadCloser) error {
+		imageReader, err := gzip.NewReader(reader)
+		if err != nil {
+			return fmt.Errorf("failed to gunzip layer: %s", err)
+		}
+
+		return callback(imageReader)
+	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to get first layer: %s", err)
+		return fmt.Errorf("failed to get first layer: %s", err)
 	}
 
-	imageReader, err := gzip.NewReader(imageGzReader)
-	if err != nil {
-		return nil, fmt.Errorf("failed to gunzip layer: %s", err)
-	}
-
-	return imageReader, nil
+	return nil
 }

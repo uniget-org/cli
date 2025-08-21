@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -59,17 +60,6 @@ var selfUpgradeCmd = &cobra.Command{
 
 		logging.Info.Printfln("Installing version %s", unigetTool.Version)
 
-		registries, repositories := unigetTool.GetSourcesWithFallback(registry, imageRepository)
-		ref, err := containers.FindToolRef(registries, repositories, unigetTool.Name, "main")
-		if err != nil {
-			return fmt.Errorf("error finding tool %s:%s: %s", unigetTool.Name, unigetTool.Version, err)
-		}
-		logging.Debugf("Getting image %s", ref)
-		layer, err := toolCache.Get(ref)
-		if err != nil {
-			return fmt.Errorf("unable to get image: %s", err)
-		}
-
 		logging.Tracef("Changing directory to %s", selfDir)
 		err = os.Chdir(selfDir)
 		if err != nil {
@@ -81,21 +71,29 @@ var selfUpgradeCmd = &cobra.Command{
 			return fmt.Errorf("failed to remove %s: %s", selfExe, err)
 		}
 
-		err = archive.ProcessTarContents(layer, func(reader *tar.Reader, header *tar.Header) error {
-			logging.Tracef("Processing tar item: %s", header.Name)
-			if header.Typeflag == tar.TypeReg && header.Name == "bin/uniget" {
-				logging.Debugf("Extracting %s", header.Name)
+		registries, repositories := unigetTool.GetSourcesWithFallback(registry, imageRepository)
+		ref, err := containers.FindToolRef(registries, repositories, unigetTool.Name, "main")
+		if err != nil {
+			return fmt.Errorf("error finding tool %s:%s: %s", unigetTool.Name, unigetTool.Version, err)
+		}
+		logging.Debugf("Getting image %s", ref)
+		err = toolCache.Get(ref, func(reader io.ReadCloser) error {
+			return archive.ProcessTarContents(reader, func(reader *tar.Reader, header *tar.Header) error {
+				logging.Tracef("Processing tar item: %s", header.Name)
+				if header.Typeflag == tar.TypeReg && header.Name == "bin/uniget" {
+					logging.Debugf("Extracting %s", header.Name)
 
-				err = archive.ExtractFileFromTar(selfDir, "uniget", reader, header)
-				if err != nil {
-					return fmt.Errorf("failed to extract %s from tar: %s", header.Name, err)
+					err = archive.ExtractFileFromTar(selfDir, "uniget", reader, header)
+					if err != nil {
+						return fmt.Errorf("failed to extract %s from tar: %s", header.Name, err)
+					}
 				}
-			}
 
-			return nil
+				return nil
+			})
 		})
 		if err != nil {
-			return fmt.Errorf("failed to extract tar.gz: %s", err)
+			return fmt.Errorf("unable to get image: %s", err)
 		}
 
 		return nil

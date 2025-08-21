@@ -148,27 +148,30 @@ func TestGetFirstLayerFromManifest(t *testing.T) {
 		t.Errorf("failed to get platform manifest: %s", err)
 	}
 
-	layerReader, err := GetFirstLayerFromManifest(context.Background(), rc, m)
+	err = GetFirstLayerFromManifest(context.Background(), rc, m, func(reader io.ReadCloser) error {
+		layer, err := io.ReadAll(reader)
+		if err != nil {
+			t.Errorf("failed to read layer: %s", err)
+		}
+		if len(layer) == 0 {
+			t.Errorf("layer is empty")
+		}
+
+		h := sha256.New()
+		h.Write(layer)
+		bs := h.Sum(nil)
+		if len(bs) == 0 {
+			t.Errorf("Hash is empty")
+		}
+		sha256 := hex.EncodeToString(h.Sum(nil))
+		if sha256 != expectedLayerGzSha256 {
+			t.Errorf("Hash is invalid. Expected %s, but got %s", expectedLayerGzSha256, sha256)
+		}
+
+		return nil
+	})
 	if err != nil {
 		t.Errorf("failed to get platform manifest: %s", err)
-	}
-	layer, err := io.ReadAll(layerReader)
-	if err != nil {
-		t.Errorf("failed to read layer: %s", err)
-	}
-	if len(layer) == 0 {
-		t.Errorf("layer is empty")
-	}
-
-	h := sha256.New()
-	h.Write(layer)
-	bs := h.Sum(nil)
-	if len(bs) == 0 {
-		t.Errorf("Hash is empty")
-	}
-	sha256 := hex.EncodeToString(h.Sum(nil))
-	if sha256 != expectedLayerGzSha256 {
-		t.Errorf("Hash is invalid. Expected %s, but got %s", expectedLayerGzSha256, sha256)
 	}
 }
 
@@ -188,26 +191,29 @@ func TestGetFirstLayerFromRegistry(t *testing.T) {
 		}
 	}()
 
-	layerReader, err := GetFirstLayerFromRegistry(context.Background(), rc, r)
+	err = GetFirstLayerFromRegistry(context.Background(), rc, r, func(reader io.ReadCloser) error {
+		layer, err := io.ReadAll(reader)
+		if err != nil {
+			t.Errorf("failed to read layer: %s", err)
+		}
+		if len(layer) == 0 {
+			t.Errorf("layer is empty")
+		}
+
+		h := sha256.New()
+		h.Write(layer)
+		bs := h.Sum(nil)
+		if len(bs) == 0 {
+			t.Errorf("Hash is empty")
+		}
+		sha256 := hex.EncodeToString(h.Sum(nil))
+		if sha256 != expectedLayerSha256 {
+			t.Errorf("expected layer sha256 %s but got %s", expectedLayerSha256, sha256)
+		}
+
+		return nil
+	})
 	if err != nil {
 		t.Errorf("failed to get first layer: %s", err)
-	}
-	layer, err := io.ReadAll(layerReader)
-	if err != nil {
-		t.Errorf("failed to read layer: %s", err)
-	}
-	if len(layer) == 0 {
-		t.Errorf("layer is empty")
-	}
-
-	h := sha256.New()
-	h.Write(layer)
-	bs := h.Sum(nil)
-	if len(bs) == 0 {
-		t.Errorf("Hash is empty")
-	}
-	sha256 := hex.EncodeToString(h.Sum(nil))
-	if sha256 != expectedLayerSha256 {
-		t.Errorf("expected layer sha256 %s but got %s", expectedLayerSha256, sha256)
 	}
 }

@@ -357,9 +357,42 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 		}
 
 		assertDirectory(viper.GetString("prefix") + "/" + viper.GetString("target"))
-		var err error
+		// Change working directory to prefix
+		// so that unpacking can ignore the target directory
+		installDir := viper.GetString("prefix")
+		if len(installDir) == 0 {
+			installDir = "/"
+		}
+		err := os.Chdir(installDir)
+		if err != nil {
+			return fmt.Errorf("error changing directory to %s: %s", installDir, err)
+		}
+		dir, err := os.Getwd()
+		if err != nil {
+			return fmt.Errorf("error getting working directory")
+		}
+		logging.Debugf("Current directory: %s", dir)
+
 		var pathToTar string
 		var layer io.ReadCloser
+		var installedFiles []string
+		installTool := func(plannedTool tool.Tool, layer io.ReadCloser) error {
+			installedFiles, err = plannedTool.Install(w, layer, pathRewriteRules, createPatchFileCallback(plannedTool))
+			if err != nil {
+				if installSpinner != nil {
+					installSpinner.Fail()
+				}
+				logging.Error.Printfln("Unable to install %s: %s", plannedTool.Name, err)
+				logging.Warning.Printfln("Removing partial installation")
+				err = uninstallFiles(installedFiles)
+				if err != nil {
+					logging.Warning.Printfln("Unable to remove partial installation: %s", err)
+				}
+				return fmt.Errorf("unable to install %s: %s", plannedTool.Name, err)
+			}
+
+			return nil
+		}
 		pathToTar, ok := pathToTarMappings[plannedTool.Name]
 		if ok {
 			logging.Debugf("Using tar file mappings for installation")
@@ -370,6 +403,12 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 			if err != nil {
 				return fmt.Errorf("unable to read tar file %s: %s", pathToTar, err)
 			}
+			//nolint:errcheck
+			defer layer.Close()
+			err = installTool(plannedTool, layer)
+			if err != nil {
+				continue
+			}
 
 		} else {
 			logging.Debugf("Using default behaviour for installation")
@@ -379,43 +418,15 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 				return fmt.Errorf("error finding tool %s:%s: %s", plannedTool.Name, plannedTool.Version, err)
 			}
 			logging.Debugf("Getting image %s", ref)
-			layer, err = toolCache.Get(ref)
+			err = toolCache.Get(ref, func(reader io.ReadCloser) error {
+				// TODO: How to correctly handle failed installs with "continue"
+				return installTool(plannedTool, reader)
+			})
 			if err != nil {
 				return fmt.Errorf("unable to get image: %s", err)
 			}
 		}
-		//nolint:errcheck
-		defer layer.Close()
 
-		// Change working directory to prefix
-		// so that unpacking can ignore the target directory
-		installDir := viper.GetString("prefix")
-		if len(installDir) == 0 {
-			installDir = "/"
-		}
-		err = os.Chdir(installDir)
-		if err != nil {
-			return fmt.Errorf("error changing directory to %s: %s", installDir, err)
-		}
-		dir, err := os.Getwd()
-		if err != nil {
-			return fmt.Errorf("error getting working directory")
-		}
-		logging.Debugf("Current directory: %s", dir)
-
-		installedFiles, err := plannedTool.Install(w, layer, pathRewriteRules, createPatchFileCallback(plannedTool))
-		if err != nil {
-			if installSpinner != nil {
-				installSpinner.Fail()
-			}
-			logging.Error.Printfln("Unable to install %s: %s", plannedTool.Name, err)
-			logging.Warning.Printfln("Removing partial installation")
-			err = uninstallFiles(installedFiles)
-			if err != nil {
-				logging.Warning.Printfln("Unable to remove partial installation: %s", err)
-			}
-			continue
-		}
 		logging.Debugf("Installed files: %d", len(installedFiles))
 		logging.Tracef("Installed files: %v", installedFiles)
 		err = writeInstalledFiles(&plannedTool, installedFiles)

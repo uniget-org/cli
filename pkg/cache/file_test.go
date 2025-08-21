@@ -47,7 +47,9 @@ func TestFileCacheGetManually(t *testing.T) {
 	if cache.checkDataInCache(toolRef.Key()) {
 		t.Errorf("unexpected cache hit")
 	}
-	_, err := cache.readDataFromCache(toolRef.Key())
+	err := cache.readDataFromCache(toolRef.Key(), func(reader io.ReadCloser) error {
+		return nil
+	})
 	if err == nil {
 		t.Errorf("cache should be empty")
 	}
@@ -61,16 +63,19 @@ func TestFileCacheGetManually(t *testing.T) {
 	if !cache.checkDataInCache(toolRef.Key()) {
 		t.Errorf("cache miss")
 	}
-	dataReader, err := cache.readDataFromCache(toolRef.Key())
+	err = cache.readDataFromCache(toolRef.Key(), func(reader io.ReadCloser) error {
+		data, err := io.ReadAll(reader)
+		if err != nil {
+			t.Errorf("failed to read data for key %s after cache hit: %v", toolRef.Key(), err)
+		}
+		if string(data) != string(testData) {
+			t.Errorf("expected data to be 'test', got '%s'", string(data))
+		}
+
+		return nil
+	})
 	if err != nil {
 		t.Errorf("failed to read key %s after cache hit: %v", toolRef.Key(), err)
-	}
-	data, err := io.ReadAll(dataReader)
-	if err != nil {
-		t.Errorf("failed to read data for key %s after cache hit: %v", toolRef.Key(), err)
-	}
-	if string(data) != string(testData) {
-		t.Errorf("expected data to be 'test', got '%s'", string(data))
 	}
 }
 
@@ -81,31 +86,35 @@ func TestFileCacheGet(t *testing.T) {
 		t.Errorf("unexpected cache hit")
 	}
 
-	dataReader, err := cache.Get(toolRef)
+	err := cache.Get(toolRef, func(reader io.ReadCloser) error {
+		data, err := io.ReadAll(reader)
+		if err != nil {
+			t.Errorf("failed to read data for key %s after cache hit: %v", toolRef.Key(), err)
+		}
+		if len(data) == 0 {
+			t.Errorf("expected data to be non-empty (first attempt)")
+		}
+
+		if !cache.checkDataInCache(toolRef.Key()) {
+			t.Errorf("unexpected cache miss")
+		}
+		return nil
+	})
 	if err != nil {
 		t.Errorf("failed to get data from cache: %v", err)
 	}
-	data, err := io.ReadAll(dataReader)
-	if err != nil {
-		t.Errorf("failed to read data for key %s after cache hit: %v", toolRef.Key(), err)
-	}
-	if len(data) == 0 {
-		t.Errorf("expected data to be non-empty (first attempt)")
-	}
 
-	if !cache.checkDataInCache(toolRef.Key()) {
-		t.Errorf("unexpected cache miss")
-	}
-
-	dataReader, err = cache.Get(toolRef)
+	err = cache.Get(toolRef, func(reader io.ReadCloser) error {
+		data, err := io.ReadAll(reader)
+		if err != nil {
+			t.Errorf("failed to read data for key %s after cache hit: %v", toolRef.Key(), err)
+		}
+		if len(data) == 0 {
+			t.Errorf("expected data to be non-empty (second attempt)")
+		}
+		return nil
+	})
 	if err != nil {
 		t.Errorf("failed to get data from cache: %v", err)
-	}
-	data, err = io.ReadAll(dataReader)
-	if err != nil {
-		t.Errorf("failed to read data for key %s after cache hit: %v", toolRef.Key(), err)
-	}
-	if len(data) == 0 {
-		t.Errorf("expected data to be non-empty (second attempt)")
 	}
 }

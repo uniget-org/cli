@@ -18,12 +18,12 @@ func NewNoneCache() *NoneCache {
 	return &NoneCache{}
 }
 
-func (c *NoneCache) Get(tool *containers.ToolRef) (io.ReadCloser, error) {
+func (c *NoneCache) Get(tool *containers.ToolRef, callback func(reader io.ReadCloser) error) error {
 	ctx := context.Background()
 
 	r, err := rref.New(tool.String())
 	if err != nil {
-		return nil, fmt.Errorf("failed to create reference for %s: %w", tool, err)
+		return fmt.Errorf("failed to create reference for %s: %w", tool, err)
 	}
 
 	rcOpts := []regclient.Opt{}
@@ -39,10 +39,12 @@ func (c *NoneCache) Get(tool *containers.ToolRef) (io.ReadCloser, error) {
 
 	logging.Debugf("NoneCache: Pulling %s", r)
 
-	layer, err := containers.GetFirstLayerFromRegistry(ctx, rc, r)
+	err = containers.GetFirstLayerFromRegistry(ctx, rc, r, func(reader io.ReadCloser) error {
+		return callback(reader)
+	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to get layer for ref %s: %w", tool, err)
+		return fmt.Errorf("failed to get layer for ref %s: %w", tool, err)
 	}
 
-	return layer, nil
+	return nil
 }

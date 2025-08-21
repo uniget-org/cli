@@ -79,40 +79,47 @@ func (c *FileCache) checkDataInCache(ref string) bool {
 	return true
 }
 
-func (c *FileCache) readDataFromCache(ref string) (io.ReadCloser, error) {
+func (c *FileCache) readDataFromCache(ref string, callback func(reader io.ReadCloser) error) error {
 	if !c.cacheDirectoryExists() {
-		return nil, fmt.Errorf("cache directory is not set")
+		return fmt.Errorf("cache directory is not set")
 	}
 
 	logging.Tracef("Reading data from cache for ref %s", ref)
 	fileReader, err := os.Open(fmt.Sprintf("%s/%s", c.cacheDirectory, ref))
 	if err != nil {
-		return nil, fmt.Errorf("failed to open cache file for ref %s: %s", ref, err)
+		return fmt.Errorf("failed to open cache file for ref %s: %s", ref, err)
 	}
-	return fileReader, nil
+	//nolint:errcheck
+	defer fileReader.Close()
+	return callback(fileReader)
 }
 
-func (c *FileCache) Get(tool *containers.ToolRef) (io.ReadCloser, error) {
+func (c *FileCache) Get(tool *containers.ToolRef, callback func(reader io.ReadCloser) error) error {
 	cacheKey := tool.Key()
 	if !c.checkDataInCache(tool.String()) {
 		logging.Debugf("FileCache: Cache miss for %s", tool.String())
-		layer, err := c.n.Get(tool)
+		err := c.n.Get(tool, func(reader io.ReadCloser) error {
+			logging.Debugf("FileCache: Caching %s", tool.String())
+			err := c.writeDataToCache(reader, cacheKey)
+			if err != nil {
+				return fmt.Errorf("failed to cache layer for ref %s: %w", tool, err)
+			}
+			return nil
+		})
 		if err != nil {
-			return nil, fmt.Errorf("failed to get layer for ref %s: %w", tool, err)
+			return fmt.Errorf("failed to get layer for ref %s: %w", tool, err)
 		}
 
-		logging.Debugf("FileCache: Caching %s", tool.String())
-		err = c.writeDataToCache(layer, cacheKey)
-		if err != nil {
-			return nil, fmt.Errorf("failed to cache layer for ref %s: %w", tool, err)
-		}
 	}
 
 	logging.Debugf("FileCache: Using cache for %s", tool.String())
-	layerReader, err := c.readDataFromCache(cacheKey)
+	err := c.readDataFromCache(cacheKey, func(reader io.ReadCloser) error {
+		logging.Debugf("FileCache: Reading cached data for %s", tool.String())
+		return callback(reader)
+	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to read layer for ref %s: %w", tool, err)
+		return fmt.Errorf("failed to read layer for ref %s: %w", tool, err)
 	}
 
-	return layerReader, nil
+	return nil
 }
