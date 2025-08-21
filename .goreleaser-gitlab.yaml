@@ -16,18 +16,6 @@ builds:
   goarch:
   - amd64
   - arm64
-- id: bump-dockerfile
-  main: ./cmd/bump-dockerfile
-  binary: bump-dockerfile
-  env:
-  - CGO_ENABLED=0
-  ldflags:
-  - -s -w -X main.version={{.Version}}
-  goos:
-  - linux
-  goarch:
-  - amd64
-  - arm64
 
 snapshot:
   version_template: "{{ incpatch .Version }}-dev.0"
@@ -83,7 +71,6 @@ release:
     name: cli
   ids:
   - uniget
-  - bump-dockerfile
   - sbom
   - cosign
   name_template: "{{ .Version }}"
