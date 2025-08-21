@@ -1,6 +1,8 @@
 package cache
 
 import (
+	"bytes"
+	"io"
 	"os"
 	"testing"
 
@@ -52,16 +54,20 @@ func TestFileCacheGetManually(t *testing.T) {
 
 	var testData = []byte("test")
 
-	err = cache.writeDataToCache(testData, toolRef.Key())
+	err = cache.writeDataToCache(io.NopCloser(bytes.NewReader(testData)), toolRef.Key())
 	if err != nil {
 		t.Errorf("failed to write data to cache: %v", err)
 	}
 	if !cache.checkDataInCache(toolRef.Key()) {
 		t.Errorf("cache miss")
 	}
-	data, err := cache.readDataFromCache(toolRef.Key())
+	dataReader, err := cache.readDataFromCache(toolRef.Key())
 	if err != nil {
 		t.Errorf("failed to read key %s after cache hit: %v", toolRef.Key(), err)
+	}
+	data, err := io.ReadAll(dataReader)
+	if err != nil {
+		t.Errorf("failed to read data for key %s after cache hit: %v", toolRef.Key(), err)
 	}
 	if string(data) != string(testData) {
 		t.Errorf("expected data to be 'test', got '%s'", string(data))
@@ -75,9 +81,13 @@ func TestFileCacheGet(t *testing.T) {
 		t.Errorf("unexpected cache hit")
 	}
 
-	data, err := cache.Get(toolRef)
+	dataReader, err := cache.Get(toolRef)
 	if err != nil {
 		t.Errorf("failed to get data from cache: %v", err)
+	}
+	data, err := io.ReadAll(dataReader)
+	if err != nil {
+		t.Errorf("failed to read data for key %s after cache hit: %v", toolRef.Key(), err)
 	}
 	if len(data) == 0 {
 		t.Errorf("expected data to be non-empty (first attempt)")
@@ -87,9 +97,13 @@ func TestFileCacheGet(t *testing.T) {
 		t.Errorf("unexpected cache miss")
 	}
 
-	data, err = cache.Get(toolRef)
+	dataReader, err = cache.Get(toolRef)
 	if err != nil {
 		t.Errorf("failed to get data from cache: %v", err)
+	}
+	data, err = io.ReadAll(dataReader)
+	if err != nil {
+		t.Errorf("failed to read data for key %s after cache hit: %v", toolRef.Key(), err)
 	}
 	if len(data) == 0 {
 		t.Errorf("expected data to be non-empty (second attempt)")

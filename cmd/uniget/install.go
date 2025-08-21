@@ -359,14 +359,14 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 		assertDirectory(viper.GetString("prefix") + "/" + viper.GetString("target"))
 		var err error
 		var pathToTar string
-		var layer []byte
+		var layer io.ReadCloser
 		pathToTar, ok := pathToTarMappings[plannedTool.Name]
 		if ok {
 			logging.Debugf("Using tar file mappings for installation")
 			if _, err := os.Stat(pathToTar); os.IsNotExist(err) {
 				return fmt.Errorf("tar file %s does not exist", pathToTar)
 			}
-			layer, err = os.ReadFile(pathToTar) // #nosec G304 -- Location supplied by user
+			layer, err = os.Open(pathToTar) // #nosec G304 -- Location supplied by user
 			if err != nil {
 				return fmt.Errorf("unable to read tar file %s: %s", pathToTar, err)
 			}
@@ -384,6 +384,8 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 				return fmt.Errorf("unable to get image: %s", err)
 			}
 		}
+		//nolint:errcheck
+		defer layer.Close()
 
 		// Change working directory to prefix
 		// so that unpacking can ignore the target directory

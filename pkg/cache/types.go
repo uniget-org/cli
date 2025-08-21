@@ -1,7 +1,11 @@
 package cache
 
-import "github.com/uniget-org/cli/pkg/containers"
+import (
+	"io"
+
+	"github.com/uniget-org/cli/pkg/containers"
+)
 
 type Cache interface {
-	Get(tool *containers.ToolRef) ([]byte, error)
+	Get(tool *containers.ToolRef) (io.ReadCloser, error)
 }

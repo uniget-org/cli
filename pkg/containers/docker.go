@@ -2,7 +2,6 @@ package containers
 
 import (
 	"archive/tar"
-	"bytes"
 	"compress/gzip"
 	"context"
 	"fmt"
@@ -38,7 +37,7 @@ func DockerIsAvailable() bool {
 	return ping.APIVersion != ""
 }
 
-func GetFirstLayerFromDockerImage(cli *client.Client, ref *ToolRef) ([]byte, error) {
+func GetFirstLayerFromDockerImage(cli *client.Client, ref *ToolRef) (io.ReadCloser, error) {
 	logging.Tracef("Getting first layer for %s using docker", ref)
 
 	shaString, err := GetFirstLayerShaFromRegistry(ref)
@@ -52,24 +51,17 @@ func GetFirstLayerFromDockerImage(cli *client.Client, ref *ToolRef) ([]byte, err
 		return nil, fmt.Errorf("failed to get image: %s", err)
 	}
 
-	layerGzip, err := UnpackLayerFromDockerImage(image, sha)
+	layerGzipReader, err := UnpackLayerFromDockerImage(image, sha)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unpack layer: %s", err)
 	}
 
-	reader, err := gzip.NewReader(bytes.NewReader(layerGzip))
+	reader, err := gzip.NewReader(layerGzipReader)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create gzip reader: %s", err)
 	}
-	//nolint:errcheck
-	defer reader.Close()
 
-	buffer, err := io.ReadAll(reader)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read gzip: %s", err)
-	}
-
-	return buffer, nil
+	return reader, nil
 }
 
 func PullDockerImage(cli *client.Client, ref string) error {
@@ -96,7 +88,7 @@ func CheckDockerImageExists(cli *client.Client, ref string) bool {
 	return err == nil
 }
 
-func ReadDockerImage(cli *client.Client, ref string) ([]byte, error) {
+func ReadDockerImage(cli *client.Client, ref string) (io.ReadCloser, error) {
 	ctx := context.Background()
 
 	err := PullDockerImage(cli, ref)
@@ -114,21 +106,13 @@ func ReadDockerImage(cli *client.Client, ref string) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to save image: %s", err)
 	}
-	//nolint:errcheck
-	defer reader.Close()
 
-	buffer, err := io.ReadAll(reader)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read image: %s", err)
-	}
-
-	return buffer, nil
+	return reader, nil
 }
 
-func UnpackLayerFromDockerImage(buffer []byte, sha256 string) ([]byte, error) {
-	tarReader := tar.NewReader(bytes.NewReader(buffer))
+func UnpackLayerFromDockerImage(buffer io.ReadCloser, sha256 string) (io.ReadCloser, error) {
+	tarReader := tar.NewReader(buffer)
 
-	var layerBuffer []byte
 	for {
 		header, err := tarReader.Next()
 		if err == io.EOF {
@@ -144,15 +128,11 @@ func UnpackLayerFromDockerImage(buffer []byte, sha256 string) ([]byte, error) {
 
 		switch header.Typeflag {
 		case tar.TypeReg:
-			layerBuffer, err = io.ReadAll(tarReader)
-			if err != nil {
-				return nil, fmt.Errorf("failed to read file from tar: %s", err)
-			}
-			return layerBuffer, nil
+			return io.NopCloser(tarReader), nil
 		}
 	}
 
-	return layerBuffer, fmt.Errorf("failed to extract layer %s", sha256)
+	return nil, fmt.Errorf("failed to extract layer %s", sha256)
 }
 
 func ListDockerImagesByPrefix(cli *client.Client, prefix string) ([]image.Summary, error) {

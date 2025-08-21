@@ -57,7 +57,7 @@ func applyPathRewrites(path string, rules []PathRewrite) string {
 	return newPath
 }
 
-func (tool *Tool) Inspect(w io.Writer, layer []byte, rules []PathRewrite) error {
+func (tool *Tool) Inspect(w io.Writer, layer io.ReadCloser, rules []PathRewrite) error {
 	return archive.ProcessTarContents(layer, func(reader *tar.Reader, header *tar.Header) error {
 		if header.Typeflag == tar.TypeDir {
 			return nil
@@ -69,7 +69,7 @@ func (tool *Tool) Inspect(w io.Writer, layer []byte, rules []PathRewrite) error 
 	})
 }
 
-func (tool *Tool) Install(w io.Writer, layer []byte, rules []PathRewrite, patchFile func(path string) string) ([]string, error) {
+func (tool *Tool) Install(w io.Writer, layer io.ReadCloser, rules []PathRewrite, patchFile func(path string) string) ([]string, error) {
 	installedFiles := []string{}
 
 	err := archive.ProcessTarContents(layer, func(reader *tar.Reader, header *tar.Header) error {

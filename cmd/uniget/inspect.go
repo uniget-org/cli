@@ -69,6 +69,8 @@ var inspectCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("unable to get image: %s", err)
 		}
+		//nolint:errcheck
+		defer layer.Close()
 		effectivePathRewriteRules := pathRewriteRules
 		if rawInspect {
 			effectivePathRewriteRules = []tool.PathRewrite{}

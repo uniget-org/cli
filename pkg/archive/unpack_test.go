@@ -13,9 +13,6 @@ import (
 )
 
 var (
-	testTarGz = "../../testdata/foo.tar.gz"
-	testTar   = "../../testdata/foo.tar.gz"
-
 	registryAddress    = "ghcr.io"
 	registryRepository = "uniget-org/tools"
 	registryImage      = "jq"
@@ -23,27 +20,7 @@ var (
 	toolRef            = containers.NewToolRef(registryAddress, registryRepository, registryImage, registryTag)
 )
 
-func openTestArchive(testArchive string, t *testing.T) io.Reader {
-	reader, err := os.Open(testArchive) // #nosec G304 This is only a test
-	if err != nil {
-		t.Errorf("failed to open %s: %v", testTarGz, err)
-	}
-
-	return reader
-}
-
-func readTestArchive(testArchive string, t *testing.T) []byte {
-	reader := openTestArchive(testArchive, t)
-
-	data, err := io.ReadAll(reader)
-	if err != nil {
-		t.Errorf("failed to read %s: %v", testArchive, err)
-	}
-
-	return data
-}
-
-func loadTool(t *testing.T) []byte {
+func loadTool(t *testing.T) io.ReadCloser {
 	ctx := context.Background()
 	r := toolRef.GetRef()
 	rc := containers.GetRegclient()
@@ -59,23 +36,6 @@ func loadTool(t *testing.T) []byte {
 	}
 
 	return registryLayer
-}
-
-func TestGunzip(t *testing.T) {
-	tarGzBytes := readTestArchive(testTarGz, t)
-	tarBytes := readTestArchive(testTar, t)
-
-	_, err := Gunzip(tarGzBytes)
-	if err != nil {
-		t.Errorf("gunzip failed: %v", err)
-	}
-
-	if len(tarGzBytes) != len(tarBytes) {
-		t.Errorf("expected gunzip to remove data")
-	}
-	if string(tarGzBytes) != string(tarBytes) {
-		t.Errorf("gunzip'ed data does not match expected data")
-	}
 }
 
 func TestProcessTarContents(t *testing.T) {

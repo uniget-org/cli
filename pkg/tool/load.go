@@ -1,6 +1,7 @@
 package tool
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -27,10 +28,10 @@ func LoadFromFile(filename string) (Tools, error) {
 	return tools, nil
 }
 
-func LoadFromBytes(data []byte) (Tools, error) {
+func LoadFromReader(data io.ReadCloser) (Tools, error) {
 	var tools Tools
 
-	err := json.Unmarshal(data, &tools)
+	err := json.NewDecoder(data).Decode(&tools)
 	if err != nil {
 		return Tools{}, err
 	}
@@ -46,6 +47,10 @@ func LoadFromBytes(data []byte) (Tools, error) {
 	}
 
 	return tools, nil
+}
+
+func LoadFromBytes(data []byte) (Tools, error) {
+	return LoadFromReader(io.NopCloser(bytes.NewReader(data)))
 }
 
 func LoadMetadata(registry []string, repository []string, tag string) (*Tools, error) {
@@ -66,13 +71,10 @@ func LoadMetadata(registry []string, repository []string, tag string) (*Tools, e
 		return nil, fmt.Errorf("error getting first layer from registry: %s", err)
 	}
 
-	var metadataJson []byte
+	var metadataJsonReader io.ReadCloser
 	err = archive.ProcessTarContents(layer, func(reader *tar.Reader, header *tar.Header) error {
 		if header.Typeflag == tar.TypeReg && header.Name == "metadata.json" {
-			metadataJson, err = io.ReadAll(reader)
-			if err != nil {
-				return fmt.Errorf("error reading metadata.json: %s", err)
-			}
+			metadataJsonReader = io.NopCloser(reader)
 		}
 
 		return nil
@@ -81,7 +83,7 @@ func LoadMetadata(registry []string, repository []string, tag string) (*Tools, e
 		return nil, fmt.Errorf("failed to extract tar.gz: %s", err)
 	}
 
-	tools, err := LoadFromBytes(metadataJson)
+	tools, err := LoadFromReader(metadataJsonReader)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load metadata: %s", err)
 	}

@@ -3,6 +3,7 @@ package cache
 import (
 	"context"
 	"fmt"
+	"io"
 
 	"github.com/regclient/regclient"
 	"github.com/regclient/regclient/config"
@@ -17,7 +18,7 @@ func NewNoneCache() *NoneCache {
 	return &NoneCache{}
 }
 
-func (c *NoneCache) Get(tool *containers.ToolRef) ([]byte, error) {
+func (c *NoneCache) Get(tool *containers.ToolRef) (io.ReadCloser, error) {
 	ctx := context.Background()
 
 	r, err := rref.New(tool.String())

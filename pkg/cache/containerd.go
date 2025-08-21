@@ -2,6 +2,7 @@ package cache
 
 import (
 	"fmt"
+	"io"
 
 	containerd "github.com/containerd/containerd/v2/client"
 	"github.com/uniget-org/cli/pkg/containers"
@@ -26,7 +27,7 @@ func NewContainerdCache(namespace string) (*ContainerdCache, error) {
 	}, nil
 }
 
-func (c *ContainerdCache) Get(tool *containers.ToolRef) ([]byte, error) {
+func (c *ContainerdCache) Get(tool *containers.ToolRef) (io.ReadCloser, error) {
 	layer, err := containers.GetFirstLayerFromContainerdImage(c.client, tool)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get layer for ref %s: %w", tool, err)

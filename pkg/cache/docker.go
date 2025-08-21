@@ -2,6 +2,7 @@ package cache
 
 import (
 	"fmt"
+	"io"
 
 	"github.com/docker/docker/client"
 	"github.com/uniget-org/cli/pkg/containers"
@@ -24,7 +25,7 @@ func NewDockerCache() (*DockerCache, error) {
 	}, nil
 }
 
-func (c *DockerCache) Get(tool *containers.ToolRef) ([]byte, error) {
+func (c *DockerCache) Get(tool *containers.ToolRef) (io.ReadCloser, error) {
 	logging.Debugf("DockerCache: Pulling %s", tool)
 	layer, err := containers.GetFirstLayerFromDockerImage(c.cli, tool)
 	if err != nil {

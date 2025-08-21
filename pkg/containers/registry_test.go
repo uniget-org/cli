@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"io"
 	"testing"
 
 	"github.com/regclient/regclient/types/platform"
@@ -147,9 +148,13 @@ func TestGetFirstLayerFromManifest(t *testing.T) {
 		t.Errorf("failed to get platform manifest: %s", err)
 	}
 
-	layer, err := GetFirstLayerFromManifest(context.Background(), rc, m)
+	layerReader, err := GetFirstLayerFromManifest(context.Background(), rc, m)
 	if err != nil {
 		t.Errorf("failed to get platform manifest: %s", err)
+	}
+	layer, err := io.ReadAll(layerReader)
+	if err != nil {
+		t.Errorf("failed to read layer: %s", err)
 	}
 	if len(layer) == 0 {
 		t.Errorf("layer is empty")
@@ -183,9 +188,13 @@ func TestGetFirstLayerFromRegistry(t *testing.T) {
 		}
 	}()
 
-	layer, err := GetFirstLayerFromRegistry(context.Background(), rc, r)
+	layerReader, err := GetFirstLayerFromRegistry(context.Background(), rc, r)
 	if err != nil {
 		t.Errorf("failed to get first layer: %s", err)
+	}
+	layer, err := io.ReadAll(layerReader)
+	if err != nil {
+		t.Errorf("failed to read layer: %s", err)
 	}
 	if len(layer) == 0 {
 		t.Errorf("layer is empty")

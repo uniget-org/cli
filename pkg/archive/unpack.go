@@ -1,8 +1,6 @@
 package archive
 
 import (
-	"bytes"
-	"compress/gzip"
 	"fmt"
 	"io"
 	"os"
@@ -15,28 +13,10 @@ import (
 	myos "github.com/uniget-org/cli/pkg/os"
 )
 
-func Gunzip(layer []byte) ([]byte, error) {
-	reader, err := gzip.NewReader(bytes.NewReader(layer))
-	if err != nil {
-		return nil, fmt.Errorf("failed to create gzip reader: %s", err)
-	}
-	defer func() {
-		err := reader.Close()
-		if err != nil {
-			logging.Warning.Printfln("failed to close gzip reader: %s", err)
-		}
-	}()
-
-	buffer, err := io.ReadAll(reader)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read gzip: %s", err)
-	}
-
-	return buffer, nil
-}
-
-func ProcessTarContents(archive []byte, callback func(tar *tar.Reader, header *tar.Header) error) error {
-	tarReader := tar.NewReader(bytes.NewReader(archive))
+func ProcessTarContents(reader io.ReadCloser, callback func(tar *tar.Reader, header *tar.Header) error) error {
+	tarReader := tar.NewReader(reader)
+	//nolint:errcheck
+	defer reader.Close()
 
 	for {
 		header, err := tarReader.Next()

@@ -3,6 +3,7 @@ package cache
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"io"
 	"testing"
 )
 
@@ -15,12 +16,13 @@ func TestNewNoneCache(t *testing.T) {
 
 func TestNoneCacheGet(t *testing.T) {
 	c := NewNoneCache()
-	image, err := c.Get(toolRef)
+	imageReader, err := c.Get(toolRef)
 	if err != nil {
 		t.Errorf("Error getting image: %v", err)
 	}
-	if image == nil {
-		t.Errorf("Image is invalid")
+	image, err := io.ReadAll(imageReader)
+	if err != nil {
+		t.Errorf("Error reading image: %v", err)
 	}
 	if len(image) == 0 {
 		t.Errorf("Image is empty")

@@ -37,7 +37,7 @@ func ContainerdIsAvailable() bool {
 	return version.Version != ""
 }
 
-func GetFirstLayerFromContainerdImage(client *containerd.Client, ref *ToolRef) ([]byte, error) {
+func GetFirstLayerFromContainerdImage(client *containerd.Client, ref *ToolRef) (io.ReadCloser, error) {
 	shaString, err := GetFirstLayerShaFromRegistry(ref)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get first layer sha: %s", err)
@@ -49,24 +49,17 @@ func GetFirstLayerFromContainerdImage(client *containerd.Client, ref *ToolRef) (
 		return nil, fmt.Errorf("failed to get image: %s", err)
 	}
 
-	layerGzip, err := UnpackLayerFromDockerImage(imageData, sha)
+	layerGzipReader, err := UnpackLayerFromDockerImage(imageData, sha)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unpack layer: %s", err)
 	}
 
-	reader, err := gzip.NewReader(bytes.NewReader(layerGzip))
+	reader, err := gzip.NewReader(layerGzipReader)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create gzip reader: %s", err)
 	}
-	//nolint:errcheck
-	defer reader.Close()
 
-	buffer, err := io.ReadAll(reader)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read gzip: %s", err)
-	}
-
-	return buffer, nil
+	return reader, nil
 }
 
 func CheckContainerdImageExists(client *containerd.Client, ref string) bool {
@@ -87,7 +80,7 @@ func PullContainerdImage(client *containerd.Client, ref string) error {
 	return nil
 }
 
-func ReadContainerdImage(client *containerd.Client, ref string) ([]byte, error) {
+func ReadContainerdImage(client *containerd.Client, ref string) (io.ReadCloser, error) {
 	ctx := context.Background()
 
 	err := PullContainerdImage(client, ref)
@@ -102,7 +95,6 @@ func ReadContainerdImage(client *containerd.Client, ref string) ([]byte, error) 
 	if err != nil {
 		return nil, fmt.Errorf("failed to export image: %s", err)
 	}
-	imageData := imageBuffer.Bytes()
 
-	return imageData, nil
+	return io.NopCloser(&imageBuffer), nil
 }

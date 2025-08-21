@@ -2,6 +2,7 @@ package cache
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"time"
 
@@ -33,16 +34,28 @@ func (c *FileCache) cacheDirectoryExists() bool {
 	return !os.IsNotExist(err)
 }
 
-func (c *FileCache) writeDataToCache(data []byte, ref string) error {
+func (c *FileCache) writeDataToCache(reader io.ReadCloser, ref string) error {
+	//nolint:errcheck
+	defer reader.Close()
+
 	if !c.cacheDirectoryExists() {
 		return fmt.Errorf("cache directory is not set")
 	}
 
 	logging.Tracef("Writing data to cache for ref %s", ref)
-	err := os.WriteFile(fmt.Sprintf("%s/%s", c.cacheDirectory, ref), data, 0644) // #nosec G306 -- just for testing
+
+	file, err := os.Create(fmt.Sprintf("%s/%s", c.cacheDirectory, ref))
+	if err != nil {
+		return fmt.Errorf("failed to create cache file for ref %s: %s", ref, err)
+	}
+	//nolint:errcheck
+	defer file.Close()
+
+	_, err = io.Copy(file, reader)
 	if err != nil {
 		return fmt.Errorf("failed to write data for ref %s to cache: %s", ref, err)
 	}
+
 	return nil
 }
 
@@ -66,20 +79,20 @@ func (c *FileCache) checkDataInCache(ref string) bool {
 	return true
 }
 
-func (c *FileCache) readDataFromCache(ref string) ([]byte, error) {
+func (c *FileCache) readDataFromCache(ref string) (io.ReadCloser, error) {
 	if !c.cacheDirectoryExists() {
 		return nil, fmt.Errorf("cache directory is not set")
 	}
 
 	logging.Tracef("Reading data from cache for ref %s", ref)
-	data, err := os.ReadFile(fmt.Sprintf("%s/%s", c.cacheDirectory, ref))
+	fileReader, err := os.Open(fmt.Sprintf("%s/%s", c.cacheDirectory, ref))
 	if err != nil {
-		return nil, fmt.Errorf("failed to read data for ref %s from cache: %s", ref, err)
+		return nil, fmt.Errorf("failed to open cache file for ref %s: %s", ref, err)
 	}
-	return data, nil
+	return fileReader, nil
 }
 
-func (c *FileCache) Get(tool *containers.ToolRef) ([]byte, error) {
+func (c *FileCache) Get(tool *containers.ToolRef) (io.ReadCloser, error) {
 	cacheKey := tool.Key()
 	if !c.checkDataInCache(tool.String()) {
 		logging.Debugf("FileCache: Cache miss for %s", tool.String())
@@ -96,10 +109,10 @@ func (c *FileCache) Get(tool *containers.ToolRef) ([]byte, error) {
 	}
 
 	logging.Debugf("FileCache: Using cache for %s", tool.String())
-	layer, err := c.readDataFromCache(cacheKey)
+	layerReader, err := c.readDataFromCache(cacheKey)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read layer for ref %s: %w", tool, err)
 	}
 
-	return layer, nil
+	return layerReader, nil
 }

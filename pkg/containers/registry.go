@@ -1,7 +1,6 @@
 package containers
 
 import (
-	"bytes"
 	"compress/gzip"
 	"context"
 	"fmt"
@@ -173,11 +172,11 @@ func GetManifest(ctx context.Context, rc *regclient.RegClient, r ref.Ref) (manif
 	return m, nil
 }
 
-func GetFirstLayerFromManifest(ctx context.Context, rc *regclient.RegClient, m manifest.Manifest) ([]byte, error) {
+func GetFirstLayerFromManifest(ctx context.Context, rc *regclient.RegClient, m manifest.Manifest) (io.Reader, error) {
 	return GetLayerFromManifestByIndex(ctx, rc, m, 0)
 }
 
-func GetLayerFromManifestByIndex(ctx context.Context, rc *regclient.RegClient, m manifest.Manifest, index int) ([]byte, error) {
+func GetLayerFromManifestByIndex(ctx context.Context, rc *regclient.RegClient, m manifest.Manifest, index int) (io.ReadCloser, error) {
 	if m.IsList() {
 		return nil, fmt.Errorf("manifest is a list")
 	}
@@ -211,51 +210,28 @@ func GetLayerFromManifestByIndex(ctx context.Context, rc *regclient.RegClient, m
 		if err != nil {
 			return nil, fmt.Errorf("failed to get blob for digest %s: %s", layer.Digest, err)
 		}
-		//nolint:errcheck
-		defer blob.Close()
 
-		layerData, err := blob.RawBody()
-		if err != nil {
-			return nil, fmt.Errorf("failed to read layer: %s", err)
-		}
-
-		return layerData, nil
+		return blob, nil
 	}
 
 	return nil, fmt.Errorf("unsupported layer media type %s", layer.MediaType)
 }
 
-func gunzip(layer []byte) ([]byte, error) {
-	reader, err := gzip.NewReader(bytes.NewReader(layer))
-	if err != nil {
-		return nil, fmt.Errorf("failed to create gzip reader: %s", err)
-	}
-	//nolint:errcheck
-	defer reader.Close()
-
-	buffer, err := io.ReadAll(reader)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read gzip: %s", err)
-	}
-
-	return buffer, nil
-}
-
-func GetFirstLayerFromRegistry(ctx context.Context, rc *regclient.RegClient, r ref.Ref) ([]byte, error) {
+func GetFirstLayerFromRegistry(ctx context.Context, rc *regclient.RegClient, r ref.Ref) (io.ReadCloser, error) {
 	m, err := GetManifest(ctx, rc, r)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get manifest: %s", err)
 	}
 
-	imageGz, err := GetFirstLayerFromManifest(ctx, rc, m)
+	imageGzReader, err := GetFirstLayerFromManifest(ctx, rc, m)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get first layer: %s", err)
 	}
 
-	image, err := gunzip(imageGz)
+	imageReader, err := gzip.NewReader(imageGzReader)
 	if err != nil {
 		return nil, fmt.Errorf("failed to gunzip layer: %s", err)
 	}
 
-	return image, nil
+	return imageReader, nil
 }
