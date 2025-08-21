@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 func initEnvCmd() {
@@ -16,21 +17,14 @@ var envCmd = &cobra.Command{
 	Aliases: []string{"e"},
 	Short:   "Display installation paths as environment variables",
 	Long:    header + "\nDisplay installation paths as environment variables",
+	Hidden:  true,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		//nolint:errcheck
-		fmt.Fprintf(cmd.OutOrStdout(), "UNIGET_PREFIX=%s\n", viper.GetString("prefix"))
-		//nolint:errcheck
-		fmt.Fprintf(cmd.OutOrStdout(), "UNIGET_TARGET=%s/%s\n", viper.GetString("prefix"), viper.GetString("target"))
-		//nolint:errcheck
-		fmt.Fprintf(cmd.OutOrStdout(), "UNIGET_CACHE_ROOT=%s/%s\n", viper.GetString("prefix"), cacheRoot)
-		//nolint:errcheck
-		fmt.Fprintf(cmd.OutOrStdout(), "UNIGET_CACHE_DIRECTORY=%s/%s\n", viper.GetString("prefix"), cacheDirectory)
-		//nolint:errcheck
-		fmt.Fprintf(cmd.OutOrStdout(), "UNIGET_LIB_ROOT=%s/%s\n", viper.GetString("prefix"), libRoot)
-		//nolint:errcheck
-		fmt.Fprintf(cmd.OutOrStdout(), "UNIGET_LIB_DIRECTORY=%s/%s\n", viper.GetString("prefix"), libDirectory)
-		//nolint:errcheck
-		fmt.Fprintf(cmd.OutOrStdout(), "UNIGET_METADATA_FILE=%s/%s\n", viper.GetString("prefix"), metadataFile)
+		for _, env := range os.Environ() {
+			if strings.HasPrefix(env, "UNIGET_") {
+				//nolint:errcheck
+				fmt.Fprintf(cmd.OutOrStdout(), "env: %s\n", env)
+			}
+		}
 
 		return nil
 	},

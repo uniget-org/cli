@@ -105,7 +105,7 @@ var releaseNotesCmd = &cobra.Command{
 			return fmt.Errorf("release notes are not available for datasource %s", tool.Renovate.Datasource)
 		}
 
-		var result map[string]interface{}
+		var result map[string]any
 		err = json.Unmarshal(payload, &result)
 		if err != nil {
 			return fmt.Errorf("failed to parse body of GitHub release for tool %s: %s", tool.Name, err)

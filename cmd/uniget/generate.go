@@ -19,10 +19,11 @@ func initGenerateCmd() {
 }
 
 var generateCmd = &cobra.Command{
-	Use:   "generate",
-	Short: "Generate Dockerfile",
-	Long:  header + "\nGenerate Dockerfile for a tool",
-	Args:  cobra.MinimumNArgs(1),
+	Use:    "generate",
+	Short:  "Generate Dockerfile",
+	Long:   header + "\nGenerate Dockerfile for a tool",
+	Hidden: true,
+	Args:   cobra.MinimumNArgs(1),
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},
