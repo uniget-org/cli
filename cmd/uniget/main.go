@@ -424,6 +424,7 @@ func init() {
 		os.Exit(1)
 	}
 
+	initBumpCmd()
 	initCacheCmd()
 	initCronCmd()
 	initDebugCmd()
