@@ -437,6 +437,7 @@ func init() {
 	initListCmd()
 	initManCmd()
 	initMessageCmd()
+	initRegCmd()
 	initReleaseNotesCmd()
 	initSearchCmd()
 	initSelfUpgradeCmd()
