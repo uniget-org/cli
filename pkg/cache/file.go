@@ -115,7 +115,11 @@ func (c *FileCache) Get(tool *containers.ToolRef, callback func(reader io.ReadCl
 	logging.Debugf("FileCache: Using cache for %s", tool.String())
 	err := c.readDataFromCache(cacheKey, func(reader io.ReadCloser) error {
 		logging.Debugf("FileCache: Reading cached data for %s", tool.String())
-		return callback(reader)
+		err := callback(reader)
+		if err != nil {
+			return fmt.Errorf("failed to execute callback: %w", err)
+		}
+		return nil
 	})
 	if err != nil {
 		return fmt.Errorf("failed to read layer for ref %s: %w", tool, err)

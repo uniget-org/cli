@@ -77,20 +77,26 @@ var selfUpgradeCmd = &cobra.Command{
 			return fmt.Errorf("error finding tool %s:%s: %s", unigetTool.Name, unigetTool.Version, err)
 		}
 		logging.Debugf("Getting image %s", ref)
-		err = toolCache.Get(ref, func(reader io.ReadCloser) error {
-			return archive.ProcessTarContents(reader, func(reader *tar.Reader, header *tar.Header) error {
-				logging.Tracef("Processing tar item: %s", header.Name)
-				if header.Typeflag == tar.TypeReg && header.Name == "bin/uniget" {
-					logging.Debugf("Extracting %s", header.Name)
+		unpackUnigetBinary := func(reader *tar.Reader, header *tar.Header) error {
+			logging.Tracef("Processing tar item: %s", header.Name)
+			if header.Typeflag == tar.TypeReg && header.Name == "bin/uniget" {
+				logging.Debugf("Extracting %s", header.Name)
 
-					err = archive.ExtractFileFromTar(selfDir, "uniget", reader, header)
-					if err != nil {
-						return fmt.Errorf("failed to extract %s from tar: %s", header.Name, err)
-					}
+				err = archive.ExtractFileFromTar(selfDir, "uniget", reader, header)
+				if err != nil {
+					return fmt.Errorf("failed to extract %s from tar: %s", header.Name, err)
 				}
+			}
 
-				return nil
-			})
+			return nil
+		}
+		err = toolCache.Get(ref, func(reader io.ReadCloser) error {
+			err := archive.ProcessTarContents(reader, unpackUnigetBinary)
+			if err != nil {
+				return fmt.Errorf("unable to process tar contents: %s", err)
+			}
+
+			return nil
 		})
 		if err != nil {
 			return fmt.Errorf("unable to get image: %s", err)

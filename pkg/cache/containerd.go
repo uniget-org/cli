@@ -29,7 +29,11 @@ func NewContainerdCache(namespace string) (*ContainerdCache, error) {
 
 func (c *ContainerdCache) Get(tool *containers.ToolRef, callback func(reader io.ReadCloser) error) error {
 	err := containers.GetFirstLayerFromContainerdImage(c.client, tool, func(reader io.ReadCloser) error {
-		return callback(reader)
+		err := callback(reader)
+		if err != nil {
+			return fmt.Errorf("failed to execute callback: %w", err)
+		}
+		return nil
 	})
 	if err != nil {
 		return fmt.Errorf("failed to get layer for ref %s: %w", tool, err)

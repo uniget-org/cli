@@ -211,7 +211,12 @@ func GetLayerFromManifestByIndex(ctx context.Context, rc *regclient.RegClient, m
 			return fmt.Errorf("failed to get blob for digest %s: %s", layer.Digest, err)
 		}
 
-		return callback(blob)
+		err = callback(blob)
+		if err != nil {
+			return fmt.Errorf("failed to execute callback: %w", err)
+		}
+
+		return nil
 	}
 
 	return fmt.Errorf("unsupported layer media type %s", layer.MediaType)
@@ -229,7 +234,12 @@ func GetFirstLayerFromRegistry(ctx context.Context, rc *regclient.RegClient, r r
 			return fmt.Errorf("failed to gunzip layer: %s", err)
 		}
 
-		return callback(imageReader)
+		err = callback(imageReader)
+		if err != nil {
+			return fmt.Errorf("failed to execute callback: %w", err)
+		}
+
+		return nil
 	})
 	if err != nil {
 		return fmt.Errorf("failed to get first layer: %s", err)

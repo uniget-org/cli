@@ -394,6 +394,7 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 			return nil
 		}
 		pathToTar, ok := pathToTarMappings[plannedTool.Name]
+		installSuccessful := true
 		if ok {
 			logging.Debugf("Using tar file mappings for installation")
 			if _, err := os.Stat(pathToTar); os.IsNotExist(err) {
@@ -407,7 +408,7 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 			defer layer.Close()
 			err = installTool(plannedTool, layer)
 			if err != nil {
-				continue
+				installSuccessful = false
 			}
 
 		} else {
@@ -419,12 +420,19 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 			}
 			logging.Debugf("Getting image %s", ref)
 			err = toolCache.Get(ref, func(reader io.ReadCloser) error {
-				// TODO: How to correctly handle failed installs with "continue"
-				return installTool(plannedTool, reader)
+				err := installTool(plannedTool, reader)
+				if err != nil {
+					installSuccessful = false
+					return fmt.Errorf("unable to install %s: %s", plannedTool.Name, err)
+				}
+				return nil
 			})
 			if err != nil {
 				return fmt.Errorf("unable to get image: %s", err)
 			}
+		}
+		if !installSuccessful {
+			continue
 		}
 
 		logging.Debugf("Installed files: %d", len(installedFiles))

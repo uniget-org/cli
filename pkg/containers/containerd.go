@@ -51,7 +51,12 @@ func GetFirstLayerFromContainerdImage(client *containerd.Client, ref *ToolRef, c
 				return fmt.Errorf("failed to create gzip reader: %s", err)
 			}
 
-			return callback(reader)
+			err = callback(reader)
+			if err != nil {
+				return fmt.Errorf("failed to execute callback: %w", err)
+			}
+
+			return nil
 		})
 		if err != nil {
 			return fmt.Errorf("failed to unpack layer: %s", err)
@@ -100,5 +105,10 @@ func ReadContainerdImage(client *containerd.Client, ref string, callback func(re
 		return fmt.Errorf("failed to export image: %s", err)
 	}
 
-	return callback(io.NopCloser(&imageBuffer))
+	err = callback(io.NopCloser(&imageBuffer))
+	if err != nil {
+		return fmt.Errorf("failed to execute callback: %w", err)
+	}
+
+	return nil
 }

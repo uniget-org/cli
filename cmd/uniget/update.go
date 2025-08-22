@@ -94,9 +94,18 @@ func downloadMetadata() error {
 
 	logging.Debugf("Extracting archive to %s", viper.GetString("prefix")+"/"+cacheDirectory)
 	err = containers.GetFirstLayerFromRegistry(context.Background(), rc, t.GetRef(), func(reader io.ReadCloser) error {
-		return archive.ProcessTarContents(reader, func(reader *tar.Reader, header *tar.Header) error {
-			return archive.CallbackExtractTarItem(reader, header)
+		err := archive.ProcessTarContents(reader, func(reader *tar.Reader, header *tar.Header) error {
+			err := archive.CallbackExtractTarItem(reader, header)
+			if err != nil {
+				return fmt.Errorf("error extracting tar item: %s", err)
+			}
+			return nil
 		})
+		if err != nil {
+			return fmt.Errorf("error processing tar contents: %s", err)
+		}
+
+		return nil
 	})
 	if err != nil {
 		return fmt.Errorf("error getting first layer from registry: %s", err)

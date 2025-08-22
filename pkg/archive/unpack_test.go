@@ -79,7 +79,7 @@ func TestProcessTarContentsDisplay(t *testing.T) {
 		return ProcessTarContents(reader, CallbackDisplayTarItem)
 	})
 	if err != nil {
-		t.Errorf("failed to process tar contents: %v", err)
+		t.Errorf("failed to load tool: %v", err)
 	}
 }
 

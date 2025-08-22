@@ -55,7 +55,12 @@ func GetFirstLayerFromDockerImage(cli *client.Client, ref *ToolRef, callback fun
 			//nolint:errcheck
 			defer reader.Close()
 
-			return callback(reader)
+			err = callback(reader)
+			if err != nil {
+				return fmt.Errorf("failed to execute callback: %w", err)
+			}
+
+			return nil
 		})
 		if err != nil {
 			return fmt.Errorf("failed to unpack layer: %s", err)
@@ -113,7 +118,12 @@ func ReadDockerImage(cli *client.Client, ref string, callback func(reader io.Rea
 		return fmt.Errorf("failed to save image: %s", err)
 	}
 
-	return callback(reader)
+	err = callback(reader)
+	if err != nil {
+		return fmt.Errorf("failed to execute callback: %w", err)
+	}
+
+	return nil
 }
 
 func UnpackLayerFromDockerImage(buffer io.ReadCloser, sha256 string, callback func(reader io.ReadCloser) error) error {
@@ -134,7 +144,11 @@ func UnpackLayerFromDockerImage(buffer io.ReadCloser, sha256 string, callback fu
 
 		switch header.Typeflag {
 		case tar.TypeReg:
-			return callback(io.NopCloser(tarReader))
+			err = callback(io.NopCloser(tarReader))
+			if err != nil {
+				return fmt.Errorf("failed to execute callback: %w", err)
+			}
+			return nil
 		}
 	}
 
