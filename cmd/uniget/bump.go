@@ -9,7 +9,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/uniget-org/cli/pkg/containers"
 	"github.com/uniget-org/cli/pkg/parse"
-	"github.com/uniget-org/cli/pkg/tool"
 )
 
 var (
@@ -51,10 +50,8 @@ func SlurpFile(filePath string) ([]byte, error) {
 }
 
 func processDockerfile(cmd *cobra.Command, args []string) error {
-	tools, err := tool.LoadMetadata([]string{"ghcr.io"}, []string{"uniget-org/tools"}, "main")
-	if err != nil {
-		panic(err)
-	}
+	assertMetadataFileExists()
+	assertMetadataIsLoaded()
 
 	file, err := SlurpFile(bumpDockerfile)
 	if err != nil {
