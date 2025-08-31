@@ -21,7 +21,7 @@ require (
 	github.com/pterm/pterm v0.12.81
 	github.com/regclient/regclient v0.9.2
 	github.com/spf13/cobra v1.9.1
-	github.com/spf13/pflag v1.0.7
+	github.com/spf13/pflag v1.0.8
 	github.com/spf13/viper v1.20.1
 	golang.org/x/sys v0.35.0
 	gopkg.in/yaml.v3 v3.0.1
