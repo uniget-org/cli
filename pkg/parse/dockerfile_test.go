@@ -54,7 +54,7 @@ func TestExtractImageReferences(t *testing.T) {
 			}
 
 			reader := strings.NewReader(tc.input)
-			imageRefs, err := ExtractImageReferences(reader)
+			imageRefs, err := ExtractImageReferencesFromDockerfile(reader)
 			if err != nil {
 				t.Fatalf("Expected no error, got %v", err)
 			}

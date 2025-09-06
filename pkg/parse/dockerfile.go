@@ -9,15 +9,7 @@ import (
 	"github.com/regclient/regclient/types/ref"
 )
 
-type ImageRefs struct {
-	Refs []ref.Ref
-}
-
-func (r *ImageRefs) Add(ref ref.Ref) {
-	r.Refs = append(r.Refs, ref)
-}
-
-func ExtractImageReferences(reader io.Reader) (ImageRefs, error) {
+func ExtractImageReferencesFromDockerfile(reader io.Reader) (ImageRefs, error) {
 	result, err := parser.Parse(reader)
 	if err != nil {
 		return ImageRefs{}, fmt.Errorf("failed to parse Dockerfile: %w", err)
