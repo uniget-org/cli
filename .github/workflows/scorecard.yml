@@ -1,8 +1,7 @@
 name: Scorecard supply-chain security
 on:
-  push:
-    tags:
-    - "v*"
+  schedule:
+  - cron: "45 4 * * *"
 
 permissions: read-all
 
