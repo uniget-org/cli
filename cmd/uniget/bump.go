@@ -1,29 +1,32 @@
 package main
 
 import (
-	"bytes"
-	"context"
 	"fmt"
-	"io"
-	"os"
 
-	"github.com/compose-spec/compose-go/v2/cli"
 	"github.com/spf13/cobra"
-	"github.com/uniget-org/cli/pkg/containers"
+	"github.com/uniget-org/cli/pkg/logging"
 	"github.com/uniget-org/cli/pkg/parse"
 )
 
 var (
-	bumpDockerfile  = "Dockerfile"
-	bumpComposeFile = "compose.yaml"
+	bumpDockerfileName     = "Dockerfile"
+	bumpComposeFileName    = "compose.yaml"
+	bumpKubernetesFileName = ""
 )
 
 func initBumpCmd() {
-	bumpDockerfileCmd.Flags().StringVarP(&bumpDockerfile, "file", "f", bumpDockerfile, "Path to Dockerfile")
-	bumpComposeCmd.Flags().StringVarP(&bumpComposeFile, "file", "f", bumpComposeFile, "Path to compose file")
+	bumpDockerfileCmd.Flags().StringVarP(&bumpDockerfileName, "file", "f", bumpDockerfileName, "Path to Dockerfile")
+	bumpComposeCmd.Flags().StringVarP(&bumpComposeFileName, "file", "f", bumpComposeFileName, "Path to compose file")
+	bumpKubernetesCmd.Flags().StringVarP(&bumpKubernetesFileName, "file", "f", bumpKubernetesFileName, "Path to Kubernetes manifest")
+
+	err := bumpKubernetesCmd.MarkFlagRequired("file")
+	if err != nil {
+		logging.Error.Printfln("Failed to mark flag as required: %v", err)
+	}
 
 	bumpCmd.AddCommand(bumpDockerfileCmd)
 	bumpCmd.AddCommand(bumpComposeCmd)
+	bumpCmd.AddCommand(bumpKubernetesCmd)
 	rootCmd.AddCommand(bumpCmd)
 }
 
@@ -39,7 +42,7 @@ var bumpDockerfileCmd = &cobra.Command{
 	Short: "Bump image references in a Dockerfile",
 	Long:  header + "\nBump image references in a Dockerfile",
 	Args:  cobra.NoArgs,
-	RunE:  processDockerfile,
+	RunE:  processBumpDockerfileCmd,
 }
 
 var bumpComposeCmd = &cobra.Command{
@@ -47,116 +50,50 @@ var bumpComposeCmd = &cobra.Command{
 	Short: "Bump image references in a compose file",
 	Long:  header + "\nBump image references in a compose file",
 	Args:  cobra.NoArgs,
-	RunE:  processComposeFile,
+	RunE:  processComposeFileCmd,
 }
 
-func SlurpFile(filePath string) ([]byte, error) {
-	f, err := os.Open(filePath) // #nosec G304 -- Data input
-	if err != nil {
-		return nil, fmt.Errorf("failed to open file: %s", err)
-	}
-	defer func() {
-		_ = f.Close()
-	}()
-
-	return io.ReadAll(f)
+var bumpKubernetesCmd = &cobra.Command{
+	Use:     "kubernetes",
+	Aliases: []string{"k8s"},
+	Short:   "Bump image references in a Kubernetes manifest",
+	Long:    header + "\nBump image references in a Kubernetes manifest",
+	Args:    cobra.NoArgs,
+	RunE:    processKubernetesFileCmd,
 }
 
-func BumpImageRefs(imageRefs *parse.ImageRefs, file []byte) ([]byte, error) {
-	for _, ref := range imageRefs.Refs {
-		if ref.Registry == "ghcr.io" && ref.Repository[0:17] == "uniget-org/tools/" {
-			toolName := ref.Repository[17:]
-			tool, err := tools.GetByName(toolName)
-			if err != nil {
-				return nil, fmt.Errorf("tool %s not found in metadata: %s", toolName, err)
-			}
-
-			refPattern := ref.Reference
-
-			ref.Tag = tool.Version
-			ref.Digest = ""
-			ref.Reference = fmt.Sprintf("%s/%s:%s", ref.Registry, ref.Repository, ref.Tag)
-			ref.Digest, err = containers.FindNewDigest(ref)
-			if err != nil {
-				return nil, fmt.Errorf("failed to find new digest for %s: %w", ref, err)
-			}
-
-			refReplacement := fmt.Sprintf("%s/%s:%s@%s", ref.Registry, ref.Repository, ref.Tag, ref.Digest)
-
-			if refPattern != refReplacement {
-				fmt.Printf("Updating %s to %s with digest %s\n", tool.Name, tool.Version, ref.Digest)
-				file = bytes.ReplaceAll(file, []byte(refPattern), []byte(refReplacement))
-			}
-		}
-	}
-
-	return file, nil
-}
-
-func processDockerfile(cmd *cobra.Command, args []string) error {
+func processBumpDockerfileCmd(cmd *cobra.Command, args []string) error {
 	assertMetadataFileExists()
 	assertMetadataIsLoaded()
 
-	file, err := SlurpFile(bumpDockerfile)
+	err := parse.BumpDockerfile(bumpDockerfileName, &tools)
 	if err != nil {
-		return fmt.Errorf("failed to read file: %w", err)
-	}
-
-	reader := bytes.NewReader(file)
-	imageRefs, err := parse.ExtractImageReferencesFromDockerfile(reader)
-	if err != nil {
-		return fmt.Errorf("failed to extract image references: %w", err)
-	}
-	file, err = BumpImageRefs(&imageRefs, file)
-
-	stat, err := os.Stat(bumpDockerfile)
-	if err != nil {
-		return fmt.Errorf("failed to stat file %s: %w", bumpDockerfile, err)
-	}
-	err = os.WriteFile(bumpDockerfile, file, stat.Mode())
-	if err != nil {
-		return fmt.Errorf("failed to write file %s: %w", bumpDockerfile, err)
+		return fmt.Errorf("failed to bump dockerfile: %w", err)
 	}
 
 	return nil
 }
 
-func processComposeFile(cmd *cobra.Command, args []string) error {
+func processComposeFileCmd(cmd *cobra.Command, args []string) error {
 	assertMetadataFileExists()
 	assertMetadataIsLoaded()
 
-	file, err := SlurpFile(bumpDockerfile)
+	err := parse.BumpComposeFile(bumpComposeFileName, &tools)
 	if err != nil {
-		return fmt.Errorf("failed to read file: %w", err)
+		return fmt.Errorf("failed to bump compose file: %w", err)
 	}
 
-	options, err := cli.NewProjectOptions(
-		[]string{bumpComposeFile},
-		cli.WithOsEnv,
-		cli.WithDotEnv,
-		cli.WithName(projectName),
-	)
-	if err != nil {
-		return fmt.Errorf("failed to create compose project options: %w", err)
-	}
+	return nil
+}
 
-	project, err := options.LoadProject(context.Background())
-	if err != nil {
-		return fmt.Errorf("failed to load compose project: %w", err)
-	}
+func processKubernetesFileCmd(cmd *cobra.Command, args []string) error {
+	assertMetadataFileExists()
+	assertMetadataIsLoaded()
 
-	// TODO: Fetch build info and find Dockerfile to process
-	for _, service := range project.Services {
-		if service.Build != nil {
-			fmt.Printf("Service %s has build info, skipping for now\n", service.Name)
-		}
-	}
-
-	imageRefs, err := parse.ExtractImageReferencesFromComposeFile(project)
+	err := parse.BumpKubernetesFile(bumpKubernetesFileName, &tools)
 	if err != nil {
-		return fmt.Errorf("failed to extract image references: %w", err)
+		return fmt.Errorf("failed to bump kubernetes file: %w", err)
 	}
-	file, err = BumpImageRefs(&imageRefs, file)
 
 	return nil
 }

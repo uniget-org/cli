@@ -8,7 +8,7 @@ import (
 	"github.com/regclient/regclient/types/ref"
 )
 
-var parseTestCases = []struct {
+var parseDockerfileTestCases = []struct {
 	name         string
 	input        string
 	expected     []string
@@ -40,8 +40,8 @@ var parseTestCases = []struct {
 	},
 }
 
-func TestExtractImageReferences(t *testing.T) {
-	for _, tc := range parseTestCases {
+func TestExtractImageReferencesFromDockerfile(t *testing.T) {
+	for _, tc := range parseDockerfileTestCases {
 		t.Run(tc.name, func(t *testing.T) {
 
 			tc.expectedRefs = make([]ref.Ref, len(tc.expected))

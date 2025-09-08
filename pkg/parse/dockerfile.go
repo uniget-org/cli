@@ -1,12 +1,16 @@
 package parse
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"strings"
 
 	"github.com/moby/buildkit/frontend/dockerfile/parser"
 	"github.com/regclient/regclient/types/ref"
+	"github.com/uniget-org/cli/pkg/logging"
+	myos "github.com/uniget-org/cli/pkg/os"
+	"github.com/uniget-org/cli/pkg/tool"
 )
 
 func ExtractImageReferencesFromDockerfile(reader io.Reader) (ImageRefs, error) {
@@ -45,4 +49,28 @@ func ExtractImageReferencesFromDockerfile(reader io.Reader) (ImageRefs, error) {
 	}
 
 	return imageRefs, nil
+}
+
+func BumpDockerfile(dockerfile string, tools *tool.Tools) error {
+	file, err := myos.SlurpFile(dockerfile)
+	if err != nil {
+		return fmt.Errorf("failed to read file: %w", err)
+	}
+
+	reader := bytes.NewReader(file)
+	imageRefs, err := ExtractImageReferencesFromDockerfile(reader)
+	if err != nil {
+		return fmt.Errorf("failed to extract image references: %w", err)
+	}
+	if len(imageRefs.Refs) == 0 {
+		logging.Warning.Printfln("No image references found in Dockerfile %s", dockerfile)
+		return nil
+	}
+
+	err = ReplaceInFile(dockerfile, &imageRefs, tools)
+	if err != nil {
+		return fmt.Errorf("failed to replace image references in file: %w", err)
+	}
+
+	return nil
 }

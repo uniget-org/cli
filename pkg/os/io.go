@@ -2,6 +2,8 @@ package os
 
 import (
 	"fmt"
+	"io"
+	"os"
 )
 
 func ConvertFileModeToString(mode int64) (string, error) {
@@ -95,4 +97,16 @@ func ConvertFileModeToString(mode int64) (string, error) {
 	}
 
 	return result, nil
+}
+
+func SlurpFile(filePath string) ([]byte, error) {
+	f, err := os.Open(filePath) // #nosec G304 -- Data input
+	if err != nil {
+		return nil, fmt.Errorf("failed to open file: %s", err)
+	}
+	defer func() {
+		_ = f.Close()
+	}()
+
+	return io.ReadAll(f)
 }
