@@ -35,3 +35,4 @@ __check_defined = \
 include make/helper.mk
 include make/go.mk
 include make/release.mk
+include make/git.mk
