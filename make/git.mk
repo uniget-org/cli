@@ -7,7 +7,7 @@ branches:
 .PHONY:
 $(addprefix rebase--,$(BRANCHES)):rebase--%: ; $(info $(M) Rebasing branch $*...)
 	@git switch $*
-	@git reset --hard origin
+	@git reset --hard origin/$*
 	@git rebase main
 	@git push --force-with-lease
 	@git switch main
