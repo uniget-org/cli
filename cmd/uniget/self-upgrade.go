@@ -41,6 +41,11 @@ var selfUpgradeCmd = &cobra.Command{
 			return fmt.Errorf("failed to get uniget tool: %s", err)
 		}
 
+		if unigetTool.Version == version {
+			logging.Info.Printfln("uniget %s is already installed", unigetTool.Version)
+			return nil
+		}
+
 		selfExe := filepath.Base(os.Args[0])
 		if selfExe == "." {
 			return fmt.Errorf("failed to get base name for %s", os.Args[0])
