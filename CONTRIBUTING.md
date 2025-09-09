@@ -81,5 +81,5 @@ docker buildx bake test
 
 ## Code of Conduct
 
-Sigstore adheres to and enforces the [Contributor Covenant](http://contributor-covenant.org/version/1/4/) Code of Conduct.
+uniget adheres to and enforces the [Contributor Covenant](http://contributor-covenant.org/version/1/4/) Code of Conduct.
 Please take a moment to read the [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) document.
