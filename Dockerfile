@@ -75,9 +75,6 @@ RUN --mount=target=.,readwrite \
     --mount=from=uniget-jq,src=/bin/jq,target=/usr/local/bin/jq \
     --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build <<EOF
-export GLAB_SEND_TELEMETRY=0
-glab auth login --hostname="${CI_SERVER_HOST}" --job-token="${CI_JOB_TOKEN}"
-bash scripts/release-notes-gitlab.sh >/tmp/release-notes.md
 goreleaser healthcheck --config=.goreleaser-gitlab.yaml
 goreleaser release --config=.goreleaser-gitlab.yaml --release-notes=/tmp/release-notes.md
 cp /tmp/release-notes.md .
