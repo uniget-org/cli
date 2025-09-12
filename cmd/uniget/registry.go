@@ -14,6 +14,7 @@ import (
 )
 
 var (
+	regVersion          = "main"
 	regFormat           = "pretty"
 	regManifestPlatform = ""
 	regSizeHuman        = false
@@ -22,6 +23,7 @@ var (
 func initRegCmd() {
 	regIndexCmd.Flags().StringVarP(&regFormat, "format", "f", regFormat, "Specify the output format (pretty|json)")
 
+	regManifestCmd.Flags().StringVarP(&regVersion, "version", "", "", "Specify the version for the manifest")
 	regManifestCmd.Flags().StringVarP(&regManifestPlatform, "platform", "", "", "Specify the platform for the manifest")
 	regManifestCmd.Flags().StringVarP(&regFormat, "format", "f", regFormat, "Specify the output format (pretty|json)")
 
@@ -105,7 +107,7 @@ var regManifestCmd = &cobra.Command{
 
 		ctx := context.Background()
 
-		image := registry + "/" + imageRepository + toolSeparator + args[0]
+		image := registry + "/" + imageRepository + toolSeparator + args[0] + ":" + regVersion
 		r, err := ref.New(image)
 		if err != nil {
 			return fmt.Errorf("failed to parse image name <%s>: %s", image, err)
