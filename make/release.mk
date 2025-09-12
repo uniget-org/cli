@@ -60,9 +60,15 @@ tag--%: ; $(info $(M) Creating tag v$*...)
 		exit 1; \
 	fi
 	@git tag -a -m $* v$*
+
+.PHONY:
+push--%: ; $(info $(M) Pushing tag v$*...)
 	@git push origin v$*
 
 .PHONY:
 retag--%: ; $(info $(M) Creating tag v$*...)
 	@git tag -a -m $* -f v$*
+
+.PHONY:
+repush--%: ; $(info $(M) Pushing tag v$*...)
 	@git push origin v$* -f
