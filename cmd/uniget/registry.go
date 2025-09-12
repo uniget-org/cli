@@ -21,20 +21,25 @@ var (
 )
 
 func initRegCmd() {
+	regIndexCmd.Flags().StringVarP(&regVersion, "version", "", regVersion, "Specify the version for the index")
 	regIndexCmd.Flags().StringVarP(&regFormat, "format", "f", regFormat, "Specify the output format (pretty|json)")
 
-	regManifestCmd.Flags().StringVarP(&regVersion, "version", "", "", "Specify the version for the manifest")
+	regManifestCmd.Flags().StringVarP(&regVersion, "version", "", regVersion, "Specify the version for the manifest")
 	regManifestCmd.Flags().StringVarP(&regManifestPlatform, "platform", "", "", "Specify the platform for the manifest")
 	regManifestCmd.Flags().StringVarP(&regFormat, "format", "f", regFormat, "Specify the output format (pretty|json)")
 
+	regSizeCmd.Flags().StringVarP(&regVersion, "version", "", regVersion, "Specify the version for the manifest")
 	regSizeCmd.Flags().StringVarP(&regManifestPlatform, "platform", "", "", "Specify the platform for the manifest")
 	regSizeCmd.Flags().BoolVarP(&regSizeHuman, "human", "H", regSizeHuman, "Display size in human-readable format")
 	regSizeCmd.Flags().StringVarP(&regFormat, "format", "f", regFormat, "Specify the output format (json|text)")
+
+	regRefCmd.Flags().StringVarP(&regVersion, "version", "", regVersion, "Specify the version for the reference")
 
 	regCmd.AddCommand(regIndexCmd)
 	regCmd.AddCommand(regManifestCmd)
 	regCmd.AddCommand(regSizeCmd)
 	regCmd.AddCommand(regTagsCmd)
+	regCmd.AddCommand(regRefCmd)
 
 	rootCmd.AddCommand(regCmd)
 }
@@ -59,6 +64,22 @@ func getFormatString() string {
 	return format
 }
 
+func buildReference(tool string) string {
+	return registry + "/" + imageRepository + toolSeparator + tool + ":" + regVersion
+}
+
+var regRefCmd = &cobra.Command{
+	Use:     "reference",
+	Aliases: []string{"ref", "r"},
+	Short:   "Display image reference",
+	Long:    header + "\nDisplay image reference",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		fmt.Println(buildReference(args[0]))
+
+		return nil
+	},
+}
+
 var regIndexCmd = &cobra.Command{
 	Use:     "index",
 	Aliases: []string{"i"},
@@ -69,7 +90,7 @@ var regIndexCmd = &cobra.Command{
 
 		ctx := context.Background()
 
-		image := registry + "/" + imageRepository + toolSeparator + args[0]
+		image := buildReference(args[0])
 		r, err := ref.New(image)
 		if err != nil {
 			return fmt.Errorf("failed to parse image name <%s>: %s", image, err)
@@ -107,7 +128,7 @@ var regManifestCmd = &cobra.Command{
 
 		ctx := context.Background()
 
-		image := registry + "/" + imageRepository + toolSeparator + args[0] + ":" + regVersion
+		image := buildReference(args[0])
 		r, err := ref.New(image)
 		if err != nil {
 			return fmt.Errorf("failed to parse image name <%s>: %s", image, err)
@@ -151,7 +172,7 @@ var regSizeCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
-		image := registry + "/" + imageRepository + toolSeparator + args[0]
+		image := buildReference(args[0])
 		r, err := ref.New(image)
 		if err != nil {
 			return fmt.Errorf("failed to parse image name <%s>: %s", image, err)
@@ -212,7 +233,7 @@ var regTagsCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
-		image := registry + "/" + imageRepository + toolSeparator + args[0]
+		image := buildReference(args[0])
 		r, err := ref.New(image)
 		if err != nil {
 			return fmt.Errorf("failed to parse image name <%s>: %s", image, err)
