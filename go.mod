@@ -125,9 +125,9 @@ require (
 	github.com/prometheus/common v0.66.1 // indirect
 	github.com/prometheus/otlptranslator v0.0.2 // indirect
 	github.com/prometheus/procfs v0.17.0 // indirect
-	github.com/redis/go-redis/extra/rediscmd/v9 v9.13.0 // indirect
+	github.com/redis/go-redis/extra/rediscmd/v9 v9.14.0 // indirect
 	github.com/redis/go-redis/extra/redisotel/v9 v9.13.0 // indirect
-	github.com/redis/go-redis/v9 v9.13.0 // indirect
+	github.com/redis/go-redis/v9 v9.14.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/sagikazarmark/locafero v0.11.0 // indirect
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.1 // indirect
