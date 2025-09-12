@@ -352,12 +352,12 @@ github.com/pterm/pterm v0.12.36/go.mod h1:NjiL09hFhT/vWjQHSj1athJpx6H8cjpHXNAK5b
 github.com/pterm/pterm v0.12.40/go.mod h1:ffwPLwlbXxP+rxT0GsgDTzS3y3rmpAO1NMjUkGTYf8s=
 github.com/pterm/pterm v0.12.81 h1:ju+j5I2++FO1jBKMmscgh5h5DPFDFMB7epEjSoKehKA=
 github.com/pterm/pterm v0.12.81/go.mod h1:TyuyrPjnxfwP+ccJdBTeWHtd/e0ybQHkOS/TakajZCw=
-github.com/redis/go-redis/extra/rediscmd/v9 v9.13.0 h1:Q184eoRJ01fpSjyI/LDhlVQuGIZ1Npe8YTot6HhGrCw=
-github.com/redis/go-redis/extra/rediscmd/v9 v9.13.0/go.mod h1:Db8UA/vKJPzBV5Uvvj6ubspqSdATDCfDmtuwEPdmats=
+github.com/redis/go-redis/extra/rediscmd/v9 v9.14.0 h1:DF7JP9CeCIEWbvVKA3r7dxCB1cUvEm+cD8fgWCn7R0g=
+github.com/redis/go-redis/extra/rediscmd/v9 v9.14.0/go.mod h1:JCn91QtwR6qo3PEs35hcpBSirjqKpKwSSjnZX4kYgI0=
 github.com/redis/go-redis/extra/redisotel/v9 v9.13.0 h1:bHRa88+YuOajvNx2L/a8fJ12qukZIjC/ExCzOAj7PYY=
 github.com/redis/go-redis/extra/redisotel/v9 v9.13.0/go.mod h1:cnbHiDUWVGmTJuhWJoIXc8IYcBgo3o8xGDHCuGOJ6aw=
-github.com/redis/go-redis/v9 v9.13.0 h1:PpmlVykE0ODh8P43U0HqC+2NXHXwG+GUtQyz+MPKGRg=
-github.com/redis/go-redis/v9 v9.13.0/go.mod h1:huWgSWd8mW6+m0VPhJjSSQ+d6Nh1VICQ6Q5lHuCH/Iw=
+github.com/redis/go-redis/v9 v9.14.0 h1:u4tNCjXOyzfgeLN+vAZaW1xUooqWDqVEsZN0U01jfAE=
+github.com/redis/go-redis/v9 v9.14.0/go.mod h1:huWgSWd8mW6+m0VPhJjSSQ+d6Nh1VICQ6Q5lHuCH/Iw=
 github.com/regclient/regclient v0.9.2 h1:5mJYY3NSV7xtBCv+Me3mbfcNJg9u7nrNt/Z6Od7QjVM=
 github.com/regclient/regclient v0.9.2/go.mod h1:QOi29pa84xH+AA56bQwQbzw3RZDwqHrG15KTXGeO+Q8=
 github.com/rivo/uniseg v0.1.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=
