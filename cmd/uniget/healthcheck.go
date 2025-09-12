@@ -17,6 +17,7 @@ var healthcheckCmd = &cobra.Command{
 	Aliases: []string{"health"},
 	Short:   "Check health of installed tool",
 	Long:    header + "\nCheck health of installed tool",
+	Hidden:  true,
 	Args:    cobra.ExactArgs(1),
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp

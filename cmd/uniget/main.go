@@ -533,11 +533,6 @@ func main() {
 		logging.Error.Printfln("Unable to mark metadata-image-tag as hidden: %s", err)
 		os.Exit(1)
 	}
-	err = rootCmd.Flags().MarkHidden("healthcheck")
-	if err != nil {
-		logging.Error.Printfln("Unable to mark healthcheck as hidden: %s", err)
-		os.Exit(1)
-	}
 
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix("uniget")
