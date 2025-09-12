@@ -73,6 +73,10 @@ var regRefCmd = &cobra.Command{
 	Aliases: []string{"ref", "r"},
 	Short:   "Display image reference",
 	Long:    header + "\nDisplay image reference",
+	Args:    cobra.ExactArgs(1),
+	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fmt.Println(buildReference(args[0]))
 
@@ -85,6 +89,10 @@ var regIndexCmd = &cobra.Command{
 	Aliases: []string{"i"},
 	Short:   "Display image index",
 	Long:    header + "\nDisplay image index",
+	Args:    cobra.ExactArgs(1),
+	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		format := getFormatString()
 
