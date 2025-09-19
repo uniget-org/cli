@@ -5,17 +5,22 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/uniget-org/cli/pkg/tool"
 	//"github.com/uniget-org/cli/pkg/tool"
 )
 
-var baseImage string
-var imageTarget string
+var (
+	baseImage   = "ubuntu:24.04"
+	imageTarget = "usr/local"
+	pinVersions = false
+)
 
 func initGenerateCmd() {
 	rootCmd.AddCommand(generateCmd)
 
-	generateCmd.Flags().StringVar(&baseImage, "base", "ubuntu:24.04", "Base image to use")
-	generateCmd.Flags().StringVar(&imageTarget, "root", "usr/local", "Root directory to install tools")
+	generateCmd.Flags().StringVar(&baseImage, "base", baseImage, "Base image to use")
+	generateCmd.Flags().StringVar(&imageTarget, "root", imageTarget, "Root directory to install tools")
+	generateCmd.Flags().BoolVar(&pinVersions, "pin-versions", pinVersions, "Pin tool versions (default: false)")
 }
 
 var generateCmd = &cobra.Command{
@@ -28,39 +33,36 @@ var generateCmd = &cobra.Command{
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		var result []string
-
-		result = append(result, "#syntax=docker/dockerfile:1")
-		result = append(result, fmt.Sprintf("FROM %s", baseImage))
-
+		var requestedTools tool.Tools
+		var plannedTools tool.Tools
 		for _, toolName := range args {
-			var toolVersion = "latest"
-			if strings.Contains(toolName, "@") {
-				toolVersion = strings.Split(toolName, "@")[1]
-				toolName = strings.Split(toolName, "@")[0]
-			}
-
 			tool, err := tools.GetByName(toolName)
 			if err != nil {
-				return fmt.Errorf("failed to get tool %s: %w", toolName, err)
+				return fmt.Errorf("unable to find tool %s: %s", toolName, err)
 			}
-			checkClientVersionRequirement(tool)
-
-			for _, depName := range tool.RuntimeDependencies {
-				dep, err := tools.GetByName(depName)
-				if err != nil {
-					return fmt.Errorf("unable to find dependency called %s for %s", depName, toolName)
-				}
-				checkClientVersionRequirement(dep)
-				result = append(result, fmt.Sprintf("COPY --link --from=%s%s:latest / /%s", registryImagePrefix, dep.Name, imageTarget))
+			requestedTools.Tools = append(requestedTools.Tools, *tool)
+		}
+		for _, tool := range requestedTools.Tools {
+			err := tools.ResolveDependencies(&plannedTools, tool.Name)
+			if err != nil {
+				return fmt.Errorf("unable to resolve dependencies for %s: %s", tool.Name, err)
 			}
+		}
 
-			if len(toolVersion) == 0 {
+		var result []string
+		result = append(result, "#syntax=docker/dockerfile:1")
+		result = append(result, "")
+		for _, tool := range plannedTools.Tools {
+			var toolVersion = "latest"
+			if pinVersions {
 				toolVersion = tool.Version
-			} else if toolVersion != "latest" {
-				result = append(result, fmt.Sprintf("# Warning: Unable to check if %s has version %s", toolName, toolVersion))
 			}
-			result = append(result, fmt.Sprintf("COPY --link --from=%s%s:%s / /%s", registryImagePrefix, tool.Name, strings.ReplaceAll(toolVersion, "+", "-"), imageTarget))
+			result = append(result, fmt.Sprintf("FROM %s%s:%s AS %s", registryImagePrefix, tool.Name, toolVersion, tool.Name))
+		}
+		result = append(result, "")
+		result = append(result, fmt.Sprintf("FROM %s", baseImage))
+		for _, tool := range plannedTools.Tools {
+			result = append(result, fmt.Sprintf("COPY --link --from=%s%s:latest / /%s", registryImagePrefix, tool.Name, imageTarget))
 		}
 
 		//nolint:errcheck
