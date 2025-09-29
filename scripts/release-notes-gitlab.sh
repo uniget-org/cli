@@ -31,20 +31,20 @@ cat <<EOF
 ## Installation
 
 \`\`\`bash
-curl -sSLf https://gitlab.com/uniget-org/cli-build-test/-/releases/${TAG}/downloads/uniget_Linux_\$(uname -m).tar.gz \\
+curl -sSLf https://gitlab.com/uniget-org/cli/-/releases/${TAG}/downloads/uniget_Linux_\$(uname -m).tar.gz \\
 | sudo tar -xzC /usr/local/bin uniget
 \`\`\`
 
 ## Signature verification
 
 \`\`\`bash
-curl -sSLfO https://gitlab.com/uniget-org/cli-build-test/-/releases/${TAG}/downloads/uniget_Linux_\$(uname -m).tar.gz
-curl -sSLfO https://gitlab.com/uniget-org/cli-build-test/-/releases/${TAG}/downloads/uniget_Linux_\$(uname -m).tar.gz.pem
-curl -sSLfO https://gitlab.com/uniget-org/cli-build-test/-/releases/${TAG}/downloads/uniget_Linux_\$(uname -m).tar.gz.sig
+curl -sSLfO https://gitlab.com/uniget-org/cli/-/releases/${TAG}/downloads/uniget_Linux_\$(uname -m).tar.gz
+curl -sSLfO https://gitlab.com/uniget-org/cli/-/releases/${TAG}/downloads/uniget_Linux_\$(uname -m).tar.gz.pem
+curl -sSLfO https://gitlab.com/uniget-org/cli/-/releases/${TAG}/downloads/uniget_Linux_\$(uname -m).tar.gz.sig
 cosign verify-blob uniget_linux_\$(uname -m).tar.gz \\
     --certificate uniget_linux_\$(uname -m).tar.gz.pem \\
     --signature uniget_linux_\$(uname -m).tar.gz.sig \\
-    --certificate-identity 'https://gitlab.com/uniget-org/cli-build-test//.gitlab-ci.yml@refs/tags/${TAG}' \\
+    --certificate-identity 'https://gitlab.com/uniget-org/cli//.gitlab-ci.yml@refs/tags/${TAG}' \\
     --certificate-oidc-issuer https://gitlab.com
 \`\`\`
 EOF
@@ -82,5 +82,5 @@ echo
 cat <<EOF
 ## Full Changelog (since ${PREVIOUS_TAG})
 
-[Compare with previous release](https://gitlab.com/uniget-org/cli-build-test/-/compare/${PREVIOUS_TAG}...${TAG})
+[Compare with previous release](https://gitlab.com/uniget-org/cli/-/compare/${PREVIOUS_TAG}...${TAG})
 EOF
