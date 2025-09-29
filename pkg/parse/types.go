@@ -48,7 +48,7 @@ func (imageRefs *ImageRefs) Bump(tools *tool.Tools) error {
 			}
 
 		} else {
-			imageRefs.BumpedRefs = append(imageRefs.BumpedRefs, reference)
+			imageRefs.BumpedRefs[index] = reference
 		}
 	}
 
