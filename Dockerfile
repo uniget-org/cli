@@ -54,8 +54,8 @@ RUN --mount=target=.,readwrite \
     --mount=from=uniget-jq,src=/bin/jq,target=/usr/local/bin/jq \
     --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build <<EOF
-goreleaser healthcheck
-goreleaser release
+goreleaser healthcheck --config=.goreleaser-github.yaml
+goreleaser release --config=.goreleaser-github.yaml
 bash scripts/release-notes-github.sh >release-notes.md
 echo "Updating release ${GITHUB_REF_NAME} with release notes"
 gh release edit "${GITHUB_REF_NAME}" --notes-file release-notes.md
@@ -75,8 +75,8 @@ RUN --mount=target=.,readwrite \
     --mount=from=uniget-jq,src=/bin/jq,target=/usr/local/bin/jq \
     --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build <<EOF
-goreleaser healthcheck --config=.goreleaser-gitlab.yaml
-goreleaser release --config=.goreleaser-gitlab.yaml --release-notes=release-notes.md
+goreleaser healthcheck
+goreleaser release --release-notes=release-notes.md
 EOF
 
 FROM base AS unit-test

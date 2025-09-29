@@ -62,6 +62,9 @@ signs:
   - --yes
   artifacts: all
 
+changelog:
+  disable: true
+
 release:
   github:
     owner: uniget-org
