@@ -3,12 +3,7 @@ set -o errexit -o pipefail
 
 export NO_COLOR=true
 
-TAG="$(
-    git tag \
-    | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+' \
-    | sort -V \
-    | tail -n 1
-)"
+TAG="$( git describe --tag --abbrev=0 )"
 if test -z "${PREVIOUS_TAG}"; then
     PREVIOUS_TAG="$(
         git tag --list v* \
