@@ -25,8 +25,10 @@ release:
   extends:
   - .docker
   - .docker:dind
+  id_tokens:
+    SIGSTORE_ID_TOKEN:
+      aud: sigstore
   variables:
-    SIGSTORE_ID_TOKEN: $PARENT_SIGSTORE_ID_TOKEN
     GIT_DEPTH: 0
   before_script: |
     if ! test -s release-notes.md; then
@@ -34,7 +36,6 @@ release:
       exit 1
     fi
   script:
-  - printenv | sort
   - test -n "$CI_SERVER_HOST"
   - test -n "$CI_JOB_TOKEN"
   - test -n "$GITLAB_TOKEN"

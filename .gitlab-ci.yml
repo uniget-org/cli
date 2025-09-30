@@ -16,19 +16,53 @@ test:
     include: pipeline/test.yaml
     strategy: depend
 
+release_notes:
+  rules:
+  - if: $CI_COMMIT_TAG =~ /^v/
+  image: registry.gitlab.com/uniget-org/cli:noble
+  variables:
+    GIT_DEPTH: 0
+    GLAB_SEND_TELEMETRY: 0
+  before_script: |
+    uniget install glab 
+    glab auth login --hostname="${CI_SERVER_HOST}" --job-token="${CI_JOB_TOKEN}"
+  script: |
+    bash scripts/release-notes-gitlab.sh >release-notes.md
+  artifacts:
+    paths:
+    - release-notes.md
+
 release:
   rules:
   - if: $CI_COMMIT_TAG =~ /^v/
-    needs:
-    - test
+  needs:
+  - release_notes
+  extends:
+  - .docker
+  - .docker:dind
   id_tokens:
     SIGSTORE_ID_TOKEN:
       aud: sigstore
   variables:
-    PARENT_SIGSTORE_ID_TOKEN: $SIGSTORE_ID_TOKEN
-  trigger:
-    include: pipeline/release.yaml
-    strategy: depend
+    GIT_DEPTH: 0
+  before_script: |
+    if ! test -s release-notes.md; then
+      echo "Release notes not found"
+      exit 1
+    fi
+  script:
+  - test -n "$CI_SERVER_HOST"
+  - test -n "$CI_JOB_TOKEN"
+  - test -n "$GITLAB_TOKEN"
+  - test -n "$SIGSTORE_ID_TOKEN"
+  - |
+    docker buildx build \
+        --target=publish-gitlab \
+        --build-arg=CI_SERVER_HOST \
+        --build-arg=CI_JOB_TOKEN \
+        --build-arg=GITLAB_TOKEN \
+        --build-arg=SIGSTORE_ID_TOKEN \
+        .
 
 images:
   rules:
