@@ -14,6 +14,7 @@ test:
   - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   trigger:
     include: pipeline/test.yaml
+    strategy: depend
 
 release:
   rules:
@@ -22,6 +23,7 @@ release:
     - test
   trigger:
     include: pipeline/release.yaml
+    strategy: depend
 
 images:
   rules:
@@ -43,6 +45,7 @@ images:
       PUSH: "true"
   trigger:
     include: pipeline/image.yaml
+    strategy: depend
 
 scorecard:
   rules:
@@ -51,3 +54,4 @@ scorecard:
     - release
   trigger:
     include: pipeline/scorecard.yaml
+    strategy: depend

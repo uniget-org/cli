@@ -1,10 +1,6 @@
 include:
 - local: pipeline/docker.yaml
 
-foo:
-  script: |
-    printenv | sort
-
 lint:
   rules:
   - if: $CI_MERGE_REQUEST_ID
