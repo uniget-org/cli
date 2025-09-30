@@ -35,8 +35,12 @@ release:
       echo "Release notes not found"
       exit 1
     fi
-  script: |
-    docker buildx build \
+  script:
+  - test -n "$CI_SERVER_HOST"
+  - test -n "$CI_JOB_TOKEN"
+  - test -n "$GITLAB_TOKEN"
+  - test -n "$SIGSTORE_ID_TOKEN"
+  - docker buildx build \
         --target=publish-gitlab \
         --build-arg=CI_SERVER_HOST \
         --build-arg=CI_JOB_TOKEN \
