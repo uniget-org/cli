@@ -1,7 +1,9 @@
 include:
-- local: docker.yaml
+- local: pipeline/docker.yaml
 
 lint:
+  rules:
+  - if: $CI_MERGE_REQUEST_ID
   extends:
   - .docker
   - .docker:dind
@@ -9,6 +11,8 @@ lint:
     docker buildx bake lint
 
 test:
+  rules:
+  - if: $CI_MERGE_REQUEST_ID
   extends:
   - .docker
   - .docker:dind
@@ -16,6 +20,8 @@ test:
     docker buildx bake test
 
 cli_test:
+  rules:
+  - if: $CI_MERGE_REQUEST_ID
   extends:
   - .docker
   - .docker:dind
