@@ -93,6 +93,7 @@ scorecard:
   - if: $CI_COMMIT_TAG =~ /^v/
     needs:
     - release
+  - if: $CI_PIPELINE_SOURCE == "web"
   trigger:
     include: pipeline/scorecard.yaml
     strategy: depend
