@@ -1,4 +1,5 @@
 include:
+- local: pipeline/docker.yaml
 - component: $CI_SERVER_FQDN/uniget-org/components/renovate@renovate/1.0.5
   inputs:
     rules:
