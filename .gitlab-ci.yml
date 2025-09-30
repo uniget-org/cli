@@ -1,5 +1,5 @@
 include:
-- component: $CI_SERVER_FQDN/uniget-org/components/renovate@renovate/1.0.4
+- component: $CI_SERVER_FQDN/uniget-org/components/renovate@renovate/1.0.5
   inputs:
     rules:
     - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULED_JOB == "renovate"
