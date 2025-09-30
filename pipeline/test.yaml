@@ -1,6 +1,10 @@
 include:
 - local: pipeline/docker.yaml
 
+foo:
+  script: |
+    printenv | sort
+
 lint:
   rules:
   - if: $CI_PIPELINE_SOURCE == "merge_request_event"
