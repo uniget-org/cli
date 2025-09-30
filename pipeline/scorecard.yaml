@@ -3,7 +3,7 @@ scorecard:
   before_script: |
     uniget install scorecard
   script: |
-    scorecard --repo=${CI_REPOSITORY_URL} --ref=${CI_COMMIT_SHA} --output=scorecard.json
+    scorecard --repo=${CI_REPOSITORY_URL} --output=scorecard.json
   artifacts:
    paths:
    - scorecard.json
