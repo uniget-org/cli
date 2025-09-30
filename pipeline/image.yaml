@@ -1,5 +1,5 @@
 include:
-- file: pipeline/docker.yaml
+- local: docker.yaml
 
 prepare:
   variables:
