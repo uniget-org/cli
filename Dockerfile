@@ -40,27 +40,6 @@ mkdir -p /out
 find dist -type f -executable -exec cp {} /out/uniget \;
 EOF
 
-FROM base AS publish-github
-ARG GITHUB_TOKEN
-ARG ACTIONS_ID_TOKEN_REQUEST_URL
-ARG ACTIONS_ID_TOKEN_REQUEST_TOKEN
-ARG GITHUB_REF_NAME
-WORKDIR /go/src/github.com/uniget-org/cli
-RUN --mount=target=.,readwrite \
-    --mount=from=uniget-goreleaser,src=/bin/goreleaser,target=/usr/local/bin/goreleaser \
-    --mount=from=uniget-cosign,src=/bin/cosign,target=/usr/local/bin/cosign \
-    --mount=from=uniget-syft,src=/bin/syft,target=/usr/local/bin/syft \
-    --mount=from=uniget-gh,src=/bin/gh,target=/usr/local/bin/gh \
-    --mount=from=uniget-jq,src=/bin/jq,target=/usr/local/bin/jq \
-    --mount=type=cache,target=/go/pkg/mod \
-    --mount=type=cache,target=/root/.cache/go-build <<EOF
-goreleaser healthcheck --config=.goreleaser-github.yaml
-goreleaser release --config=.goreleaser-github.yaml
-bash scripts/release-notes-github.sh >release-notes.md
-echo "Updating release ${GITHUB_REF_NAME} with release notes"
-gh release edit "${GITHUB_REF_NAME}" --notes-file release-notes.md
-EOF
-
 FROM base AS publish-gitlab
 ARG CI_SERVER_HOST
 ARG CI_JOB_TOKEN
