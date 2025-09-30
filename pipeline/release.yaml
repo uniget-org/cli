@@ -1,3 +1,6 @@
+include:
+- local: pipeline/docker.yaml
+
 release_notes:
   rules:
   - if: $CI_COMMIT_TAG =~ /^v/
