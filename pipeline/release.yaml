@@ -3,9 +3,10 @@ release_notes:
   variables:
     GIT_DEPTH: 0
     GLAB_SEND_TELEMETRY: 0
-  script: |
-    uniget install glab
+  before_script: |
+    uniget install glab 
     glab auth login --hostname="${CI_SERVER_HOST}" --job-token="${CI_JOB_TOKEN}"
+  script: |
     bash scripts/release-notes-gitlab.sh >release-notes.md
   artifacts:
     paths:
@@ -22,11 +23,12 @@ release:
       aud: sigstore
   variables:
     GIT_DEPTH: 0
-  script: |
+  before_script: |
     if ! test -s release-notes.md; then
       echo "Release notes not found"
       exit 1
     fi
+  script: |
     docker buildx build \
         --target=publish-gitlab \
         --build-arg=CI_SERVER_HOST \
