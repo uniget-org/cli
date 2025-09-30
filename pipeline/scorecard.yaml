@@ -1,0 +1,7 @@
+scorecard:
+  image: gcr.io/openssf/scorecard:v5.2.1
+  script: |
+    scorecard --repo=${CI_REPOSITORY_URL} --ref=${CI_COMMIT_SHA} --output=scorecard.json
+  artifacts:
+   paths:
+   - scorecard.json
