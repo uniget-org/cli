@@ -1,9 +1,0 @@
-scorecard:
-  image: registry.gitlab.com/uniget-org/cli:noble
-  before_script: |
-    uniget install scorecard
-  script: |
-    scorecard --repo=${CI_SERVER_HOST}/${CI_REPOSITORY_URL} --output=scorecard.json
-  artifacts:
-   paths:
-   - scorecard.json
