@@ -1,93 +1,32 @@
-.docker:
-  image: docker:28.4.0@sha256:2ceb471176ad51e37145d43ce7cbf0fa5d644a2b185bd537f0ef695fb3a37497
+include:
+- component: $CI_SERVER_FQDN/uniget-org/components/renovate@renovate/1.0.4
+  inputs:
+    rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULED_JOB == "renovate"
+    - if: $CI_PIPELINE_SOURCE == "web" && $SCHEDULED_JOB == "renovate"
+    token_variable_name: RENOVATE_TOKEN
+    github_token_variable_name: RENOVATE_GITHUB_TOKEN
 
-.docker:dind:
-  services:
-  - docker:28.4.0-dind@sha256:2ceb471176ad51e37145d43ce7cbf0fa5d644a2b185bd537f0ef695fb3a37497
+test:
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF == $CI_DEFAULT_BRANCH
+  - if: $CI_COMMIT_TAG =~ /^v/
+  trigger:
+    include: pipeline/test.yaml
 
-.regctl:
-  image: regclient/regctl:v0.9.2-alpine@sha256:53115c38927846d4f2ae111121cca7e95a033fd84132d69569e814ede1a696d3
-
-.docker:login:
-  before_script:
-  - |
-    echo "${CI_REGISTRY_PASSWORD}" \
-    | docker login "${CI_REGISTRY}" \
-        --username "${CI_REGISTRY_USER}" \
-        --password-stdin
-
-.regctl-login:
-  before_script:
-  - |
-    echo "${CI_REGISTRY_PASSWORD}" \
-    | regctl registry login "${CI_REGISTRY}" \
-        --user "${CI_REGISTRY_USER}" \
-        --pass-stdin
-
-.docker:build:
-  extends:
-  - .docker
-  - .docker:dind
-  - .docker:login
-  script:
-  - |
-    apk add --update-cache \
-        jq
-  - |
-    SOURCE_DATE_EPOCH="$( git log -1 --pretty=%ct "${BUILD_CONTEXT}/Dockerfile" )"
-    export SOURCE_DATE_EPOCH
-  - |
-    echo "### Building image ${CI_REGISTRY_IMAGE}:${TAG}-${ARCH}"
-    echo "    Architecture:     ${ARCH}"
-    echo "    Build context:    ${BUILD_CONTEXT}"
-    echo "    Using build args: ${BUILD_ARGS}"
-    echo "    Pushing image:    ${PUSH}"
-    for BUILD_ARG in ${BUILD_ARGS}; do
-        BUILD_ARG_PARAMETERS="${BUILD_ARG_PARAMETERS} --build-arg=${BUILD_ARG}"
-    done
-    docker buildx build "${BUILD_CONTEXT}" \
-        ${BUILD_ARG_PARAMETERS} \
-        ${BUILD_EXTRA_ARGS} \
-        --platform="linux/${ARCH}" \
-        --cache-to=type=inline,mode=min \
-        --cache-from=type=registry,ref="${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-${ARCH}" \
-        --tag="${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-${ARCH}" \
-        --metadata-file=metadata-${TAG}${TAG_SUFFIX}-${ARCH}.json \
-        --push="${PUSH}"
-  - |
-    jq --raw-output '."containerimage.digest"' metadata-${TAG}${TAG_SUFFIX}-${ARCH}.json >image-digest-${TAG}${TAG_SUFFIX}-${ARCH}.json
-  artifacts:
-    paths:
-    - metadata-${TAG}${TAG_SUFFIX}-${ARCH}.json
-    - image-digest-${TAG}${TAG_SUFFIX}-${ARCH}.json
-
-.build:multi_arch_index:
-  extends:
-  - .regctl
-  - .regctl-login
-  script:
-  - |
-    echo "### Building index for ${CI_REGISTRY_IMAGE}:${TAG}"
-  - |
-    DIGEST_AMD64="$( cat image-digest-${TAG}${TAG_SUFFIX}-amd64.json )"
-    DIGEST_ARM64="$( cat image-digest-${TAG}${TAG_SUFFIX}-arm64.json )"
-    echo "    Digest amd64: ${DIGEST_AMD64}"
-    echo "    Digest arm64: ${DIGEST_ARM64}"
-  - |
-    echo "### Creating multi-arch image index for ${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}"
-    regctl index create "${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}" \
-        --format='{{json .Manifest}}' \
-        --ref="${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-amd64@${DIGEST_AMD64}" \
-        --ref="${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-arm64@${DIGEST_ARM64}" \
-    | tr -d '\n' \
-    >index-digest-${TAG}${TAG_SUFFIX}.json
-  artifacts:
-    paths:
-    - index-digest-${TAG}${TAG_SUFFIX}.json
-
-.build:rules:
+release:
   rules:
   - if: $CI_COMMIT_TAG =~ /^v/
+    needs:
+    - test
+  trigger:
+    include: pipeline/release.yaml
+
+images:
+  rules:
+  - if: $CI_COMMIT_TAG =~ /^v/
+    needs:
+    - release
     variables:
       PUSH: "true"
   - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -101,186 +40,5 @@
   - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULED_JOB == "daily_rebuild"
     variables:
       PUSH: "true"
-
-lint:
-  rules:
-  - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF == $CI_DEFAULT_BRANCH
-  extends:
-  - .docker
-  - .docker:dind
-  script: |
-    docker buildx bake lint
-
-test:
-  rules:
-  - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF == $CI_DEFAULT_BRANCH
-  extends:
-  - .docker
-  - .docker:dind
-  script: |
-    docker buildx bake test
-
-cli_test:
-  rules:
-  - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF == $CI_DEFAULT_BRANCH
-  extends:
-  - .docker
-  - .docker:dind
-  script: |
-    docker buildx bake cli-test
-
-release_notes:
-  rules:
-  - if: $CI_COMMIT_TAG =~ /^v/
-  image: registry.gitlab.com/uniget-org/cli:noble
-  variables:
-    GIT_DEPTH: 0
-    GLAB_SEND_TELEMETRY: 0
-  script: |
-    uniget install glab
-    glab auth login --hostname="${CI_SERVER_HOST}" --job-token="${CI_JOB_TOKEN}"
-    bash scripts/release-notes-gitlab.sh >release-notes.md
-  artifacts:
-    paths:
-    - release-notes.md
-
-release:
-  needs:
-  - release_notes
-  extends:
-  - .docker
-  - .docker:dind
-  rules:
-  - if: $CI_COMMIT_TAG =~ /^v/
-  id_tokens:
-    SIGSTORE_ID_TOKEN:
-      aud: sigstore
-  variables:
-    GIT_DEPTH: 0
-  script: |
-    if ! test -s release-notes.md; then
-      echo "Release notes not found"
-      exit 1
-    fi
-    docker buildx build \
-        --target=publish-gitlab \
-        --build-arg=CI_SERVER_HOST \
-        --build-arg=CI_JOB_TOKEN \
-        --build-arg=GITLAB_TOKEN \
-        --build-arg=SIGSTORE_ID_TOKEN \
-        .
-
-prepare:
-  needs:
-  - release
-  extends:
-  - .build:rules
-  variables:
-    GIT_DEPTH: 0
-  script: |
-    version="$( git describe --tags --abbrev=0 | tr -d v )"
-    TAG="${version}"
-
-    echo "Found version: ${version}"
-
-    echo "version=${version}" >>build.env
-    echo "TAG=${TAG}" >>build.env
-  artifacts:
-    reports:
-      dotenv: build.env
-
-build:image:
-  needs:
-  - prepare
-  parallel:
-    matrix:
-    - ARCH:
-      - "amd64"
-      - "arm64"
-      BUILD_EXTRA_ARGS: "--target=noble-uniget"
-      TAG_SUFFIX: "-noble"
-    - ARCH:
-      - "amd64"
-      - "arm64"
-      BUILD_EXTRA_ARGS: "--target=systemd-uniget"
-      TAG_SUFFIX: "-noble-systemd"
-  extends:
-  - .build:rules
-  - .docker:build
-  variables:
-    BUILD_CONTEXT: .
-    BUILD_ARGS: version
-  tags:
-  - saas-linux-medium-${ARCH}
-
-build:index:
-  needs:
-  - prepare
-  - build:image
-  parallel:
-    matrix:
-    - TAG_SUFFIX:
-      - "-noble"
-      - "-noble-systemd"
-  extends:
-  - .build:rules
-  - .build:multi_arch_index
-
-.clean:intermediate_tags:
-  needs:
-  - prepare
-  - build:image
-  - build:index
-  parallel:
-    matrix:
-    - TAG_SUFFIX:
-      - "noble"
-      - "noble-systemd"
-  extends:
-  - .build:rules
-  - .regctl
-  - .regctl-login
-  script:
-  - |
-    echo "### Removing intermediate tags for ${CI_REGISTRY_IMAGE}:${TAG}"
-  - |
-    DIGEST_AMD64="$( cat image-digest-${TAG}-${TAG_SUFFIX}-amd64.json )"
-    DIGEST_ARM64="$( cat image-digest-${TAG}-${TAG_SUFFIX}-arm64.json )"
-    echo "    Digest amd64: ${DIGEST_AMD64}"
-    echo "    Digest arm64: ${DIGEST_ARM64}"
-  - |
-    regctl manifest delete "${CI_REGISTRY_IMAGE}:${TAG}-${TAG_SUFFIX}-amd64@${DIGEST_AMD64}"
-    regctl manifest delete "${CI_REGISTRY_IMAGE}:${TAG}-${TAG_SUFFIX}-arm64@${DIGEST_ARM64}"
-
-update:default_tag:
-  needs:
-  - prepare
-  - build:index
-  parallel:
-    matrix:
-    - TAG_SUFFIX:
-      - "noble"
-      - "noble-systemd"
-  extends:
-  - .build:rules
-  - .regctl
-  - .regctl-login
-  script:
-  - |
-    regctl image copy \
-        "${CI_REGISTRY_IMAGE}:${TAG}-${TAG_SUFFIX}" \
-        "${CI_REGISTRY_IMAGE}:${TAG_SUFFIX}"
-
-update:latest_tag:
-  needs:
-  - prepare
-  - build:index
-  extends:
-  - .build:rules
-  - .regctl
-  - .regctl-login
-  script:
-  - |
-    regctl image copy \
-        "${CI_REGISTRY_IMAGE}:${TAG}-noble" \
-        "${CI_REGISTRY_IMAGE}:latest"
+  trigger:
+    include: pipeline/image.yaml

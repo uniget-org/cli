@@ -1,0 +1,36 @@
+release_notes:
+  image: registry.gitlab.com/uniget-org/cli:noble
+  variables:
+    GIT_DEPTH: 0
+    GLAB_SEND_TELEMETRY: 0
+  script: |
+    uniget install glab
+    glab auth login --hostname="${CI_SERVER_HOST}" --job-token="${CI_JOB_TOKEN}"
+    bash scripts/release-notes-gitlab.sh >release-notes.md
+  artifacts:
+    paths:
+    - release-notes.md
+
+release:
+  needs:
+  - release_notes
+  extends:
+  - .docker
+  - .docker:dind
+  id_tokens:
+    SIGSTORE_ID_TOKEN:
+      aud: sigstore
+  variables:
+    GIT_DEPTH: 0
+  script: |
+    if ! test -s release-notes.md; then
+      echo "Release notes not found"
+      exit 1
+    fi
+    docker buildx build \
+        --target=publish-gitlab \
+        --build-arg=CI_SERVER_HOST \
+        --build-arg=CI_JOB_TOKEN \
+        --build-arg=GITLAB_TOKEN \
+        --build-arg=SIGSTORE_ID_TOKEN \
+        .

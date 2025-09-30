@@ -1,0 +1,86 @@
+.docker:
+  image: docker:28.4.0@sha256:2ceb471176ad51e37145d43ce7cbf0fa5d644a2b185bd537f0ef695fb3a37497
+
+.docker:dind:
+  services:
+  - docker:28.4.0-dind@sha256:2ceb471176ad51e37145d43ce7cbf0fa5d644a2b185bd537f0ef695fb3a37497
+
+.regctl:
+  image: regclient/regctl:v0.9.2-alpine@sha256:53115c38927846d4f2ae111121cca7e95a033fd84132d69569e814ede1a696d3
+
+.docker:login:
+  before_script:
+  - |
+    echo "${CI_REGISTRY_PASSWORD}" \
+    | docker login "${CI_REGISTRY}" \
+        --username "${CI_REGISTRY_USER}" \
+        --password-stdin
+
+.regctl-login:
+  before_script:
+  - |
+    echo "${CI_REGISTRY_PASSWORD}" \
+    | regctl registry login "${CI_REGISTRY}" \
+        --user "${CI_REGISTRY_USER}" \
+        --pass-stdin
+
+.docker:build:
+  extends:
+  - .docker
+  - .docker:dind
+  - .docker:login
+  script:
+  - |
+    apk add --update-cache \
+        jq
+  - |
+    SOURCE_DATE_EPOCH="$( git log -1 --pretty=%ct "${BUILD_CONTEXT}/Dockerfile" )"
+    export SOURCE_DATE_EPOCH
+  - |
+    echo "### Building image ${CI_REGISTRY_IMAGE}:${TAG}-${ARCH}"
+    echo "    Architecture:     ${ARCH}"
+    echo "    Build context:    ${BUILD_CONTEXT}"
+    echo "    Using build args: ${BUILD_ARGS}"
+    echo "    Pushing image:    ${PUSH}"
+    for BUILD_ARG in ${BUILD_ARGS}; do
+        BUILD_ARG_PARAMETERS="${BUILD_ARG_PARAMETERS} --build-arg=${BUILD_ARG}"
+    done
+    docker buildx build "${BUILD_CONTEXT}" \
+        ${BUILD_ARG_PARAMETERS} \
+        ${BUILD_EXTRA_ARGS} \
+        --platform="linux/${ARCH}" \
+        --cache-to=type=inline,mode=min \
+        --cache-from=type=registry,ref="${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-${ARCH}" \
+        --tag="${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-${ARCH}" \
+        --metadata-file=metadata-${TAG}${TAG_SUFFIX}-${ARCH}.json \
+        --push="${PUSH}"
+  - |
+    jq --raw-output '."containerimage.digest"' metadata-${TAG}${TAG_SUFFIX}-${ARCH}.json >image-digest-${TAG}${TAG_SUFFIX}-${ARCH}.json
+  artifacts:
+    paths:
+    - metadata-${TAG}${TAG_SUFFIX}-${ARCH}.json
+    - image-digest-${TAG}${TAG_SUFFIX}-${ARCH}.json
+
+.build:multi_arch_index:
+  extends:
+  - .regctl
+  - .regctl-login
+  script:
+  - |
+    echo "### Building index for ${CI_REGISTRY_IMAGE}:${TAG}"
+  - |
+    DIGEST_AMD64="$( cat image-digest-${TAG}${TAG_SUFFIX}-amd64.json )"
+    DIGEST_ARM64="$( cat image-digest-${TAG}${TAG_SUFFIX}-arm64.json )"
+    echo "    Digest amd64: ${DIGEST_AMD64}"
+    echo "    Digest arm64: ${DIGEST_ARM64}"
+  - |
+    echo "### Creating multi-arch image index for ${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}"
+    regctl index create "${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}" \
+        --format='{{json .Manifest}}' \
+        --ref="${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-amd64@${DIGEST_AMD64}" \
+        --ref="${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-arm64@${DIGEST_ARM64}" \
+    | tr -d '\n' \
+    >index-digest-${TAG}${TAG_SUFFIX}.json
+  artifacts:
+    paths:
+    - index-digest-${TAG}${TAG_SUFFIX}.json

@@ -1,0 +1,23 @@
+include:
+- file: pipeline/docker.yaml
+
+lint:
+  extends:
+  - .docker
+  - .docker:dind
+  script: |
+    docker buildx bake lint
+
+test:
+  extends:
+  - .docker
+  - .docker:dind
+  script: |
+    docker buildx bake test
+
+cli_test:
+  extends:
+  - .docker
+  - .docker:dind
+  script: |
+    docker buildx bake cli-test

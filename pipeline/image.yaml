@@ -1,0 +1,108 @@
+include:
+- file: pipeline/docker.yaml
+
+prepare:
+  variables:
+    GIT_DEPTH: 0
+  script: |
+    version="$( git describe --tags --abbrev=0 | tr -d v )"
+    TAG="${version}"
+
+    echo "Found version: ${version}"
+
+    echo "version=${version}" >>build.env
+    echo "TAG=${TAG}" >>build.env
+  artifacts:
+    reports:
+      dotenv: build.env
+
+build:image:
+  needs:
+  - prepare
+  parallel:
+    matrix:
+    - ARCH:
+      - "amd64"
+      - "arm64"
+      BUILD_EXTRA_ARGS: "--target=noble-uniget"
+      TAG_SUFFIX: "-noble"
+    - ARCH:
+      - "amd64"
+      - "arm64"
+      BUILD_EXTRA_ARGS: "--target=systemd-uniget"
+      TAG_SUFFIX: "-noble-systemd"
+  extends:
+  - .docker:build
+  variables:
+    BUILD_CONTEXT: .
+    BUILD_ARGS: version
+  tags:
+  - saas-linux-medium-${ARCH}
+
+build:index:
+  needs:
+  - prepare
+  - build:image
+  parallel:
+    matrix:
+    - TAG_SUFFIX:
+      - "-noble"
+      - "-noble-systemd"
+  extends:
+  - .build:multi_arch_index
+
+.clean:intermediate_tags:
+  needs:
+  - prepare
+  - build:image
+  - build:index
+  parallel:
+    matrix:
+    - TAG_SUFFIX:
+      - "noble"
+      - "noble-systemd"
+  extends:
+  - .regctl
+  - .regctl-login
+  script:
+  - |
+    echo "### Removing intermediate tags for ${CI_REGISTRY_IMAGE}:${TAG}"
+  - |
+    DIGEST_AMD64="$( cat image-digest-${TAG}-${TAG_SUFFIX}-amd64.json )"
+    DIGEST_ARM64="$( cat image-digest-${TAG}-${TAG_SUFFIX}-arm64.json )"
+    echo "    Digest amd64: ${DIGEST_AMD64}"
+    echo "    Digest arm64: ${DIGEST_ARM64}"
+  - |
+    regctl manifest delete "${CI_REGISTRY_IMAGE}:${TAG}-${TAG_SUFFIX}-amd64@${DIGEST_AMD64}"
+    regctl manifest delete "${CI_REGISTRY_IMAGE}:${TAG}-${TAG_SUFFIX}-arm64@${DIGEST_ARM64}"
+
+update:default_tag:
+  needs:
+  - prepare
+  - build:index
+  parallel:
+    matrix:
+    - TAG_SUFFIX:
+      - "noble"
+      - "noble-systemd"
+  extends:
+  - .regctl
+  - .regctl-login
+  script:
+  - |
+    regctl image copy \
+        "${CI_REGISTRY_IMAGE}:${TAG}-${TAG_SUFFIX}" \
+        "${CI_REGISTRY_IMAGE}:${TAG_SUFFIX}"
+
+update:latest_tag:
+  needs:
+  - prepare
+  - build:index
+  extends:
+  - .regctl
+  - .regctl-login
+  script:
+  - |
+    regctl image copy \
+        "${CI_REGISTRY_IMAGE}:${TAG}-noble" \
+        "${CI_REGISTRY_IMAGE}:latest"
