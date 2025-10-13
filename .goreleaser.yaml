@@ -50,14 +50,13 @@ archives:
 signs:
 - id: cosign
   cmd: cosign
-  signature: "${artifact}.sigstore.json"
   env:
   - COSIGN_EXPERIMENTAL=1
   args:
   - sign-blob
   - ${artifact}
   - --new-bundle-format=true
-  - --bundle=${signature}.sigstore.json
+  - --bundle=${artifact}.sigstore.json
   - --yes
   artifacts: all
 
