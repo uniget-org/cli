@@ -17,23 +17,6 @@ test:
     include: pipeline/test.yaml
     strategy: depend
 
-provenance:
-  rules:
-  - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
-  - if: $CI_COMMIT_TAG =~ /^v/
-  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-  extends:
-  - .docker
-  - .docker:dind
-  variables:
-    RUNNER_GENERATE_ARTIFACTS_METADATA: "true"
-  script: |
-    docker buildx bake binary
-  artifacts:
-    paths:
-    - "uniget"
-    - "*-metadata.json"
-
 release_notes:
   rules:
   - if: $CI_COMMIT_TAG =~ /^v/
@@ -64,6 +47,7 @@ release:
       aud: sigstore
   variables:
     GIT_DEPTH: 0
+    RUNNER_GENERATE_ARTIFACTS_METADATA: "true"
   before_script: |
     if ! test -s release-notes.md; then
       echo "Release notes not found"
@@ -82,6 +66,9 @@ release:
         --build-arg=GITLAB_TOKEN \
         --build-arg=SIGSTORE_ID_TOKEN \
         .
+  artifacts:
+    paths:
+    - "*-metadata.json"
 
 images:
   rules:
