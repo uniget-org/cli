@@ -30,6 +30,7 @@ release:
       aud: sigstore
   variables:
     GIT_DEPTH: 0
+    RUNNER_GENERATE_ARTIFACTS_METADATA: "true"
   before_script: |
     if ! test -s release-notes.md; then
       echo "Release notes not found"
@@ -48,3 +49,8 @@ release:
         --build-arg=GITLAB_TOKEN \
         --build-arg=SIGSTORE_ID_TOKEN \
         .
+  artifacts:
+    paths:
+    - "*-metadata.json"
+  tags:
+  - saas-linux-medium-amd64
