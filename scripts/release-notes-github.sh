@@ -42,8 +42,7 @@ curl -sSLfO https://github.com/uniget-org/cli/releases/download/${TAG}/uniget_li
 curl -sSLfO https://github.com/uniget-org/cli/releases/download/${TAG}/uniget_linux_\$(uname -m).tar.gz.pem
 curl -sSLfO https://github.com/uniget-org/cli/releases/download/${TAG}/uniget_linux_\$(uname -m).tar.gz.sig
 cosign verify-blob uniget_linux_\$(uname -m).tar.gz \\
-    --certificate uniget_linux_\$(uname -m).tar.gz.pem \\
-    --signature uniget_linux_\$(uname -m).tar.gz.sig \\
+    --bundle uniget_linux_\$(uname -m).tar.gz.sigstore.json \\
     --certificate-identity 'https://github.com/uniget-org/cli/.github/workflows/release.yml@refs/tags/${TAG}' \\
     --certificate-oidc-issuer https://token.actions.githubusercontent.com
 \`\`\`
