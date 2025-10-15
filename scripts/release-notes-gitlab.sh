@@ -34,10 +34,9 @@ curl -sSLf https://gitlab.com/uniget-org/cli/-/releases/${TAG}/downloads/uniget_
 
 \`\`\`bash
 curl -sSLfO https://gitlab.com/uniget-org/cli/-/releases/${TAG}/downloads/uniget_Linux_\$(uname -m).tar.gz
-curl -sSLfO https://gitlab.com/uniget-org/cli/-/releases/${TAG}/downloads/uniget_Linux_\$(uname -m).tar.gz.pem
-curl -sSLfO https://gitlab.com/uniget-org/cli/-/releases/${TAG}/downloads/uniget_Linux_\$(uname -m).tar.gz.sig
-cosign verify-blob uniget_linux_\$(uname -m).tar.gz \\
-    --bundle uniget_linux_\$(uname -m).tar.gz.sigstore.json \\
+curl -sSLfO https://gitlab.com/uniget-org/cli/-/releases/${TAG}/downloads/uniget_Linux_\$(uname -m).tar.gz.sigstore.json
+cosign verify-blob uniget_Linux_\$(uname -m).tar.gz \\
+    --bundle uniget_Linux_\$(uname -m).tar.gz.sigstore.json \\
     --certificate-identity 'https://gitlab.com/uniget-org/cli//.gitlab-ci.yml@refs/tags/${TAG}' \\
     --certificate-oidc-issuer https://gitlab.com
 \`\`\`
