@@ -483,7 +483,7 @@ func main() {
 	viper.SetDefault("toolseparator", toolSeparator)
 	viper.SetDefault("cache", "none")
 	viper.SetDefault("cachedirectory", cacheDirectory+"/"+fileCacheDirectoryName)
-	viper.SetDefault("cacheretention", 24*time.Hour)
+	viper.SetDefault("cacheretention", 24*60*60)
 
 	pf := rootCmd.PersistentFlags()
 
@@ -508,6 +508,16 @@ func main() {
 	rootCmd.MarkFlagsMutuallyExclusive("prefix", "user")
 	rootCmd.MarkFlagsMutuallyExclusive("target", "user")
 
+	err = rootCmd.Flags().MarkHidden("registry")
+	if err != nil {
+		logging.Error.Printfln("Unable to mark registry as hidden: %s", err)
+		os.Exit(1)
+	}
+	err = rootCmd.Flags().MarkHidden("repository")
+	if err != nil {
+		logging.Error.Printfln("Unable to mark repository as hidden: %s", err)
+		os.Exit(1)
+	}
 	err = rootCmd.Flags().MarkHidden("tool-separator")
 	if err != nil {
 		logging.Error.Printfln("Unable to mark tool-separator as hidden: %s", err)
