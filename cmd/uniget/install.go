@@ -296,15 +296,22 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 			continue
 		}
 
+		uninstall := false
 		var installSpinner *pterm.SpinnerPrinter
+		installMessage := fmt.Sprintf("Installing %s %s", plannedTool.Name, plannedTool.Version)
 		if reinstall {
-			err := uninstallTool(plannedTool.Name)
-			if err != nil {
-				logging.Warning.Printfln("Unable to uninstall %s: %s", plannedTool.Name, err)
-				continue
-			}
+			installMessage = fmt.Sprintf("Reinstalling %s %s", plannedTool.Name, plannedTool.Version)
 
 		} else if plannedTool.Status.BinaryPresent || plannedTool.Status.MarkerFilePresent {
+			uninstall = true
+			installMessage = fmt.Sprintf("Reinstalling %s %s", plannedTool.Name, plannedTool.Version)
+		}
+		if viper.GetString("loglevel") == "info" {
+			installSpinner, _ = pterm.DefaultSpinner.Start(installMessage)
+		} else {
+			logging.Info.Println(installMessage)
+		}
+		if uninstall {
 			err := uninstallTool(plannedTool.Name)
 			if err != nil {
 				logging.Warning.Printfln("Unable to uninstall %s: %s", plannedTool.Name, err)
@@ -315,12 +322,6 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 				logging.Warning.Printfln("Unable to print tool update: %s", err)
 				continue
 			}
-		}
-		installMessage := fmt.Sprintf("Installing %s %s", plannedTool.Name, plannedTool.Version)
-		if viper.GetString("loglevel") == "warning" {
-			installSpinner, _ = pterm.DefaultSpinner.Start(installMessage)
-		} else {
-			logging.Info.Println(installMessage)
 		}
 
 		if !skipDependencies {
@@ -379,9 +380,6 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 		installTool := func(plannedTool tool.Tool, layer io.ReadCloser) error {
 			installedFiles, err = plannedTool.Install(w, layer, pathRewriteRules, createPatchFileCallback(plannedTool))
 			if err != nil {
-				if installSpinner != nil {
-					installSpinner.Fail()
-				}
 				logging.Error.Printfln("Unable to install %s: %s", plannedTool.Name, err)
 				logging.Warning.Printfln("Removing partial installation")
 				err = uninstallFiles(installedFiles)
