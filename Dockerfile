@@ -1,15 +1,15 @@
-#syntax=docker/dockerfile:1.18.0
+#syntax=docker/dockerfile:1.19.0
 
-FROM ghcr.io/uniget-org/tools/goreleaser:2.12.3@sha256:71bd23f57f8b9e26419bc5bf8b994a8b61852d5e35151d2d8abc7d60766dcc1f AS uniget-goreleaser
-FROM ghcr.io/uniget-org/tools/cosign:2.6.0@sha256:d8f1e1bee52b6bbb76e9012df17ed2605ff07fe97909dbe79a17c8baf2d2447c AS uniget-cosign
-FROM ghcr.io/uniget-org/tools/syft:1.33.0@sha256:a1f8d04c30e444682d2a528adb23e21073bbdc818336980098214f7f7c46a5b8 AS uniget-syft
-FROM ghcr.io/uniget-org/tools/gh:2.80.0@sha256:09ef2bc2caa9c6293d5ba78640295d6c469401547fdd8ee5f80a9b699f39cd8c AS uniget-gh
-FROM ghcr.io/uniget-org/tools/glab:1.72.0@sha256:22b8c5cf37514b267b3c6810eee7c316adcb11a09c624470eb235b939cf1c4f6 AS uniget-glab
+FROM ghcr.io/uniget-org/tools/goreleaser:2.12.5@sha256:b67db90a0e7610758ade6ccdb9152ba3a80e0047b5a8334ed9a984373c902817 AS uniget-goreleaser
+FROM ghcr.io/uniget-org/tools/cosign:3.0.2@sha256:489f2ce986bead7cface7a114d23592c2d6a55ebb4647f1821a0eb53b78c7cb3 AS uniget-cosign
+FROM ghcr.io/uniget-org/tools/syft:1.34.1@sha256:0d0e3202a501a1e1c08a00f0cb2e3714fa14cb289e5b37a8a01026eb97b035c8 AS uniget-syft
+FROM ghcr.io/uniget-org/tools/gh:2.82.0@sha256:f2336c75af2464b63730c08010697f5ea904ce48e21759da86e3eea62db93406 AS uniget-gh
+FROM ghcr.io/uniget-org/tools/glab:1.74.0@sha256:2b3df5a17a7ef7f56f43573d6a0dee9100ce320dc1c940d31d2889ab06e4b582 AS uniget-glab
 FROM ghcr.io/uniget-org/tools/jq:1.8.1@sha256:79febf71d7a0b349a4a05653af6ecb76a0472d62b8d6e1e643af9dc060c7aad8 AS uniget-jq
-FROM ghcr.io/uniget-org/tools/gosec:2.22.9@sha256:818e43ca89f1d81c3cf0ae8937c58f33d413ae1b673245511edea78f4710deda AS uniget-gosec
+FROM ghcr.io/uniget-org/tools/gosec:2.22.10@sha256:38cd725191932ed30791aa95c96146ceac9119fd2ce7e087484f035b5cbe7735 AS uniget-gosec
 FROM ghcr.io/uniget-org/tools/golangci-lint:2.5.0@sha256:e8505f2cd31a18d87528a2c76ebc6cc0e8d3f69ee6f562b3ddd233aa81f726af AS lint-base
-FROM golang:1.25.1@sha256:8305f5fa8ea63c7b5bc85bd223ccc62941f852318ebfbd22f53bbd0b358c07e1 AS latest-golang
-FROM alpine:3.22.1@sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1 AS latest-alpine
+FROM golang:1.25.3 AS latest-golang
+FROM alpine:3.22.2 AS latest-alpine
 FROM ubuntu:24.04@sha256:353675e2a41babd526e2b837d7ec780c2a05bca0164f7ea5dbbd433d21d166fc AS latest-ubuntu2404
 
 FROM --platform=${BUILDPLATFORM} latest-golang AS base
