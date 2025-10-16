@@ -435,7 +435,7 @@ func init() {
 	initInspectCmd()
 	initInstallCmd()
 	initListCmd()
-	initManCmd()
+	initManpagesCmd()
 	initMessageCmd()
 	initRegCmd()
 	initReleaseNotesCmd()

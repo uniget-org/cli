@@ -13,15 +13,15 @@ import (
 
 var manDirectory string
 
-func initManCmd() {
-	manCmd.Flags().StringVar(&manDirectory, "path", "share/man", "Path to store manpages in (relative paths resolves using target directory)")
+func initManpagesCmd() {
+	manpagesCmd.Flags().StringVar(&manDirectory, "path", "share/man", "Path to store manpages in (relative paths resolves using target directory)")
 
-	rootCmd.AddCommand(manCmd)
+	rootCmd.AddCommand(manpagesCmd)
 }
 
-var manCmd = &cobra.Command{
-	Use:     "manpage",
-	Aliases: []string{"man"},
+var manpagesCmd = &cobra.Command{
+	Use:     "manpages",
+	Aliases: []string{"man", "manpage"},
 	Short:   "Generate manpages",
 	Long:    header + "\nGenerate manpages",
 	Args:    cobra.NoArgs,
