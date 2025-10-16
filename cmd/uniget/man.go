@@ -20,10 +20,11 @@ func initManCmd() {
 }
 
 var manCmd = &cobra.Command{
-	Use:   "man",
-	Short: "Generate manpages",
-	Long:  header + "\nGenerate manpages",
-	Args:  cobra.NoArgs,
+	Use:     "manpage",
+	Aliases: []string{"man"},
+	Short:   "Generate manpages",
+	Long:    header + "\nGenerate manpages",
+	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if (manDirectory[0:1] != "/") && (manDirectory[0:1] != ".") {
 			manDirectory = fmt.Sprintf("%s/%s", "/"+viper.GetString("target"), manDirectory)
