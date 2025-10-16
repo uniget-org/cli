@@ -35,7 +35,8 @@ func ExtractImageReferencesFromComposeFile(project *types.Project) (ImageRefs, e
 		if len(service.Image) > 0 {
 			imageRef, err := ref.New(service.Image)
 			if err != nil {
-				return ImageRefs{}, fmt.Errorf("failed to create image reference: %w", err)
+				logging.Error.Printfln("Failed to create image reference from %s: %v", service.Image, err)
+				continue
 			}
 			imageRefs.Add(imageRef)
 		}
