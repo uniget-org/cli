@@ -46,9 +46,6 @@ build:image:
   - saas-linux-medium-${ARCH}
 
 build:index:
-  rules:
-  - if: $CI_MERGE_REQUEST_ID
-  - when: always
   needs:
   - prepare
   - build:image
@@ -61,9 +58,6 @@ build:index:
   - .build:multi_arch_index
 
 .clean:intermediate_tags:
-  rules:
-  - if: $CI_MERGE_REQUEST_ID
-  - when: always
   needs:
   - prepare
   - build:image
@@ -89,9 +83,6 @@ build:index:
     regctl manifest delete "${CI_REGISTRY_IMAGE}:${TAG}-${TAG_SUFFIX}-arm64@${DIGEST_ARM64}"
 
 update:default_tag:
-  rules:
-  - if: $CI_MERGE_REQUEST_ID
-  - when: always
   needs:
   - prepare
   - build:index
@@ -110,9 +101,6 @@ update:default_tag:
         "${CI_REGISTRY_IMAGE}:${TAG_SUFFIX}"
 
 update:latest_tag:
-  rules:
-  - if: $CI_MERGE_REQUEST_ID
-  - when: always
   needs:
   - prepare
   - build:index
