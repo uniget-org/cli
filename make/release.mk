@@ -84,3 +84,7 @@ retag--%: ; $(info $(M) Creating tag v$*...)
 .PHONY:
 repush--%: ; $(info $(M) Pushing tag v$*...)
 	@$(GIT) push origin v$* -f
+
+.PHONY:
+push: ; $(info $(M) Pushing tags...)
+	@$(GIT) push origin --tags
