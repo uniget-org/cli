@@ -512,7 +512,7 @@ func createPatchFileCallback(tool tool.Tool) func(path string) string {
 		logging.Debugf("Patching file %s with values: %+v", templatePath, values)
 
 		filePath := strings.TrimSuffix(templatePath, ".go-template")
-		logging.Info.Printfln("Patching file %s <- %s", filePath, templatePath)
+		logging.Debugf("Patching file %s <- %s", filePath, templatePath)
 		logging.Debugf("values = %v", values)
 
 		templathPathInfo, err := os.Stat(templatePath)
