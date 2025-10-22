@@ -48,13 +48,6 @@ func GetFirstLayerFromDockerImage(cli *client.Client, ref *ToolRef, callback fun
 
 	err = ReadDockerImage(cli, ref.String(), func(reader io.ReadCloser) error {
 		err := UnpackLayerFromDockerImage(reader, sha, func(reader io.ReadCloser) error {
-			reader, err := gzip.NewReader(reader)
-			if err != nil {
-				return fmt.Errorf("failed to create gzip reader: %s", err)
-			}
-			//nolint:errcheck
-			defer reader.Close()
-
 			err = callback(reader)
 			if err != nil {
 				return fmt.Errorf("failed to execute callback: %w", err)
