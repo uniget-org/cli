@@ -1,3 +1,5 @@
+//go:build all || docker
+
 package containers
 
 import (
