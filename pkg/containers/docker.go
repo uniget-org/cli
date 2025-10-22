@@ -135,21 +135,29 @@ func UnpackLayerFromDockerImage(buffer io.ReadCloser, sha256 string, callback fu
 			break
 
 		} else if err != nil {
-			return fmt.Errorf("failed to find next item in tar: %s", err)
+			return fmt.Errorf("UnpackLayerFromDockerImage(): failed to find next item in tar: %s", err)
 		}
 
-		if header.Name != fmt.Sprintf("blobs/sha256/%s", sha256) {
-			continue
-		}
-
-		switch header.Typeflag {
-		case tar.TypeReg:
-			err = callback(io.NopCloser(tarReader))
-			if err != nil {
-				return fmt.Errorf("failed to execute callback: %w", err)
+		if header.Name == fmt.Sprintf("blobs/sha256/%s", sha256) {
+			switch header.Typeflag {
+			case tar.TypeReg:
+				layerReader, err := gzip.NewReader(
+					io.LimitReader(
+						tarReader,
+						header.Size,
+					),
+				)
+				if err != nil {
+					return fmt.Errorf("failed to create gzip reader: %w", err)
+				}
+				err = callback(io.NopCloser(layerReader))
+				if err != nil {
+					return fmt.Errorf("UnpackLayerFromDockerImage(): failed to execute callback: %w", err)
+				}
+				return nil
 			}
-			return nil
 		}
+
 	}
 
 	return fmt.Errorf("failed to extract layer %s", sha256)
