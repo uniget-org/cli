@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 	"syscall"
 
@@ -488,6 +489,13 @@ func createPatchFileCallback(tool tool.Tool) func(path string) string {
 			return templatePath
 		}
 
+		curDir, err := os.Getwd()
+		if err != nil {
+			logging.Error.Printfln("Unable to get current directory: %s", err)
+			return templatePath
+		}
+		fullTemplatePath := filepath.Join(curDir, templatePath)
+
 		values := make(map[string]interface{})
 		values["Target"] = viper.GetString("target")
 		values["RelativeTarget"] = viper.GetString("target")
@@ -509,13 +517,13 @@ func createPatchFileCallback(tool tool.Tool) func(path string) string {
 				values[fmt.Sprintf("%sVersion", camelCaseDepName)] = depTool.Version
 			}
 		}
-		logging.Debugf("Patching file %s with values: %+v", templatePath, values)
+		logging.Debugf("Patching file %s with values: %+v", fullTemplatePath, values)
 
-		filePath := strings.TrimSuffix(templatePath, ".go-template")
-		logging.Debugf("Patching file %s <- %s", filePath, templatePath)
+		filePath := strings.TrimSuffix(fullTemplatePath, ".go-template")
+		logging.Debugf("Patching file %s <- %s", filePath, fullTemplatePath)
 		logging.Debugf("values = %v", values)
 
-		templathPathInfo, err := os.Stat(templatePath)
+		templathPathInfo, err := os.Stat(fullTemplatePath)
 		if err != nil {
 			logging.Error.Printfln("Unable to get file info: %s", err)
 			return templatePath
@@ -545,7 +553,7 @@ func createPatchFileCallback(tool tool.Tool) func(path string) string {
 			return templatePath
 		}
 
-		tmpl, err := template.ParseFiles(templatePath)
+		tmpl, err := template.ParseFiles(fullTemplatePath)
 		if err != nil {
 			logging.Error.Printfln("Unable to parse template file: %s", err)
 			return templatePath
@@ -556,7 +564,7 @@ func createPatchFileCallback(tool tool.Tool) func(path string) string {
 			return templatePath
 		}
 
-		err = os.Remove(templatePath)
+		err = os.Remove(fullTemplatePath)
 		if err != nil {
 			logging.Error.Printfln("Unable to remove template file: %s", err)
 			return templatePath

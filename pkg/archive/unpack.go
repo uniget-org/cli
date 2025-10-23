@@ -122,6 +122,10 @@ func CallbackExtractTarItem(reader *tar.Reader, header *tar.Header) error {
 }
 
 func ExtractFileFromTar(workDir string, path string, reader *tar.Reader, header *tar.Header) error {
+	err := myos.CreateSubdirectoriesForPath(workDir, path)
+	if err != nil {
+		return fmt.Errorf("ExtractTarGz: CreateSubdirectoriesForPath() failed for %s in %s: %s", path, workDir, err.Error())
+	}
 	outFile, err := safeopen.CreateBeneath(workDir, path)
 	if err != nil {
 		return fmt.Errorf("ExtractTarGz: Create() failed for %s in %s: %s", path, workDir, err.Error())
