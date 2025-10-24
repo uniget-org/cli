@@ -424,6 +424,11 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 				return fmt.Errorf("error finding tool %s:%s: %s", plannedTool.Name, plannedTool.Version, err)
 			}
 			logging.Debugf("Getting image %s", ref)
+			err = toolCache.Get(ref, func(reader io.ReadCloser) error { return nil })
+			if err != nil {
+				installSpinner.Fail()
+				return fmt.Errorf("unable to get image: %s", err)
+			}
 			err = toolCache.Get(ref, func(reader io.ReadCloser) error {
 				err := installTool(plannedTool, reader)
 				if err != nil {
@@ -435,7 +440,7 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 			})
 			if err != nil {
 				installSpinner.Fail()
-				return fmt.Errorf("unable to get image: %s", err)
+				return fmt.Errorf("unable to install from image: %s", err)
 			}
 		}
 		if !installSuccessful {

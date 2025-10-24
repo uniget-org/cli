@@ -95,6 +95,10 @@ var selfUpgradeCmd = &cobra.Command{
 
 			return nil
 		}
+		err = toolCache.Get(ref, func(reader io.ReadCloser) error { return nil })
+		if err != nil {
+			return fmt.Errorf("unable to get image: %s", err)
+		}
 		err = toolCache.Get(ref, func(reader io.ReadCloser) error {
 			err := archive.ProcessTarContents(reader, unpackUnigetBinary)
 			if err != nil {
@@ -104,7 +108,7 @@ var selfUpgradeCmd = &cobra.Command{
 			return nil
 		})
 		if err != nil {
-			return fmt.Errorf("unable to get image: %s", err)
+			return fmt.Errorf("unable to upgrade from image: %s", err)
 		}
 
 		return nil

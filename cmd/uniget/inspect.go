@@ -70,6 +70,10 @@ var inspectCmd = &cobra.Command{
 		if rawInspect {
 			effectivePathRewriteRules = []tool.PathRewrite{}
 		}
+		err = toolCache.Get(toolRef, func(reader io.ReadCloser) error { return nil })
+		if err != nil {
+			return fmt.Errorf("unable to get image: %s", err)
+		}
 		err = toolCache.Get(toolRef, func(reader io.ReadCloser) error {
 			err = inspectTool.Inspect(cmd.OutOrStdout(), reader, effectivePathRewriteRules)
 			if err != nil {
@@ -78,7 +82,7 @@ var inspectCmd = &cobra.Command{
 			return nil
 		})
 		if err != nil {
-			return fmt.Errorf("unable to get image: %s", err)
+			return fmt.Errorf("unable to inspect image: %s", err)
 		}
 
 		return nil
