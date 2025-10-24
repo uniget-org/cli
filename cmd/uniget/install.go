@@ -305,7 +305,7 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 
 		} else if plannedTool.Status.BinaryPresent || plannedTool.Status.MarkerFilePresent {
 			uninstall = true
-			installMessage = fmt.Sprintf("Reinstalling %s %s", plannedTool.Name, plannedTool.Version)
+			installMessage = fmt.Sprintf("Updating %s %s", plannedTool.Name, plannedTool.Version)
 		}
 		installSpinner, _ = pterm.DefaultSpinner.Start(installMessage)
 		if uninstall {
