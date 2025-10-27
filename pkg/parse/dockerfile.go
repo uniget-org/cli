@@ -27,7 +27,7 @@ func ExtractImageReferencesFromDockerfile(reader io.Reader) (ImageRefs, error) {
 
 			imageRef, err := ref.New(image)
 			if err != nil {
-				logging.Error.Printfln("Failed to create image reference from %s: %v", image, err)
+				logging.Debugf("Failed to create image reference from %s: %v", image, err)
 				continue
 			}
 			imageRefs.Add(imageRef)
@@ -40,7 +40,7 @@ func ExtractImageReferencesFromDockerfile(reader io.Reader) (ImageRefs, error) {
 
 					fromRef, err := ref.New(image)
 					if err != nil {
-						logging.Error.Printfln("Failed to create image reference from %s: %v", image, err)
+						logging.Debugf("Failed to create image reference from %s: %v", image, err)
 						continue
 					}
 
