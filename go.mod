@@ -48,7 +48,7 @@ require (
 	github.com/charmbracelet/lipgloss v1.1.1-0.20250404203927-76690c660834 // indirect
 	github.com/charmbracelet/x/ansi v0.10.2 // indirect
 	github.com/charmbracelet/x/cellbuf v0.0.13 // indirect
-	github.com/charmbracelet/x/exp/slice v0.0.0-20251020183722-ee4914f58d13 // indirect
+	github.com/charmbracelet/x/exp/slice v0.0.0-20251023181713-f594ac034d6b // indirect
 	github.com/charmbracelet/x/term v0.2.1 // indirect
 	github.com/clipperhouse/stringish v0.1.1 // indirect
 	github.com/clipperhouse/uax29/v2 v2.3.0 // indirect
@@ -125,10 +125,10 @@ require (
 	github.com/prometheus/client_model v0.6.2 // indirect
 	github.com/prometheus/common v0.67.1 // indirect
 	github.com/prometheus/otlptranslator v1.0.0 // indirect
-	github.com/prometheus/procfs v0.18.0 // indirect
-	github.com/redis/go-redis/extra/rediscmd/v9 v9.15.1 // indirect
-	github.com/redis/go-redis/extra/redisotel/v9 v9.15.1 // indirect
-	github.com/redis/go-redis/v9 v9.15.1 // indirect
+	github.com/prometheus/procfs v0.19.1 // indirect
+	github.com/redis/go-redis/extra/rediscmd/v9 v9.16.0 // indirect
+	github.com/redis/go-redis/extra/redisotel/v9 v9.16.0 // indirect
+	github.com/redis/go-redis/v9 v9.16.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/sagikazarmark/locafero v0.12.0 // indirect
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.2 // indirect
