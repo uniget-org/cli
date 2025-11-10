@@ -1,8 +1,11 @@
 blank_issues_enabled: false
 contact_links:
-- name: Community Support
-  url: https://github.com/uniget-org/cli/discussions
-  about: Please ask and answer questions here.
-- name: Documentation
+- name: 💬 Bugs
+  url: https://gitlab.com/uniget-org/backlog/-/issues/new?type=ISSUE
+  about: Something is not working?
+- name: ✨ Enhancements
+  url: https://gitlab.com/uniget-org/backlog/-/issues/new?type=ISSUE
+  about: Missing something?
+- name: 📖 Documentation
   url: https://docs.uniget.dev
-  about: Check for usage and examples.
+  about: Check for usage and examples
