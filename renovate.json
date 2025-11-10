@@ -19,7 +19,7 @@
   "timezone": "Europe/Berlin",
   "useBaseBranchConfig": "merge",
   "platformAutomerge": true,
-  "rebaseWhen": "conflicted",
+  "rebaseWhen": "automerging",
   "major":  { "labels": [ "renovate::major", "type::renovate" ] },
   "minor":  { "labels": [ "renovate::minor", "type::renovate" ] },
   "patch":  { "labels": [ "renovate::patch", "type::renovate" ] },
