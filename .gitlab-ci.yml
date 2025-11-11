@@ -1,6 +1,6 @@
 include:
 - local: pipeline/docker.yaml
-- component: $CI_SERVER_FQDN/uniget-org/components/renovate@renovate/1.0.6
+- component: $CI_SERVER_FQDN/uniget-org/components/renovate@renovate/1.0.7
   inputs:
     rules:
     - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULED_JOB == "renovate"
