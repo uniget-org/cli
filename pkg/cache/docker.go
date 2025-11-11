@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/docker/docker/client"
+	"github.com/moby/moby/client"
 	"github.com/uniget-org/cli/pkg/containers"
 	"github.com/uniget-org/cli/pkg/logging"
 )
@@ -15,7 +15,7 @@ type DockerCache struct {
 
 func NewDockerCache() (*DockerCache, error) {
 	logging.Tracef("Creating Docker cache")
-	cli, err := client.NewClientWithOpts(client.FromEnv)
+	cli, err := client.New(client.FromEnv)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create docker client: %w", err)
 	}
