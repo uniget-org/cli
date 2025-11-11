@@ -8,13 +8,13 @@ import (
 	"io"
 	"strings"
 
-	"github.com/docker/docker/api/types/image"
-	"github.com/docker/docker/client"
+	"github.com/moby/moby/api/types/image"
+	"github.com/moby/moby/client"
 	"github.com/uniget-org/cli/pkg/logging"
 )
 
 func GetDockerClient() (*client.Client, error) {
-	cli, err := client.NewClientWithOpts(client.FromEnv)
+	cli, err := client.New(client.FromEnv)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create docker client: %s", err)
 	}
@@ -29,7 +29,7 @@ func DockerIsAvailable() bool {
 	//nolint:errcheck
 	defer cli.Close()
 
-	ping, err := cli.Ping(context.Background())
+	ping, err := cli.Ping(context.Background(), client.PingOptions{})
 	if err != nil {
 		return false
 	}
@@ -71,7 +71,7 @@ func GetFirstLayerFromDockerImage(cli *client.Client, ref *ToolRef, callback fun
 func PullDockerImage(cli *client.Client, ref string) error {
 	ctx := context.Background()
 
-	events, err := cli.ImagePull(ctx, ref, image.PullOptions{})
+	events, err := cli.ImagePull(ctx, ref, client.ImagePullOptions{})
 	if err != nil {
 		return fmt.Errorf("failed to pull image: %s", err)
 	}
@@ -158,13 +158,13 @@ func UnpackLayerFromDockerImage(buffer io.ReadCloser, sha256 string, callback fu
 
 func ListDockerImagesByPrefix(cli *client.Client, prefix string) ([]image.Summary, error) {
 	ctx := context.Background()
-	images, err := cli.ImageList(ctx, image.ListOptions{})
+	images, err := cli.ImageList(ctx, client.ImageListOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to list images: %w", err)
 	}
 
 	var filtered []image.Summary
-	for _, img := range images {
+	for _, img := range images.Items {
 		for _, tag := range img.RepoTags {
 			if strings.HasPrefix(tag, prefix) {
 				filtered = append(filtered, img)
@@ -177,7 +177,7 @@ func ListDockerImagesByPrefix(cli *client.Client, prefix string) ([]image.Summar
 
 func RemoveDockerImage(cli *client.Client, ref string) error {
 	ctx := context.Background()
-	_, err := cli.ImageRemove(ctx, ref, image.RemoveOptions{Force: true, PruneChildren: true})
+	_, err := cli.ImageRemove(ctx, ref, client.ImageRemoveOptions{Force: true, PruneChildren: true})
 	if err != nil {
 		return fmt.Errorf("failed to remove image %s: %w", ref, err)
 	}

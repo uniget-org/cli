@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/docker/docker/client"
+	"github.com/moby/moby/client"
 	"github.com/uniget-org/cli/pkg/containers"
 	"github.com/uniget-org/cli/pkg/logging"
 )

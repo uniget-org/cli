@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/docker/docker/client"
+	"github.com/moby/moby/client"
 	"github.com/uniget-org/cli/pkg/containers"
 	myos "github.com/uniget-org/cli/pkg/os"
 )
