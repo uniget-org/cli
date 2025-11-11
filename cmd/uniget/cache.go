@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/docker/docker/client"
+	"github.com/moby/moby/client"
 	"github.com/uniget-org/cli/pkg/containers"
 	myos "github.com/uniget-org/cli/pkg/os"
 )
@@ -76,7 +76,7 @@ var cacheStatsCmd = &cobra.Command{
 			}
 
 		case "docker":
-			cli, err := client.NewClientWithOpts(client.FromEnv)
+			cli, err := client.New(client.FromEnv)
 			if err != nil {
 				return fmt.Errorf("failed to create Docker client: %w", err)
 			}
@@ -122,7 +122,7 @@ var cacheListCmd = &cobra.Command{
 			}
 
 		case "docker":
-			cli, err := client.NewClientWithOpts(client.FromEnv)
+			cli, err := client.New(client.FromEnv)
 			if err != nil {
 				return fmt.Errorf("failed to create Docker client: %w", err)
 			}
@@ -169,7 +169,7 @@ var cachePruneCmd = &cobra.Command{
 			}
 
 		case "docker":
-			cli, err := client.NewClientWithOpts(client.FromEnv)
+			cli, err := client.New(client.FromEnv)
 			if err != nil {
 				return fmt.Errorf("failed to create Docker client: %w", err)
 			}
