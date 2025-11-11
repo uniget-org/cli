@@ -15,7 +15,7 @@ type DockerCache struct {
 
 func NewDockerCache() (*DockerCache, error) {
 	logging.Tracef("Creating Docker cache")
-	cli, err := client.NewClientWithOpts(client.FromEnv)
+	cli, err := client.New(client.FromEnv)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create docker client: %w", err)
 	}
