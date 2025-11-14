@@ -26,7 +26,7 @@ release_notes:
     GLAB_SEND_TELEMETRY: 0
   before_script: |
     uniget install glab 
-    glab auth login --hostname="${CI_SERVER_HOST}" --job-token="${CI_JOB_TOKEN}"
+    glab auth login --hostname="${CI_SERVER_HOST}" --token="${BACKLOG_TOKEN}"
   script: |
     bash scripts/release-notes-gitlab.sh >release-notes.md
   artifacts:
