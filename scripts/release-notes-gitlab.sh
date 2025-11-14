@@ -45,7 +45,7 @@ EOF
 echo
 echo "## Bugfixes (since ${PREVIOUS_TAG})"
 echo
-glab api "projects/:id/issues?state=closed&updated_after=${TIMESTAMP}&labels=type::bug&not[labels]=resolution::wontfix" \
+glab api "projects/uniget-org%2fbacklog/issues?state=closed&updated_after=${TIMESTAMP}&labels=type::bug&not[labels]=resolution::wontfix" \
 | jq -r '.[] | "- \(.title) ([\(.id)](\(.web_url)))"'
 git log --after=${TIMESTAMP} --pretty=format:'- %s [%h](https://github.com/uniget-org/cli/commit/%H)' \
 | grep "^- fix" \
@@ -55,7 +55,7 @@ git log --after=${TIMESTAMP} --pretty=format:'- %s [%h](https://github.com/unige
 echo
 echo "## Features (since ${PREVIOUS_TAG})"
 echo
-glab api "projects/:id/issues?state=closed&updated_after=${TIMESTAMP}&labels=type::enhancement&not[labels]=resolution::wontfix" \
+glab api "projects/uniget-org%2fbacklog/issues?state=closed&updated_after=${TIMESTAMP}&labels=type::enhancement&not[labels]=resolution::wontfix" \
 | jq -r '.[] | "- \(.title) ([\(.id)](\(.web_url)))"'
 git log --after=${TIMESTAMP} --pretty=format:'- %s [%h](https://github.com/uniget-org/cli/commit/%H)' \
 | grep "^- feat" \
@@ -64,7 +64,7 @@ git log --after=${TIMESTAMP} --pretty=format:'- %s [%h](https://github.com/unige
 echo
 echo "## Dependency updates (since ${PREVIOUS_TAG})"
 echo
-glab api "projects/:id/merge_requests?state=merged&updated_after=2025-07-22T00:00:00Z&labels=type::renovate" \
+glab api "projects/uniget-org%2fbacklog/merge_requests?state=merged&updated_after=2025-07-22T00:00:00Z&labels=type::renovate" \
 | jq -r '.[] | "- \(.title) ([\(.id)](\(.web_url)))"'
 git log --after=${TIMESTAMP} --pretty=format:'- %s [%h](https://github.com/uniget-org/cli/commit/%H) (%an)' \
 | grep ^chore \
