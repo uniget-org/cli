@@ -181,9 +181,11 @@ func uninstallFiles(installedFiles []string) error {
 		if file == "" {
 			continue
 		}
-		if !strings.HasPrefix(file, viper.GetString("prefix")+"/"+viper.GetString("target")) {
-			logging.Warning.Printfln("Skipping %s because it is not safe to remove", file)
-			continue
+		if strings.HasPrefix(file, "/") {
+			if !strings.HasPrefix(file, viper.GetString("prefix")+"/"+viper.GetString("target")) {
+				logging.Warning.Printfln("Skipping %s because it is not safe to remove", file)
+				continue
+			}
 		}
 
 		prefixedFile := viper.GetString("prefix") + "/" + file
