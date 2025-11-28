@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/regclient/regclient/types/ref"
-	"github.com/uniget-org/cli/pkg/logging"
-	myos "github.com/uniget-org/cli/pkg/os"
-	"github.com/uniget-org/cli/pkg/tool"
+	"gitlab.com/uniget-org/cli/pkg/logging"
+	myos "gitlab.com/uniget-org/cli/pkg/os"
+	"gitlab.com/uniget-org/cli/pkg/tool"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"

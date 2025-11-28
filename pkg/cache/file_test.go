@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/uniget-org/cli/pkg/containers"
+	"gitlab.com/uniget-org/cli/pkg/containers"
 )
 
 func TestToolRefKey(t *testing.T) {

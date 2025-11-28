@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/uniget-org/cli/pkg/logging"
+	"gitlab.com/uniget-org/cli/pkg/logging"
 )
 
 func (tool *Tool) GetCamelCaseName() string {

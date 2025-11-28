@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/regclient/regclient/types/ref"
-	"github.com/uniget-org/cli/pkg/containers"
-	"github.com/uniget-org/cli/pkg/logging"
-	"github.com/uniget-org/cli/pkg/tool"
+	"gitlab.com/uniget-org/cli/pkg/containers"
+	"gitlab.com/uniget-org/cli/pkg/logging"
+	"gitlab.com/uniget-org/cli/pkg/tool"
 )
 
 type ImageRefs struct {

@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/uniget-org/cli/pkg/containers"
-	"github.com/uniget-org/cli/pkg/logging"
+	"gitlab.com/uniget-org/cli/pkg/containers"
+	"gitlab.com/uniget-org/cli/pkg/logging"
 )
 
 type FileCache struct {

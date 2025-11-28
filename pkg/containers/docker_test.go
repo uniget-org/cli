@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/safearchive/tar"
 
-	"github.com/uniget-org/cli/pkg/archive"
+	"gitlab.com/uniget-org/cli/pkg/archive"
 )
 
 func TestDockerClient(t *testing.T) {

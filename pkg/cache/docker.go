@@ -5,8 +5,8 @@ import (
 	"io"
 
 	"github.com/moby/moby/client"
-	"github.com/uniget-org/cli/pkg/containers"
-	"github.com/uniget-org/cli/pkg/logging"
+	"gitlab.com/uniget-org/cli/pkg/containers"
+	"gitlab.com/uniget-org/cli/pkg/logging"
 )
 
 type DockerCache struct {

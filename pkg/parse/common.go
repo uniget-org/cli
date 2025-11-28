@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	myos "github.com/uniget-org/cli/pkg/os"
-	"github.com/uniget-org/cli/pkg/tool"
+	myos "gitlab.com/uniget-org/cli/pkg/os"
+	"gitlab.com/uniget-org/cli/pkg/tool"
 )
 
 func ReplaceInFile(filename string, imageRefs *ImageRefs, tools *tool.Tools) error {

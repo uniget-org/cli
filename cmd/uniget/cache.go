@@ -9,8 +9,8 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/moby/moby/client"
-	"github.com/uniget-org/cli/pkg/containers"
-	myos "github.com/uniget-org/cli/pkg/os"
+	"gitlab.com/uniget-org/cli/pkg/containers"
+	myos "gitlab.com/uniget-org/cli/pkg/os"
 )
 
 func initCacheCmd() {

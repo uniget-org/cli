@@ -14,9 +14,10 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/uniget-org/cli/pkg/containers"
-	"github.com/uniget-org/cli/pkg/logging"
-	"github.com/uniget-org/cli/pkg/tool"
+	"gitlab.com/uniget-org/cli/pkg/containers"
+	"gitlab.com/uniget-org/cli/pkg/logging"
+	"gitlab.com/uniget-org/cli/pkg/term"
+	"gitlab.com/uniget-org/cli/pkg/tool"
 )
 
 var defaultMode bool
@@ -307,7 +308,9 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 			uninstall = true
 			installMessage = fmt.Sprintf("Updating %s %s", plannedTool.Name, plannedTool.Version)
 		}
-		installSpinner, _ = pterm.DefaultSpinner.Start(installMessage)
+		if term.IsTty() {
+			installSpinner, _ = pterm.DefaultSpinner.Start(installMessage)
+		}
 		if uninstall {
 			err := uninstallTool(plannedTool.Name)
 			if err != nil {
@@ -326,7 +329,9 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 				dep, err := plannedTools.GetByName(depName)
 				if err != nil {
 					logging.Error.Printfln("Unable to find dependency %s", depName)
-					installSpinner.Fail()
+					if installSpinner != nil {
+						installSpinner.Fail()
+					}
 					return fmt.Errorf("unable to find dependency %s", depName)
 				}
 				checkClientVersionRequirement(dep)
@@ -334,19 +339,25 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 				err = dep.GetBinaryStatus()
 				if err != nil {
 					logging.Error.Printfln("Unable to get binary status of dependency %s: %s", depName, err)
-					installSpinner.Fail()
+					if installSpinner != nil {
+						installSpinner.Fail()
+					}
 					return fmt.Errorf("unable to get binary status of dependency %s: %s", depName, err)
 				}
 				err = dep.GetMarkerFileStatus(viper.GetString("prefix") + "/" + cacheDirectory)
 				if err != nil {
 					logging.Error.Printfln("Unable to get marker file status of dependency %s: %s", depName, err)
-					installSpinner.Fail()
+					if installSpinner != nil {
+						installSpinner.Fail()
+					}
 					return fmt.Errorf("unable to get marker file status of dependency %s: %s", depName, err)
 				}
 				err = dep.GetVersionStatus()
 				if err != nil {
 					logging.Error.Printfln("Unable to get version status of dependency %s: %s", depName, err)
-					installSpinner.Fail()
+					if installSpinner != nil {
+						installSpinner.Fail()
+					}
 					return fmt.Errorf("unable to get version status of dependency %s: %s", depName, err)
 				}
 
@@ -354,7 +365,9 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 					continue
 				}
 				logging.Error.Printfln("Dependency %s is missing", depName)
-				installSpinner.Fail()
+				if installSpinner != nil {
+					installSpinner.Fail()
+				}
 				return fmt.Errorf("dependency %s is missing", depName)
 			}
 		}
@@ -400,12 +413,16 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 		if ok {
 			logging.Debugf("Using tar file mappings for installation")
 			if _, err := os.Stat(pathToTar); os.IsNotExist(err) {
-				installSpinner.Fail()
+				if installSpinner != nil {
+					installSpinner.Fail()
+				}
 				return fmt.Errorf("tar file %s does not exist", pathToTar)
 			}
 			layer, err = os.Open(pathToTar) // #nosec G304 -- Location supplied by user
 			if err != nil {
-				installSpinner.Fail()
+				if installSpinner != nil {
+					installSpinner.Fail()
+				}
 				return fmt.Errorf("unable to read tar file %s: %s", pathToTar, err)
 			}
 			//nolint:errcheck
@@ -420,31 +437,41 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 			registries, repositories := plannedTool.GetSourcesWithFallback(registry, imageRepository)
 			ref, err := containers.FindToolRef(registries, repositories, plannedTool.Name, "main")
 			if err != nil {
-				installSpinner.Fail()
+				if installSpinner != nil {
+					installSpinner.Fail()
+				}
 				return fmt.Errorf("error finding tool %s:%s: %s", plannedTool.Name, plannedTool.Version, err)
 			}
 			logging.Debugf("Getting image %s", ref)
 			err = toolCache.Get(ref, func(reader io.ReadCloser) error { return nil })
 			if err != nil {
-				installSpinner.Fail()
+				if installSpinner != nil {
+					installSpinner.Fail()
+				}
 				return fmt.Errorf("unable to get image: %s", err)
 			}
 			err = toolCache.Get(ref, func(reader io.ReadCloser) error {
 				err := installTool(plannedTool, reader)
 				if err != nil {
 					installSuccessful = false
-					installSpinner.Fail()
+					if installSpinner != nil {
+						installSpinner.Fail()
+					}
 					return fmt.Errorf("unable to install %s: %s", plannedTool.Name, err)
 				}
 				return nil
 			})
 			if err != nil {
-				installSpinner.Fail()
+				if installSpinner != nil {
+					installSpinner.Fail()
+				}
 				return fmt.Errorf("unable to install from image: %s", err)
 			}
 		}
 		if !installSuccessful {
-			installSpinner.Fail()
+			if installSpinner != nil {
+				installSpinner.Fail()
+			}
 			continue
 		}
 
@@ -463,7 +490,9 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 		if err != nil {
 			logging.Error.Printfln("Unable to write manifest file: %s", err)
 		}
-		installSpinner.Success()
+		if installSpinner != nil {
+			installSpinner.Success()
+		}
 
 		err = printToolUsage(w, plannedTool.Name)
 		if err != nil {
