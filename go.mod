@@ -1,4 +1,4 @@
-module github.com/uniget-org/cli
+module gitlab.com/uniget-org/cli
 
 go 1.24.2
 
@@ -6,6 +6,7 @@ toolchain go1.25.4
 
 require (
 	github.com/charmbracelet/glamour v0.10.0
+	github.com/charmbracelet/x/term v0.2.2
 	github.com/compose-spec/compose-go/v2 v2.9.1
 	github.com/containerd/containerd/v2 v2.1.4
 	github.com/containerd/platforms v1.0.0-rc.2
@@ -50,7 +51,6 @@ require (
 	github.com/charmbracelet/x/ansi v0.10.3 // indirect
 	github.com/charmbracelet/x/cellbuf v0.0.13 // indirect
 	github.com/charmbracelet/x/exp/slice v0.0.0-20251105022227-dc9e59457e21 // indirect
-	github.com/charmbracelet/x/term v0.2.2 // indirect
 	github.com/clipperhouse/displaywidth v0.4.1 // indirect
 	github.com/clipperhouse/stringish v0.1.1 // indirect
 	github.com/clipperhouse/uax29/v2 v2.3.0 // indirect

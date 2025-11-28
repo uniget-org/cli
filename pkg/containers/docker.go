@@ -10,7 +10,7 @@ import (
 
 	"github.com/moby/moby/api/types/image"
 	"github.com/moby/moby/client"
-	"github.com/uniget-org/cli/pkg/logging"
+	"gitlab.com/uniget-org/cli/pkg/logging"
 )
 
 func GetDockerClient() (*client.Client, error) {

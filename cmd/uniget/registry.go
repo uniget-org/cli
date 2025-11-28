@@ -10,7 +10,7 @@ import (
 	"github.com/regclient/regclient/types/platform"
 	"github.com/regclient/regclient/types/ref"
 	"github.com/spf13/cobra"
-	"github.com/uniget-org/cli/pkg/containers"
+	"gitlab.com/uniget-org/cli/pkg/containers"
 )
 
 var (

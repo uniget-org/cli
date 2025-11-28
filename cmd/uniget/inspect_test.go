@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/uniget-org/cli/pkg/tool"
+	"gitlab.com/uniget-org/cli/pkg/tool"
 )
 
 func TestInspect(t *testing.T) {

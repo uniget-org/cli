@@ -9,8 +9,8 @@ import (
 	"github.com/google/safearchive/tar"
 	"github.com/google/safeopen"
 
-	"github.com/uniget-org/cli/pkg/logging"
-	myos "github.com/uniget-org/cli/pkg/os"
+	"gitlab.com/uniget-org/cli/pkg/logging"
+	myos "gitlab.com/uniget-org/cli/pkg/os"
 )
 
 func ProcessTarContents(reader io.ReadCloser, callback func(tar *tar.Reader, header *tar.Header) error) error {

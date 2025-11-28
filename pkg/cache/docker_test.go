@@ -9,8 +9,8 @@ import (
 
 	"github.com/google/safearchive/tar"
 
-	"github.com/uniget-org/cli/pkg/archive"
-	"github.com/uniget-org/cli/pkg/containers"
+	"gitlab.com/uniget-org/cli/pkg/archive"
+	"gitlab.com/uniget-org/cli/pkg/containers"
 )
 
 func TestNewDockerCache(t *testing.T) {

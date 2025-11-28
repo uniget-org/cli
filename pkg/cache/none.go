@@ -8,8 +8,8 @@ import (
 	"github.com/regclient/regclient"
 	"github.com/regclient/regclient/config"
 	rref "github.com/regclient/regclient/types/ref"
-	"github.com/uniget-org/cli/pkg/containers"
-	"github.com/uniget-org/cli/pkg/logging"
+	"gitlab.com/uniget-org/cli/pkg/containers"
+	"gitlab.com/uniget-org/cli/pkg/logging"
 )
 
 type NoneCache struct{}

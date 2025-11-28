@@ -11,9 +11,9 @@ import (
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 
-	"github.com/uniget-org/cli/pkg/archive"
-	"github.com/uniget-org/cli/pkg/containers"
-	"github.com/uniget-org/cli/pkg/logging"
+	"gitlab.com/uniget-org/cli/pkg/archive"
+	"gitlab.com/uniget-org/cli/pkg/containers"
+	"gitlab.com/uniget-org/cli/pkg/logging"
 )
 
 func initSelfUpgradeCmd() {

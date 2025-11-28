@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/uniget-org/cli/pkg/tool"
-	//"github.com/uniget-org/cli/pkg/tool"
+	"gitlab.com/uniget-org/cli/pkg/tool"
+	//"gitlab.com/uniget-org/cli/pkg/tool"
 )
 
 var (

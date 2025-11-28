@@ -7,8 +7,8 @@ import (
 	"github.com/compose-spec/compose-go/v2/cli"
 	"github.com/compose-spec/compose-go/v2/types"
 	"github.com/regclient/regclient/types/ref"
-	"github.com/uniget-org/cli/pkg/logging"
-	"github.com/uniget-org/cli/pkg/tool"
+	"gitlab.com/uniget-org/cli/pkg/logging"
+	"gitlab.com/uniget-org/cli/pkg/tool"
 )
 
 func LoadComposeFile(composeFile string) (*types.Project, error) {

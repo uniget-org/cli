@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/uniget-org/cli/pkg/logging"
-	"github.com/uniget-org/cli/pkg/parse"
+	"gitlab.com/uniget-org/cli/pkg/logging"
+	"gitlab.com/uniget-org/cli/pkg/parse"
 )
 
 var (

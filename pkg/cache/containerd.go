@@ -5,7 +5,7 @@ import (
 	"io"
 
 	containerd "github.com/containerd/containerd/v2/client"
-	"github.com/uniget-org/cli/pkg/containers"
+	"gitlab.com/uniget-org/cli/pkg/containers"
 )
 
 type ContainerdCache struct {

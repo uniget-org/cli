@@ -8,9 +8,9 @@ import (
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/uniget-org/cli/pkg/logging"
-	myos "github.com/uniget-org/cli/pkg/os"
-	"github.com/uniget-org/cli/pkg/tool"
+	"gitlab.com/uniget-org/cli/pkg/logging"
+	myos "gitlab.com/uniget-org/cli/pkg/os"
+	"gitlab.com/uniget-org/cli/pkg/tool"
 )
 
 var force bool

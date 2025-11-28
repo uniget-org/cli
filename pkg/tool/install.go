@@ -7,8 +7,8 @@ import (
 
 	"github.com/google/safearchive/tar"
 
-	"github.com/uniget-org/cli/pkg/archive"
-	"github.com/uniget-org/cli/pkg/logging"
+	"gitlab.com/uniget-org/cli/pkg/archive"
+	"gitlab.com/uniget-org/cli/pkg/logging"
 )
 
 type PathRewrite struct {

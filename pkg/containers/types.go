@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/regclient/regclient/types/ref"
-	"github.com/uniget-org/cli/pkg/logging"
+	"gitlab.com/uniget-org/cli/pkg/logging"
 )
 
 type ToolRef struct {

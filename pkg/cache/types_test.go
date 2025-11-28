@@ -3,7 +3,7 @@ package cache
 import (
 	"testing"
 
-	"github.com/uniget-org/cli/pkg/containers"
+	"gitlab.com/uniget-org/cli/pkg/containers"
 )
 
 func TestNewToolRef(t *testing.T) {

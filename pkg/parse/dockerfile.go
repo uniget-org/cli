@@ -8,9 +8,9 @@ import (
 
 	"github.com/moby/buildkit/frontend/dockerfile/parser"
 	"github.com/regclient/regclient/types/ref"
-	"github.com/uniget-org/cli/pkg/logging"
-	myos "github.com/uniget-org/cli/pkg/os"
-	"github.com/uniget-org/cli/pkg/tool"
+	"gitlab.com/uniget-org/cli/pkg/logging"
+	myos "gitlab.com/uniget-org/cli/pkg/os"
+	"gitlab.com/uniget-org/cli/pkg/tool"
 )
 
 func ExtractImageReferencesFromDockerfile(reader io.Reader) (ImageRefs, error) {

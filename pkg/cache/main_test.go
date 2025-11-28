@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/regclient/regclient/types/ref"
-	"github.com/uniget-org/cli/pkg/containers"
+	"gitlab.com/uniget-org/cli/pkg/containers"
 )
 
 var (
