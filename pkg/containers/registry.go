@@ -23,6 +23,7 @@ import (
 
 func GetRegclient() *regclient.RegClient {
 	rcOpts := []regclient.Opt{}
+	rcOpts = append(rcOpts, regclient.WithDockerCredsFile("i_do_not_exist"))
 	rcOpts = append(rcOpts, regclient.WithUserAgent("uniget"))
 	rcOpts = append(rcOpts, regclient.WithConfigHost(config.Host{
 		Name: "127.0.0.1:5000",
