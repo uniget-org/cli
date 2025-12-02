@@ -147,6 +147,11 @@ EOF
 FROM registry.gitlab.com/uniget-org/images/ubuntu:24.04 AS noble-uniget
 ARG version
 COPY --from=uniget-release /usr/local/bin/uniget /usr/local/bin/uniget
+RUN <<EOF
+useradd --shell=/bin/bash --create-home bob
+echo "export UNIGET_USER=1" >>/home/bob/.bashrc
+echo "export PATH=${HOME}/.local/bin:${PATH}" >>/home/bob/.bashrc
+EOF
 LABEL \
     org.opencontainers.image.source="https://gitlab.com/uniget-org/cli" \
     org.opencontainers.image.title="uniget CLI" \
@@ -156,6 +161,11 @@ LABEL \
 FROM registry.gitlab.com/uniget-org/images/systemd:24.04 AS systemd-uniget
 ARG version
 COPY --from=uniget-release /usr/local/bin/uniget /usr/local/bin/uniget
+RUN <<EOF
+useradd --shell=/bin/bash --create-home bob
+echo "export UNIGET_USER=1" >>/home/bob/.bashrc
+echo "export PATH=${HOME}/.local/bin:${PATH}" >>/home/bob/.bashrc
+EOF
 LABEL \
     org.opencontainers.image.source="https://gitlab.com/uniget-org/cli" \
     org.opencontainers.image.title="uniget CLI" \
