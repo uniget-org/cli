@@ -6,7 +6,7 @@
   - docker:29.0.4-dind@sha256:c9699f4fc7365e8daad3eb48ce3b62dc118b2a5267f7be7bcd3c4e4b2f1cfb4c
 
 .regctl:
-  image: regclient/regctl:v0.10.0-alpine@sha256:a53cf4627ffa0e1bb1967d067bd6651505f81bfd03d8e53365cfedff9d940546
+  image: regclient/regctl:v0.11.0-alpine@sha256:b17293729b06c38bf0d9d7c9b16af418e4101ebde95a3462b9a863daecac72f5
 
 .docker:login:
   before_script:
