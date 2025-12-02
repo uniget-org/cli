@@ -1,6 +1,7 @@
 #syntax=docker/dockerfile:1.20.0
+#check=skip=SecretsUsedInArgOrEnv
 
-FROM ghcr.io/uniget-org/tools/goreleaser:2.12.7@sha256:f25e5bfca1f86af0ceb42dd57ae80d7388d0b6e9268ad7bffe116afb060965a1 AS uniget-goreleaser
+FROM ghcr.io/uniget-org/tools/goreleaser:2.13.0@sha256:24c7d69fd6808bc4e15d7db0025c71ebb4307521ab793ae45ba4492b55ba4852 AS uniget-goreleaser
 FROM ghcr.io/uniget-org/tools/cosign:3.0.2@sha256:489f2ce986bead7cface7a114d23592c2d6a55ebb4647f1821a0eb53b78c7cb3 AS uniget-cosign
 FROM ghcr.io/uniget-org/tools/syft:1.38.0@sha256:988b90a39de2a9b9955762a5458b2b78b1fa806662b912d732c2173b7b5dea9b AS uniget-syft
 FROM ghcr.io/uniget-org/tools/gh:2.83.1@sha256:b958998739e665b904c057358146efe68f35bd72e720a3b8f8481a754aed6bd9 AS uniget-gh
@@ -24,7 +25,7 @@ ARG TARGETOS
 ARG TARGETARCH
 ARG GOOS=${TARGETOS}
 ARG GOARCH=${TARGETARCH}
-WORKDIR /go/src/github.com/uniget-org/cli
+WORKDIR /go/src/gitlab.com/uniget-org/cli
 RUN --mount=target=.,readwrite \
     --mount=from=uniget-goreleaser,src=/bin/goreleaser,target=/usr/local/bin/goreleaser \
     --mount=from=uniget-cosign,src=/bin/cosign,target=/usr/local/bin/cosign \
@@ -45,7 +46,7 @@ ARG CI_SERVER_HOST
 ARG CI_JOB_TOKEN
 ARG GITLAB_TOKEN
 ARG SIGSTORE_ID_TOKEN
-WORKDIR /go/src/github.com/uniget-org/cli
+WORKDIR /go/src/gitlab.com/uniget-org/cli
 RUN --mount=target=.,readwrite \
     --mount=from=uniget-goreleaser,src=/bin/goreleaser,target=/usr/local/bin/goreleaser \
     --mount=from=uniget-cosign,src=/bin/cosign,target=/usr/local/bin/cosign \
