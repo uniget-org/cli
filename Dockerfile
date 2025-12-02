@@ -150,7 +150,7 @@ COPY --from=uniget-release /usr/local/bin/uniget /usr/local/bin/uniget
 RUN <<EOF
 useradd --shell=/bin/bash --create-home bob
 echo "export UNIGET_USER=1" >>/home/bob/.bashrc
-echo "export PATH=${HOME}/.local/bin:${PATH}" >>/home/bob/.bashrc
+echo "export PATH=\${HOME}/.local/bin:${PATH}" >>/home/bob/.bashrc
 EOF
 LABEL \
     org.opencontainers.image.source="https://gitlab.com/uniget-org/cli" \
@@ -164,7 +164,7 @@ COPY --from=uniget-release /usr/local/bin/uniget /usr/local/bin/uniget
 RUN <<EOF
 useradd --shell=/bin/bash --create-home bob
 echo "export UNIGET_USER=1" >>/home/bob/.bashrc
-echo "export PATH=${HOME}/.local/bin:${PATH}" >>/home/bob/.bashrc
+echo "export PATH=\${HOME}/.local/bin:${PATH}" >>/home/bob/.bashrc
 EOF
 LABEL \
     org.opencontainers.image.source="https://gitlab.com/uniget-org/cli" \
