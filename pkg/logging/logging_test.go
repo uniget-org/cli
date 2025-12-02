@@ -41,9 +41,6 @@ func TestInit(t *testing.T) {
 	ErrorWriter = errWriter
 	Init()
 
-	if Description.Writer != outWriter {
-		t.Errorf("Description.Writer = %v; want %v", Description.Writer, outWriter)
-	}
 	if Info.Writer != outWriter {
 		t.Errorf("Info.Writer = %v; want %v", Info.Writer, outWriter)
 	}
@@ -71,7 +68,6 @@ func TestPrefixWriters(t *testing.T) {
 	ErrorWriter = &errBuffer
 	Init()
 
-	Description.Println("description")
 	Info.Println("info")
 	Success.Println("success")
 	Error.Println("error")
@@ -86,7 +82,6 @@ func TestPrefixWriters(t *testing.T) {
 	}
 
 	expectedOut := "" +
-		" DESCRIPTION  description" + "\n" +
 		" INFO  info" + "\n" +
 		" SUCCESS  success" + "\n" +
 		" WARNING  warning" + "\n" +

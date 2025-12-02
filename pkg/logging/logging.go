@@ -17,24 +17,16 @@ var (
 		Writer:   OutputWriter,
 		MaxWidth: 1000,
 	}
-	Description = pterm.PrefixPrinter{
+	Info = pterm.PrefixPrinter{
 		MessageStyle: &pterm.ThemeDefault.DescriptionMessageStyle,
 		Prefix: pterm.Prefix{
-			Style: &pterm.ThemeDefault.DescriptionPrefixStyle,
-			Text:  "DESCRIPTION",
-		},
-		Writer: OutputWriter,
-	}
-	Info = pterm.PrefixPrinter{
-		MessageStyle: &pterm.ThemeDefault.InfoMessageStyle,
-		Prefix: pterm.Prefix{
 			Style: &pterm.ThemeDefault.InfoPrefixStyle,
-			Text:  "INFO",
+			Text:  " INFO  ",
 		},
 		Writer: OutputWriter,
 	}
 	Success = pterm.PrefixPrinter{
-		MessageStyle: &pterm.ThemeDefault.SuccessMessageStyle,
+		MessageStyle: &pterm.ThemeDefault.DescriptionMessageStyle,
 		Prefix: pterm.Prefix{
 			Style: &pterm.ThemeDefault.SuccessPrefixStyle,
 			Text:  "SUCCESS",
@@ -70,7 +62,7 @@ var (
 		MessageStyle: pterm.NewStyle(pterm.FgDarkGray),
 		Prefix: pterm.Prefix{
 			Style: pterm.NewStyle(pterm.FgBlack, pterm.BgGray),
-			Text:  "SKIP",
+			Text:  " SKIP  ",
 		},
 		Writer: OutputWriter,
 	}
@@ -80,7 +72,6 @@ func Init() {
 	CustomLogger.Level = Level
 
 	CustomLogger.Writer = OutputWriter
-	Description.Writer = OutputWriter
 	Info.Writer = OutputWriter
 	Success.Writer = OutputWriter
 	Error.Writer = ErrorWriter
