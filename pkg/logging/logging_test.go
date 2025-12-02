@@ -82,10 +82,10 @@ func TestPrefixWriters(t *testing.T) {
 	}
 
 	expectedOut := "" +
-		" INFO  info" + "\n" +
+		"  INFO    info" + "\n" +
 		" SUCCESS  success" + "\n" +
 		" WARNING  warning" + "\n" +
-		" SKIP  skip" + "\n"
+		"  SKIP    skip" + "\n"
 	expectedErr := "" +
 		"  ERROR   error" + "\n"
 
