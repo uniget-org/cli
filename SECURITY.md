@@ -6,8 +6,8 @@
 | ------- | ------------------ |
 | 0.x     | :white_check_mark: |
 
-Older versions of [`docker-setup`](https://github.com/nicholasdille/docker-setup) are not supported.
+[`docker-setup`](https://github.com/nicholasdille/docker-setup) is not supported.
 
 ## Reporting a Vulnerability
 
-Please create an issue.
+Please [create an issue](https://gitlab.com/uniget-org/backlog/-/issues).

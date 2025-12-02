@@ -1,4 +1,4 @@
-[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/7946/badge)](https://www.bestpractices.dev/projects/7946) [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/uniget-org/cli/badge)](https://securityscorecards.dev/viewer/?uri=github.com/uniget-org/cli)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/7946/badge)](https://www.bestpractices.dev/projects/7946)
 
 # uniget
 
@@ -26,7 +26,7 @@ Tools are downloaded, installed and updated automatically.
 Download and run `uniget`:
 
 ```bash
-curl -sLf https://github.com/uniget-org/cli/releases/latest/download/uniget_linux_$(uname -m).tar.gz \
+curl -sLf https://gitlab.com/uniget-org/cli/-/releases/permalink/latest/downloads/uniget_Linux_$(uname -m).tar.gz \
 | sudo tar -xzC /usr/local/bin uniget
 ```
 
@@ -59,7 +59,7 @@ uniget list
 It is possible to install individual tools:
 
 ```bash
-uniget install gojq
+uniget install jq
 uniget install kubectl helm
 ```
 
@@ -94,5 +94,13 @@ uniget upgrade --plan
 By adding the `--reinstall` parameter, the selected tools can be reinstalled regardless if they are outdated:
 
 ```bash
-uniget install gojq --reinstall
+uniget install jq --reinstall
+```
+
+### Upgrade the `uniget` CLI itself
+
+To update the `uniget` CLI itself, run:
+
+```bash
+uniget self-upgrade
 ```
