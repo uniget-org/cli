@@ -16,6 +16,7 @@
     "docker:enableMajor",
     "docker:pinDigests"
   ],
+  "configMigration": true,
   "timezone": "Europe/Berlin",
   "useBaseBranchConfig": "merge",
   "platformAutomerge": true,
