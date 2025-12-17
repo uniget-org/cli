@@ -1,9 +1,9 @@
 .docker:
-  image: docker:29.1.2@sha256:40916fb078cdd27640d069bba401324a15a06d3ecbd8895048122c8d321f43f8
+  image: docker:29.1.3@sha256:7370a6c49b7e708fb969b422dffe6cdd78a9f0ff5b3bfba0e0cddce736c49eaf
 
 .docker:dind:
   services:
-  - docker:29.1.2-dind@sha256:40916fb078cdd27640d069bba401324a15a06d3ecbd8895048122c8d321f43f8
+  - docker:29.1.3-dind@sha256:7370a6c49b7e708fb969b422dffe6cdd78a9f0ff5b3bfba0e0cddce736c49eaf
 
 .regctl:
   image: regclient/regctl:v0.11.0-alpine@sha256:b17293729b06c38bf0d9d7c9b16af418e4101ebde95a3462b9a863daecac72f5
