@@ -31,14 +31,21 @@ func initBumpCmd() {
 }
 
 var bumpCmd = &cobra.Command{
-	Use:   "bump",
+	Use: "bump",
+	Aliases: []string{
+		"b",
+	},
 	Short: "Bump tool versions",
 	Long:  header + "\nBump tool versions",
 	Args:  cobra.NoArgs,
 }
 
 var bumpDockerfileCmd = &cobra.Command{
-	Use:   "dockerfile",
+	Use: "dockerfile",
+	Aliases: []string{
+		"docker",
+		"df",
+	},
 	Short: "Bump image references in a Dockerfile",
 	Long:  header + "\nBump image references in a Dockerfile",
 	Args:  cobra.NoArgs,
@@ -46,7 +53,12 @@ var bumpDockerfileCmd = &cobra.Command{
 }
 
 var bumpComposeCmd = &cobra.Command{
-	Use:   "compose",
+	Use: "compose",
+	Aliases: []string{
+		"c",
+		"docker-compose",
+		"dc",
+	},
 	Short: "Bump image references in a compose file",
 	Long:  header + "\nBump image references in a compose file",
 	Args:  cobra.NoArgs,
@@ -54,12 +66,15 @@ var bumpComposeCmd = &cobra.Command{
 }
 
 var bumpKubernetesCmd = &cobra.Command{
-	Use:     "kubernetes",
-	Aliases: []string{"k8s"},
-	Short:   "Bump image references in a Kubernetes manifest",
-	Long:    header + "\nBump image references in a Kubernetes manifest",
-	Args:    cobra.NoArgs,
-	RunE:    processKubernetesFileCmd,
+	Use: "kubernetes",
+	Aliases: []string{
+		"k",
+		"k8s",
+	},
+	Short: "Bump image references in a Kubernetes manifest",
+	Long:  header + "\nBump image references in a Kubernetes manifest",
+	Args:  cobra.NoArgs,
+	RunE:  processKubernetesFileCmd,
 }
 
 func processBumpDockerfileCmd(cmd *cobra.Command, args []string) error {

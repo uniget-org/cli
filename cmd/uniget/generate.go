@@ -24,7 +24,11 @@ func initGenerateCmd() {
 }
 
 var generateCmd = &cobra.Command{
-	Use:    "generate",
+	Use: "generate",
+	Aliases: []string{
+		"g",
+		"gen",
+	},
 	Short:  "Generate Dockerfile",
 	Long:   header + "\nGenerate Dockerfile for a tool",
 	Hidden: true,

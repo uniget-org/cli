@@ -23,7 +23,10 @@ func initCacheCmd() {
 }
 
 var cacheCmd = &cobra.Command{
-	Use:   "cache",
+	Use: "cache",
+	Aliases: []string{
+		"c",
+	},
 	Short: "Manage the cache",
 	Long:  header + "\nManage the cache",
 	Args:  cobra.NoArgs,
@@ -40,7 +43,10 @@ var cacheCmd = &cobra.Command{
 }
 
 var cacheInfoCmd = &cobra.Command{
-	Use:   "info",
+	Use: "info",
+	Aliases: []string{
+		"i",
+	},
 	Short: "Display cache information",
 	Long:  header + "\nDisplay cache information",
 	Args:  cobra.NoArgs,
@@ -55,7 +61,10 @@ var cacheInfoCmd = &cobra.Command{
 }
 
 var cacheStatsCmd = &cobra.Command{
-	Use:   "stats",
+	Use: "stats",
+	Aliases: []string{
+		"s",
+	},
 	Short: "Display cache statistics",
 	Long:  header + "\nDisplay cache statistics",
 	Args:  cobra.NoArgs,
@@ -101,7 +110,11 @@ var cacheStatsCmd = &cobra.Command{
 }
 
 var cacheListCmd = &cobra.Command{
-	Use:   "list",
+	Use: "list",
+	Aliases: []string{
+		"l",
+		"ls",
+	},
 	Short: "Display cache contents",
 	Long:  header + "\nDisplay cache contents",
 	Args:  cobra.NoArgs,
@@ -148,7 +161,10 @@ var cacheListCmd = &cobra.Command{
 }
 
 var cachePruneCmd = &cobra.Command{
-	Use:   "prune",
+	Use: "prune",
+	Aliases: []string{
+		"p",
+	},
 	Short: "Remove unused cache entries",
 	Long:  header + "\nRemove unused cache entries",
 	Args:  cobra.NoArgs,

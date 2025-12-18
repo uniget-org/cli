@@ -22,11 +22,14 @@ func initListCmd() {
 }
 
 var listCmd = &cobra.Command{
-	Use:     "list",
-	Aliases: []string{"l", "get"},
-	Short:   "List tools",
-	Long:    header + "\nList tools",
-	Args:    cobra.NoArgs,
+	Use: "list",
+	Aliases: []string{
+		"l",
+		"get",
+	},
+	Short: "List tools",
+	Long:  header + "\nList tools",
+	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if viper.GetBool("update") {
 			err := downloadMetadata()

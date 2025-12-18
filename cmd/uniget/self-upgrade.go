@@ -21,10 +21,11 @@ func initSelfUpgradeCmd() {
 }
 
 var selfUpgradeCmd = &cobra.Command{
-	Use:   "self-upgrade",
-	Short: "Self upgrade " + projectName,
-	Long:  header + "\nUpgrade " + projectName + " to latest version",
-	Args:  cobra.NoArgs,
+	Use:     "self-upgrade",
+	Aliases: []string{},
+	Short:   "Self upgrade " + projectName,
+	Long:    header + "\nUpgrade " + projectName + " to latest version",
+	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		err := downloadMetadata()
 		if err != nil {

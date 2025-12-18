@@ -45,11 +45,14 @@ func initRegCmd() {
 }
 
 var regCmd = &cobra.Command{
-	Use:     "registry",
-	Aliases: []string{"reg", "r"},
-	Short:   "Display installation paths as environment variables",
-	Long:    header + "\nDisplay installation paths as environment variables",
-	Hidden:  true,
+	Use: "registry",
+	Aliases: []string{
+		"reg",
+		"r",
+	},
+	Short:  "Display installation paths as environment variables",
+	Long:   header + "\nDisplay installation paths as environment variables",
+	Hidden: true,
 }
 
 func getFormatString() string {

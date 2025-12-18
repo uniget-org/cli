@@ -25,14 +25,21 @@ func initCronCmd() {
 }
 
 var cronCmd = &cobra.Command{
-	Use:   "cron",
+	Use: "cron",
+	Aliases: []string{
+		"schedule",
+		"s",
+	},
 	Short: "Manage cron jobs",
 	Long:  header + "\nManage cron jobs for updating",
 	Args:  cobra.NoArgs,
 }
 
 var cronCreateCmd = &cobra.Command{
-	Use:   "create",
+	Use: "create",
+	Aliases: []string{
+		"c",
+	},
 	Short: "Create cron job",
 	Long:  header + "\nCreate cron job",
 	Args:  cobra.NoArgs,
@@ -42,7 +49,10 @@ var cronCreateCmd = &cobra.Command{
 }
 
 var cronRemoveCmd = &cobra.Command{
-	Use:   "remove",
+	Use: "remove",
+	Aliases: []string{
+		"r",
+	},
 	Short: "Remove cron job",
 	Long:  header + "\nRemove cron job",
 	Args:  cobra.NoArgs,

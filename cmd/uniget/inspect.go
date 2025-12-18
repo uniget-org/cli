@@ -23,9 +23,10 @@ func initInspectCmd() {
 }
 
 var inspectCmd = &cobra.Command{
-	Use:   "inspect",
-	Short: "Inspect tool",
-	Long:  header + "\nInspect tools",
+	Use:     "inspect",
+	Aliases: []string{},
+	Short:   "Inspect tool",
+	Long:    header + "\nInspect tools",
 	Example: "" +
 		"  Use regctl/jq/xargs/tar to display raw contents:\n" +
 		"    regctl manifest get ghcr.io/uniget-org/tools/TOOL:latest --platform linux/amd64 --format raw-body \\\n" +

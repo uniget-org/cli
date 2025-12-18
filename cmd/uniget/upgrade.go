@@ -14,10 +14,11 @@ func initUpgradeCmd() {
 }
 
 var upgradeCmd = &cobra.Command{
-	Use:   "upgrade",
-	Short: "Upgrade all tools",
-	Long:  header + "\nUpgrade all tools to latest version",
-	Args:  cobra.NoArgs,
+	Use:     "upgrade",
+	Aliases: []string{},
+	Short:   "Upgrade all tools",
+	Long:    header + "\nUpgrade all tools to latest version",
+	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if viper.GetBool("update") {
 			err := downloadMetadata()

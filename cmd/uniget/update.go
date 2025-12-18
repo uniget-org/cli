@@ -26,10 +26,11 @@ func initUpdateCmd() {
 }
 
 var updateCmd = &cobra.Command{
-	Use:   "update",
-	Short: "Update tool manifest",
-	Long:  header + "\nUpdate tool manifest",
-	Args:  cobra.NoArgs,
+	Use:     "update",
+	Aliases: []string{},
+	Short:   "Update tool manifest",
+	Long:    header + "\nUpdate tool manifest",
+	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		err := downloadMetadata()
 		if err != nil {

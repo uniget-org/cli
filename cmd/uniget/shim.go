@@ -24,10 +24,11 @@ func initShimCmd() {
 }
 
 var shimCmd = &cobra.Command{
-	Use:   "shim",
-	Short: "Install shims for profile.d",
-	Long:  header + "\nInstall shims for profile.d",
-	Args:  cobra.NoArgs,
+	Use:     "shim",
+	Aliases: []string{},
+	Short:   "Install shims for profile.d",
+	Long:    header + "\nInstall shims for profile.d",
+	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		err := installProfileDShim()
 		if err != nil {

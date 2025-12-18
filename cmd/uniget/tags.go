@@ -14,11 +14,13 @@ func initTagsCmd() {
 }
 
 var tagsCmd = &cobra.Command{
-	Use:     "tags",
-	Aliases: []string{"t"},
-	Short:   "List tags",
-	Long:    header + "\nList tags",
-	Args:    cobra.NoArgs,
+	Use: "tags",
+	Aliases: []string{
+		"t",
+	},
+	Short: "List tags",
+	Long:  header + "\nList tags",
+	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if viper.GetBool("update") {
 			err := downloadMetadata()

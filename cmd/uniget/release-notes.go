@@ -25,10 +25,11 @@ func initReleaseNotesCmd() {
 }
 
 var releaseNotesCmd = &cobra.Command{
-	Use:   "release-notes",
-	Short: "Show release notes for a tool",
-	Long:  header + "\nShow release notes for a tool",
-	Args:  cobra.ExactArgs(1),
+	Use:     "release-notes",
+	Aliases: []string{},
+	Short:   "Show release notes for a tool",
+	Long:    header + "\nShow release notes for a tool",
+	Args:    cobra.ExactArgs(1),
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},

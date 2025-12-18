@@ -30,11 +30,14 @@ func initDescribeCmd() {
 }
 
 var describeCmd = &cobra.Command{
-	Use:     "describe",
-	Aliases: []string{"d", "info"},
-	Short:   "Show detailed information about tools",
-	Long:    header + "\nShow detailed information about tools",
-	Args:    cobra.ExactArgs(1),
+	Use: "describe",
+	Aliases: []string{
+		"d",
+		"info",
+	},
+	Short: "Show detailed information about tools",
+	Long:  header + "\nShow detailed information about tools",
+	Args:  cobra.ExactArgs(1),
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},

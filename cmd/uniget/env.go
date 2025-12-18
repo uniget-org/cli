@@ -13,11 +13,14 @@ func initEnvCmd() {
 }
 
 var envCmd = &cobra.Command{
-	Use:     "env",
-	Aliases: []string{"e"},
-	Short:   "Display installation paths as environment variables",
-	Long:    header + "\nDisplay installation paths as environment variables",
-	Hidden:  true,
+	Use: "env",
+	Aliases: []string{
+		"e",
+		"environment",
+	},
+	Short:  "Display installation paths as environment variables",
+	Long:   header + "\nDisplay installation paths as environment variables",
+	Hidden: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		for _, env := range os.Environ() {
 			if strings.HasPrefix(env, "UNIGET_") {
