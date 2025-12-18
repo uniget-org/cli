@@ -9,39 +9,45 @@ import (
 	"github.com/spf13/viper"
 )
 
-var create bool
-var createUpgradeHour string
-var createSelfUpgradeHour string
-var createSelfUpgradeDay string
-var remove bool
+var (
+	createUpgradeCron     = "30 0 * * *"
+	createSelfUpgradeCron = "0 0 * * *"
+)
 
 func initCronCmd() {
 	rootCmd.AddCommand(cronCmd)
 
-	cronCmd.Flags().BoolVar(&create, "create", false, "Create cron jobs")
-	cronCmd.Flags().StringVar(&createUpgradeHour, "upgrade-hour", "1", "Hour to run cron jobs for tool upgrade")
-	cronCmd.Flags().StringVar(&createSelfUpgradeHour, "self-upgrade-hour", "0", "Hour to run cron jobs for self-upgrade")
-	cronCmd.Flags().StringVar(&createSelfUpgradeDay, "self-upgrade-day", "0", "Day to run cron jobs for self-upgrade on")
-	cronCmd.Flags().BoolVar(&remove, "remove", false, "Remove cron jobs")
-	cronCmd.MarkFlagsMutuallyExclusive("create", "remove")
-	cronCmd.MarkFlagsMutuallyExclusive("remove", "upgrade-hour")
-	cronCmd.MarkFlagsMutuallyExclusive("remove", "self-upgrade-hour")
+	cronCmd.AddCommand(cronCreateCmd)
+	cronCmd.AddCommand(cronRemoveCmd)
+
+	cronCreateCmd.Flags().StringVar(&createUpgradeCron, "upgrade-cron", createUpgradeCron, "Cron schedule to run cron jobs for tool upgrade")
+	cronCreateCmd.Flags().StringVar(&createSelfUpgradeCron, "self-upgrade-cron", createSelfUpgradeCron, "Cron schedule to run cron jobs for self-upgrade")
 }
 
 var cronCmd = &cobra.Command{
 	Use:   "cron",
-	Short: "Create cron jobs",
-	Long:  header + "\nCreate cron jobs for updating",
+	Short: "Manage cron jobs",
+	Long:  header + "\nManage cron jobs for updating",
+	Args:  cobra.NoArgs,
+}
+
+var cronCreateCmd = &cobra.Command{
+	Use:   "create",
+	Short: "Create cron job",
+	Long:  header + "\nCreate cron job",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if create {
-			return createCron()
-		}
-		if remove {
-			return removeCron()
-		}
+		return createCron()
+	},
+}
 
-		return fmt.Errorf("either --create or --remove must be specified")
+var cronRemoveCmd = &cobra.Command{
+	Use:   "remove",
+	Short: "Remove cron job",
+	Long:  header + "\nRemove cron job",
+	Args:  cobra.NoArgs,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return removeCron()
 	},
 }
 
@@ -93,8 +99,8 @@ func createCron() error {
 		return fmt.Errorf("cannot get user crontab: %w", err)
 	}
 	lines = removeUserCronTab(lines)
-	lines = append(lines, fmt.Sprintf("30 %s * * * uniget --user=%t update && uniget --user=%t install --installed", createUpgradeHour, viper.GetBool("user"), viper.GetBool("user")))
-	lines = append(lines, fmt.Sprintf("0 %s * * %s uniget --user=%t self-upgrade", createSelfUpgradeHour, createSelfUpgradeDay, viper.GetBool("user")))
+	lines = append(lines, fmt.Sprintf("%s uniget --user=%t upgrade --auto-update", createUpgradeCron, viper.GetBool("user")))
+	lines = append(lines, fmt.Sprintf("%s uniget --user=%t self-upgrade", createSelfUpgradeCron, viper.GetBool("user")))
 
 	err = setUserCrontab(lines)
 	if err != nil {
