@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -49,7 +50,7 @@ var searchCmd = &cobra.Command{
 	},
 	Short: "Search for tools",
 	Long:  header + "\nSearch for tools",
-	Args:  cobra.ExactArgs(1),
+	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if viper.GetBool("update") {
 			err := downloadMetadata()
@@ -73,15 +74,18 @@ var searchCmd = &cobra.Command{
 			return fmt.Errorf("error: Can only process one of only-names, only-description, only-tags and only-deps at the same time")
 		}
 
-		results := tools.Find(
-			args[0],
-			!noSearchInName && !onlySearchInDescription && !onlySearchInTags && !onlySearchInDeps,
-			!noSearchInDescription && !onlySearchInName && !onlySearchInTags && !onlySearchInDeps,
-			!noSearchInTags && !onlySearchInName && !onlySearchInDescription && !onlySearchInDeps,
-			!noSearchInDeps && !onlySearchInName && !onlySearchInDescription && !onlySearchInTags,
-		)
+		results := tools
+		for _, term := range args {
+			results = results.Find(
+				term,
+				!noSearchInName && !onlySearchInDescription && !onlySearchInTags && !onlySearchInDeps,
+				!noSearchInDescription && !onlySearchInName && !onlySearchInTags && !onlySearchInDeps,
+				!noSearchInTags && !onlySearchInName && !onlySearchInDescription && !onlySearchInDeps,
+				!noSearchInDeps && !onlySearchInName && !onlySearchInDescription && !onlySearchInTags,
+			)
+		}
 		if len(results.Tools) == 0 {
-			logging.Info.Printfln("No tools found for term %s", args[0])
+			logging.Info.Printfln("No tools found for term <%s>", strings.Join(args, " "))
 			return nil
 		}
 
