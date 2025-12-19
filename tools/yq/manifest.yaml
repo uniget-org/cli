@@ -1,0 +1,20 @@
+name: yq
+license:
+  name: MIT
+  link: https://api.github.com/licenses/mit
+version: 4.50.1
+check: ""
+tags:
+- org/?
+- category/default
+- lang/go
+- type/cli
+homepage: https://github.com/mikefarah/yq
+repository: https://github.com/mikefarah/yq
+description: yq is a portable command-line YAML, JSON, XML, CSV, TOML, HCL  and properties
+  processor
+renovate:
+  datasource: github-releases
+  package: mikefarah/yq
+  extractVersion: ^v?(?<version>.+)$
+sources: []

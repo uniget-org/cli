@@ -12,10 +12,16 @@ func initEditCmd() {
 }
 
 var editCmd = &cobra.Command{
-	Use:       "edit",
-	Aliases:   []string{"e", "ed"},
-	Short:     "Edit tool in Visual Studio Code",
-	ValidArgs: unigetToolsNames,
+	Use: "edit",
+	Aliases: []string{
+		"e",
+		"ed",
+	},
+	Short: "Edit tool in Visual Studio Code",
+	Args:  cobra.MinimumNArgs(1),
+	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return unigetToolsNames, cobra.ShellCompDirectiveNoFileComp
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		for _, toolName := range args {
 			if !unigetTools.Exists(toolName) {

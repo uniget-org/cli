@@ -1,0 +1,19 @@
+name: diffr
+license:
+  name: MIT
+  link: https://api.github.com/licenses/mit
+version: ""
+check: ""
+tags:
+- org/?
+- category/default
+- lang/rust
+- type/cli
+homepage: https://github.com/mookid/diffr
+repository: https://github.com/mookid/diffr
+description: Yet another diff highlighting tool
+renovate:
+  datasource: github-releases
+  package: mookid/diffr
+  extractVersion: ^v?(?<version>.+)$
+sources: []
