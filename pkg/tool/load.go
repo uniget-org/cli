@@ -12,6 +12,7 @@ import (
 
 	"gitlab.com/uniget-org/cli/pkg/archive"
 	"gitlab.com/uniget-org/cli/pkg/containers"
+	"gitlab.com/uniget-org/cli/pkg/logging"
 )
 
 func LoadFromFile(filename string) (Tools, error) {
@@ -87,4 +88,47 @@ func LoadMetadata(registry []string, repository []string, tag string) (*Tools, e
 	}
 
 	return &tools, nil
+}
+
+func LoadMetadataFromRegistry(registry string, imageRepository string, metadataImageTag string) ([]byte, error) {
+	t, err := containers.FindToolRef([]string{registry}, []string{imageRepository}, "metadata", metadataImageTag)
+	if err != nil {
+		return nil, fmt.Errorf("error finding metadata: %s", err)
+	}
+	rc := containers.GetRegclient()
+	defer func() {
+		err := rc.Close(context.Background(), t.GetRef())
+		if err != nil {
+			logging.Warning.Printfln("error closing registry client: %s", err)
+		}
+	}()
+
+	var metadata Tools
+	err = containers.GetFirstLayerFromRegistry(context.Background(), rc, t.GetRef(), func(reader io.ReadCloser) error {
+		err = archive.ProcessTarContents(reader, func(reader *tar.Reader, header *tar.Header) error {
+			if header.Typeflag == tar.TypeReg && header.Name == "metadata.json" {
+				data, err := io.ReadAll(reader)
+				if err != nil {
+					return fmt.Errorf("error reading metadata.json: %s", err)
+				}
+
+				err = json.Unmarshal(data, &metadata)
+				if err != nil {
+					return fmt.Errorf("error unmarshaling metadata.json: %s", err)
+				}
+			}
+
+			return nil
+		})
+		if err != nil {
+			return fmt.Errorf("error processing tar contents: %s", err)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error getting first layer from registry: %s", err)
+	}
+
+	return json.Marshal(metadata)
 }

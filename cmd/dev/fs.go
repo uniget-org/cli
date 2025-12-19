@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/uniget-org/cli/pkg/tool"
+	"gitlab.com/uniget-org/cli/pkg/tool"
 	"gopkg.in/yaml.v2"
 )
 

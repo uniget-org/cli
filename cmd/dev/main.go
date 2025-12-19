@@ -16,6 +16,10 @@ var (
 		Version:      version,
 		SilenceUsage: true,
 	}
+	registryHost     = "ghcr.io"
+	repositoryPrefix = "uniget-org/tools"
+	metadataTag      = "main"
+	dockerTag        = metadataTag
 )
 
 func init() {
@@ -28,12 +32,13 @@ func init() {
 		unigetToolsNames = append(unigetToolsNames, k)
 	}
 
+	initDebugCmd()
 	initEditCmd()
 	initNewCmd()
 }
 
 func main() {
-	pf := rootCmd.PersistentFlags()
+	pf := rootCmd.Flags()
 	pf.StringVarP(&unigetToolsDirectory, "directory", "d", unigetToolsDirectory, "Directory to search for tools")
 
 	err := rootCmd.Execute()
