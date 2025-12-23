@@ -3,7 +3,7 @@
 
 FROM ghcr.io/uniget-org/tools/goreleaser:2.13.0@sha256:24c7d69fd6808bc4e15d7db0025c71ebb4307521ab793ae45ba4492b55ba4852 AS uniget-goreleaser
 FROM ghcr.io/uniget-org/tools/cosign:3.0.2@sha256:489f2ce986bead7cface7a114d23592c2d6a55ebb4647f1821a0eb53b78c7cb3 AS uniget-cosign
-FROM ghcr.io/uniget-org/tools/syft:1.38.0@sha256:988b90a39de2a9b9955762a5458b2b78b1fa806662b912d732c2173b7b5dea9b AS uniget-syft
+FROM ghcr.io/uniget-org/tools/syft:1.39.0@sha256:8165d518f2614565d659c59c9d60f95e96d263c4a22c785dfcd2c2425a49b38c AS uniget-syft
 FROM ghcr.io/uniget-org/tools/gh:2.83.1@sha256:b958998739e665b904c057358146efe68f35bd72e720a3b8f8481a754aed6bd9 AS uniget-gh
 FROM ghcr.io/uniget-org/tools/glab:1.78.3@sha256:7c76a6980cb291d0768192a112df8bdb2a8a502d6f5290794f5c82763e278190 AS uniget-glab
 FROM ghcr.io/uniget-org/tools/jq:1.8.1@sha256:79febf71d7a0b349a4a05653af6ecb76a0472d62b8d6e1e643af9dc060c7aad8 AS uniget-jq
