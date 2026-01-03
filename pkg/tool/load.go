@@ -8,6 +8,8 @@ import (
 	"io"
 	"os"
 
+	"gopkg.in/yaml.v3"
+
 	"github.com/google/safearchive/tar"
 
 	"gitlab.com/uniget-org/cli/pkg/archive"
@@ -131,4 +133,29 @@ func LoadMetadataFromRegistry(registry string, imageRepository string, metadataI
 	}
 
 	return json.Marshal(metadata)
+}
+
+func LoadManifestFromFile(filename string) (Tool, error) {
+	data, err := os.ReadFile(filename) // #nosec G304 -- filename is built when LoadFromFile is called
+	if err != nil {
+		return Tool{}, fmt.Errorf("error loading file contents: %s", err)
+	}
+
+	tool, err := LoadManifestFromBytes(data)
+	if err != nil {
+		return Tool{}, fmt.Errorf("error loading data: %s", err)
+	}
+
+	return tool, nil
+}
+
+func LoadManifestFromBytes(data []byte) (Tool, error) {
+	var tool Tool
+
+	err := yaml.Unmarshal(data, &tool)
+	if err != nil {
+		return Tool{}, fmt.Errorf("unable to load YAML from byte array: %s", err)
+	}
+
+	return tool, nil
 }

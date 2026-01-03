@@ -34,6 +34,8 @@ func init() {
 
 	initDebugCmd()
 	initEditCmd()
+	initManifestCmd()
+	initMetadataCmd()
 	initNewCmd()
 }
 

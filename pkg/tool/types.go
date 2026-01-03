@@ -41,11 +41,11 @@ type Tool struct {
 	Messages            Messages   `json:"messages,omitempty" yaml:"messages,omitempty"`
 	Renovate            Renovate   `json:"renovate,omitempty" yaml:"renovate,omitempty"`
 	Sources             []Source   `json:"sources" yaml:"sources"`
-	Status              ToolStatus `json:"status,omitempty" yaml:"status,omitempty"`
+	Status              ToolStatus //`json:"status,omitempty" yaml:"status,omitempty"`
 }
 
 type Tools struct {
-	Tools []Tool `json:"tools" yaml:"tools"`
+	Tools []Tool //`json:"tools" yaml:"tools"`
 }
 
 type ToolStatus struct {
@@ -56,4 +56,8 @@ type ToolStatus struct {
 	MarkerFileVersion  string
 	SkipDueToConflicts bool
 	IsRequested        bool
+}
+
+type Metadata struct {
+	Tools []Tool `json:"tools" yaml:"tools"`
 }
