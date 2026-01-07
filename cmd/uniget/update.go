@@ -65,7 +65,7 @@ var updateCmd = &cobra.Command{
 			prefix := pterm.NewStyle(pterm.FgBlack, pterm.BgYellow)
 			suffix := pterm.NewStyle(pterm.FgWhite)
 			prefix.Println()
-			prefix.Print(" NEWS ")
+			prefix.Print(" NEWS  ")
 			suffix.Printfln(" Update to uniget %s by running 'uniget self-upgrade'", newUnigetVersion)
 		}
 
