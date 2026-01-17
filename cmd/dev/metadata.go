@@ -6,6 +6,8 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"gitlab.com/uniget-org/cli/pkg/git"
+	"gitlab.com/uniget-org/cli/pkg/logging"
 	"gitlab.com/uniget-org/cli/pkg/tool"
 )
 
@@ -17,7 +19,9 @@ var (
 func initMetadataCmd() {
 	metadataCreateCmd.Flags().StringVarP(&metadataFileName, "file", "f", metadataFileName, "Metadata file")
 	metadataCreateCmd.Flags().BoolVarP(&metadataStdOut, "stdout", "o", metadataStdOut, "Output metadata to stdout")
+
 	metadataCmd.AddCommand(metadataCreateCmd)
+	metadataCmd.AddCommand(metadataChangesCmd)
 
 	rootCmd.AddCommand(metadataCmd)
 }
@@ -49,6 +53,36 @@ var metadataCreateCmd = &cobra.Command{
 
 		} else {
 			metadata.WriteMetadata(metadataFileName)
+		}
+
+		return nil
+	},
+}
+
+var metadataChangesCmd = &cobra.Command{
+	Use:     "changes",
+	Aliases: []string{},
+	Short:   "Collect metadata changes",
+	Args:    cobra.NoArgs,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		metadata, err := tool.NewMetadataFromRegistry(registryHost, repositoryPrefix, "main")
+		if err != nil {
+			return fmt.Errorf("error loading metadata: %s", err)
+		}
+		logging.Info.Printfln("Metadata revision %s", metadata.Revision)
+
+		//forge := git.NewGitHubGitForge()
+		forge, err := git.NewGitLabGitForge()
+		if err != nil {
+			return fmt.Errorf("unable to load gitlab client: %s", err)
+		}
+
+		changes, err := forge.GetCommitChanges(metadata.Revision)
+		if err != nil {
+			return fmt.Errorf("error getting commit changes: %s", err)
+		}
+		for _, change := range changes.Changes {
+			logging.Info.Printfln("change: %+v", change)
 		}
 
 		return nil

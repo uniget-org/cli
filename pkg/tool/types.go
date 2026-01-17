@@ -59,5 +59,6 @@ type ToolStatus struct {
 }
 
 type Metadata struct {
-	Tools []Tool `json:"tools" yaml:"tools"`
+	Revision string `json:"revision" yaml:"revision"`
+	Tools    []Tool `json:"tools" yaml:"tools"`
 }
