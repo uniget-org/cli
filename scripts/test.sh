@@ -38,18 +38,15 @@ trap "find $TEMP_DIR -type f; rm -rf $TEMP_DIR" EXIT
 uniget --prefix=${TEMP_DIR} update
 check_file "${TEMP_DIR}/var/cache/uniget/metadata.json" "Metadata" || exit 1
 
-uniget --prefix=${TEMP_DIR} install dummy
-check_dir "${TEMP_DIR}/var/cache/uniget/dummy" "Marker file" || exit 1
-check_file "${TEMP_DIR}/var/lib/uniget/manifests/dummy.json" "Manifest" || exit 1
-check_file "${TEMP_DIR}/var/lib/uniget/manifests/dummy.txt" "File list" || exit 1
-
-uniget --prefix=${TEMP_DIR} uninstall dummy
-check_dir "${TEMP_DIR}/var/cache/uniget/dummy" "Marker file" && exit 1
-check_file "${TEMP_DIR}/var/lib/uniget/manifests/dummy.json" "Manifest" && exit 1
-check_file "${TEMP_DIR}/var/lib/uniget/manifests/dummy.txt" "File list" && exit 1
-
 uniget --prefix=${TEMP_DIR} install gojq
+check_dir "${TEMP_DIR}/var/cache/uniget/gojq" "Marker file" || exit 1
+check_file "${TEMP_DIR}/var/lib/uniget/manifests/gojq.json" "Manifest" || exit 1
+check_file "${TEMP_DIR}/var/lib/uniget/manifests/gojq.txt" "File list" || exit 1
 "${TEMP_DIR}/usr/local/bin/gojq" --version || exit 1
+uniget --prefix=${TEMP_DIR} uninstall gojq
+check_dir "${TEMP_DIR}/var/cache/uniget/gojq" "Marker file" && exit 1
+check_file "${TEMP_DIR}/var/lib/uniget/manifests/gojq.json" "Manifest" && exit 1
+check_file "${TEMP_DIR}/var/lib/uniget/manifests/gojq.txt" "File list" && exit 1
 
 uniget --prefix=${TEMP_DIR} --target=usr install yq
 check_dir "${TEMP_DIR}/var/cache/uniget/yq" "Marker file" || exit 1
