@@ -71,11 +71,11 @@ var metadataChangesCmd = &cobra.Command{
 		}
 		logging.Info.Printfln("Metadata revision %s", metadata.Revision)
 
-		//forge := git.NewGitHubGitForge()
-		forge, err := git.NewGitLabGitForge()
-		if err != nil {
-			return fmt.Errorf("unable to load gitlab client: %s", err)
-		}
+		forge := git.NewGitHubGitForge()
+		//forge, err := git.NewGitLabGitForge()
+		//if err != nil {
+		//	return fmt.Errorf("unable to load gitlab client: %s", err)
+		//}
 
 		changes, err := forge.GetCommitChanges(metadata.Revision)
 		if err != nil {
