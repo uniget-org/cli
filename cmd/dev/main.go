@@ -44,7 +44,7 @@ func init() {
 }
 
 func main() {
-	pf := rootCmd.Flags()
+	pf := rootCmd.PersistentFlags()
 	pf.StringVarP(&unigetToolsDirectory, "directory", "d", unigetToolsDirectory, "Directory to search for tools")
 	pf.StringVarP(&gitForge, "forge", "f", gitForge, "Git forge (github, gitlab)")
 

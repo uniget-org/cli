@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"slices"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"gitlab.com/uniget-org/cli/pkg/git"
@@ -75,9 +77,17 @@ var metadataChangesCmd = &cobra.Command{
 		var forge git.GitForge
 		switch gitForge {
 		case "github":
-			forge = git.NewGitHubGitForge(repositoryOwner, repositoryName)
+			forge = git.NewGitHubGitForge(
+				repositoryOwner,
+				repositoryName,
+				git.WithGitHubTokenFromEnv(),
+			)
 		case "gitlab":
-			forge, err = git.NewGitLabGitForge(repositoryOwner, repositoryName)
+			forge, err = git.NewGitLabGitForge(
+				repositoryOwner,
+				repositoryName,
+				git.WithGitLabJobToken(),
+			)
 			if err != nil {
 				return fmt.Errorf("unable to load gitlab client: %s", err)
 			}
@@ -101,6 +111,25 @@ var metadataChangesCmd = &cobra.Command{
 		}
 		for _, change := range changes.Changes {
 			logging.Info.Printfln("change: %+v", change)
+			logging.Info.Printfln("tool: %s", change.ToolName)
+			logging.Info.Printfln("changes: +%d/-%d", change.Added, change.Removed)
+
+			if change.FileName == "manifest.yaml" {
+				fields := change.FindChangedFieldsInManifest()
+				if slices.Contains(fields, "version") {
+					fmt.Println(change.ToolName)
+				}
+			}
+
+			if change.FileName == "Dockerfile.template" && change.Added == 1 {
+				for line := range change.DiffLines {
+					if strings.HasPrefix(line, "+#syntax=") {
+						//
+					} else {
+						fmt.Println(change.ToolName)
+					}
+				}
+			}
 		}
 
 		return nil

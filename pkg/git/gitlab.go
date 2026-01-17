@@ -2,6 +2,7 @@ package git
 
 import (
 	"fmt"
+	"os"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"gitlab.com/uniget-org/cli/pkg/logging"
@@ -35,6 +36,12 @@ func NewGitLabGitForge(owner string, repository string, options ...GitLabGitForg
 func WithGitLabToken(token string) GitLabGitForgeOption {
 	return func(GitLabGitForge *GitLabGitForge) {
 		GitLabGitForge.token = token
+	}
+}
+
+func WithGitLabJobToken() GitLabGitForgeOption {
+	return func(GitLabGitForge *GitLabGitForge) {
+		GitLabGitForge.token = os.Getenv("CI_JOB_TOKEN")
 	}
 }
 
@@ -81,10 +88,10 @@ func (gl *GitLabGitForge) GetCommitChanges(fromSha string) (GitForgeChanges, err
 		return changes, fmt.Errorf("failed to compare: %s", err)
 	}
 	for _, file := range comparison.Diffs {
-		changes.Changes = append(changes.Changes, GitForgeChange{
-			FileName: file.NewPath,
-			Diff:     file.Diff,
-		})
+		changes.Changes = append(changes.Changes, *NewGitForgeChange(
+			file.NewPath,
+			file.Diff,
+		))
 	}
 
 	return changes, nil

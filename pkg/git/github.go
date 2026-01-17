@@ -3,6 +3,7 @@ package git
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/google/go-github/v81/github"
 	"gitlab.com/uniget-org/cli/pkg/logging"
@@ -35,6 +36,12 @@ func NewGitHubGitForge(owner string, repository string, options ...GitHubGitForg
 func WithGitHubToken(token string) GitHubGitForgeOption {
 	return func(gitHubGitForge *GitHubGitForge) {
 		gitHubGitForge.token = token
+	}
+}
+
+func WithGitHubTokenFromEnv() GitHubGitForgeOption {
+	return func(gitHubGitForge *GitHubGitForge) {
+		gitHubGitForge.token = os.Getenv("GITHUB_TOKEN")
 	}
 }
 
@@ -86,10 +93,10 @@ func (gh *GitHubGitForge) GetCommitChanges(fromSha string) (GitForgeChanges, err
 	}
 
 	for _, file := range comparison.Files {
-		changes.Changes = append(changes.Changes, GitForgeChange{
-			FileName: file.GetFilename(),
-			Diff:     file.GetPatch(),
-		})
+		changes.Changes = append(changes.Changes, *NewGitForgeChange(
+			file.GetFilename(),
+			file.GetPatch(),
+		))
 	}
 
 	return changes, nil
