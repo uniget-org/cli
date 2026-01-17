@@ -61,11 +61,11 @@ uniget inspect jq | grep "bin/jq$" || exit 1
 
 uniget --user update
 test -f "${HOME}/.cache/uniget/metadata.json"
-uniget --user install dummy
-test -d "${HOME}/.cache/uniget/dummy"
-test -f "${HOME}/.local/state/uniget/manifests/dummy.json"
-test -f "${HOME}/.local/state/uniget/manifests/dummy.txt"
-uniget --user uninstall dummy
+uniget --user install gojq
+test -d "${HOME}/.cache/uniget/gojq"
+test -f "${HOME}/.local/state/uniget/manifests/gojq.json"
+test -f "${HOME}/.local/state/uniget/manifests/gojq.txt"
+uniget --user uninstall gojq
 
 echo "-----------------------------"
 echo "All tests passed successfully"
