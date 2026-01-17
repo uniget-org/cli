@@ -9,7 +9,7 @@ type GitForgeChanges struct {
 	Changes []GitForgeChange
 }
 
-type GitForce interface {
-	GetCommitChanges(fromSha string, toSha string) (GitForgeChanges, error)
+type GitForge interface {
+	GetCommitChanges(fromSha string) (GitForgeChanges, error)
 	GetMergeChanges(id string) (GitForgeChanges, error)
 }

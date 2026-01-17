@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -16,8 +17,11 @@ var (
 		Version:      version,
 		SilenceUsage: true,
 	}
+	gitForge         = "github"
 	registryHost     = "ghcr.io"
-	repositoryPrefix = "uniget-org/tools"
+	repositoryOwner  = "uniget-org"
+	repositoryName   = "tools"
+	repositoryPrefix = fmt.Sprintf("%s/%s", repositoryOwner, repositoryName)
 	metadataTag      = "main"
 	dockerTag        = metadataTag
 )
@@ -42,6 +46,7 @@ func init() {
 func main() {
 	pf := rootCmd.Flags()
 	pf.StringVarP(&unigetToolsDirectory, "directory", "d", unigetToolsDirectory, "Directory to search for tools")
+	pf.StringVarP(&gitForge, "forge", "f", gitForge, "Git forge (github, gitlab)")
 
 	err := rootCmd.Execute()
 	if err != nil {

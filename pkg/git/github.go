@@ -9,13 +9,15 @@ import (
 )
 
 type GitHubGitForge struct {
-	token  string
-	client *github.Client
+	owner      string
+	repository string
+	token      string
+	client     *github.Client
 }
 
 type GitHubGitForgeOption func(*GitHubGitForge)
 
-func NewGitHubGitForge(options ...GitHubGitForgeOption) *GitHubGitForge {
+func NewGitHubGitForge(owner string, repository string, options ...GitHubGitForgeOption) *GitHubGitForge {
 	gitHubGitForge := &GitHubGitForge{}
 
 	for _, opt := range options {

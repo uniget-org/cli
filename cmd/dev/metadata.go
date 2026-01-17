@@ -12,15 +12,17 @@ import (
 )
 
 var (
-	metadataFileName = "metadata.json"
-	metadataStdOut   = false
+	metadataFileName       = "metadata.json"
+	metadataStdOut         = false
+	metadataChangesFromSha = ""
 )
 
 func initMetadataCmd() {
 	metadataCreateCmd.Flags().StringVarP(&metadataFileName, "file", "f", metadataFileName, "Metadata file")
 	metadataCreateCmd.Flags().BoolVarP(&metadataStdOut, "stdout", "o", metadataStdOut, "Output metadata to stdout")
-
 	metadataCmd.AddCommand(metadataCreateCmd)
+
+	metadataChangesCmd.Flags().StringVar(&metadataChangesFromSha, "from", metadataChangesFromSha, "Source commit SHA")
 	metadataCmd.AddCommand(metadataChangesCmd)
 
 	rootCmd.AddCommand(metadataCmd)
@@ -68,19 +70,32 @@ var metadataChangesCmd = &cobra.Command{
 	Short:   "Collect metadata changes",
 	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		metadata, err := tool.NewMetadataFromRegistry(registryHost, repositoryPrefix, "main")
-		if err != nil {
-			return fmt.Errorf("error loading metadata: %s", err)
+		var err error
+
+		var forge git.GitForge
+		switch gitForge {
+		case "github":
+			forge = git.NewGitHubGitForge(repositoryOwner, repositoryName)
+		case "gitlab":
+			forge, err = git.NewGitLabGitForge(repositoryOwner, repositoryName)
+			if err != nil {
+				return fmt.Errorf("unable to load gitlab client: %s", err)
+			}
+		default:
+			return fmt.Errorf("unknown git forge")
 		}
-		logging.Info.Printfln("Metadata revision %s", metadata.Revision)
 
-		forge := git.NewGitHubGitForge()
-		//forge, err := git.NewGitLabGitForge()
-		//if err != nil {
-		//	return fmt.Errorf("unable to load gitlab client: %s", err)
-		//}
+		if metadataChangesFromSha == "" {
+			metadata, err := tool.NewMetadataFromRegistry(registryHost, repositoryPrefix, "main")
+			if err != nil {
+				return fmt.Errorf("error loading metadata: %s", err)
+			}
+			logging.Info.Printfln("Metadata revision %s", metadata.Revision)
 
-		changes, err := forge.GetCommitChanges(metadata.Revision)
+			metadataChangesFromSha = metadata.Revision
+		}
+
+		changes, err := forge.GetCommitChanges(metadataChangesFromSha)
 		if err != nil {
 			return fmt.Errorf("error getting commit changes: %s", err)
 		}

@@ -8,13 +8,15 @@ import (
 )
 
 type GitLabGitForge struct {
-	token  string
-	client *gitlab.Client
+	owner      string
+	repository string
+	token      string
+	client     *gitlab.Client
 }
 
 type GitLabGitForgeOption func(*GitLabGitForge)
 
-func NewGitLabGitForge(options ...GitLabGitForgeOption) (*GitLabGitForge, error) {
+func NewGitLabGitForge(owner string, repository string, options ...GitLabGitForgeOption) (*GitLabGitForge, error) {
 	gitLabGitForge := &GitLabGitForge{}
 
 	for _, opt := range options {
