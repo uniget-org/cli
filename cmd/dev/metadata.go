@@ -49,10 +49,13 @@ var metadataCreateCmd = &cobra.Command{
 			if err != nil {
 				return nil
 			}
-			fmt.Fprintf(os.Stdout, "%s\n", data)
+			_, _ = fmt.Fprintf(os.Stdout, "%s\n", data)
 
 		} else {
-			metadata.WriteMetadata(metadataFileName)
+			err := metadata.WriteMetadata(metadataFileName)
+			if err != nil {
+				return fmt.Errorf("failed to write metadata: %s", err)
+			}
 		}
 
 		return nil

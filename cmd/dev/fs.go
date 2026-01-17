@@ -52,6 +52,7 @@ func (t *UnigetTool) HasDockerfileTemplate() bool {
 
 func (t *UnigetTool) LoadManifest() error {
 	manifestPath := fmt.Sprintf("%s/manifest.yaml", t.FullPath)
+	// #nosec G304 -- This is meant to read from a user-specified project directory
 	data, err := os.ReadFile(manifestPath)
 	if err != nil {
 		return fmt.Errorf("error reading manifest file: %w", err)

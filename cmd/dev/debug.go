@@ -29,8 +29,17 @@ var debugCmd = &cobra.Command{
 		}
 		tool := unigetTools.Tools[toolName]
 
-		buildLocal(cmd, tool)
-		runLocal(cmd, tool)
+		var err error
+
+		err = buildLocal(cmd, tool)
+		if err != nil {
+			return fmt.Errorf("error building tool locally: %w", err)
+		}
+
+		err = runLocal(cmd, tool)
+		if err != nil {
+			return fmt.Errorf("error running tool locally: %w", err)
+		}
 
 		return nil
 	},

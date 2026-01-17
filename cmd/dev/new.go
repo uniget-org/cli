@@ -61,21 +61,6 @@ var newCmd = &cobra.Command{
 	},
 }
 
-func copyTemplates(toolName string) error {
-	templateDir := unigetTools.BaseDirectory + "/@template"
-	toolsDir := unigetTools.Directory
-
-	files := []string{"manifest.yaml", "Dockerfile.template"}
-	for _, file := range files {
-		src := fmt.Sprintf("%s/%s", templateDir, file)
-		dest := fmt.Sprintf("%s/%s/%s", toolsDir, toolName, file)
-		if err := copyFile(src, dest); err != nil {
-			return fmt.Errorf("error copying template %s: %w", file, err)
-		}
-	}
-	return nil
-}
-
 var githubClient = github.NewClient(nil)
 var httpClient = &http.Client{}
 
@@ -410,7 +395,7 @@ func new() {
 		},
 	}
 
-	err = os.MkdirAll("tools/"+tool.Name, 0755)
+	err = os.MkdirAll("tools/"+tool.Name, 0750)
 	if err != nil {
 		panic(fmt.Sprintf("unable to create directory: %v", err))
 	}
@@ -419,6 +404,7 @@ func new() {
 	if err != nil {
 		panic(fmt.Sprintf("error opening/creating file: %v", err))
 	}
+	//nolint:errcheck
 	defer file.Close()
 
 	enc := yaml.NewEncoder(file)
@@ -590,7 +576,8 @@ func new() {
 		log.Fatal(err)
 	}
 
-	if project.assetAmd64.Type == "archive" {
+	switch project.assetAmd64.Type {
+	case "archive":
 		url := githubBuildAssetUrl(&project)
 		binaryBytes, err := slurpHttpDownload(url)
 		if err != nil {
@@ -635,7 +622,7 @@ func new() {
 
 		fmt.Println("XXX GENERATE Dockerfile.template")
 
-	} else if project.assetAmd64.Type == "binary" {
+	case "binary":
 		url := githubBuildAssetUrl(&project)
 		binaryBytes, err := slurpHttpDownload(url)
 		if err != nil {
@@ -645,14 +632,18 @@ func new() {
 		if err != nil {
 			panic(fmt.Sprintf("error creating executable: %s", err))
 		}
+		//nolint:errcheck
 		defer exe.Close()
 		cmd := exe.Command("--help")
-		cmd.Output()
+		_, err = cmd.Output()
+		if err != nil {
+			panic(fmt.Sprintf("failed to run command: %s", err))
+		}
 
 		// @TODO: List archive contents in comments
 		fmt.Println("XXX GENERATE Dockerfile.template")
 
-	} else {
+	default:
 		panic(fmt.Sprintf("unsupported asset type %s", project.assetAmd64.Type))
 	}
 
@@ -663,9 +654,12 @@ func new() {
 func githubBuildAssetUrl(project *Project) string {
 	tmpl := template.Must(template.New("project_tag_name_template").Parse(project.tagNameTemplate))
 	var b bytes.Buffer
-	tmpl.Execute(&b, map[string]interface{}{
+	err := tmpl.Execute(&b, map[string]interface{}{
 		"Version": project.version,
 	})
+	if err != nil {
+		panic(fmt.Sprintf("error executing template: %s", err))
+	}
 	tagName := b.String()
 	return fmt.Sprintf("https://github.com/%s/%s/releases/download/%s/%s", project.owner, project.repository, tagName, project.assetAmd64.Name)
 }
@@ -681,6 +675,7 @@ func slurpHttpDownload(url string) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to download %s: %s", url, err)
 	}
+	//nolint:errcheck
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("failed to download %s: %s", url, resp.Status)
@@ -696,7 +691,10 @@ func extractFromJsonUsingJq(data []byte, query string) ([]string, error) {
 	result := make([]string, 0)
 
 	var input any
-	json.Unmarshal(data, &input)
+	err := json.Unmarshal(data, &input)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing json: %s", err)
+	}
 	jqQuery, err := gojq.Parse(query)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing query: %s", err)

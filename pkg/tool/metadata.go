@@ -86,7 +86,8 @@ func (metadata *Metadata) WriteMetadata(filename string) error {
 	if err != nil {
 		return nil
 	}
-	err = os.WriteFile(filename, data, 0666)
+	// #nosec G306 -- This is public data
+	err = os.WriteFile(filename, data, 0644)
 	if err != nil {
 		return fmt.Errorf("unable to write to file %s: %s", filename, err)
 	}

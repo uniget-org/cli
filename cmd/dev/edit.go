@@ -30,6 +30,7 @@ var editCmd = &cobra.Command{
 
 			fmt.Printf("Editing tool: %s\n", toolName)
 			tool := unigetTools.Tools[toolName]
+			// #nosec G204 -- Only opens a file in Visual Studio Code
 			cmd := exec.Command(
 				"code",
 				"--goto",
