@@ -110,25 +110,33 @@ var metadataChangesCmd = &cobra.Command{
 			return fmt.Errorf("error getting commit changes: %s", err)
 		}
 		for _, change := range changes.Changes {
+			includeTool := false
+
 			logging.Info.Printfln("change: %+v", change)
+			logging.Info.Printfln("filename: %s", change.FileName)
 			logging.Info.Printfln("tool: %s", change.ToolName)
 			logging.Info.Printfln("changes: +%d/-%d", change.Added, change.Removed)
 
-			if change.FileName == "manifest.yaml" {
+			switch change.FileName {
+			case "manifest.yaml":
 				fields := change.FindChangedFieldsInManifest()
 				if slices.Contains(fields, "version") {
-					fmt.Println(change.ToolName)
+					includeTool = true
+				}
+			case "Dockerfile.template":
+				includeTool = true
+
+				if change.Added == 1 {
+					for line := range change.DiffLines {
+						if strings.HasPrefix(line, "+#syntax=") {
+							includeTool = false
+						}
+					}
 				}
 			}
 
-			if change.FileName == "Dockerfile.template" && change.Added == 1 {
-				for line := range change.DiffLines {
-					if strings.HasPrefix(line, "+#syntax=") {
-						//
-					} else {
-						fmt.Println(change.ToolName)
-					}
-				}
+			if includeTool {
+				fmt.Println(change.ToolName)
 			}
 		}
 

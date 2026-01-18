@@ -18,7 +18,10 @@ type GitLabGitForge struct {
 type GitLabGitForgeOption func(*GitLabGitForge)
 
 func NewGitLabGitForge(owner string, repository string, options ...GitLabGitForgeOption) (*GitLabGitForge, error) {
-	gitLabGitForge := &GitLabGitForge{}
+	gitLabGitForge := &GitLabGitForge{
+		owner:      owner,
+		repository: repository,
+	}
 
 	for _, opt := range options {
 		opt(gitLabGitForge)
@@ -49,7 +52,7 @@ func (gl *GitLabGitForge) GetCommitChanges(fromSha string) (GitForgeChanges, err
 	changes := GitForgeChanges{}
 
 	project, _, err := gl.client.Projects.GetProject(
-		"uniget-org/tools",
+		fmt.Sprintf("%s/%s", gl.owner, gl.repository),
 		&gitlab.GetProjectOptions{},
 	)
 	if err != nil {

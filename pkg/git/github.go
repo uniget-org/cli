@@ -19,7 +19,10 @@ type GitHubGitForge struct {
 type GitHubGitForgeOption func(*GitHubGitForge)
 
 func NewGitHubGitForge(owner string, repository string, options ...GitHubGitForgeOption) *GitHubGitForge {
-	gitHubGitForge := &GitHubGitForge{}
+	gitHubGitForge := &GitHubGitForge{
+		owner:      owner,
+		repository: repository,
+	}
 
 	for _, opt := range options {
 		opt(gitHubGitForge)
@@ -50,8 +53,8 @@ func (gh *GitHubGitForge) GetCommitChanges(fromSha string) (GitForgeChanges, err
 
 	repo, _, err := gh.client.Repositories.Get(
 		context.Background(),
-		"uniget-org",
-		"tools",
+		gh.owner,
+		gh.repository,
 	)
 	if err != nil {
 		return changes, fmt.Errorf("unable to get repository uniget-org/tools: %s", err)
@@ -60,8 +63,8 @@ func (gh *GitHubGitForge) GetCommitChanges(fromSha string) (GitForgeChanges, err
 
 	fromShaCommit, _, err := gh.client.Repositories.GetCommit(
 		context.Background(),
-		"uniget-org",
-		"tools",
+		gh.owner,
+		gh.repository,
 		fromSha,
 		&github.ListOptions{},
 	)
@@ -71,8 +74,8 @@ func (gh *GitHubGitForge) GetCommitChanges(fromSha string) (GitForgeChanges, err
 
 	headShaCommit, _, err := gh.client.Repositories.GetCommit(
 		context.Background(),
-		"uniget-org",
-		"tools",
+		gh.owner,
+		gh.repository,
 		repo.GetDefaultBranch(),
 		&github.ListOptions{},
 	)
@@ -82,8 +85,8 @@ func (gh *GitHubGitForge) GetCommitChanges(fromSha string) (GitForgeChanges, err
 
 	comparison, _, err := gh.client.Repositories.CompareCommits(
 		context.Background(),
-		"uniget-org",
-		"tools",
+		gh.owner,
+		gh.repository,
 		fromShaCommit.GetSHA(),
 		headShaCommit.GetSHA(),
 		&github.ListOptions{},
