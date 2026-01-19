@@ -58,7 +58,7 @@ func (gl *GitLabGitForge) GetCommitChanges(fromSha string) (GitForgeChanges, err
 	if err != nil {
 		return changes, fmt.Errorf("unable to find project: %s", err)
 	}
-	logging.Info.Printfln("Project ID is %d", project.ID)
+	logging.Debugf("Project ID is %d", project.ID)
 
 	fromShaCommit, _, err := gl.client.Commits.GetCommit(
 		project.ID,

@@ -100,7 +100,7 @@ var metadataChangesCmd = &cobra.Command{
 			if err != nil {
 				return fmt.Errorf("error loading metadata: %s", err)
 			}
-			logging.Info.Printfln("Metadata revision %s", metadata.Revision)
+			logging.Debugf("Metadata revision %s", metadata.Revision)
 
 			metadataChangesFromSha = metadata.Revision
 		}
@@ -110,21 +110,19 @@ var metadataChangesCmd = &cobra.Command{
 			return fmt.Errorf("error getting commit changes: %s", err)
 		}
 		for _, change := range changes.Changes {
-			includeTool := false
-
-			logging.Info.Printfln("change: %+v", change)
-			logging.Info.Printfln("filename: %s", change.FileName)
-			logging.Info.Printfln("tool: %s", change.ToolName)
-			logging.Info.Printfln("changes: +%d/-%d", change.Added, change.Removed)
+			logging.Debugf("tool: %s", change.ToolName)
+			logging.Debugf("filename: <%s>", change.FileName)
+			logging.Debugf("changes: +%d/-%d", change.Added, change.Removed)
+			logging.Debugf("%+v", change.Diff)
 
 			switch change.FileName {
 			case "manifest.yaml":
 				fields := change.FindChangedFieldsInManifest()
 				if slices.Contains(fields, "version") {
-					includeTool = true
+					logging.Debugf("including tool %s due to changes in relevant fields", change.ToolName)
 				}
 			case "Dockerfile.template":
-				includeTool = true
+				logging.Debugf("checking Dockerfile.template")
 
 				if change.Added == 1 {
 					for line := range change.DiffLines {

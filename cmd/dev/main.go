@@ -4,11 +4,16 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
+	"gitlab.com/uniget-org/cli/pkg/logging"
 )
 
 var (
 	version              = "dev"
+	logLevel             = "info"
+	debug                = false
+	trace                = false
 	unigetToolsDirectory = os.Getenv("HOME") + "/private/uniget/tools"
 	unigetTools          *UnigetTools
 	unigetToolsNames     []string
@@ -16,6 +21,27 @@ var (
 		Use:          "uniget-dev",
 		Version:      version,
 		SilenceUsage: true,
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			logging.OutputWriter = cmd.OutOrStdout()
+			logging.ErrorWriter = cmd.ErrOrStderr()
+
+			if trace {
+				pterm.EnableDebugMessages()
+				logging.Level = pterm.LogLevelTrace
+
+			} else if debug {
+				pterm.EnableDebugMessages()
+				logging.Level = pterm.LogLevelDebug
+
+			} else {
+				pterm.DisableDebugMessages()
+				logging.Level = pterm.LogLevelInfo
+			}
+
+			logging.Init()
+
+			return nil
+		},
 	}
 	gitForge         = "github"
 	registryHost     = "ghcr.io"
@@ -47,6 +73,9 @@ func main() {
 	pf := rootCmd.PersistentFlags()
 	pf.StringVarP(&unigetToolsDirectory, "directory", "d", unigetToolsDirectory, "Directory to search for tools")
 	pf.StringVarP(&gitForge, "forge", "f", gitForge, "Git forge (github, gitlab)")
+	pf.StringVar(&logLevel, "log-level", logLevel, "Log level (trace, debug, info, warning, error)")
+	pf.BoolVar(&debug, "debug", debug, "Set log level to debug")
+	pf.BoolVar(&trace, "trace", trace, "Set log level to trace")
 
 	err := rootCmd.Execute()
 	if err != nil {

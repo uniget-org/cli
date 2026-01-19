@@ -59,7 +59,7 @@ func (gh *GitHubGitForge) GetCommitChanges(fromSha string) (GitForgeChanges, err
 	if err != nil {
 		return changes, fmt.Errorf("unable to get repository uniget-org/tools: %s", err)
 	}
-	logging.Info.Printfln("GitHub default branch: %s", repo.GetDefaultBranch())
+	logging.Debugf("GitHub default branch: %s", repo.GetDefaultBranch())
 
 	fromShaCommit, _, err := gh.client.Repositories.GetCommit(
 		context.Background(),
