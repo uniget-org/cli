@@ -109,6 +109,7 @@ var metadataChangesCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("error getting commit changes: %s", err)
 		}
+		tools := make(map[string]bool)
 		for _, change := range changes.Changes {
 			logging.Debugf("tool: %s", change.ToolName)
 			logging.Debugf("filename: <%s>", change.FileName)
@@ -120,21 +121,24 @@ var metadataChangesCmd = &cobra.Command{
 				fields := change.FindChangedFieldsInManifest()
 				if slices.Contains(fields, "version") {
 					logging.Debugf("including tool %s due to changes in relevant fields", change.ToolName)
+					tools[change.ToolName] = true
 				}
 			case "Dockerfile.template":
 				logging.Debugf("checking Dockerfile.template")
 
 				if change.Added == 1 {
-					for line := range change.DiffLines {
+					for _, line := range change.DiffLines {
 						if strings.HasPrefix(line, "+#syntax=") {
-							includeTool = false
+							tools[change.ToolName] = false
 						}
 					}
 				}
 			}
+		}
 
-			if includeTool {
-				fmt.Println(change.ToolName)
+		for toolName, include := range tools {
+			if include {
+				fmt.Printf("%s\n", toolName)
 			}
 		}
 
