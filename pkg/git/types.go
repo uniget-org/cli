@@ -2,7 +2,6 @@ package git
 
 import (
 	"fmt"
-	"iter"
 	"regexp"
 	"strings"
 )
@@ -14,7 +13,7 @@ type GitForgeChange struct {
 	Diff      string
 	Added     int
 	Removed   int
-	DiffLines iter.Seq[string]
+	DiffLines []string
 }
 
 type GitForgeChanges struct {
@@ -35,9 +34,9 @@ func NewGitForgeChange(FileName string, Diff string) *GitForgeChange {
 	filePathParts := strings.Split(change.FilePath, "/")
 	change.FileName = filePathParts[len(filePathParts)-1]
 	change.ToolName = change.GetToolName()
-	change.DiffLines = strings.SplitSeq(Diff, "\n")
+	change.DiffLines = strings.Split(Diff, "\n")
 
-	for line := range change.DiffLines {
+	for _, line := range change.DiffLines {
 		if strings.HasPrefix(line, "+") {
 			change.Added++
 		} else if strings.HasPrefix(line, "-") {
@@ -72,9 +71,10 @@ func (gf *GitForgeChange) FindChangedFieldsInManifest() []string {
 	}
 
 	if strings.HasSuffix(gf.FilePath, "/manifest.yaml") {
-		for line := range gf.DiffLines {
+		for _, line := range gf.DiffLines {
 			if fieldInDiffRegEx.MatchString(line) {
-				fields = append(fields, fieldInDiffRegEx.FindStringSubmatch(line)[1])
+				fieldName := fieldInDiffRegEx.FindStringSubmatch(line)[1]
+				fields = append(fields, fieldName)
 			}
 		}
 	}
