@@ -8,48 +8,48 @@ import (
 	"gitlab.com/uniget-org/cli/pkg/logging"
 )
 
-type GitLabGitForge struct {
+type GitLabPlatform struct {
 	owner      string
 	repository string
 	token      string
 	client     *gitlab.Client
 }
 
-type GitLabGitForgeOption func(*GitLabGitForge)
+type GitLabPlatformOption func(*GitLabPlatform)
 
-func NewGitLabGitForge(owner string, repository string, options ...GitLabGitForgeOption) (*GitLabGitForge, error) {
-	gitLabGitForge := &GitLabGitForge{
+func NewGitLabPlatform(owner string, repository string, options ...GitLabPlatformOption) (*GitLabPlatform, error) {
+	gitLabPlatform := &GitLabPlatform{
 		owner:      owner,
 		repository: repository,
 	}
 
 	for _, opt := range options {
-		opt(gitLabGitForge)
+		opt(gitLabPlatform)
 	}
 
 	var err error
-	gitLabGitForge.client, err = gitlab.NewClient(gitLabGitForge.token)
+	gitLabPlatform.client, err = gitlab.NewClient(gitLabPlatform.token)
 	if err != nil {
-		return gitLabGitForge, fmt.Errorf("error creating client: %s", err)
+		return gitLabPlatform, fmt.Errorf("error creating client: %s", err)
 	}
 
-	return gitLabGitForge, nil
+	return gitLabPlatform, nil
 }
 
-func WithGitLabToken(token string) GitLabGitForgeOption {
-	return func(GitLabGitForge *GitLabGitForge) {
-		GitLabGitForge.token = token
-	}
-}
-
-func WithGitLabJobToken() GitLabGitForgeOption {
-	return func(GitLabGitForge *GitLabGitForge) {
-		GitLabGitForge.token = os.Getenv("CI_JOB_TOKEN")
+func WithGitLabToken(token string) GitLabPlatformOption {
+	return func(GitLabPlatform *GitLabPlatform) {
+		GitLabPlatform.token = token
 	}
 }
 
-func (gl *GitLabGitForge) GetCommitChanges(fromSha string) (GitForgeChanges, error) {
-	changes := GitForgeChanges{}
+func WithGitLabJobToken() GitLabPlatformOption {
+	return func(GitLabPlatform *GitLabPlatform) {
+		GitLabPlatform.token = os.Getenv("CI_JOB_TOKEN")
+	}
+}
+
+func (gl *GitLabPlatform) GetCommitChanges(fromSha string) (PlatformChanges, error) {
+	changes := PlatformChanges{}
 
 	project, _, err := gl.client.Projects.GetProject(
 		fmt.Sprintf("%s/%s", gl.owner, gl.repository),
@@ -91,7 +91,7 @@ func (gl *GitLabGitForge) GetCommitChanges(fromSha string) (GitForgeChanges, err
 		return changes, fmt.Errorf("failed to compare: %s", err)
 	}
 	for _, file := range comparison.Diffs {
-		changes.Changes = append(changes.Changes, *NewGitForgeChange(
+		changes.Changes = append(changes.Changes, *NewPlatformChange(
 			file.NewPath,
 			file.Diff,
 		))
@@ -100,6 +100,6 @@ func (gl *GitLabGitForge) GetCommitChanges(fromSha string) (GitForgeChanges, err
 	return changes, nil
 }
 
-func (gl *GitLabGitForge) GetMergeChanges(id string) (GitForgeChanges, error) {
-	return GitForgeChanges{}, nil
+func (gl *GitLabPlatform) GetMergeChanges(id string) (PlatformChanges, error) {
+	return PlatformChanges{}, nil
 }

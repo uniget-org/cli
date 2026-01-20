@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-type GitForgeChange struct {
+type PlatformChange struct {
 	FilePath  string
 	FileName  string
 	ToolName  string
@@ -16,17 +16,17 @@ type GitForgeChange struct {
 	DiffLines []string
 }
 
-type GitForgeChanges struct {
-	Changes []GitForgeChange
+type PlatformChanges struct {
+	Changes []PlatformChange
 }
 
-type GitForge interface {
-	GetCommitChanges(fromSha string) (GitForgeChanges, error)
-	GetMergeChanges(id string) (GitForgeChanges, error)
+type Platform interface {
+	GetCommitChanges(fromSha string) (PlatformChanges, error)
+	GetMergeChanges(id string) (PlatformChanges, error)
 }
 
-func NewGitForgeChange(FileName string, Diff string) *GitForgeChange {
-	change := &GitForgeChange{
+func NewPlatformChange(FileName string, Diff string) *PlatformChange {
+	change := &PlatformChange{
 		FilePath: FileName,
 		Diff:     Diff,
 	}
@@ -47,7 +47,7 @@ func NewGitForgeChange(FileName string, Diff string) *GitForgeChange {
 	return change
 }
 
-func (gf *GitForgeChange) GetToolName() string {
+func (gf *PlatformChange) GetToolName() string {
 	toolName := ""
 
 	toolNameRegEx, err := regexp.Compile(`^tools/([^/]+)/`)
@@ -62,7 +62,7 @@ func (gf *GitForgeChange) GetToolName() string {
 	return toolName
 }
 
-func (gf *GitForgeChange) FindChangedFieldsInManifest() []string {
+func (gf *PlatformChange) FindChangedFieldsInManifest() []string {
 	fields := []string{}
 
 	fieldInDiffRegEx, err := regexp.Compile(`^\+([^:]+):`)

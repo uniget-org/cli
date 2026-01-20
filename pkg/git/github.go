@@ -9,47 +9,47 @@ import (
 	"gitlab.com/uniget-org/cli/pkg/logging"
 )
 
-type GitHubGitForge struct {
+type GitHubPlatform struct {
 	owner      string
 	repository string
 	token      string
 	client     *github.Client
 }
 
-type GitHubGitForgeOption func(*GitHubGitForge)
+type GitHubPlatformOption func(*GitHubPlatform)
 
-func NewGitHubGitForge(owner string, repository string, options ...GitHubGitForgeOption) *GitHubGitForge {
-	gitHubGitForge := &GitHubGitForge{
+func NewGitHubPlatform(owner string, repository string, options ...GitHubPlatformOption) *GitHubPlatform {
+	gitHubPlatform := &GitHubPlatform{
 		owner:      owner,
 		repository: repository,
 	}
 
 	for _, opt := range options {
-		opt(gitHubGitForge)
+		opt(gitHubPlatform)
 	}
 
-	gitHubGitForge.client = github.NewClient(nil)
-	if gitHubGitForge.token != "" {
-		gitHubGitForge.client = gitHubGitForge.client.WithAuthToken(gitHubGitForge.token)
+	gitHubPlatform.client = github.NewClient(nil)
+	if gitHubPlatform.token != "" {
+		gitHubPlatform.client = gitHubPlatform.client.WithAuthToken(gitHubPlatform.token)
 	}
 
-	return gitHubGitForge
+	return gitHubPlatform
 }
 
-func WithGitHubToken(token string) GitHubGitForgeOption {
-	return func(gitHubGitForge *GitHubGitForge) {
-		gitHubGitForge.token = token
-	}
-}
-
-func WithGitHubTokenFromEnv() GitHubGitForgeOption {
-	return func(gitHubGitForge *GitHubGitForge) {
-		gitHubGitForge.token = os.Getenv("GITHUB_TOKEN")
+func WithGitHubToken(token string) GitHubPlatformOption {
+	return func(gitHubPlatform *GitHubPlatform) {
+		gitHubPlatform.token = token
 	}
 }
 
-func (gh *GitHubGitForge) GetCommitChanges(fromSha string) (GitForgeChanges, error) {
-	changes := GitForgeChanges{}
+func WithGitHubTokenFromEnv() GitHubPlatformOption {
+	return func(gitHubPlatform *GitHubPlatform) {
+		gitHubPlatform.token = os.Getenv("GITHUB_TOKEN")
+	}
+}
+
+func (gh *GitHubPlatform) GetCommitChanges(fromSha string) (PlatformChanges, error) {
+	changes := PlatformChanges{}
 
 	repo, _, err := gh.client.Repositories.Get(
 		context.Background(),
@@ -96,7 +96,7 @@ func (gh *GitHubGitForge) GetCommitChanges(fromSha string) (GitForgeChanges, err
 	}
 
 	for _, file := range comparison.Files {
-		changes.Changes = append(changes.Changes, *NewGitForgeChange(
+		changes.Changes = append(changes.Changes, *NewPlatformChange(
 			file.GetFilename(),
 			file.GetPatch(),
 		))
@@ -105,6 +105,6 @@ func (gh *GitHubGitForge) GetCommitChanges(fromSha string) (GitForgeChanges, err
 	return changes, nil
 }
 
-func (gh *GitHubGitForge) GetMergeChanges(id string) (GitForgeChanges, error) {
-	return GitForgeChanges{}, nil
+func (gh *GitHubPlatform) GetMergeChanges(id string) (PlatformChanges, error) {
+	return PlatformChanges{}, nil
 }

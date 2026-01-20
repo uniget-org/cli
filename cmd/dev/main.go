@@ -43,7 +43,7 @@ var (
 			return nil
 		},
 	}
-	gitForge         = "github"
+	platform         = "github"
 	registryHost     = "ghcr.io"
 	repositoryOwner  = "uniget-org"
 	repositoryName   = "tools"
@@ -72,7 +72,7 @@ func init() {
 func main() {
 	pf := rootCmd.PersistentFlags()
 	pf.StringVarP(&unigetToolsDirectory, "directory", "d", unigetToolsDirectory, "Directory to search for tools")
-	pf.StringVarP(&gitForge, "forge", "f", gitForge, "Git forge (github, gitlab)")
+	pf.StringVarP(&platform, "platform", "p", platform, "Git platform (github, gitlab)")
 	pf.StringVar(&logLevel, "log-level", logLevel, "Log level (trace, debug, info, warning, error)")
 	pf.BoolVar(&debug, "debug", debug, "Set log level to debug")
 	pf.BoolVar(&trace, "trace", trace, "Set log level to trace")

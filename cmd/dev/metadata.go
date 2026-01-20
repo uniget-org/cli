@@ -74,16 +74,16 @@ var metadataChangesCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var err error
 
-		var forge git.GitForge
-		switch gitForge {
+		var gitPlatform git.Platform
+		switch platform {
 		case "github":
-			forge = git.NewGitHubGitForge(
+			gitPlatform = git.NewGitHubPlatform(
 				repositoryOwner,
 				repositoryName,
 				git.WithGitHubTokenFromEnv(),
 			)
 		case "gitlab":
-			forge, err = git.NewGitLabGitForge(
+			gitPlatform, err = git.NewGitLabPlatform(
 				repositoryOwner,
 				repositoryName,
 				git.WithGitLabJobToken(),
@@ -92,7 +92,7 @@ var metadataChangesCmd = &cobra.Command{
 				return fmt.Errorf("unable to load gitlab client: %s", err)
 			}
 		default:
-			return fmt.Errorf("unknown git forge")
+			return fmt.Errorf("unknown git platform")
 		}
 
 		if metadataChangesFromSha == "" {
@@ -105,7 +105,7 @@ var metadataChangesCmd = &cobra.Command{
 			metadataChangesFromSha = metadata.Revision
 		}
 
-		changes, err := forge.GetCommitChanges(metadataChangesFromSha)
+		changes, err := gitPlatform.GetCommitChanges(metadataChangesFromSha)
 		if err != nil {
 			return fmt.Errorf("error getting commit changes: %s", err)
 		}
