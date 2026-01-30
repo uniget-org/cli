@@ -40,10 +40,8 @@ func FindToolRef(registries, repositories []string, tool, version string) (*Tool
 	for index := range registries {
 		toolRef := NewToolRef(registries[index], repositories[index], tool, version)
 		logging.Tracef("Checking %s", toolRef)
-		fmt.Printf("Checking %s\n", toolRef)
 		if toolRef.ManifestExists() {
 			logging.Tracef("Found %s", toolRef)
-			fmt.Printf("Found %s\n", toolRef)
 			return toolRef, nil
 		}
 	}
