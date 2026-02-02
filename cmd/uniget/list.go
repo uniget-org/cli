@@ -61,7 +61,7 @@ var listCmd = &cobra.Command{
 					return fmt.Errorf("error getting version status: %s", err)
 				}
 
-				if tools.Tools[index].Status.VersionMatches {
+				if tools.Tools[index].Status.BinaryPresent || tools.Tools[index].Status.MarkerFilePresent {
 					installedTools.Tools = append(installedTools.Tools, tools.Tools[index])
 				}
 			}
