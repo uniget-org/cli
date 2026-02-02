@@ -36,6 +36,9 @@ var (
 	libRoot                = "var/lib"
 	libDirectory           = libRoot + "/" + projectName
 	configRoot             = "etc"
+	configDirectory        = "uniget"
+	hooksPreDirectory      = "hooks/pre.d"
+	hooksPostDirectory     = "hooks/post.d"
 	profileDDirectory      = configRoot + "/profile.d"
 	metadataImageTag       = "main"
 	metadataFileName       = "metadata.json"
@@ -93,6 +96,7 @@ var (
 				cacheDirectory = cacheRoot + "/" + projectName
 				libDirectory = libRoot + "/" + projectName
 				profileDDirectory = configRoot + "/profile.d"
+				configDirectory = configRoot + "/uniget"
 				metadataFile = cacheDirectory + "/" + metadataFileName
 				viper.Set("cachedirectory", cacheDirectory+"/"+fileCacheDirectoryName)
 
@@ -123,6 +127,7 @@ var (
 					}
 				}
 				profileDDirectory = configRoot + "/profile.d"
+				configDirectory = configRoot + "/uniget"
 
 				metadataFile = cacheDirectory + "/" + metadataFileName
 				viper.Set("cachedirectory", cacheDirectory+"/"+fileCacheDirectoryName)
@@ -136,6 +141,8 @@ var (
 				logging.Debugf("user: %t", viper.GetBool("prefix"))
 				logging.Debugf("prefix: %s", viper.GetString("prefix"))
 				logging.Debugf("target: %s", viper.GetString("target"))
+				logging.Debugf("configRoot: %s", configRoot)
+				logging.Debugf("configDirectory: %s", configDirectory)
 				logging.Debugf("cacheRoot: %s", cacheRoot)
 				logging.Debugf("cacheDirectory: %s", cacheDirectory)
 				logging.Debugf("libRoot: %s", libRoot)
@@ -329,6 +336,7 @@ func init() {
 	initEnvCmd()
 	initGenerateCmd()
 	initHealthcheckCmd()
+	initHooksCmd()
 	initInspectCmd()
 	initInstallCmd()
 	initListCmd()

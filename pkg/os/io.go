@@ -110,3 +110,28 @@ func SlurpFile(filePath string) ([]byte, error) {
 
 	return io.ReadAll(f)
 }
+
+func CopyFile(src, dst string) error {
+	srcFile, err := os.Open(src)
+	if err != nil {
+		return fmt.Errorf("failed to open source file: %s", err)
+	}
+	defer func() {
+		_ = srcFile.Close()
+	}()
+
+	dstFile, err := os.Create(dst)
+	if err != nil {
+		return fmt.Errorf("failed to create destination file: %s", err)
+	}
+	defer func() {
+		_ = dstFile.Close()
+	}()
+
+	_, err = io.Copy(dstFile, srcFile)
+	if err != nil {
+		return fmt.Errorf("failed to copy file: %s", err)
+	}
+
+	return nil
+}

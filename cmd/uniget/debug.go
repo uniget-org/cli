@@ -28,6 +28,10 @@ var debugCmd = &cobra.Command{
 		//nolint:errcheck
 		fmt.Fprintf(cmd.OutOrStdout(), "cacheDirectory: %s\n", cacheDirectory)
 		//nolint:errcheck
+		fmt.Fprintf(cmd.OutOrStdout(), "configRoot: %s\n", configRoot)
+		//nolint:errcheck
+		fmt.Fprintf(cmd.OutOrStdout(), "configDirectory: %s\n", configDirectory)
+		//nolint:errcheck
 		fmt.Fprintf(cmd.OutOrStdout(), "libRoot: %s\n", libRoot)
 		//nolint:errcheck
 		fmt.Fprintf(cmd.OutOrStdout(), "libDirectory: %s\n", libDirectory)
