@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"gitlab.com/uniget-org/cli/pkg/logging"
 	myos "gitlab.com/uniget-org/cli/pkg/os"
 )
 
@@ -18,18 +19,32 @@ var (
 )
 
 func initHooksCmd() {
+	var err error
+
 	addHooksCmd.Flags().StringVar(&hookType, "type", "", "Type of hook to add (pre or post)")
 	addHooksCmd.Flags().StringVar(&hookSource, "source", "", "Path to the hook script")
-	addHooksCmd.MarkFlagRequired("type")
-	addHooksCmd.MarkFlagRequired("source")
+	err = addHooksCmd.MarkFlagRequired("type")
+	if err != nil {
+		logging.Error.Printfln("Failed to mark flag as required: %v", err)
+	}
+	err = addHooksCmd.MarkFlagRequired("source")
+	if err != nil {
+		logging.Error.Printfln("Failed to mark flag as required: %v", err)
+	}
 	hooksCmd.AddCommand(addHooksCmd)
 
 	runHooksCmd.Flags().StringVar(&hookType, "type", "", "Type of hook to run (pre or post)")
-	runHooksCmd.MarkFlagRequired("type")
+	err = runHooksCmd.MarkFlagRequired("type")
+	if err != nil {
+		logging.Error.Printfln("Failed to mark flag as required: %v", err)
+	}
 	hooksCmd.AddCommand(runHooksCmd)
 
 	editHooksCmd.Flags().StringVar(&hookType, "type", "", "Type of hook to run (pre or post)")
-	editHooksCmd.MarkFlagRequired("type")
+	err = editHooksCmd.MarkFlagRequired("type")
+	if err != nil {
+		logging.Error.Printfln("Failed to mark flag as required: %v", err)
+	}
 	hooksCmd.AddCommand(editHooksCmd)
 
 	rootCmd.AddCommand(hooksCmd)
@@ -60,8 +75,8 @@ var addHooksCmd = &cobra.Command{
 			return fmt.Errorf("hook source file does not exist: %s", hookSource)
 		}
 
-		preHooksDir := viper.GetString("prefix") + "/" + configDirectory + "/hooks/pre.d"
-		postHooksDir := viper.GetString("prefix") + "/" + configDirectory + "/hooks/post.d"
+		preHooksDir := viper.GetString("prefix") + "/" + configDirectory + "/" + hooksPreDirectory
+		postHooksDir := viper.GetString("prefix") + "/" + configDirectory + "/" + hooksPostDirectory
 
 		hookSourceSplit := strings.Split(hookSource, "/")
 		hookFileName := hookSourceSplit[len(hookSourceSplit)-1]
@@ -80,7 +95,7 @@ var addHooksCmd = &cobra.Command{
 			return fmt.Errorf("unable to copy hook file from %s to %s: %w", hookSource, hookFile, err)
 		}
 
-		err = os.Chmod(hookFile, 0700)
+		err = os.Chmod(hookFile, 0700) // #nosec G302 -- File must be executable for execution
 		if err != nil {
 			return fmt.Errorf("unable to set executable permissions on hook file %s: %w", hookFile, err)
 		}
@@ -102,8 +117,10 @@ var editHooksCmd = &cobra.Command{
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		preHooksDir := viper.GetString("prefix") + "/" + configDirectory + "/hooks/pre.d"
-		postHooksDir := viper.GetString("prefix") + "/" + configDirectory + "/hooks/post.d"
+		var err error
+
+		preHooksDir := viper.GetString("prefix") + "/" + configDirectory + "/" + hooksPreDirectory
+		postHooksDir := viper.GetString("prefix") + "/" + configDirectory + "/" + hooksPostDirectory
 
 		hookFileName := args[0]
 		hookFile := ""
@@ -120,9 +137,12 @@ var editHooksCmd = &cobra.Command{
 		command.Stdin = os.Stdin
 		command.Stdout = os.Stdout
 		command.Stderr = os.Stderr
-		command.Run()
+		err = command.Run()
+		if err != nil {
+			return fmt.Errorf("failed to edit %s hook (%s): %s", hookType, hookFile, err)
+		}
 
-		err := os.Chmod(hookFile, 0700)
+		err = os.Chmod(hookFile, 0700) // #nosec G302 -- File must be executable for execution
 		if err != nil {
 			return fmt.Errorf("unable to set executable permissions on hook file %s: %w", hookFile, err)
 		}
@@ -143,8 +163,8 @@ var runHooksCmd = &cobra.Command{
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		preHooksDir := viper.GetString("prefix") + "/" + configDirectory + "/hooks/pre.d"
-		postHooksDir := viper.GetString("prefix") + "/" + configDirectory + "/hooks/post.d"
+		preHooksDir := viper.GetString("prefix") + "/" + configDirectory + "/" + hooksPreDirectory
+		postHooksDir := viper.GetString("prefix") + "/" + configDirectory + "/" + hooksPostDirectory
 
 		hookFile := ""
 		switch hookType {

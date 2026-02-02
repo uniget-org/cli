@@ -112,7 +112,7 @@ func SlurpFile(filePath string) ([]byte, error) {
 }
 
 func CopyFile(src, dst string) error {
-	srcFile, err := os.Open(src)
+	srcFile, err := os.Open(src) // #nosec G304 - Low-level copy expects sanitation
 	if err != nil {
 		return fmt.Errorf("failed to open source file: %s", err)
 	}
@@ -120,7 +120,7 @@ func CopyFile(src, dst string) error {
 		_ = srcFile.Close()
 	}()
 
-	dstFile, err := os.Create(dst)
+	dstFile, err := os.Create(dst) // #nosec G304 - Low-level copy expects sanitation
 	if err != nil {
 		return fmt.Errorf("failed to create destination file: %s", err)
 	}
