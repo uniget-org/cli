@@ -12,10 +12,12 @@ import (
 )
 
 var installedOnly bool
+var upgradableOnly bool
 var listOutput string
 
 func initListCmd() {
 	listCmd.Flags().BoolVar(&installedOnly, "installed", false, "List only installed tools")
+	listCmd.Flags().BoolVar(&upgradableOnly, "upgradable", false, "List only upgradable tools")
 	listCmd.Flags().StringVarP(&listOutput, "output", "o", "pretty", "Output options: pretty, json, yaml")
 
 	rootCmd.AddCommand(listCmd)
@@ -62,6 +64,31 @@ var listCmd = &cobra.Command{
 				}
 
 				if tools.Tools[index].Status.BinaryPresent || tools.Tools[index].Status.MarkerFilePresent {
+					installedTools.Tools = append(installedTools.Tools, tools.Tools[index])
+				}
+			}
+			listTools = installedTools
+
+		} else if upgradableOnly {
+			var installedTools tool.Tools
+			for index := range tools.Tools {
+				checkClientVersionRequirement(&tools.Tools[index])
+
+				tools.Tools[index].ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
+				err := tools.Tools[index].GetMarkerFileStatus(viper.GetString("prefix") + "/" + cacheDirectory)
+				if err != nil {
+					return fmt.Errorf("error getting marker file status: %s", err)
+				}
+				err = tools.Tools[index].GetBinaryStatus()
+				if err != nil {
+					return fmt.Errorf("error getting binary status: %s", err)
+				}
+				err = tools.Tools[index].GetVersionStatus()
+				if err != nil {
+					return fmt.Errorf("error getting version status: %s", err)
+				}
+
+				if (tools.Tools[index].Status.BinaryPresent || tools.Tools[index].Status.MarkerFilePresent) && !tools.Tools[index].Status.VersionMatches {
 					installedTools.Tools = append(installedTools.Tools, tools.Tools[index])
 				}
 			}
