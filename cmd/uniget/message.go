@@ -7,7 +7,6 @@ import (
 
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 	"gitlab.com/uniget-org/cli/pkg/tool"
 )
@@ -91,7 +90,7 @@ var messageCmd = &cobra.Command{
 
 func createTemplateVariablesForTool(tool *tool.Tool) (map[string]interface{}, error) {
 	values := make(map[string]interface{})
-	values["Target"] = fmt.Sprintf("%s/%s", viper.GetString("prefix"), viper.GetString("target"))
+	values["Target"] = fmt.Sprintf("%s/%s", config.prefix, config.target)
 	values["Name"] = tool.Name
 	values["Version"] = tool.Version
 

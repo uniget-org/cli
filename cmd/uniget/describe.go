@@ -11,7 +11,6 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 	"gitlab.com/uniget-org/cli/pkg/semver"
@@ -42,7 +41,7 @@ var describeCmd = &cobra.Command{
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if viper.GetBool("update") {
+		if config.autoupdate {
 			err := downloadMetadata()
 			if err != nil {
 				return fmt.Errorf("error downloading metadata: %s", err)
@@ -58,8 +57,8 @@ var describeCmd = &cobra.Command{
 		}
 		checkClientVersionRequirement(tool)
 
-		tool.ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
-		err = tool.GetMarkerFileStatus(viper.GetString("prefix") + "/" + cacheDirectory)
+		tool.ReplaceVariables(config.prefix+"/"+config.target, config.arch, config.altArch)
+		err = tool.GetMarkerFileStatus(config.prefix + "/" + config.cacheDirectory)
 		if err != nil {
 			return fmt.Errorf("error getting marker file status: %s", err)
 		}
@@ -99,7 +98,7 @@ var describeCmd = &cobra.Command{
 		}
 
 		if versions {
-			registries, repositories := tool.GetSourcesWithFallback(registry, imageRepository)
+			registries, repositories := tool.GetSourcesWithFallback(config.registry, config.imageRepository)
 			toolRef, err := containers.FindToolRef(registries, repositories, tool.Name, tool.Version)
 			if err != nil {
 				return fmt.Errorf("unable to find tool ref: %s", err)

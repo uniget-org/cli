@@ -5,7 +5,6 @@ import (
 	"io"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 
@@ -51,7 +50,7 @@ var inspectCmd = &cobra.Command{
 				return fmt.Errorf("error getting tool %s", args[0])
 			}
 			checkClientVersionRequirement(inspectTool)
-			inspectTool.ReplaceVariables(viper.GetString("prefix")+viper.GetString("target"), arch, altArch)
+			inspectTool.ReplaceVariables(config.prefix+config.target, config.arch, config.altArch)
 
 		} else {
 			inspectTool = &tool.Tool{
@@ -62,12 +61,12 @@ var inspectCmd = &cobra.Command{
 		}
 
 		logging.Info.Printfln("Inspecting %s %s\n", inspectTool.Name, inspectTool.Version)
-		registries, repositories := inspectTool.GetSourcesWithFallback(registry, imageRepository)
+		registries, repositories := inspectTool.GetSourcesWithFallback(config.registry, config.imageRepository)
 		toolRef, err := containers.FindToolRef(registries, repositories, inspectTool.Name, inspectToolImageTag)
 		if err != nil {
 			return fmt.Errorf("error finding tool %s:%s: %s", inspectTool.Name, inspectTool.Version, err)
 		}
-		effectivePathRewriteRules := pathRewriteRules
+		effectivePathRewriteRules := config.pathRewriteRules
 		if rawInspect {
 			effectivePathRewriteRules = []tool.PathRewrite{}
 		}

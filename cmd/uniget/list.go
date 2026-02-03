@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 	"gitlab.com/uniget-org/cli/pkg/tool"
 	"gopkg.in/yaml.v3"
@@ -33,7 +32,7 @@ var listCmd = &cobra.Command{
 	Long:  header + "\nList tools",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if viper.GetBool("update") {
+		if config.autoupdate {
 			err := downloadMetadata()
 			if err != nil {
 				return fmt.Errorf("error downloading metadata: %s", err)
@@ -49,8 +48,8 @@ var listCmd = &cobra.Command{
 			for index := range tools.Tools {
 				checkClientVersionRequirement(&tools.Tools[index])
 
-				tools.Tools[index].ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
-				err := tools.Tools[index].GetMarkerFileStatus(viper.GetString("prefix") + "/" + cacheDirectory)
+				tools.Tools[index].ReplaceVariables(config.prefix+"/"+config.target, config.arch, config.altArch)
+				err := tools.Tools[index].GetMarkerFileStatus(config.prefix + "/" + config.cacheDirectory)
 				if err != nil {
 					return fmt.Errorf("error getting marker file status: %s", err)
 				}
@@ -74,8 +73,8 @@ var listCmd = &cobra.Command{
 			for index := range tools.Tools {
 				checkClientVersionRequirement(&tools.Tools[index])
 
-				tools.Tools[index].ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
-				err := tools.Tools[index].GetMarkerFileStatus(viper.GetString("prefix") + "/" + cacheDirectory)
+				tools.Tools[index].ReplaceVariables(config.prefix+"/"+config.target, config.arch, config.altArch)
+				err := tools.Tools[index].GetMarkerFileStatus(config.prefix + "/" + config.cacheDirectory)
 				if err != nil {
 					return fmt.Errorf("error getting marker file status: %s", err)
 				}

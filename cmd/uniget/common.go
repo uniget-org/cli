@@ -4,7 +4,6 @@ import (
 	"os"
 
 	goversion "github.com/hashicorp/go-version"
-	"github.com/spf13/viper"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 	"gitlab.com/uniget-org/cli/pkg/tool"
 	"golang.org/x/sys/unix"
@@ -68,7 +67,7 @@ func assertWritableDirectory(directory string) {
 }
 
 func assertWritableTarget() {
-	assertWritableDirectory(viper.GetString("prefix") + "/" + viper.GetString("target"))
+	assertWritableDirectory(config.prefix + "/" + config.target)
 }
 
 func assertDirectory(directory string) {
@@ -81,25 +80,25 @@ func assertDirectory(directory string) {
 }
 
 func assertLibDirectory() {
-	if !directoryExists(viper.GetString("prefix") + "/" + libRoot) {
-		assertDirectory(viper.GetString("prefix") + "/" + libRoot)
+	if !directoryExists(config.prefix + "/" + config.libRoot) {
+		assertDirectory(config.prefix + "/" + config.libRoot)
 	}
-	assertWritableDirectory(viper.GetString("prefix") + "/" + libRoot)
-	assertDirectory(viper.GetString("prefix") + "/" + libDirectory)
+	assertWritableDirectory(config.prefix + "/" + config.libRoot)
+	assertDirectory(config.prefix + "/" + config.libDirectory)
 }
 
 func assertCacheDirectory() {
-	if !directoryExists(viper.GetString("prefix") + "/" + cacheRoot) {
-		assertDirectory(viper.GetString("prefix") + "/" + cacheRoot)
+	if !directoryExists(config.prefix + "/" + config.cacheRoot) {
+		assertDirectory(config.prefix + "/" + config.cacheRoot)
 	}
-	assertWritableDirectory(viper.GetString("prefix") + "/" + cacheRoot)
-	assertDirectory(viper.GetString("prefix") + "/" + cacheDirectory)
+	assertWritableDirectory(config.prefix + "/" + config.cacheRoot)
+	assertDirectory(config.prefix + "/" + config.cacheDirectory)
 }
 
 func assertMetadataFileExists() {
-	_, err := os.Stat(viper.GetString("prefix") + "/" + metadataFile)
+	_, err := os.Stat(config.prefix + "/" + config.metadataFile)
 	if err != nil {
-		logging.Error.Printfln("Metadata file %s does not exist: %s", viper.GetString("prefix")+"/"+metadataFile, err)
+		logging.Error.Printfln("Metadata file %s does not exist: %s", config.prefix+"/"+config.metadataFile, err)
 		os.Exit(1)
 	}
 }

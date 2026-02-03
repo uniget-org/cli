@@ -68,7 +68,7 @@ func getFormatString() string {
 }
 
 func buildReference(tool string) string {
-	return registry + "/" + imageRepository + toolSeparator + tool + ":" + regVersion
+	return config.registry + "/" + config.imageRepository + config.toolSeparator + tool + ":" + regVersion
 }
 
 var regRefCmd = &cobra.Command{

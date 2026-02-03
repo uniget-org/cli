@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 )
 
@@ -25,7 +24,7 @@ var versionCmd = &cobra.Command{
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if viper.GetBool("update") {
+		if config.autoupdate {
 			err := downloadMetadata()
 			if err != nil {
 				return fmt.Errorf("error downloading metadata: %s", err)
@@ -40,8 +39,8 @@ var versionCmd = &cobra.Command{
 		}
 		checkClientVersionRequirement(tool)
 
-		tool.ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
-		err = tool.GetMarkerFileStatus(viper.GetString("prefix") + "/" + cacheDirectory)
+		tool.ReplaceVariables(config.prefix+"/"+config.target, config.arch, config.altArch)
+		err = tool.GetMarkerFileStatus(config.prefix + "/" + config.cacheDirectory)
 		if err != nil {
 			return fmt.Errorf("failed to get marker file status: %s", err)
 		}
@@ -54,7 +53,7 @@ var versionCmd = &cobra.Command{
 			return fmt.Errorf("failed to get version status: %s", err)
 		}
 
-		markerFilePresent := fileExists(viper.GetString("prefix") + "/" + libDirectory + "/manifests/" + tool.Name + ".txt")
+		markerFilePresent := fileExists(config.prefix + "/" + config.libDirectory + "/manifests/" + tool.Name + ".txt")
 		if !tool.Status.MarkerFilePresent && !tool.Status.BinaryPresent && !markerFilePresent {
 			logging.Warning.Printfln("Tool %s is not installed", tool.Name)
 			return fmt.Errorf("tool %s is not installed", tool.Name)
@@ -66,7 +65,7 @@ var versionCmd = &cobra.Command{
 			return nil
 		}
 
-		tool.ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
+		tool.ReplaceVariables(config.prefix+"/"+config.target, config.arch, config.altArch)
 		version, err := tool.RunVersionCheck()
 		if err != nil {
 			return fmt.Errorf("failed to get version: %s", err)

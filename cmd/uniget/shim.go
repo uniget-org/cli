@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 )
 
@@ -40,16 +39,16 @@ var shimCmd = &cobra.Command{
 }
 
 func installProfileDShim() error {
-	profileDShimFile := profileDDirectory + "/uniget-profile.d.sh"
-	profileDScript := strings.ReplaceAll(profileDShim, "${target}", "/"+viper.GetString("target"))
+	profileDShimFile := config.profileDDirectory + "/uniget-profile.d.sh"
+	profileDScript := strings.ReplaceAll(profileDShim, "${target}", "/"+config.target)
 
-	if viper.GetBool("user") {
-		profileDShimFile = viper.GetString("prefix") + "/.config/uniget/profile.d-shim.sh"
-		profileDScript = strings.ReplaceAll(profileDShim, "${target}", viper.GetString("prefix")+"/"+viper.GetString("target"))
+	if config.user {
+		profileDShimFile = config.prefix + "/.config/uniget/profile.d-shim.sh"
+		profileDScript = strings.ReplaceAll(profileDShim, "${target}", config.prefix+"/"+config.target)
 	}
 
 	if fileExists(profileDShimFile) {
-		file, err := os.ReadFile(profileDShimFile)
+		file, err := os.ReadFile(profileDShimFile) // #nosec G304 -- Existence is already checked
 		if err != nil {
 			return fmt.Errorf("cannot read profile.d shim: %w", err)
 		}
