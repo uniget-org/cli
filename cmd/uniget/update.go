@@ -9,7 +9,6 @@ import (
 	"github.com/google/safearchive/tar"
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 
 	"gitlab.com/uniget-org/cli/pkg/archive"
 	"gitlab.com/uniget-org/cli/pkg/containers"
@@ -75,7 +74,7 @@ var updateCmd = &cobra.Command{
 
 func downloadMetadata() error {
 	assertCacheDirectory()
-	t, err := containers.FindToolRef([]string{registry}, []string{imageRepository}, "metadata", metadataImageTag)
+	t, err := containers.FindToolRef([]string{config.registry}, []string{config.imageRepository}, "metadata", config.metadataImageTag)
 	if err != nil {
 		return fmt.Errorf("error finding metadata: %s", err)
 	}
@@ -87,13 +86,13 @@ func downloadMetadata() error {
 		}
 	}()
 
-	logging.Debugf("Changing directory to %s", viper.GetString("prefix")+"/"+cacheDirectory)
-	err = os.Chdir(viper.GetString("prefix") + "/" + cacheDirectory)
+	logging.Debugf("Changing directory to %s", config.prefix+"/"+config.cacheDirectory)
+	err = os.Chdir(config.prefix + "/" + config.cacheDirectory)
 	if err != nil {
-		return fmt.Errorf("error changing directory to %s: %s", viper.GetString("prefix")+"/"+cacheDirectory, err)
+		return fmt.Errorf("error changing directory to %s: %s", config.prefix+"/"+config.cacheDirectory, err)
 	}
 
-	logging.Debugf("Extracting archive to %s", viper.GetString("prefix")+"/"+cacheDirectory)
+	logging.Debugf("Extracting archive to %s", config.prefix+"/"+config.cacheDirectory)
 	err = containers.GetFirstLayerFromRegistry(context.Background(), rc, t.GetRef(), func(reader io.ReadCloser) error {
 		err := archive.ProcessTarContents(reader, func(reader *tar.Reader, header *tar.Header) error {
 			err := archive.CallbackExtractTarItem(reader, header)
@@ -117,9 +116,9 @@ func downloadMetadata() error {
 
 func loadMetadata() error {
 	var err error
-	tools, err = tool.LoadFromFile(viper.GetString("prefix") + "/" + metadataFile)
+	tools, err = tool.LoadFromFile(config.prefix + "/" + config.metadataFile)
 	if err != nil {
-		return fmt.Errorf("failed to load metadata from file %s: %s", viper.GetString("prefix")+"/"+metadataFile, err)
+		return fmt.Errorf("failed to load metadata from file %s: %s", config.prefix+"/"+config.metadataFile, err)
 	}
 
 	return nil

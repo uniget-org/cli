@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 
 	"gitlab.com/uniget-org/cli/pkg/logging"
 	myos "gitlab.com/uniget-org/cli/pkg/os"
@@ -81,26 +80,26 @@ var addHooksCmd = &cobra.Command{
 			return fmt.Errorf("hook source file does not exist: %s", hookSource)
 		}
 
-		hooksDir := viper.GetString("prefix") + "/" + configDirectory
+		hooksDir := config.prefix + "/" + config.configDirectory
 
 		hookSourceSplit := strings.Split(hookSource, "/")
 		hookFileName := hookSourceSplit[len(hookSourceSplit)-1]
 		hookFile := ""
 		switch hookType {
 		case "pre-install":
-			preInstallHooksDir := hooksDir + "/" + hooksPreInstallDirectory
+			preInstallHooksDir := hooksDir + "/" + config.hooksPreInstallDirectory
 			assertDirectory(preInstallHooksDir)
 			hookFile = preInstallHooksDir + "/" + hookFileName
 		case "post-install":
-			postInstallHooksDir := hooksDir + "/" + hooksPostInstallDirectory
+			postInstallHooksDir := hooksDir + "/" + config.hooksPostInstallDirectory
 			assertDirectory(postInstallHooksDir)
 			hookFile = postInstallHooksDir + "/" + hookFileName
 		case "pre-uninstall":
-			preUninstallHooksDir := hooksDir + "/" + hooksPreInstallDirectory
+			preUninstallHooksDir := hooksDir + "/" + config.hooksPreInstallDirectory
 			assertDirectory(preUninstallHooksDir)
 			hookFile = preUninstallHooksDir + "/" + hookFileName
 		case "post-uninstall":
-			postUninstallHooksDir := hooksDir + "/" + hooksPostInstallDirectory
+			postUninstallHooksDir := hooksDir + "/" + config.hooksPostInstallDirectory
 			assertDirectory(postUninstallHooksDir)
 			hookFile = postUninstallHooksDir + "/" + hookFileName
 		}
@@ -139,26 +138,26 @@ var editHooksCmd = &cobra.Command{
 			return fmt.Errorf("unable to find editor from environment")
 		}
 
-		hooksDir := viper.GetString("prefix") + "/" + configDirectory
+		hooksDir := config.prefix + "/" + config.configDirectory
 
 		hookFileName := args[0]
 		hookDir := ""
 		hookFile := ""
 		switch hookType {
 		case "pre-install":
-			preInstallHooksDir := hooksDir + "/" + hooksPreInstallDirectory
+			preInstallHooksDir := hooksDir + "/" + config.hooksPreInstallDirectory
 			hookDir = preInstallHooksDir
 			hookFile = hookDir + "/" + hookFileName
 		case "post-install":
-			postInstallHooksDir := hooksDir + "/" + hooksPostInstallDirectory
+			postInstallHooksDir := hooksDir + "/" + config.hooksPostInstallDirectory
 			hookDir = postInstallHooksDir
 			hookFile = hookDir + "/" + hookFileName
 		case "pre-uninstall":
-			preUninstallHooksDir := hooksDir + "/" + hooksPreInstallDirectory
+			preUninstallHooksDir := hooksDir + "/" + config.hooksPreInstallDirectory
 			hookDir = preUninstallHooksDir
 			hookFile = hookDir + "/" + hookFileName
 		case "post-uninstall":
-			postUninstallHooksDir := hooksDir + "/" + hooksPostInstallDirectory
+			postUninstallHooksDir := hooksDir + "/" + config.hooksPostInstallDirectory
 			hookDir = postUninstallHooksDir
 			hookFile = hookDir + "/" + hookFileName
 		}
@@ -194,32 +193,32 @@ var listHooksCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var err error
 
-		hooksDir := viper.GetString("prefix") + "/" + configDirectory
+		hooksDir := config.prefix + "/" + config.configDirectory
 
 		switch hookType {
 		case "pre-install":
-			preInstallHooksDir := hooksDir + "/" + hooksPreInstallDirectory
+			preInstallHooksDir := hooksDir + "/" + config.hooksPreInstallDirectory
 			err = processHooks(preInstallHooksDir, func(hookFile string) error {
 				fmt.Printf("%s\n", hookFile)
 				return nil
 			})
 
 		case "post-install":
-			postInstallHooksDir := hooksDir + "/" + hooksPostInstallDirectory
+			postInstallHooksDir := hooksDir + "/" + config.hooksPostInstallDirectory
 			err = processHooks(postInstallHooksDir, func(hookFile string) error {
 				fmt.Printf("%s\n", hookFile)
 				return nil
 			})
 
 		case "pre-uninstall":
-			preUninstallHooksDir := hooksDir + "/" + hooksPreUninstallDirectory
+			preUninstallHooksDir := hooksDir + "/" + config.hooksPreUninstallDirectory
 			err = processHooks(preUninstallHooksDir, func(hookFile string) error {
 				fmt.Printf("%s\n", hookFile)
 				return nil
 			})
 
 		case "post-uninstall":
-			postUninstallHooksDir := hooksDir + "/" + hooksPostUninstallDirectory
+			postUninstallHooksDir := hooksDir + "/" + config.hooksPostUninstallDirectory
 			err = processHooks(postUninstallHooksDir, func(hookFile string) error {
 				fmt.Printf("%s\n", hookFile)
 				return nil
@@ -246,15 +245,16 @@ var runHooksCmd = &cobra.Command{
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var err error
+
 		switch hookType {
 		case "pre-install":
-			err = runHooks(hooksPreInstallDirectory, args...)
+			err = runHooks(config.hooksPreInstallDirectory, args...)
 		case "post-install":
-			err = runHooks(hooksPostInstallDirectory, args...)
+			err = runHooks(config.hooksPostInstallDirectory, args...)
 		case "pre-uninstall":
-			err = runHooks(hooksPreUninstallDirectory, args...)
+			err = runHooks(config.hooksPreUninstallDirectory, args...)
 		case "post-uninstall":
-			err = runHooks(hooksPostUninstallDirectory, args...)
+			err = runHooks(config.hooksPostUninstallDirectory, args...)
 		}
 		if err != nil {
 			return fmt.Errorf("unable to execute %s hooks: %s", hookType, err)
@@ -265,7 +265,7 @@ var runHooksCmd = &cobra.Command{
 }
 
 func runHooks(hookTypePath string, args ...string) error {
-	hooksDir := viper.GetString("prefix") + "/" + configDirectory + "/" + hookTypePath
+	hooksDir := config.prefix + "/" + config.configDirectory + "/" + hookTypePath
 	err := processHooks(hooksDir, func(hookFile string) error {
 		return runHook(hookFile, args...)
 	})
@@ -277,19 +277,19 @@ func runHooks(hookTypePath string, args ...string) error {
 }
 
 func runPreInstallHooks(args ...string) error {
-	return runHooks(hooksPreInstallDirectory, args...)
+	return runHooks(config.hooksPreInstallDirectory, args...)
 }
 
 func runPostInstallHooks(args ...string) error {
-	return runHooks(hooksPostInstallDirectory, args...)
+	return runHooks(config.hooksPostInstallDirectory, args...)
 }
 
 func runPreUninstallHooks(args ...string) error {
-	return runHooks(hooksPreUninstallDirectory, args...)
+	return runHooks(config.hooksPreUninstallDirectory, args...)
 }
 
 func runPostUninstallHooks(args ...string) error {
-	return runHooks(hooksPostUninstallDirectory, args...)
+	return runHooks(config.hooksPostUninstallDirectory, args...)
 }
 
 func processHooks(path string, callback func(file string) error) error {

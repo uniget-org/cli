@@ -7,7 +7,6 @@ import (
 
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 	myos "gitlab.com/uniget-org/cli/pkg/os"
 	"gitlab.com/uniget-org/cli/pkg/tool"
@@ -45,12 +44,12 @@ var uninstallCmd = &cobra.Command{
 		}
 		checkClientVersionRequirement(tool)
 
-		tool.ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
+		tool.ReplaceVariables(config.prefix+"/"+config.target, config.arch, config.altArch)
 		err = tool.GetBinaryStatus()
 		if err != nil {
 			return fmt.Errorf("unable to get binary status: %s", err)
 		}
-		err = tool.GetMarkerFileStatus(viper.GetString("prefix") + "/" + cacheDirectory)
+		err = tool.GetMarkerFileStatus(config.prefix + "/" + config.cacheDirectory)
 		if err != nil {
 			return fmt.Errorf("unable to get marker file status: %s", err)
 		}
@@ -66,7 +65,7 @@ var uninstallCmd = &cobra.Command{
 
 		var uninstallSpinner *pterm.SpinnerPrinter
 		installMessage := fmt.Sprintf("Uninstalling %s", tool.Name)
-		if viper.GetString("loglevel") == "warning" {
+		if config.logLevel == "warning" {
 			uninstallSpinner, _ = pterm.DefaultSpinner.Start(installMessage)
 		} else {
 			logging.Info.Println(installMessage)
@@ -97,7 +96,7 @@ var uninstallCmd = &cobra.Command{
 }
 
 func writeInstalledFiles(tool *tool.Tool, installedFiles []string) error {
-	fileListDirectory := viper.GetString("prefix") + "/" + libDirectory + "/manifests"
+	fileListDirectory := config.prefix + "/" + config.libDirectory + "/manifests"
 	fileListFilename := fileListDirectory + "/" + tool.Name + ".txt"
 	err := os.MkdirAll(fileListDirectory, 0755) // #nosec G301 -- Directory must be accessible by all users
 	if err != nil {
@@ -118,9 +117,9 @@ func uninstallTool(toolName string) error {
 		return fmt.Errorf("unable to find tool %s: %s", toolName, err)
 	}
 
-	logging.Tracef("Looking for manifest file for tool %s at %s", tool.Name, viper.GetString("prefix")+"/"+libDirectory+"/manifests/"+tool.Name+".txt")
-	if fileExists(viper.GetString("prefix") + "/" + libDirectory + "/manifests/" + tool.Name + ".txt") {
-		data, err := os.ReadFile(viper.GetString("prefix") + "/" + libDirectory + "/manifests/" + tool.Name + ".txt")
+	logging.Tracef("Looking for manifest file for tool %s at %s", tool.Name, config.prefix+"/"+config.libDirectory+"/manifests/"+tool.Name+".txt")
+	if fileExists(config.prefix + "/" + config.libDirectory + "/manifests/" + tool.Name + ".txt") {
+		data, err := os.ReadFile(config.prefix + "/" + config.libDirectory + "/manifests/" + tool.Name + ".txt")
 		if err != nil {
 			return fmt.Errorf("unable to read file %s: %s", filename, err)
 		}
@@ -134,8 +133,8 @@ func uninstallTool(toolName string) error {
 		logging.Warning.Printfln("Unable to find manifest for %s", tool.Name)
 	}
 
-	if directoryExists(viper.GetString("prefix") + "/" + cacheDirectory + "/" + tool.Name) {
-		entries, err := os.ReadDir(viper.GetString("prefix") + "/" + cacheDirectory + "/" + tool.Name)
+	if directoryExists(config.prefix + "/" + config.cacheDirectory + "/" + tool.Name) {
+		entries, err := os.ReadDir(config.prefix + "/" + config.cacheDirectory + "/" + tool.Name)
 		if err != nil {
 			return fmt.Errorf("failed to read cache directory for %s: %s", tool.Name, err)
 		}
@@ -145,35 +144,35 @@ func uninstallTool(toolName string) error {
 				return fmt.Errorf("unable to get info for %s: %s", info.Name(), err)
 			}
 
-			err = os.Remove(viper.GetString("prefix") + "/" + cacheDirectory + "/" + tool.Name + "/" + info.Name())
+			err = os.Remove(config.prefix + "/" + config.cacheDirectory + "/" + tool.Name + "/" + info.Name())
 			if err != nil {
 				return fmt.Errorf("unable to remove %s: %s", info.Name(), err)
 			}
 
-			if myos.IsDirectoryEmpty(viper.GetString("prefix") + "/" + cacheDirectory + "/" + tool.Name) {
-				err = os.Remove(viper.GetString("prefix") + "/" + cacheDirectory + "/" + tool.Name)
+			if myos.IsDirectoryEmpty(config.prefix + "/" + config.cacheDirectory + "/" + tool.Name) {
+				err = os.Remove(config.prefix + "/" + config.cacheDirectory + "/" + tool.Name)
 				if err != nil {
-					return fmt.Errorf("unable to remove empty directory %s: %s", viper.GetString("prefix")+"/"+cacheDirectory+"/"+tool.Name, err)
+					return fmt.Errorf("unable to remove empty directory %s: %s", config.prefix+"/"+config.cacheDirectory+"/"+tool.Name, err)
 				}
-				logging.Debugf("Removed empty directory %s", viper.GetString("prefix")+"/"+cacheDirectory+"/"+tool.Name)
+				logging.Debugf("Removed empty directory %s", config.prefix+"/"+config.cacheDirectory+"/"+tool.Name)
 			}
 		}
 	}
 
-	if fileExists(viper.GetString("prefix") + "/" + libDirectory + "/manifests/" + tool.Name + ".json") {
-		err = os.Remove(viper.GetString("prefix") + "/" + libDirectory + "/manifests/" + tool.Name + ".json")
+	if fileExists(config.prefix + "/" + config.libDirectory + "/manifests/" + tool.Name + ".json") {
+		err = os.Remove(config.prefix + "/" + config.libDirectory + "/manifests/" + tool.Name + ".json")
 		if err != nil {
-			return fmt.Errorf("unable to remove %s: %s", viper.GetString("prefix")+"/"+libDirectory+"/manifests/"+tool.Name+".json", err)
+			return fmt.Errorf("unable to remove %s: %s", config.prefix+"/"+config.libDirectory+"/manifests/"+tool.Name+".json", err)
 		}
 	}
-	if fileExists(viper.GetString("prefix") + "/" + libDirectory + "/manifests/" + tool.Name + ".txt") {
-		err = os.Remove(viper.GetString("prefix") + "/" + libDirectory + "/manifests/" + tool.Name + ".txt")
+	if fileExists(config.prefix + "/" + config.libDirectory + "/manifests/" + tool.Name + ".txt") {
+		err = os.Remove(config.prefix + "/" + config.libDirectory + "/manifests/" + tool.Name + ".txt")
 		if err != nil {
-			return fmt.Errorf("unable to remove %s: %s", viper.GetString("prefix")+"/"+libDirectory+"/manifests/"+tool.Name+".txt", err)
+			return fmt.Errorf("unable to remove %s: %s", config.prefix+"/"+config.libDirectory+"/manifests/"+tool.Name+".txt", err)
 		}
 	}
 
-	err = tool.RemoveMarkerFile(viper.GetString("prefix") + "/" + cacheDirectory)
+	err = tool.RemoveMarkerFile(config.prefix + "/" + config.cacheDirectory)
 	if os.IsNotExist(err) {
 		logging.Debugf("unable to remove marker file because it does not exist")
 	} else if err != nil {
@@ -192,13 +191,13 @@ func uninstallFiles(installedFiles []string) error {
 			continue
 		}
 		if strings.HasPrefix(file, "/") {
-			if !strings.HasPrefix(file, viper.GetString("prefix")+"/"+viper.GetString("target")) {
+			if !strings.HasPrefix(file, config.prefix+"/"+config.target) {
 				logging.Warning.Printfln("Skipping %s because it is not safe to remove", file)
 				continue
 			}
 		}
 
-		prefixedFile := viper.GetString("prefix") + "/" + file
+		prefixedFile := config.prefix + "/" + file
 		logging.Debugf("prefixed line %s", prefixedFile)
 
 		_, err := os.Lstat(prefixedFile)
