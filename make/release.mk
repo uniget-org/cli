@@ -84,6 +84,10 @@ push--%: ; $(info $(M) Pushing tag v$*...)
 	@$(GIT) push origin v$*
 
 .PHONY:
+retag: ; $(info $(M) Creating tag v$(LATEST_VERSION)...)
+	@$(GIT) tag -a -m $(LATEST_VERSION) -f v$(LATEST_VERSION)
+
+.PHONY:
 retag--%: ; $(info $(M) Creating tag v$*...)
 	@$(GIT) tag -a -m $* -f v$*
 
