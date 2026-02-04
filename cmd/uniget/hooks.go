@@ -294,7 +294,7 @@ func runPostUninstallHooks(args ...string) error {
 
 func processHooks(path string, callback func(file string) error) error {
 	if !directoryExists(path) {
-		return fmt.Errorf("directory %s does not exist", path)
+		return nil
 	}
 
 	files, err := os.ReadDir(path)
