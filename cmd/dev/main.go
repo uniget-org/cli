@@ -10,14 +10,14 @@ import (
 )
 
 var (
-	version              = "dev"
-	logLevel             = "info"
-	debug                = false
-	trace                = false
-	unigetToolsDirectory = os.Getenv("HOME") + "/private/uniget/tools"
-	unigetTools          *UnigetTools
-	unigetToolsNames     []string
-	rootCmd              = &cobra.Command{
+	version                 = "dev"
+	logLevel                = "info"
+	debug                   = false
+	trace                   = false
+	unigetToolsDirectory, _ = os.Getwd()
+	unigetTools             *UnigetTools
+	unigetToolsNames        []string
+	rootCmd                 = &cobra.Command{
 		Use:          "uniget-dev",
 		Version:      version,
 		SilenceUsage: true,
