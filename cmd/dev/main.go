@@ -67,6 +67,7 @@ func init() {
 	initManifestCmd()
 	initMetadataCmd()
 	initNewCmd()
+	initSemverCmd()
 }
 
 func main() {
