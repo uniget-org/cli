@@ -19,7 +19,6 @@ import (
 	"gitlab.com/uniget-org/cli/pkg/tool"
 )
 
-var defaultMode bool
 var tagsMode bool
 var filename string
 var skipDependencies bool
@@ -30,7 +29,6 @@ var reinstall bool
 var pathToTarMappings map[string]string
 
 func initInstallCmd() {
-	installCmd.Flags().BoolVar(&defaultMode, "default", false, "Install default tools")
 	installCmd.Flags().BoolVar(&tagsMode, "tags", false, "Install tool(s) matching tag")
 	installCmd.Flags().StringVar(&filename, "file", "", "Read tools from file")
 	installCmd.Flags().BoolVar(&dryRun, "plan", false, "Show tool(s) planned installation")
@@ -80,11 +78,7 @@ var installCmd = &cobra.Command{
 		var requestedTools tool.Tools
 
 		// Collect requested tools based on mode
-		if defaultMode {
-			logging.Debugf("Adding default tools to requested tools")
-			requestedTools = tools.GetByTags([]string{"category/default"})
-
-		} else if tagsMode {
+		if tagsMode {
 			logging.Debugf("Adding tools matching tags to requested tools")
 			requestedTools = tools.GetByTags(args)
 
