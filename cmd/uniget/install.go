@@ -27,7 +27,7 @@ var filename string
 var skipDependencies bool
 var skipConflicts bool
 var check bool
-var plan bool
+var dryRun bool
 var reinstall bool
 var pathToTarMappings map[string]string
 
@@ -37,7 +37,8 @@ func initInstallCmd() {
 	installCmd.Flags().BoolVarP(&installedMode, "installed", "i", false, "Update installed tool(s)")
 	installCmd.Flags().BoolVarP(&allMode, "all", "a", false, "Install all tools")
 	installCmd.Flags().StringVar(&filename, "file", "", "Read tools from file")
-	installCmd.Flags().BoolVar(&plan, "plan", false, "Show tool(s) planned installation")
+	installCmd.Flags().BoolVar(&dryRun, "plan", false, "Show tool(s) planned installation")
+	installCmd.Flags().BoolVar(&dryRun, "dry-run", false, "Show tool(s) planned for installation")
 	installCmd.Flags().BoolVar(&skipDependencies, "skip-deps", false, "Skip dependencies")
 	installCmd.Flags().BoolVar(&skipConflicts, "skip-conflicts", false, "Skip conflicting tools")
 	installCmd.Flags().BoolVar(&check, "check", false, "Abort after checking versions")
@@ -45,9 +46,15 @@ func initInstallCmd() {
 	installCmd.Flags().StringToStringVar(&pathToTarMappings, "path-to-tar-mappings", nil, "Map paths in tar file to target paths (for debugging purposes)")
 	installCmd.MarkFlagsMutuallyExclusive("default", "tags", "installed", "all", "file")
 	installCmd.MarkFlagsMutuallyExclusive("check", "plan")
+	installCmd.MarkFlagsMutuallyExclusive("check", "dry-run")
+	installCmd.MarkFlagsMutuallyExclusive("plan", "dry-run")
 	err := installCmd.Flags().MarkHidden("path-to-tar-mappings")
 	if err != nil {
 		logging.Error.Printfln("Unable to mark path-to-tar-mappings flag as hidden: %s", err)
+	}
+	err = installCmd.Flags().MarkHidden("plan")
+	if err != nil {
+		logging.Error.Printfln("Unable to mark plan flag as hidden: %s", err)
 	}
 
 	rootCmd.AddCommand(installCmd)
@@ -133,7 +140,7 @@ var installCmd = &cobra.Command{
 		}
 		logging.Debugf("Requested %d tool(s)", len(requestedTools.Tools))
 
-		return installTools(cmd.OutOrStdout(), requestedTools, check, plan, reinstall, skipDependencies, skipConflicts)
+		return installTools(cmd.OutOrStdout(), requestedTools, check, dryRun, reinstall, skipDependencies, skipConflicts)
 	},
 }
 

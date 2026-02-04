@@ -5,10 +5,17 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"gitlab.com/uniget-org/cli/pkg/logging"
 )
 
 func initUpgradeCmd() {
-	upgradeCmd.Flags().BoolVar(&plan, "plan", false, "Show tool(s) planned installation")
+	upgradeCmd.Flags().BoolVar(&dryRun, "plan", false, "Show tool(s) planned installation")
+	upgradeCmd.Flags().BoolVar(&dryRun, "dry-run", false, "Show tool(s) planned for installation")
+	upgradeCmd.MarkFlagsMutuallyExclusive("plan", "dry-run")
+	err := upgradeCmd.Flags().MarkHidden("plan")
+	if err != nil {
+		logging.Error.Printfln("Unable to mark plan flag as hidden: %s", err)
+	}
 
 	rootCmd.AddCommand(upgradeCmd)
 }
@@ -34,7 +41,7 @@ var upgradeCmd = &cobra.Command{
 			return fmt.Errorf("failed to find installed tools: %s", err)
 		}
 
-		err = installTools(cmd.OutOrStdout(), requestdTools, false, plan, false, false, false)
+		err = installTools(cmd.OutOrStdout(), requestdTools, false, dryRun, false, false, false)
 		if err != nil {
 			return fmt.Errorf("failed to install tools: %s", err)
 		}
