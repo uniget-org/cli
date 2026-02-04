@@ -21,7 +21,7 @@ var (
 func initHooksCmd() {
 	var err error
 
-	addHooksCmd.Flags().StringVar(&hookType, "type", "", "Type of hook to add (pre or post)")
+	addHooksCmd.Flags().StringVar(&hookType, "type", "", "Type of hook to add (pre-install, post-install, pre-uninstall or post-uninstall)")
 	addHooksCmd.Flags().StringVar(&hookSource, "source", "", "Path to the hook script")
 	err = addHooksCmd.MarkFlagRequired("type")
 	if err != nil {
@@ -33,19 +33,26 @@ func initHooksCmd() {
 	}
 	hooksCmd.AddCommand(addHooksCmd)
 
-	runHooksCmd.Flags().StringVar(&hookType, "type", "", "Type of hook to run (pre or post)")
-	err = runHooksCmd.MarkFlagRequired("type")
-	if err != nil {
-		logging.Error.Printfln("Failed to mark flag as required: %v", err)
-	}
-	hooksCmd.AddCommand(runHooksCmd)
-
-	editHooksCmd.Flags().StringVar(&hookType, "type", "", "Type of hook to run (pre or post)")
+	editHooksCmd.Flags().StringVar(&hookType, "type", "", "Type of hook to edit (pre-install, post-install, pre-uninstall or post-uninstall)")
 	err = editHooksCmd.MarkFlagRequired("type")
 	if err != nil {
 		logging.Error.Printfln("Failed to mark flag as required: %v", err)
 	}
 	hooksCmd.AddCommand(editHooksCmd)
+
+	listHooksCmd.Flags().StringVar(&hookType, "type", "", "Type of hook to list (pre-install, post-install, pre-uninstall or post-uninstall)")
+	err = listHooksCmd.MarkFlagRequired("type")
+	if err != nil {
+		logging.Error.Printfln("Failed to mark flag as required: %v", err)
+	}
+	hooksCmd.AddCommand(listHooksCmd)
+
+	runHooksCmd.Flags().StringVar(&hookType, "type", "", "Type of hook to run (pre-install, post-install, pre-uninstall or post-uninstall)")
+	err = runHooksCmd.MarkFlagRequired("type")
+	if err != nil {
+		logging.Error.Printfln("Failed to mark flag as required: %v", err)
+	}
+	hooksCmd.AddCommand(runHooksCmd)
 
 	rootCmd.AddCommand(hooksCmd)
 }
@@ -75,19 +82,28 @@ var addHooksCmd = &cobra.Command{
 			return fmt.Errorf("hook source file does not exist: %s", hookSource)
 		}
 
-		preHooksDir := viper.GetString("prefix") + "/" + configDirectory + "/" + hooksPreDirectory
-		postHooksDir := viper.GetString("prefix") + "/" + configDirectory + "/" + hooksPostDirectory
+		hooksDir := viper.GetString("prefix") + "/" + configDirectory
 
 		hookSourceSplit := strings.Split(hookSource, "/")
 		hookFileName := hookSourceSplit[len(hookSourceSplit)-1]
 		hookFile := ""
 		switch hookType {
-		case "pre":
-			assertDirectory(preHooksDir)
-			hookFile = preHooksDir + "/" + hookFileName
-		case "post":
-			assertDirectory(postHooksDir)
-			hookFile = postHooksDir + "/" + hookFileName
+		case "pre-install":
+			preInstallHooksDir := hooksDir + "/" + hooksPreInstallDirectory
+			assertDirectory(preInstallHooksDir)
+			hookFile = preInstallHooksDir + "/" + hookFileName
+		case "post-install":
+			postInstallHooksDir := hooksDir + "/" + hooksPostInstallDirectory
+			assertDirectory(postInstallHooksDir)
+			hookFile = postInstallHooksDir + "/" + hookFileName
+		case "pre-uninstall":
+			preUninstallHooksDir := hooksDir + "/" + hooksPreInstallDirectory
+			assertDirectory(preUninstallHooksDir)
+			hookFile = preUninstallHooksDir + "/" + hookFileName
+		case "post-uninstall":
+			postUninstallHooksDir := hooksDir + "/" + hooksPostInstallDirectory
+			assertDirectory(postUninstallHooksDir)
+			hookFile = postUninstallHooksDir + "/" + hookFileName
 		}
 
 		err := myos.CopyFile(hookSource, hookFile)
@@ -119,19 +135,35 @@ var editHooksCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var err error
 
-		preHooksDir := viper.GetString("prefix") + "/" + configDirectory + "/" + hooksPreDirectory
-		postHooksDir := viper.GetString("prefix") + "/" + configDirectory + "/" + hooksPostDirectory
+		editor := os.Getenv("EDITOR")
+		if len(editor) == 0 {
+			return fmt.Errorf("unable to find editor from environment")
+		}
+
+		hooksDir := viper.GetString("prefix") + "/" + configDirectory
 
 		hookFileName := args[0]
+		hookDir := ""
 		hookFile := ""
 		switch hookType {
-		case "pre":
-			assertDirectory(preHooksDir)
-			hookFile = preHooksDir + "/" + hookFileName
-		case "post":
-			assertDirectory(postHooksDir)
-			hookFile = postHooksDir + "/" + hookFileName
+		case "pre-install":
+			preInstallHooksDir := hooksDir + "/" + hooksPreInstallDirectory
+			hookDir = preInstallHooksDir
+			hookFile = hookDir + "/" + hookFileName
+		case "post-install":
+			postInstallHooksDir := hooksDir + "/" + hooksPostInstallDirectory
+			hookDir = postInstallHooksDir
+			hookFile = hookDir + "/" + hookFileName
+		case "pre-uninstall":
+			preUninstallHooksDir := hooksDir + "/" + hooksPreInstallDirectory
+			hookDir = preUninstallHooksDir
+			hookFile = hookDir + "/" + hookFileName
+		case "post-uninstall":
+			postUninstallHooksDir := hooksDir + "/" + hooksPostInstallDirectory
+			hookDir = postUninstallHooksDir
+			hookFile = hookDir + "/" + hookFileName
 		}
+		assertDirectory(hookDir)
 
 		command := exec.Command("vim", hookFile)
 		command.Stdin = os.Stdin
@@ -151,6 +183,57 @@ var editHooksCmd = &cobra.Command{
 	},
 }
 
+var listHooksCmd = &cobra.Command{
+	Use: "list",
+	Aliases: []string{
+		"l",
+		"show",
+	},
+	Short: "List hooks",
+	Long:  header + "\nList hooks",
+	Args:  cobra.NoArgs,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		var err error
+
+		hooksDir := viper.GetString("prefix") + "/" + configDirectory
+
+		switch hookType {
+		case "pre-install":
+			preInstallHooksDir := hooksDir + "/" + hooksPreInstallDirectory
+			err = processHooks(preInstallHooksDir, func(hookFile string) error {
+				fmt.Printf("%s\n", hookFile)
+				return nil
+			})
+
+		case "post-install":
+			postInstallHooksDir := hooksDir + "/" + hooksPostInstallDirectory
+			err = processHooks(postInstallHooksDir, func(hookFile string) error {
+				fmt.Printf("%s\n", hookFile)
+				return nil
+			})
+
+		case "pre-uninstall":
+			preUninstallHooksDir := hooksDir + "/" + hooksPreUninstallDirectory
+			err = processHooks(preUninstallHooksDir, func(hookFile string) error {
+				fmt.Printf("%s\n", hookFile)
+				return nil
+			})
+
+		case "post-uninstall":
+			postUninstallHooksDir := hooksDir + "/" + hooksPostUninstallDirectory
+			err = processHooks(postUninstallHooksDir, func(hookFile string) error {
+				fmt.Printf("%s\n", hookFile)
+				return nil
+			})
+		}
+		if err != nil {
+			return fmt.Errorf("unable to list %s hooks: %s", hookType, err)
+		}
+
+		return nil
+	},
+}
+
 var runHooksCmd = &cobra.Command{
 	Use: "run",
 	Aliases: []string{
@@ -163,23 +246,85 @@ var runHooksCmd = &cobra.Command{
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		preHooksDir := viper.GetString("prefix") + "/" + configDirectory + "/" + hooksPreDirectory
-		postHooksDir := viper.GetString("prefix") + "/" + configDirectory + "/" + hooksPostDirectory
-
-		hookFile := ""
+		var err error
 		switch hookType {
-		case "pre":
-			hookFile = preHooksDir + "/foo.sh"
-		case "post":
-			hookFile = postHooksDir + "/foo.sh"
+		case "pre-install":
+			err = runHooks(hooksPreInstallDirectory, args...)
+		case "post-install":
+			err = runHooks(hooksPostInstallDirectory, args...)
+		case "pre-uninstall":
+			err = runHooks(hooksPreUninstallDirectory, args...)
+		case "post-uninstall":
+			err = runHooks(hooksPostUninstallDirectory, args...)
 		}
-
-		command := exec.Command(hookFile, args...) // #nosec G204 -- Tool images are a trusted source
-		_, err := command.Output()
 		if err != nil {
-			return fmt.Errorf("unable to execute %s hook (%s): %s", hookType, hookFile, err)
+			return fmt.Errorf("unable to execute %s hooks: %s", hookType, err)
 		}
 
 		return nil
 	},
+}
+
+func runHooks(hookTypePath string, args ...string) error {
+	hooksDir := viper.GetString("prefix") + "/" + configDirectory + "/" + hookTypePath
+	err := processHooks(hooksDir, func(hookFile string) error {
+		return runHook(hookFile, args...)
+	})
+	if err != nil {
+		return fmt.Errorf("unable to run pre hooks: %s", err)
+	}
+
+	return nil
+}
+
+func runPreInstallHooks(args ...string) error {
+	return runHooks(hooksPreInstallDirectory, args...)
+}
+
+func runPostInstallHooks(args ...string) error {
+	return runHooks(hooksPostInstallDirectory, args...)
+}
+
+func runPreUninstallHooks(args ...string) error {
+	return runHooks(hooksPreUninstallDirectory, args...)
+}
+
+func runPostUninstallHooks(args ...string) error {
+	return runHooks(hooksPostUninstallDirectory, args...)
+}
+
+func processHooks(path string, callback func(file string) error) error {
+	if !directoryExists(path) {
+		return fmt.Errorf("directory %s does not exist", path)
+	}
+
+	files, err := os.ReadDir(path)
+	if err != nil {
+		return fmt.Errorf("unable to read directory %s: %w", path, err)
+	}
+
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+
+		hookFile := path + "/" + file.Name()
+		err := callback(hookFile)
+		if err != nil {
+			return fmt.Errorf("error processing hook file %s: %w", hookFile, err)
+		}
+	}
+
+	return nil
+}
+
+func runHook(hookFile string, args ...string) error {
+	logging.Debugf("running hook in file %s (args: %s)", hookFile, args)
+	command := exec.Command(hookFile, args...) // #nosec G204 -- Tool images are a trusted source
+	_, err := command.Output()
+	if err != nil {
+		return fmt.Errorf("unable to execute %s hook (%s): %s", hookType, hookFile, err)
+	}
+
+	return nil
 }

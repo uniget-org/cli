@@ -72,6 +72,7 @@ var uninstallCmd = &cobra.Command{
 			logging.Info.Println(installMessage)
 		}
 
+		runPreUninstallHooks(args[0])
 		err = uninstallTool(args[0])
 		if err != nil {
 			if uninstallSpinner != nil {
@@ -83,6 +84,7 @@ var uninstallCmd = &cobra.Command{
 		if uninstallSpinner != nil {
 			uninstallSpinner.Success()
 		}
+		runPostUninstallHooks(args[0])
 
 		return nil
 	},

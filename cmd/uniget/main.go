@@ -31,25 +31,27 @@ var (
 	altArch string = runtime.GOARCH
 	arch    string
 
-	cacheRoot              = "var/cache"
-	cacheDirectory         = cacheRoot + "/" + projectName
-	libRoot                = "var/lib"
-	libDirectory           = libRoot + "/" + projectName
-	configRoot             = "etc"
-	configDirectory        = "uniget"
-	hooksPreDirectory      = "hooks/pre.d"
-	hooksPostDirectory     = "hooks/post.d"
-	profileDDirectory      = configRoot + "/profile.d"
-	metadataImageTag       = "main"
-	metadataFileName       = "metadata.json"
-	metadataFile           = cacheDirectory + "/" + metadataFileName
-	fileCacheDirectoryName = "downloads"
-	registry               = "ghcr.io"
-	organization           = "uniget-org"
-	imageRepository        = organization + "/tools"
-	toolSeparator          = "/"
-	registryImagePrefix    = registry + "/" + imageRepository + toolSeparator
-	tools                  = tool.Tools{
+	cacheRoot                   = "var/cache"
+	cacheDirectory              = cacheRoot + "/" + projectName
+	libRoot                     = "var/lib"
+	libDirectory                = libRoot + "/" + projectName
+	configRoot                  = "etc"
+	configDirectory             = "uniget"
+	hooksPreInstallDirectory    = "hooks/pre-install.d"
+	hooksPostInstallDirectory   = "hooks/post-install.d"
+	hooksPreUninstallDirectory  = "hooks/pre-install.d"
+	hooksPostUninstallDirectory = "hooks/post-install.d"
+	profileDDirectory           = configRoot + "/profile.d"
+	metadataImageTag            = "main"
+	metadataFileName            = "metadata.json"
+	metadataFile                = cacheDirectory + "/" + metadataFileName
+	fileCacheDirectoryName      = "downloads"
+	registry                    = "ghcr.io"
+	organization                = "uniget-org"
+	imageRepository             = organization + "/tools"
+	toolSeparator               = "/"
+	registryImagePrefix         = registry + "/" + imageRepository + toolSeparator
+	tools                       = tool.Tools{
 		Tools: make([]tool.Tool, 0),
 	}
 	pathRewriteRules = make([]tool.PathRewrite, 0)
