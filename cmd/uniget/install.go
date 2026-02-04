@@ -21,7 +21,6 @@ import (
 
 var defaultMode bool
 var tagsMode bool
-var installedMode bool
 var allMode bool
 var filename string
 var skipDependencies bool
@@ -34,7 +33,6 @@ var pathToTarMappings map[string]string
 func initInstallCmd() {
 	installCmd.Flags().BoolVar(&defaultMode, "default", false, "Install default tools")
 	installCmd.Flags().BoolVar(&tagsMode, "tags", false, "Install tool(s) matching tag")
-	installCmd.Flags().BoolVarP(&installedMode, "installed", "i", false, "Update installed tool(s)")
 	installCmd.Flags().BoolVarP(&allMode, "all", "a", false, "Install all tools")
 	installCmd.Flags().StringVar(&filename, "file", "", "Read tools from file")
 	installCmd.Flags().BoolVar(&dryRun, "plan", false, "Show tool(s) planned installation")
@@ -91,16 +89,6 @@ var installCmd = &cobra.Command{
 		} else if tagsMode {
 			logging.Debugf("Adding tools matching tags to requested tools")
 			requestedTools = tools.GetByTags(args)
-
-		} else if installedMode {
-			logging.Debugf("Collecting installed tools")
-			spinnerInstalledTools, _ := pterm.DefaultSpinner.Start("Collecting installed tools...")
-			var err error
-			requestedTools, err = findInstalledTools(tools)
-			if err != nil {
-				return fmt.Errorf("unable to find installed tools: %s", err)
-			}
-			spinnerInstalledTools.Info()
 
 		} else if allMode {
 			logging.Debugf("Adding all tools to requested tools")
