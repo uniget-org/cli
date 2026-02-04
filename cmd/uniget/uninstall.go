@@ -72,7 +72,10 @@ var uninstallCmd = &cobra.Command{
 			logging.Info.Println(installMessage)
 		}
 
-		runPreUninstallHooks(args[0])
+		err = runPreUninstallHooks(args[0])
+		if err != nil {
+			return fmt.Errorf("unable to run pre-uninstall hooks: %s", err)
+		}
 		err = uninstallTool(args[0])
 		if err != nil {
 			if uninstallSpinner != nil {
@@ -84,7 +87,10 @@ var uninstallCmd = &cobra.Command{
 		if uninstallSpinner != nil {
 			uninstallSpinner.Success()
 		}
-		runPostUninstallHooks(args[0])
+		err = runPostUninstallHooks(args[0])
+		if err != nil {
+			return fmt.Errorf("unable to run post-uninstall hooks: %s", err)
+		}
 
 		return nil
 	},

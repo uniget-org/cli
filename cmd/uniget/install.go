@@ -283,7 +283,10 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 	// Install
 	assertWritableTarget()
 	assertLibDirectory()
-	runPreInstallHooks(plannedTools.GetNames()...)
+	err := runPreInstallHooks(plannedTools.GetNames()...)
+	if err != nil {
+		return fmt.Errorf("unable to run pre-install hooks: %s", err)
+	}
 	var postHookTools tool.Tools
 	for index, plannedTool := range plannedTools.Tools {
 		checkClientVersionRequirement(&plannedTools.Tools[index])
@@ -484,13 +487,16 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 		postHookTools.Tools = append(postHookTools.Tools, plannedTool)
 	}
 
-	err := installProfileDShim()
+	err = installProfileDShim()
 	if err != nil {
 		return fmt.Errorf("unable to install profile.d shim: %s", err)
 	}
 
 	if len(postHookTools.Tools) > 0 {
-		runPostInstallHooks(postHookTools.GetNames()...)
+		err = runPostInstallHooks(postHookTools.GetNames()...)
+		if err != nil {
+			return fmt.Errorf("unable to run post-install hooks: %s", err)
+		}
 	}
 
 	return nil
