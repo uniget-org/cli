@@ -5,6 +5,7 @@ PRERELEASE     := $(shell semver get prerelease $(LATEST_VERSION))
 NEXT_PATCH     := $(shell semver bump patch $(LATEST_VERSION))
 NEXT_MINOR     := $(shell semver bump minor $(LATEST_VERSION))
 NEXT_MAJOR     := $(shell semver bump major $(LATEST_VERSION))
+NEXT_PRE       := $(shell semver bump prerelease rc.. $(LATEST_VERSION))
 NEXT_PRE_PATCH := $(shell semver bump prerelease rc.. $(NEXT_PATCH))
 NEXT_PRE_MINOR := $(shell semver bump prerelease rc.. $(NEXT_MINOR))
 NEXT_PRE_MAJOR := $(shell semver bump prerelease rc.. $(NEXT_MAJOR))
@@ -24,6 +25,7 @@ release-debug:
 	@echo "NEXT_PATCH:      $(NEXT_PATCH)"
 	@echo "NEXT_MINOR:      $(NEXT_MINOR)"
 	@echo "NEXT_MAJOR:      $(NEXT_MAJOR)"
+	@echo "NEXT_PRE:        $(NEXT_PRE)"
 	@echo "NEXT_PRE_PATCH:  $(NEXT_PRE_PATCH)"
 	@echo "NEXT_PRE_MINOR:  $(NEXT_PRE_MINOR)"
 	@echo "NEXT_PRE_MAJOR:  $(NEXT_PRE_MAJOR)"
@@ -42,6 +44,10 @@ minor: ; $(info $(M) Creating minor release...)
 .PHONY:
 major: ; $(info $(M) Creating major release...)
 	@make tag--$(NEXT_MAJOR)
+
+.PHONY:
+prerelease: ; $(info $(M) Creating prerelease...)
+	@make tag--$(NEXT_PRE)
 
 .PHONY:
 patch-pre: ; $(info $(M) Creating patch prerelease...)
