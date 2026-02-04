@@ -74,6 +74,18 @@ var metadataChangesCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var err error
 
+		if platform == "auto" {
+			if os.Getenv("GITHUB_REPOSITORY") == "uniget-org/tools" {
+				platform = "github"
+
+			} else if os.Getenv("CI_PROJECT_PATH") == "uniget-org/tools" {
+				platform = "gitlab"
+
+			} else {
+				return fmt.Errorf("unable to determine platform")
+			}
+		}
+
 		var gitPlatform git.Platform
 		switch platform {
 		case "github":
