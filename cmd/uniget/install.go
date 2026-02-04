@@ -38,7 +38,7 @@ func initInstallCmd() {
 	installCmd.Flags().BoolVar(&check, "check", false, "Abort after checking versions")
 	installCmd.Flags().BoolVarP(&reinstall, "reinstall", "r", false, "Reinstall tool(s)")
 	installCmd.Flags().StringToStringVar(&pathToTarMappings, "path-to-tar-mappings", nil, "Map paths in tar file to target paths (for debugging purposes)")
-	installCmd.MarkFlagsMutuallyExclusive("default", "tags", "installed", "all", "file")
+	installCmd.MarkFlagsMutuallyExclusive("tags", "file")
 	installCmd.MarkFlagsMutuallyExclusive("check", "plan")
 	installCmd.MarkFlagsMutuallyExclusive("check", "dry-run")
 	installCmd.MarkFlagsMutuallyExclusive("plan", "dry-run")
