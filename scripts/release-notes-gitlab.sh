@@ -30,6 +30,8 @@ curl -sSLf https://gitlab.com/uniget-org/cli/-/releases/${TAG}/downloads/uniget_
 | sudo tar -xzC /usr/local/bin uniget
 \`\`\`
 
+Note that the `dev_*` tarballs contains only the development CLI used in CI/CD.
+
 ## Signature verification
 
 \`\`\`bash
