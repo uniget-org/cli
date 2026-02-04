@@ -63,10 +63,9 @@ var hooksCmd = &cobra.Command{
 		"hook",
 		"h",
 	},
-	Short:  "Manage hooks",
-	Long:   header + "\nManage hooks",
-	Hidden: true,
-	Args:   cobra.NoArgs,
+	Short: "Manage hooks",
+	Long:  header + "\nManage hooks",
+	Args:  cobra.NoArgs,
 }
 
 var addHooksCmd = &cobra.Command{
