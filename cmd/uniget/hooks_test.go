@@ -12,7 +12,7 @@ func TestRunHook(t *testing.T) {
 	lockFile := dir + "/test.lck"
 
 	content := fmt.Sprintf("#!/bin/bash\ntouch %s", lockFile)
-	err := os.WriteFile(hookFile, []byte(content), 0755)
+	err := os.WriteFile(hookFile, []byte(content), 0755) // #nosec G306 -- Only test
 	if err != nil {
 		t.Fatalf("Failed to create hook file: %v", err)
 	}
@@ -33,7 +33,7 @@ func TestProcessHooks(t *testing.T) {
 	lockFile := dir + "/test.lck"
 
 	content := fmt.Sprintf("#!/bin/bash\ntouch %s", lockFile)
-	err := os.WriteFile(hookFile, []byte(content), 0755)
+	err := os.WriteFile(hookFile, []byte(content), 0755) // #nosec G306 -- Only test
 	if err != nil {
 		t.Fatalf("Failed to create hook file: %v", err)
 	}
