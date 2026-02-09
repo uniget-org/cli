@@ -31,6 +31,10 @@ function check_file() {
     fi
 }
 
+echo "-----------------------------"
+uniget --version
+
+echo "-----------------------------"
 TEMP_DIR=$(mktemp -d)
 echo "Using temp dir: ${TEMP_DIR}"
 trap "find $TEMP_DIR -type f; rm -rf $TEMP_DIR" EXIT
