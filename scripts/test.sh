@@ -111,6 +111,7 @@ chmod +x \
     /etc/uniget/hooks/pre-uninstall.d/test.sh \
     /etc/uniget/hooks/post-uninstall.d/test.sh
 uniget install jq
+uniget uninstall jq
 check_file "/var/log/uniget-hook-pre-install" || exit 1
 check_file "/var/log/uniget-hook-post-install" || exit 1
 check_file "/var/log/uniget-hook-pre-uninstall" || exit 1
