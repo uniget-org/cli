@@ -38,10 +38,13 @@ func TestProcessHooks(t *testing.T) {
 		t.Fatalf("Failed to create hook file: %v", err)
 	}
 
-	processHooks(dir, func(file string) error {
+	err = processHooks(dir, func(file string) error {
 		_, err := runHook(file)
 		return err
 	})
+	if err != nil {
+		t.Fatalf("Failed to process hooks: %s", err)
+	}
 
 	if _, err := os.Stat(lockFile); os.IsNotExist(err) {
 		t.Fatalf("Expected file %s to exist, but it does not", lockFile)
