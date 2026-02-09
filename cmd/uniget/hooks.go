@@ -267,7 +267,8 @@ var runHooksCmd = &cobra.Command{
 func runHooks(hookTypePath string, args ...string) error {
 	hooksDir := viper.GetString("prefix") + "/" + configDirectory + "/" + hookTypePath
 	err := processHooks(hooksDir, func(hookFile string) error {
-		return runHook(hookFile, args...)
+		_, err := runHook(hookFile, args...)
+		return err
 	})
 	if err != nil {
 		return fmt.Errorf("unable to run pre hooks: %s", err)
@@ -317,13 +318,13 @@ func processHooks(path string, callback func(file string) error) error {
 	return nil
 }
 
-func runHook(hookFile string, args ...string) error {
+func runHook(hookFile string, args ...string) (string, error) {
 	logging.Debugf("running hook in file %s (args: %s)", hookFile, args)
 	command := exec.Command(hookFile, args...) // #nosec G204 -- Tool images are a trusted source
-	_, err := command.Output()
+	output, err := command.Output()
 	if err != nil {
-		return fmt.Errorf("unable to execute %s hook (%s): %s", hookType, hookFile, err)
+		return "", fmt.Errorf("unable to execute %s hook (%s): %s", hookType, hookFile, err)
 	}
 
-	return nil
+	return string(output), nil
 }
