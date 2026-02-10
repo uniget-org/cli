@@ -64,6 +64,9 @@ var (
 			logging.OutputWriter = cmd.OutOrStdout()
 			logging.ErrorWriter = cmd.ErrOrStderr()
 
+			pterm.ThemeDefault.SuccessMessageStyle = pterm.Style{pterm.FgDefault, pterm.BgDefault}
+			pterm.ThemeDefault.ErrorMessageStyle = pterm.Style{pterm.FgDefault, pterm.BgDefault}
+
 			if viper.GetBool("trace") {
 				pterm.EnableDebugMessages()
 				logging.Level = pterm.LogLevelTrace
