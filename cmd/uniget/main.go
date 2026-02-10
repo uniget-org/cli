@@ -16,6 +16,7 @@ import (
 	"gitlab.com/uniget-org/cli/pkg/cache"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
+	myos "gitlab.com/uniget-org/cli/pkg/os"
 	"gitlab.com/uniget-org/cli/pkg/tool"
 )
 
@@ -66,6 +67,11 @@ var (
 
 			pterm.ThemeDefault.SuccessMessageStyle = pterm.Style{pterm.FgDefault, pterm.BgDefault}
 			pterm.ThemeDefault.ErrorMessageStyle = pterm.Style{pterm.FgDefault, pterm.BgDefault}
+
+			if !myos.IsTty() {
+				pterm.DefaultSpinner.Sequence = []string{"[ ]"}
+				pterm.DefaultSpinner.ShowTimer = false
+			}
 
 			if viper.GetBool("trace") {
 				pterm.EnableDebugMessages()
