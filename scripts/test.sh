@@ -66,7 +66,7 @@ uniget --prefix=${TEMP_DIR} --target=usr version yq || exit 1
 
 echo "-----------------------------"
 echo "Testing inspection of jq"
-uniget inspect jq | grep "bin/jq$" || exit 1
+uniget inspect --raw jq | grep "^-rwxr-xr-x bin/jq$" || exit 1
 
 echo "-----------------------------"
 echo "Testing install in user context"
@@ -111,12 +111,20 @@ chmod +x \
     /etc/uniget/hooks/pre-uninstall.d/test.sh \
     /etc/uniget/hooks/post-uninstall.d/test.sh
 uniget install jq
-uniget uninstall jq
 check_file "/var/log/uniget-hook-pre-install" || exit 1
 check_file "/var/log/uniget-hook-post-install" || exit 1
+check_file "/var/log/uniget-hook-pre-uninstall" && exit 1
+check_file "/var/log/uniget-hook-post-uninstall" && exit 1
+rm -f \
+    "/var/log/uniget-hook-pre-install" \
+    "/var/log/uniget-hook-post-install" \
+    "/var/log/uniget-hook-pre-uninstall" \
+    "/var/log/uniget-hook-post-uninstall"
+uniget uninstall jq
+check_file "/var/log/uniget-hook-pre-install" && exit 1
+check_file "/var/log/uniget-hook-post-install" && exit 1
 check_file "/var/log/uniget-hook-pre-uninstall" || exit 1
 check_file "/var/log/uniget-hook-post-uninstall" || exit 1
-
 echo "-----------------------------"
 echo "All tests passed successfully"
 exit 0
