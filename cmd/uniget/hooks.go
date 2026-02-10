@@ -33,6 +33,13 @@ func initHooksCmd() {
 	}
 	hooksCmd.AddCommand(addHooksCmd)
 
+	removeHooksCmd.Flags().StringVar(&hookType, "type", "", "Type of hook to edit (pre-install, post-install, pre-uninstall or post-uninstall)")
+	err = removeHooksCmd.MarkFlagRequired("type")
+	if err != nil {
+		logging.Error.Printfln("Failed to mark flag as required: %v", err)
+	}
+	hooksCmd.AddCommand(removeHooksCmd)
+
 	editHooksCmd.Flags().StringVar(&hookType, "type", "", "Type of hook to edit (pre-install, post-install, pre-uninstall or post-uninstall)")
 	err = editHooksCmd.MarkFlagRequired("type")
 	if err != nil {
@@ -113,6 +120,54 @@ var addHooksCmd = &cobra.Command{
 		err = os.Chmod(hookFile, 0700) // #nosec G302 -- File must be executable for execution
 		if err != nil {
 			return fmt.Errorf("unable to set executable permissions on hook file %s: %w", hookFile, err)
+		}
+
+		return nil
+	},
+}
+
+var removeHooksCmd = &cobra.Command{
+	Use: "remove",
+	Aliases: []string{
+		"r",
+		"rm",
+		"delete",
+		"del",
+		"d",
+	},
+	Short: "Add hook",
+	Long:  header + "\nAdd hook",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		var err error
+		hookFileName := args[0]
+		hooksDir := viper.GetString("prefix") + "/" + configDirectory
+		hookFile := ""
+		switch hookType {
+		case "pre-install":
+			preInstallHooksDir := hooksDir + "/" + hooksPreInstallDirectory
+			hookFile = preInstallHooksDir + "/" + hookFileName
+		case "post-install":
+			postInstallHooksDir := hooksDir + "/" + hooksPostInstallDirectory
+			assertDirectory(postInstallHooksDir)
+			hookFile = postInstallHooksDir + "/" + hookFileName
+		case "pre-uninstall":
+			preUninstallHooksDir := hooksDir + "/" + hooksPreInstallDirectory
+			assertDirectory(preUninstallHooksDir)
+			hookFile = preUninstallHooksDir + "/" + hookFileName
+		case "post-uninstall":
+			postUninstallHooksDir := hooksDir + "/" + hooksPostInstallDirectory
+			assertDirectory(postUninstallHooksDir)
+			hookFile = postUninstallHooksDir + "/" + hookFileName
+		}
+
+		if !fileExists(hookFile) {
+			return fmt.Errorf("hook file does not exist: %s", hookFile)
+		}
+
+		err = os.Remove(hookFile)
+		if err != nil {
+			return fmt.Errorf("unable to remove %s hook %s: %s", hookType, hookFileName, err)
 		}
 
 		return nil
