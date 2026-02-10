@@ -190,9 +190,6 @@ var editHooksCmd = &cobra.Command{
 	Short: "Edit hook",
 	Long:  header + "\nEdit hook",
 	Args:  cobra.ExactArgs(1),
-	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
-	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var err error
 
@@ -303,9 +300,6 @@ var runHooksCmd = &cobra.Command{
 	Short: "Run hooks",
 	Long:  header + "\nRun hooks",
 	Args:  cobra.MinimumNArgs(1),
-	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
-	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var err error
 		switch hookType {
@@ -416,6 +410,10 @@ func processHooks(path string, callback func(file string) error) error {
 }
 
 func runHook(hookFile string, args ...string) (string, error) {
+	if !fileExists(hookFile) {
+		return "", fmt.Errorf("hook does not exist: %s", hookFile)
+	}
+
 	logging.Debugf("running hook in file %s (args: %s)", hookFile, args)
 	command := exec.Command(hookFile, args...) // #nosec G204 -- Tool images are a trusted source
 	output, err := command.Output()
