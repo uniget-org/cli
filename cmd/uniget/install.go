@@ -31,7 +31,6 @@ var pathToTarMappings map[string]string
 func initInstallCmd() {
 	installCmd.Flags().BoolVar(&tagsMode, "tags", false, "Install tool(s) matching tag")
 	installCmd.Flags().StringVar(&filename, "file", "", "Read tools from file")
-	installCmd.Flags().BoolVar(&dryRun, "plan", false, "Show tool(s) planned installation")
 	installCmd.Flags().BoolVar(&dryRun, "dry-run", false, "Show tool(s) planned for installation")
 	installCmd.Flags().BoolVar(&skipDependencies, "skip-deps", false, "Skip dependencies")
 	installCmd.Flags().BoolVar(&skipConflicts, "skip-conflicts", false, "Skip conflicting tools")
@@ -39,16 +38,10 @@ func initInstallCmd() {
 	installCmd.Flags().BoolVarP(&reinstall, "reinstall", "r", false, "Reinstall tool(s)")
 	installCmd.Flags().StringToStringVar(&pathToTarMappings, "path-to-tar-mappings", nil, "Map paths in tar file to target paths (for debugging purposes)")
 	installCmd.MarkFlagsMutuallyExclusive("tags", "file")
-	installCmd.MarkFlagsMutuallyExclusive("check", "plan")
 	installCmd.MarkFlagsMutuallyExclusive("check", "dry-run")
-	installCmd.MarkFlagsMutuallyExclusive("plan", "dry-run")
 	err := installCmd.Flags().MarkHidden("path-to-tar-mappings")
 	if err != nil {
 		logging.Error.Printfln("Unable to mark path-to-tar-mappings flag as hidden: %s", err)
-	}
-	err = installCmd.Flags().MarkHidden("plan")
-	if err != nil {
-		logging.Error.Printfln("Unable to mark plan flag as hidden: %s", err)
 	}
 
 	rootCmd.AddCommand(installCmd)

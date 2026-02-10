@@ -5,17 +5,10 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"gitlab.com/uniget-org/cli/pkg/logging"
 )
 
 func initUpgradeCmd() {
-	upgradeCmd.Flags().BoolVar(&dryRun, "plan", false, "Show tool(s) planned installation")
 	upgradeCmd.Flags().BoolVar(&dryRun, "dry-run", false, "Show tool(s) planned for installation")
-	upgradeCmd.MarkFlagsMutuallyExclusive("plan", "dry-run")
-	err := upgradeCmd.Flags().MarkHidden("plan")
-	if err != nil {
-		logging.Error.Printfln("Unable to mark plan flag as hidden: %s", err)
-	}
 
 	rootCmd.AddCommand(upgradeCmd)
 }
