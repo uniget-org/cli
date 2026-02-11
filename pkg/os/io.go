@@ -135,3 +135,13 @@ func CopyFile(src, dst string) error {
 
 	return nil
 }
+
+func DirectoryExists(directory string) bool {
+	_, err := os.Stat(directory)
+	return err == nil
+}
+
+func FileExists(file string) bool {
+	_, err := os.Stat(file)
+	return err == nil
+}

@@ -7,6 +7,7 @@ import (
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 	"gitlab.com/uniget-org/cli/pkg/logging"
+	myos "gitlab.com/uniget-org/cli/pkg/os"
 )
 
 var (
@@ -56,10 +57,15 @@ func init() {
 	unigetTools = NewUnigetTools(
 		unigetToolsDirectory,
 	)
-	unigetTools.FindTools()
-	unigetToolsNames = make([]string, 0, len(unigetTools.Tools))
-	for k := range unigetTools.Tools {
-		unigetToolsNames = append(unigetToolsNames, k)
+	if myos.DirectoryExists(unigetTools.Directory) {
+		unigetTools.FindTools()
+		unigetToolsNames = make([]string, 0, len(unigetTools.Tools))
+		for k := range unigetTools.Tools {
+			unigetToolsNames = append(unigetToolsNames, k)
+		}
+
+	} else {
+		logging.Warning.Printfln("Tools directory does not exist: %s", unigetTools.Directory)
 	}
 
 	initDebugCmd()
