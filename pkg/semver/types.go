@@ -26,6 +26,9 @@ func (s SemVerByVersion) Len() int {
 }
 
 func (s SemVerByVersion) Swap(i, j int) {
+	if i == j {
+		return
+	}
 	s[i], s[j] = s[j], s[i]
 }
 
@@ -41,12 +44,17 @@ func NewSemVer(version string) (*SemVer, error) {
 	if len(matches) == 0 {
 		return nil, fmt.Errorf("invalid semver string: %s", version)
 	}
+	fmt.Printf("matches: %+v\n", matches)
 	major, _ := strconv.Atoi(matches[1])
 	minor, _ := strconv.Atoi(matches[2])
 	patch, _ := strconv.Atoi(matches[3])
-	prereleaseSegments := strings.Split(matches[4], ".")
-	prereleaseTag := prereleaseSegments[0]
-	prerelease, _ := strconv.Atoi(prereleaseSegments[1])
+	prereleaseTag := ""
+	prerelease := 0
+	if len(matches) > 4 && matches[4] != "" {
+		prereleaseSegments := strings.Split(matches[4], ".")
+		prereleaseTag = prereleaseSegments[0]
+		prerelease, _ = strconv.Atoi(prereleaseSegments[1])
+	}
 
 	return &SemVer{
 		Major:         major,
