@@ -12,6 +12,9 @@ coverage.out.tmp: \
 coverage.out: coverage.out.tmp
 	@cat ./coverage.out.tmp | grep -v '.pb.go' | grep -v 'mock_' > ./coverage.out
 
+coverage.html: coverage.out
+	@go tool cover -html coverage.out -o coverage.html
+
 .PHONY:
 test: \
 		$(GO_SOURCES) \
