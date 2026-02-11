@@ -58,7 +58,11 @@ func NewSemVer(version string) (*SemVer, error) {
 }
 
 func (s *SemVer) String() string {
-	return fmt.Sprintf("%d.%d.%d-%s.%d", s.Major, s.Minor, s.Patch, s.PrereleaseTag, s.Prerelease)
+	ver := fmt.Sprintf("%d.%d.%d", s.Major, s.Minor, s.Patch)
+	if s.PrereleaseTag != "" {
+		ver += "-" + s.PrereleaseTag + "." + strconv.Itoa(s.Prerelease)
+	}
+	return ver
 }
 
 func (s *SemVer) GetMajor() int {
@@ -100,10 +104,10 @@ func (s *SemVer) LessThan(other *SemVer) bool {
 func (s *SemVer) BumpMajor() *SemVer {
 	return &SemVer{
 		Major:         s.Major + 1,
-		Minor:         s.Minor,
-		Patch:         s.Patch,
-		PrereleaseTag: s.PrereleaseTag,
-		Prerelease:    s.Prerelease,
+		Minor:         0,
+		Patch:         0,
+		PrereleaseTag: "",
+		Prerelease:    0,
 	}
 }
 
@@ -111,9 +115,9 @@ func (s *SemVer) BumpMinor() *SemVer {
 	return &SemVer{
 		Major:         s.Major,
 		Minor:         s.Minor + 1,
-		Patch:         s.Patch,
-		PrereleaseTag: s.PrereleaseTag,
-		Prerelease:    s.Prerelease,
+		Patch:         0,
+		PrereleaseTag: "",
+		Prerelease:    0,
 	}
 }
 
@@ -122,8 +126,8 @@ func (s *SemVer) BumpPatch() *SemVer {
 		Major:         s.Major,
 		Minor:         s.Minor,
 		Patch:         s.Patch + 1,
-		PrereleaseTag: s.PrereleaseTag,
-		Prerelease:    s.Prerelease,
+		PrereleaseTag: "",
+		Prerelease:    0,
 	}
 }
 
