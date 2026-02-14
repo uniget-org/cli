@@ -135,22 +135,24 @@ var metadataChangesCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("error getting commit changes: %s", err)
 		}
+		logging.Debugf("Collected %d changes", len(changes.Changes))
+
 		tools := make(map[string]bool)
 		for _, change := range changes.Changes {
-			logging.Debugf("tool: %s", change.ToolName)
-			logging.Debugf("filename: <%s>", change.FileName)
-			logging.Debugf("changes: +%d/-%d", change.Added, change.Removed)
-			logging.Debugf("%+v", change.Diff)
+			logging.Tracef("tool: %s", change.ToolName)
+			logging.Tracef("filename: <%s>", change.FileName)
+			logging.Tracef("changes: +%d/-%d", change.Added, change.Removed)
+			logging.Tracef("%+v", change.Diff)
 
 			switch change.FileName {
 			case "manifest.yaml":
 				fields := change.FindChangedFieldsInManifest()
 				if slices.Contains(fields, "version") {
-					logging.Debugf("including tool %s due to changes in relevant fields", change.ToolName)
+					logging.Tracef("including tool %s due to changes in relevant fields", change.ToolName)
 					tools[change.ToolName] = true
 				}
 			case "Dockerfile.template":
-				logging.Debugf("checking Dockerfile.template")
+				logging.Tracef("checking Dockerfile.template")
 
 				if change.Added == 1 {
 					for _, line := range change.DiffLines {
@@ -161,6 +163,7 @@ var metadataChangesCmd = &cobra.Command{
 				}
 			}
 		}
+		logging.Debugf("Identified %d tools", len(tools))
 
 		for toolName, include := range tools {
 			if include {
