@@ -41,6 +41,20 @@ var (
 
 			logging.Init()
 
+			unigetTools = NewUnigetTools(
+				unigetToolsDirectory,
+			)
+			if myos.DirectoryExists(unigetTools.Directory) {
+				unigetTools.FindTools()
+				unigetToolsNames = make([]string, 0, len(unigetTools.Tools))
+				for k := range unigetTools.Tools {
+					unigetToolsNames = append(unigetToolsNames, k)
+				}
+
+			} else {
+				logging.Warning.Printfln("Tools directory does not exist: %s", unigetTools.Directory)
+			}
+
 			return nil
 		},
 	}
@@ -54,20 +68,6 @@ var (
 )
 
 func init() {
-	unigetTools = NewUnigetTools(
-		unigetToolsDirectory,
-	)
-	if myos.DirectoryExists(unigetTools.Directory) {
-		unigetTools.FindTools()
-		unigetToolsNames = make([]string, 0, len(unigetTools.Tools))
-		for k := range unigetTools.Tools {
-			unigetToolsNames = append(unigetToolsNames, k)
-		}
-
-	} else {
-		logging.Warning.Printfln("Tools directory does not exist: %s", unigetTools.Directory)
-	}
-
 	initDebugCmd()
 	initEditCmd()
 	initManifestCmd()
