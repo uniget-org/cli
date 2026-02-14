@@ -75,6 +75,7 @@ var metadataChangesCmd = &cobra.Command{
 		var err error
 
 		if platform == "auto" {
+			logging.Debugf("Detecting platform (GITHUB_REPOSITORY=%s, CI_PROJECT_PATH=%s)", os.Getenv("GITHUB_REPOSITORY"), os.Getenv("CI_PROJECT_PATH"))
 			if os.Getenv("GITHUB_REPOSITORY") == "uniget-org/tools" {
 				platform = "github"
 
@@ -85,6 +86,7 @@ var metadataChangesCmd = &cobra.Command{
 				return fmt.Errorf("unable to determine platform")
 			}
 		}
+		logging.Debugf("Using platform %s", platform)
 
 		var gitPlatform git.Platform
 		switch platform {
