@@ -110,7 +110,19 @@ var metadataChangesCmd = &cobra.Command{
 		}
 
 		if metadataChangesFromSha == "" {
-			metadata, err := tool.NewMetadataFromRegistry(registryHost, repositoryPrefix, "main")
+			registryHost, err := gitPlatform.GetRegistryHost()
+			if err != nil {
+				return fmt.Errorf("error getting registry host: %s", err)
+			}
+			logging.Debugf("Registry host: %s", registryHost)
+
+			repositoryPath, err := gitPlatform.GetRepositoryPath()
+			if err != nil {
+				return fmt.Errorf("error getting repository path: %s", err)
+			}
+			logging.Debugf("Repository path: %s", repositoryPath)
+
+			metadata, err := tool.NewMetadataFromRegistry(registryHost, repositoryPath, "main")
 			if err != nil {
 				return fmt.Errorf("error loading metadata: %s", err)
 			}

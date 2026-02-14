@@ -9,18 +9,20 @@ import (
 )
 
 type GitLabPlatform struct {
-	owner      string
-	repository string
-	token      string
-	client     *gitlab.Client
+	owner        string
+	repository   string
+	token        string
+	client       *gitlab.Client
+	registryHost string
 }
 
 type GitLabPlatformOption func(*GitLabPlatform)
 
 func NewGitLabPlatform(owner string, repository string, options ...GitLabPlatformOption) (*GitLabPlatform, error) {
 	gitLabPlatform := &GitLabPlatform{
-		owner:      owner,
-		repository: repository,
+		owner:        owner,
+		repository:   repository,
+		registryHost: "registry.gitlab.com",
 	}
 
 	for _, opt := range options {
@@ -46,6 +48,14 @@ func WithGitLabJobToken() GitLabPlatformOption {
 	return func(GitLabPlatform *GitLabPlatform) {
 		GitLabPlatform.token = os.Getenv("CI_JOB_TOKEN")
 	}
+}
+
+func (gl *GitLabPlatform) GetRepositoryPath() (string, error) {
+	return fmt.Sprintf("%s/%s", gl.owner, gl.repository), nil
+}
+
+func (gl *GitLabPlatform) GetRegistryHost() (string, error) {
+	return gl.registryHost, nil
 }
 
 func (gl *GitLabPlatform) GetCommitChanges(fromSha string) (PlatformChanges, error) {

@@ -21,6 +21,8 @@ type PlatformChanges struct {
 }
 
 type Platform interface {
+	GetRepositoryPath() (string, error)
+	GetRegistryHost() (string, error)
 	GetCommitChanges(fromSha string) (PlatformChanges, error)
 	GetMergeChanges(id string) (PlatformChanges, error)
 }

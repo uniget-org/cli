@@ -10,18 +10,20 @@ import (
 )
 
 type GitHubPlatform struct {
-	owner      string
-	repository string
-	token      string
-	client     *github.Client
+	owner        string
+	repository   string
+	token        string
+	client       *github.Client
+	registryHost string
 }
 
 type GitHubPlatformOption func(*GitHubPlatform)
 
 func NewGitHubPlatform(owner string, repository string, options ...GitHubPlatformOption) *GitHubPlatform {
 	gitHubPlatform := &GitHubPlatform{
-		owner:      owner,
-		repository: repository,
+		owner:        owner,
+		repository:   repository,
+		registryHost: "ghcr.io",
 	}
 
 	for _, opt := range options {
@@ -46,6 +48,14 @@ func WithGitHubTokenFromEnv() GitHubPlatformOption {
 	return func(gitHubPlatform *GitHubPlatform) {
 		gitHubPlatform.token = os.Getenv("GITHUB_TOKEN")
 	}
+}
+
+func (gh *GitHubPlatform) GetRepositoryPath() (string, error) {
+	return fmt.Sprintf("%s/%s", gh.owner, gh.repository), nil
+}
+
+func (gh *GitHubPlatform) GetRegistryHost() (string, error) {
+	return gh.registryHost, nil
 }
 
 func (gh *GitHubPlatform) GetCommitChanges(fromSha string) (PlatformChanges, error) {
