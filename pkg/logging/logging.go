@@ -86,7 +86,7 @@ func Debug(message string) {
 		Debug(message)
 }
 
-func Debugf(message string, args ...interface{}) {
+func Debugf(message string, args ...any) {
 	Debug(
 		fmt.Sprintf(message, args...),
 	)
@@ -98,7 +98,7 @@ func Trace(message string) {
 		Trace(message)
 }
 
-func Tracef(message string, args ...interface{}) {
+func Tracef(message string, args ...any) {
 	Trace(
 		fmt.Sprintf(message, args...),
 	)
