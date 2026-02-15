@@ -24,8 +24,14 @@ dev_build:
   needs:
   - test
   image: golang:1.26.0
+  cache:
+    paths:
+      - .go/pkg/mod/
   variables:
+    GOPATH: $CI_PROJECT_DIR/.go
     CGO_ENABLED: 0
+  before_script: |
+    mkdir -p .go
   script: |
     go build -ldflags "-w -s -X main.version=${CI_COMMIT_SHA}" ./cmd/dev/
   artifacts:
