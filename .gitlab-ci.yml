@@ -47,7 +47,7 @@ dev_publish:
   script: |
     glab auth login --hostname="${CI_SERVER_HOST}" --token="${GITLAB_TOKEN}"
     PACKAGE_NAME=dev
-    PACKAGE_VERSION=${CI_COMMIT_SHA}
+    PACKAGE_VERSION="${CI_COMMIT_SHORT_SHA}"
     FILE_NAME=dev
     glab api "/projects/${CI_PROJECT_ID}/packages/generic/${PACKAGE_NAME}/${PACKAGE_VERSION}/${FILE_NAME}" \
         --method=PUT \
