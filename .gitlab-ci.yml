@@ -18,6 +18,26 @@ test:
     include: pipeline/test.yaml
     strategy: depend
 
+dev:
+  rules:
+  - changes:
+    - cmd/dev/**.go
+  needs:
+  - test
+  variables:
+    CGO_ENABLED: 0
+  script:
+  - |
+    go build -ldflags "-w -s -X main.version=${CI_COMMIT_SHA}" ./cmd/dev/
+  - |
+    glab auth login --hostname="${CI_SERVER_HOST}" --job-token="${CI_JOB_TOKEN}"
+    PACKAGE_NAME=dev
+    PACKAGE_VERSION=${CI_COMMIT_SHA}
+    FILE_NAME=dev
+    glab api "/projects/${CI_PROJECT_ID}/packages/generic/${PACKAGE_NAME}/${PACKAGE_VERSION}/${FILE_NAME}" \
+        --method=PUT \
+        --input=dev
+
 release_notes:
   rules:
   - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
