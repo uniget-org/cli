@@ -33,7 +33,7 @@ dev_publish:
   rules:
   - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
   needs:
-  - build_dev
+  - dev_build
   image: registry.gitlab.com/uniget-org/cli:1.85.1
   script: |
     glab auth login --hostname="${CI_SERVER_HOST}" --job-token="${CI_JOB_TOKEN}"
