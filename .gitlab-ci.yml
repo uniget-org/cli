@@ -28,6 +28,9 @@ dev_build:
     CGO_ENABLED: 0
   script: |
     go build -ldflags "-w -s -X main.version=${CI_COMMIT_SHA}" ./cmd/dev/
+  artifacts:
+    paths:
+    - dev
 
 dev_publish:
   rules:
