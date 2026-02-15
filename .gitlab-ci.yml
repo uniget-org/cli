@@ -18,17 +18,24 @@ test:
     include: pipeline/test.yaml
     strategy: depend
 
-dev:
+dev_build:
   rules:
   - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
   needs:
   - test
+  image: golang:1.26.0
   variables:
     CGO_ENABLED: 0
-  script:
-  - |
+  script: |
     go build -ldflags "-w -s -X main.version=${CI_COMMIT_SHA}" ./cmd/dev/
-  - |
+
+dev_publish:
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+  needs:
+  - build_dev
+  image: registry.gitlab.com/uniget-org/cli:1.85.1
+  script: |
     glab auth login --hostname="${CI_SERVER_HOST}" --job-token="${CI_JOB_TOKEN}"
     PACKAGE_NAME=dev
     PACKAGE_VERSION=${CI_COMMIT_SHA}
