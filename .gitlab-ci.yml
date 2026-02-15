@@ -43,7 +43,7 @@ dev_publish:
   - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
   needs:
   - dev_build
-  image: registry.gitlab.com/gitlab-org/cli:1.85.1
+  image: registry.gitlab.com/gitlab-org/cli:v1.85.1
   script: |
     glab auth login --hostname="${CI_SERVER_HOST}" --job-token="${CI_JOB_TOKEN}"
     PACKAGE_NAME=dev
