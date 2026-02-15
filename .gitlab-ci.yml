@@ -45,7 +45,7 @@ dev_publish:
   - dev_build
   image: registry.gitlab.com/gitlab-org/cli:v1.85.1
   script: |
-    GITLAB_TOKEN="${PACKAGE_TOKEN}" glab auth login --hostname="${CI_SERVER_HOST}" --token="${PACKAGE_TOKEN}"
+    GITLAB_TOKEN="${PACKAGE_TOKEN}" glab auth login --hostname="${CI_SERVER_HOST}"
     PACKAGE_NAME=dev
     PACKAGE_VERSION=${CI_COMMIT_SHA}
     FILE_NAME=dev
