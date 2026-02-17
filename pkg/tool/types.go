@@ -57,8 +57,3 @@ type ToolStatus struct {
 	SkipDueToConflicts bool
 	IsRequested        bool
 }
-
-type Metadata struct {
-	Revision string `json:"revision" yaml:"revision"`
-	Tools    []Tool `json:"tools" yaml:"tools"`
-}

@@ -16,18 +16,6 @@ builds:
   goarch:
   - amd64
   - arm64
-- id: dev
-  main: ./cmd/dev
-  binary: dev
-  env:
-  - CGO_ENABLED=0
-  ldflags:
-  - -s -w -X main.version={{.Version}}
-  goos:
-  - linux
-  goarch:
-  - amd64
-  - arm64
 
 snapshot:
   version_template: "{{ incpatch .Version }}-dev.0"
@@ -60,18 +48,6 @@ archives:
   - uniget
   files:
   - LICENSE
-- id: dev
-  formats: tar.gz
-  name_template: >-
-    dev_
-    {{- title .Os }}_
-    {{- if eq .Arch "amd64" }}x86_64
-    {{- else if eq .Arch "arm64" }}aarch64
-    {{- else }}{{ .Arch }}{{ end }}
-  builds:
-  - dev
-  files:
-  - LICENSE
 
 signs:
 - id: cosign
@@ -93,7 +69,6 @@ release:
     name: cli
   ids:
   - uniget
-  - dev
   - sbom
   - cosign
   name_template: "{{ .Version }}"

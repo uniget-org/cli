@@ -18,41 +18,6 @@ test:
     include: pipeline/test.yaml
     strategy: depend
 
-dev_build:
-  rules:
-  - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
-  needs:
-  - test
-  image: golang:1.26.0
-  cache:
-    paths:
-      - .go/pkg/mod/
-  variables:
-    GOPATH: $CI_PROJECT_DIR/.go
-    CGO_ENABLED: 0
-  before_script: |
-    mkdir -p .go
-  script: |
-    go build -ldflags "-w -s -X main.version=${CI_COMMIT_SHA}" ./cmd/dev/
-  artifacts:
-    paths:
-    - dev
-
-dev_publish:
-  rules:
-  - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
-  needs:
-  - dev_build
-  image: registry.gitlab.com/gitlab-org/cli:v1.85.1
-  script: |
-    glab auth login --hostname="${CI_SERVER_HOST}" --token="${GITLAB_TOKEN}"
-    PACKAGE_NAME=dev
-    PACKAGE_VERSION="${CI_COMMIT_SHORT_SHA}"
-    FILE_NAME=dev
-    glab api "/projects/${CI_PROJECT_ID}/packages/generic/${PACKAGE_NAME}/${PACKAGE_VERSION}/${FILE_NAME}" \
-        --method=PUT \
-        --input=dev
-
 release_notes:
   rules:
   - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
