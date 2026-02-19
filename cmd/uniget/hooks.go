@@ -224,7 +224,7 @@ var editHooksCmd = &cobra.Command{
 		assertDirectory(hookDir)
 
 		editorWithArgs = append(editorWithArgs, hookFile)
-		command := exec.Command(editorWithArgs[0], editorWithArgs[1:]...)
+		command := exec.Command(editorWithArgs[0], editorWithArgs[1:]...) // #nosec G204 -- THis is always the case when relying on EDITOR
 		command.Stdin = os.Stdin
 		command.Stdout = os.Stdout
 		command.Stderr = os.Stderr
