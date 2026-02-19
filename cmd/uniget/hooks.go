@@ -48,10 +48,6 @@ func initHooksCmd() {
 	hooksCmd.AddCommand(editHooksCmd)
 
 	listHooksCmd.Flags().StringVar(&hookType, "type", "", "Type of hook to list (pre-install, post-install, pre-uninstall or post-uninstall)")
-	err = listHooksCmd.MarkFlagRequired("type")
-	if err != nil {
-		logging.Error.Printfln("Failed to mark flag as required: %v", err)
-	}
 	hooksCmd.AddCommand(listHooksCmd)
 
 	runHooksCmd.Flags().StringVar(&hookType, "type", "", "Type of hook to run (pre-install, post-install, pre-uninstall or post-uninstall)")
@@ -255,37 +251,43 @@ var listHooksCmd = &cobra.Command{
 
 		hooksDir := viper.GetString("prefix") + "/" + configDirectory
 
-		switch hookType {
-		case "pre-install":
-			preInstallHooksDir := hooksDir + "/" + hooksPreInstallDirectory
-			err = processHooks(preInstallHooksDir, func(hookFile string) error {
-				fmt.Printf("%s\n", hookFile)
-				return nil
-			})
+		for _, availableHookType := range []string{"pre-install", "post-install", "pre-uninstall", "post-uninstall"} {
+			displayHooks := hookType == "" || availableHookType == hookType
 
-		case "post-install":
-			postInstallHooksDir := hooksDir + "/" + hooksPostInstallDirectory
-			err = processHooks(postInstallHooksDir, func(hookFile string) error {
-				fmt.Printf("%s\n", hookFile)
-				return nil
-			})
+			if displayHooks {
+				switch availableHookType {
+				case "pre-install":
+					preInstallHooksDir := hooksDir + "/" + hooksPreInstallDirectory
+					err = processHooks(preInstallHooksDir, func(hookFile string) error {
+						fmt.Printf("%s: %s\n", availableHookType, hookFile)
+						return nil
+					})
 
-		case "pre-uninstall":
-			preUninstallHooksDir := hooksDir + "/" + hooksPreUninstallDirectory
-			err = processHooks(preUninstallHooksDir, func(hookFile string) error {
-				fmt.Printf("%s\n", hookFile)
-				return nil
-			})
+				case "post-install":
+					postInstallHooksDir := hooksDir + "/" + hooksPostInstallDirectory
+					err = processHooks(postInstallHooksDir, func(hookFile string) error {
+						fmt.Printf("%s: %s\n", availableHookType, hookFile)
+						return nil
+					})
 
-		case "post-uninstall":
-			postUninstallHooksDir := hooksDir + "/" + hooksPostUninstallDirectory
-			err = processHooks(postUninstallHooksDir, func(hookFile string) error {
-				fmt.Printf("%s\n", hookFile)
-				return nil
-			})
-		}
-		if err != nil {
-			return fmt.Errorf("unable to list %s hooks: %s", hookType, err)
+				case "pre-uninstall":
+					preUninstallHooksDir := hooksDir + "/" + hooksPreUninstallDirectory
+					err = processHooks(preUninstallHooksDir, func(hookFile string) error {
+						fmt.Printf("%s: %s\n", availableHookType, hookFile)
+						return nil
+					})
+
+				case "post-uninstall":
+					postUninstallHooksDir := hooksDir + "/" + hooksPostUninstallDirectory
+					err = processHooks(postUninstallHooksDir, func(hookFile string) error {
+						fmt.Printf("%s: %s\n", availableHookType, hookFile)
+						return nil
+					})
+				}
+				if err != nil {
+					return fmt.Errorf("unable to list %s hooks: %s", hookType, err)
+				}
+			}
 		}
 
 		return nil
