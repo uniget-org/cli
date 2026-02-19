@@ -138,8 +138,8 @@ var removeHooksCmd = &cobra.Command{
 		"del",
 		"d",
 	},
-	Short: "Add hook",
-	Long:  header + "\nAdd hook",
+	Short: "Remove hook",
+	Long:  header + "\nRemove hook",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var err error
