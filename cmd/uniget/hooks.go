@@ -189,10 +189,14 @@ var editHooksCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var err error
 
-		editor := os.Getenv("EDITOR")
+		editor := os.Getenv("UNIGET_EDITOR")
 		if len(editor) == 0 {
-			return fmt.Errorf("unable to find editor from environment")
+			editor = os.Getenv("EDITOR")
+			if len(editor) == 0 {
+				return fmt.Errorf("unable to find editor from environment variables UNIGET_EDITOR and EDITOR")
+			}
 		}
+		editorWithArgs := strings.Split(editor, " ")
 
 		hooksDir := viper.GetString("prefix") + "/" + configDirectory
 
@@ -219,7 +223,8 @@ var editHooksCmd = &cobra.Command{
 		}
 		assertDirectory(hookDir)
 
-		command := exec.Command("vim", hookFile)
+		editorWithArgs = append(editorWithArgs, hookFile)
+		command := exec.Command(editorWithArgs[0], editorWithArgs[1:]...)
 		command.Stdin = os.Stdin
 		command.Stdout = os.Stdout
 		command.Stderr = os.Stderr
