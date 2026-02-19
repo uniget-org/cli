@@ -131,7 +131,7 @@ func fetchUrl(url string) ([]byte, error) {
 		return []byte{}, fmt.Errorf("failed to create request: %s", err)
 	}
 	req.Header.Set("User-Agent", fmt.Sprintf("%s/%s", projectName, version))
-	resp, err := client.Do(req)
+	resp, err := client.Do(req) // #nosec G704 -- Called from internal functions with controlled URLs
 	if err != nil {
 		return []byte{}, fmt.Errorf("failed fetch url: %s", err)
 	}

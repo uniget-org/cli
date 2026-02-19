@@ -44,7 +44,7 @@ func (c *FileCache) writeDataToCache(reader io.ReadCloser, ref string) error {
 
 	logging.Tracef("Writing data to cache for ref %s", ref)
 
-	file, err := os.Create(fmt.Sprintf("%s/%s", c.cacheDirectory, ref))
+	file, err := os.Create(fmt.Sprintf("%s/%s", c.cacheDirectory, ref)) // #nosec G703 -- Base directory is meant to be configurable
 	if err != nil {
 		return fmt.Errorf("failed to create cache file for ref %s: %s", ref, err)
 	}
