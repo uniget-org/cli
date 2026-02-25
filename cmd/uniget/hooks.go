@@ -74,7 +74,7 @@ var hooksCmd = &cobra.Command{
 		"h",
 	},
 	Short: "Manage hooks",
-	Long:  header + "\nManage hooks",
+	Long:  header + "\nManage hooks\n\nPlease refer to the documentation: https://docs.uniget.dev/hooks/",
 	Args:  cobra.NoArgs,
 }
 
