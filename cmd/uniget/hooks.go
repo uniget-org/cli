@@ -311,13 +311,13 @@ var runHooksCmd = &cobra.Command{
 		var err error
 		switch hookType {
 		case "pre-install":
-			err = runHooks(hooksPreInstallDirectory, args...)
+			err = runHooks(hookType, hooksPreInstallDirectory, args...)
 		case "post-install":
-			err = runHooks(hooksPostInstallDirectory, args...)
+			err = runHooks(hookType, hooksPostInstallDirectory, args...)
 		case "pre-uninstall":
-			err = runHooks(hooksPreUninstallDirectory, args...)
+			err = runHooks(hookType, hooksPreUninstallDirectory, args...)
 		case "post-uninstall":
-			err = runHooks(hooksPostUninstallDirectory, args...)
+			err = runHooks(hookType, hooksPostUninstallDirectory, args...)
 		}
 		if err != nil {
 			return fmt.Errorf("unable to execute %s hooks: %s", hookType, err)
@@ -362,10 +362,10 @@ var testHookCmd = &cobra.Command{
 	},
 }
 
-func runHooks(hookTypePath string, args ...string) error {
+func runHooks(hookType string, hookTypePath string, args ...string) error {
 	hooksDir := viper.GetString("prefix") + "/" + configDirectory + "/" + hookTypePath
 	err := processHooks(hooksDir, func(hookFile string) error {
-		fmt.Printf("Executing hook %s:\n", hookFile)
+		fmt.Printf("Executing %s hook %s:\n", hookType, hookFile)
 		_, err := runHook(hookFile, args...)
 		return err
 	})
@@ -377,23 +377,31 @@ func runHooks(hookTypePath string, args ...string) error {
 }
 
 func runPreInstallHooks(args ...string) error {
-	fmt.Printf("Running pre-install hooks:\n")
-	return runHooks(hooksPreInstallDirectory, args...)
+	if len(args) == 0 {
+		return nil
+	}
+	return runHooks("pre-install", hooksPreInstallDirectory, args...)
 }
 
 func runPostInstallHooks(args ...string) error {
-	fmt.Printf("Running post-install hooks:\n")
-	return runHooks(hooksPostInstallDirectory, args...)
+	if len(args) == 0 {
+		return nil
+	}
+	return runHooks("post-install", hooksPostInstallDirectory, args...)
 }
 
 func runPreUninstallHooks(args ...string) error {
-	fmt.Printf("Running pre-uninstall hooks:\n")
-	return runHooks(hooksPreUninstallDirectory, args...)
+	if len(args) == 0 {
+		return nil
+	}
+	return runHooks("pre-uninstall", hooksPreUninstallDirectory, args...)
 }
 
 func runPostUninstallHooks(args ...string) error {
-	fmt.Printf("Running post-uninstall hooks:\n")
-	return runHooks(hooksPostUninstallDirectory, args...)
+	if len(args) == 0 {
+		return nil
+	}
+	return runHooks("post-uninstall", hooksPostUninstallDirectory, args...)
 }
 
 func processHooks(path string, callback func(file string) error) error {
