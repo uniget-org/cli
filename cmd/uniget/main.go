@@ -59,7 +59,11 @@ var (
 
 			logging.Init()
 
-			config.Update()
+			err := config.Update()
+			if err != nil {
+				return fmt.Errorf("unable to populate config: %s", err)
+			}
+
 			if config.debug {
 				config.Debug()
 			}
@@ -73,7 +77,7 @@ var (
 			} else {
 				logging.Debugf("Metadata file exists")
 			}
-			err := loadMetadata()
+			err = loadMetadata()
 			if err != nil {
 				return fmt.Errorf("error loading metadata: %s", err)
 			}

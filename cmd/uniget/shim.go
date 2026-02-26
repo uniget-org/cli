@@ -48,7 +48,7 @@ func installProfileDShim() error {
 	}
 
 	if fileExists(profileDShimFile) {
-		file, err := os.ReadFile(profileDShimFile)
+		file, err := os.ReadFile(profileDShimFile) // #nosec G304 -- Existence is already checked
 		if err != nil {
 			return fmt.Errorf("cannot read profile.d shim: %w", err)
 		}

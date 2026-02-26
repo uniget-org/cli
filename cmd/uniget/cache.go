@@ -51,7 +51,7 @@ var cacheInfoCmd = &cobra.Command{
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fmt.Printf("Cache type     : %s\n", config.cache)
-		fmt.Printf("Cache retention: %s\n", config.cacheRetention)
+		fmt.Printf("Cache retention: %d\n", config.cacheRetention)
 		if config.cache == "file" {
 			fmt.Printf("Cache directory: %s\n", config.prefix+"/"+config.cacheDirectory)
 		}
