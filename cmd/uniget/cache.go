@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 
 	"github.com/moby/moby/client"
 	"gitlab.com/uniget-org/cli/pkg/containers"
@@ -51,10 +50,10 @@ var cacheInfoCmd = &cobra.Command{
 	Long:  header + "\nDisplay cache information",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Printf("Cache type     : %s\n", viper.GetString("cache"))
-		fmt.Printf("Cache retention: %s\n", viper.GetString("cacheretention"))
-		if viper.GetString("cache") == "file" {
-			fmt.Printf("Cache directory: %s\n", viper.GetString("prefix")+"/"+viper.GetString("cachedirectory"))
+		fmt.Printf("Cache type     : %s\n", config.cache)
+		fmt.Printf("Cache retention: %s\n", config.cacheRetention)
+		if config.cache == "file" {
+			fmt.Printf("Cache directory: %s\n", config.prefix+"/"+config.cacheDirectory)
 		}
 		return nil
 	},
@@ -72,13 +71,13 @@ var cacheStatsCmd = &cobra.Command{
 		var size int64
 		var err error
 
-		switch viper.GetString("cache") {
+		switch config.cache {
 		case "file":
-			if viper.GetString("cache") == "file" {
-				fmt.Printf("Cache directory: %s\n", viper.GetString("prefix")+"/"+viper.GetString("cachedirectory"))
+			if config.cache == "file" {
+				fmt.Printf("Cache directory: %s\n", config.prefix+"/"+config.cacheDirectory)
 			}
 			size, err = dirSize(
-				viper.GetString("prefix") + "/" + viper.GetString("cachedirectory"),
+				config.prefix + "/" + config.cacheDirectory,
 			)
 			if err != nil {
 				return fmt.Errorf("error calculating cache size: %v", err)
@@ -119,13 +118,13 @@ var cacheListCmd = &cobra.Command{
 	Long:  header + "\nDisplay cache contents",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		switch viper.GetString("cache") {
+		switch config.cache {
 		case "file":
-			if viper.GetString("cache") == "file" {
-				fmt.Printf("Cache directory: %s\n", viper.GetString("prefix")+"/"+viper.GetString("cachedirectory"))
+			if config.cache == "file" {
+				fmt.Printf("Cache directory: %s\n", config.prefix+"/"+config.cacheDirectory)
 			}
 			files, err := dirList(
-				viper.GetString("prefix") + "/" + viper.GetString("cachedirectory"),
+				config.prefix + "/" + config.cacheDirectory,
 			)
 			if err != nil {
 				return fmt.Errorf("error calculating cache size: %v", err)
@@ -172,13 +171,13 @@ var cachePruneCmd = &cobra.Command{
 		var count int
 		var err error
 
-		switch viper.GetString("cache") {
+		switch config.cache {
 		case "file":
-			if viper.GetString("cache") == "file" {
-				fmt.Printf("Cache directory: %s\n", viper.GetString("prefix")+"/"+viper.GetString("cachedirectory"))
+			if config.cache == "file" {
+				fmt.Printf("Cache directory: %s\n", config.prefix+"/"+config.cacheDirectory)
 			}
 			count, err = dirPrune(
-				viper.GetString("prefix") + "/" + viper.GetString("cachedirectory"),
+				config.prefix + "/" + config.cacheDirectory,
 			)
 			if err != nil {
 				return fmt.Errorf("error pruning cache: %v", err)
@@ -216,7 +215,7 @@ var cachePruneCmd = &cobra.Command{
 }
 
 func cacheIsConfigured() bool {
-	if viper.GetString("cache") == "" || viper.GetString("cache") == "none" {
+	if config.cache == "" || config.cache == "none" {
 		return false
 	}
 	return true

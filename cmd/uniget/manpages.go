@@ -7,7 +7,6 @@ import (
 	mcobra "github.com/muesli/mango-cobra"
 	"github.com/muesli/roff"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 )
 
@@ -30,7 +29,7 @@ var manpagesCmd = &cobra.Command{
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if (manDirectory[0:1] != "/") && (manDirectory[0:1] != ".") {
-			manDirectory = fmt.Sprintf("%s/%s", "/"+viper.GetString("target"), manDirectory)
+			manDirectory = fmt.Sprintf("%s/%s", "/"+config.target, manDirectory)
 		}
 		logging.Debugf("Using base directory for manpages: %s", manDirectory)
 

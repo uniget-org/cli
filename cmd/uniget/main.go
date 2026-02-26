@@ -4,17 +4,11 @@ import (
 	_ "embed"
 	"fmt"
 	"os"
-	"regexp"
-	"runtime"
-	"strings"
 	"time"
 
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
-	flag "github.com/spf13/pflag"
-	"github.com/spf13/viper"
 	"gitlab.com/uniget-org/cli/pkg/cache"
-	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 	myos "gitlab.com/uniget-org/cli/pkg/os"
 	"gitlab.com/uniget-org/cli/pkg/tool"
@@ -29,34 +23,11 @@ var (
 	slogan string = "The universal installer and updater for (container) tools" + "\n" +
 		"                                       https://uniget.dev"
 
-	altArch string = runtime.GOARCH
-	arch    string
-
-	cacheRoot                   = "var/cache"
-	cacheDirectory              = cacheRoot + "/" + projectName
-	libRoot                     = "var/lib"
-	libDirectory                = libRoot + "/" + projectName
-	configRoot                  = "etc"
-	configDirectory             = "uniget"
-	hooksPreInstallDirectory    = "hooks/pre-install.d"
-	hooksPostInstallDirectory   = "hooks/post-install.d"
-	hooksPreUninstallDirectory  = "hooks/pre-uninstall.d"
-	hooksPostUninstallDirectory = "hooks/post-uninstall.d"
-	profileDDirectory           = configRoot + "/profile.d"
-	metadataImageTag            = "main"
-	metadataFileName            = "metadata.json"
-	metadataFile                = cacheDirectory + "/" + metadataFileName
-	fileCacheDirectoryName      = "downloads"
-	registry                    = "ghcr.io"
-	organization                = "uniget-org"
-	imageRepository             = organization + "/tools"
-	toolSeparator               = "/"
-	registryImagePrefix         = registry + "/" + imageRepository + toolSeparator
-	tools                       = tool.Tools{
+	config = DefaultConfig()
+	tools  = tool.Tools{
 		Tools: make([]tool.Tool, 0),
 	}
-	pathRewriteRules = make([]tool.PathRewrite, 0)
-	rootCmd          = &cobra.Command{
+	rootCmd = &cobra.Command{
 		Use:          projectName,
 		Version:      version,
 		Short:        header + slogan,
@@ -73,11 +44,11 @@ var (
 				pterm.DefaultSpinner.ShowTimer = false
 			}
 
-			if viper.GetBool("trace") {
+			if config.trace {
 				pterm.EnableDebugMessages()
 				logging.Level = pterm.LogLevelTrace
 
-			} else if viper.GetBool("debug") {
+			} else if config.debug {
 				pterm.EnableDebugMessages()
 				logging.Level = pterm.LogLevelDebug
 
@@ -88,175 +59,12 @@ var (
 
 			logging.Init()
 
-			if len(viper.GetString("prefix")) > 0 {
-				re, err := regexp.Compile(`^\/`)
-				if err != nil {
-					return fmt.Errorf("cannot compile regexp: %w", err)
-				}
-				if !re.MatchString(viper.GetString("prefix")) {
-					wd, err := os.Getwd()
-					if err != nil {
-						return fmt.Errorf("cannot determine working directory: %w", err)
-					}
-					viper.Set("prefix", wd+"/"+viper.GetString("prefix"))
-					logging.Debugf("Converted prefix to absolute path %s", viper.GetString("prefix"))
-				}
+			config.Update()
+			if config.debug {
+				config.Debug()
 			}
 
-			if !viper.GetBool("user") {
-				cacheDirectory = cacheRoot + "/" + projectName
-				libDirectory = libRoot + "/" + projectName
-				profileDDirectory = configRoot + "/profile.d"
-				configDirectory = configRoot + "/uniget"
-				metadataFile = cacheDirectory + "/" + metadataFileName
-				viper.Set("cachedirectory", cacheDirectory+"/"+fileCacheDirectoryName)
-
-			} else {
-				viper.Set("prefix", os.Getenv("HOME"))
-				viper.Set("target", ".local")
-
-				cacheRoot = ".cache"
-				if os.Getenv("XDG_CACHE_HOME") != "" {
-					if strings.HasPrefix(os.Getenv("XDG_CACHE_HOME"), os.Getenv("HOME")) {
-						cacheRoot = strings.TrimPrefix(os.Getenv("XDG_CACHE_HOME"), os.Getenv("HOME")+"/")
-					}
-				}
-				cacheDirectory = cacheRoot + "/" + projectName
-
-				libRoot = ".local/state"
-				if os.Getenv("XDG_STATE_HOME") != "" {
-					if strings.HasPrefix(os.Getenv("XDG_STATE_HOME"), os.Getenv("HOME")) {
-						libRoot = strings.TrimPrefix(os.Getenv("XDG_STATE_HOME"), os.Getenv("HOME")+"/")
-					}
-				}
-				libDirectory = libRoot + "/" + projectName
-
-				configRoot = ".config"
-				if os.Getenv("XDG_CONFIG_HOME") != "" {
-					if strings.HasPrefix(os.Getenv("XDG_CONFIG_HOME"), os.Getenv("HOME")) {
-						configRoot = strings.TrimPrefix(os.Getenv("XDG_CONFIG_HOME"), os.Getenv("HOME")+"/")
-					}
-				}
-				profileDDirectory = configRoot + "/profile.d"
-				configDirectory = configRoot + "/uniget"
-
-				metadataFile = cacheDirectory + "/" + metadataFileName
-				viper.Set("cachedirectory", cacheDirectory+"/"+fileCacheDirectoryName)
-			}
-
-			if strings.HasPrefix(viper.GetString("target"), "/") {
-				viper.Set("target", strings.TrimLeft(viper.GetString("target"), "/"))
-			}
-
-			if viper.GetBool("debug") {
-				logging.Debugf("user: %t", viper.GetBool("prefix"))
-				logging.Debugf("prefix: %s", viper.GetString("prefix"))
-				logging.Debugf("target: %s", viper.GetString("target"))
-				logging.Debugf("configRoot: %s", configRoot)
-				logging.Debugf("configDirectory: %s", configDirectory)
-				logging.Debugf("cacheRoot: %s", cacheRoot)
-				logging.Debugf("cacheDirectory: %s", cacheDirectory)
-				logging.Debugf("libRoot: %s", libRoot)
-				logging.Debugf("libDirectory: %s", libDirectory)
-				logging.Debugf("metadataFile: %s", metadataFile)
-				logging.Debugf("registry: %s", viper.GetString("registry"))
-				logging.Debugf("repository: %s", viper.GetString("repository"))
-				logging.Debugf("tool-separator: %s", viper.GetString("toolseparator"))
-				logging.Debugf("cache: %s", viper.GetString("cache"))
-				logging.Debugf("cache-directory: %s", viper.GetString("cachedirectory"))
-				logging.Debugf("cache-retention: %d", viper.GetInt("cacheretention"))
-			}
-
-			pathRewriteRules = []tool.PathRewrite{
-				{
-					Source:    "usr/local/",
-					Target:    "",
-					Operation: "REPLACE",
-				},
-				{
-					Source:    "var/lib/uniget/",
-					Target:    libDirectory + "/",
-					Operation: "REPLACE",
-					Abort:     true,
-				},
-				{
-					Source:    "var/cache/uniget/",
-					Target:    cacheDirectory + "/",
-					Operation: "REPLACE",
-					Abort:     true,
-				},
-			}
-			if !viper.GetBool("user") {
-				logging.Debugf("Adding path rewrite rules for system installation")
-
-				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-					Source:    "etc/systemd/",
-					Target:    "/etc/systemd/",
-					Operation: "REPLACE",
-				})
-
-				if viper.GetBool("integrateprofiled") || viper.GetBool("integrateall") {
-					pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-						Source:    "etc/profile.d/",
-						Target:    "/etc/profile.d/",
-						Operation: "REPLACE",
-					})
-				}
-
-			} else {
-				logging.Debugf("Adding path rewrite rules for user installation")
-
-				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-					Source:    "libexec/docker/cli-plugins/",
-					Target:    ".docker/cli-plugins/",
-					Operation: "REPLACE",
-					Abort:     true,
-				})
-
-				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-					Source:    "etc/systemd/user/",
-					Target:    ".config/systemd/user/",
-					Operation: "REPLACE",
-					Abort:     true,
-				})
-
-				if viper.GetBool("integrateprofiled") || viper.GetBool("integrateall") {
-					pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-						Source:    "etc/profile.d/",
-						Target:    ".config/profile.d/",
-						Operation: "REPLACE",
-						Abort:     true,
-					})
-				}
-
-				if viper.GetBool("integrateetc") || viper.GetBool("integrateall") {
-					pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-						Source:    "etc/",
-						Target:    ".config/",
-						Operation: "REPLACE",
-						Abort:     true,
-					})
-				}
-			}
-			if len(viper.GetString("target")) > 0 {
-				targetPath := viper.GetString("target")
-				if !strings.HasSuffix(targetPath, "/") {
-					targetPath += "/"
-				}
-				pathRewriteRules = append(pathRewriteRules, tool.PathRewrite{
-					Source:    "",
-					Target:    targetPath,
-					Operation: "PREPEND",
-				})
-			}
-			if viper.GetBool("debug") {
-				logging.Debug("Path rewrite rules:")
-				for _, rule := range pathRewriteRules {
-					logging.Debugf("  %s -> %s (%s)", rule.Source, rule.Target, rule.Operation)
-				}
-			}
-
-			if !fileExists(viper.GetString("prefix") + "/" + metadataFile) {
+			if !fileExists(config.prefix + "/" + config.metadataFile) {
 				logging.Debugf("Metadata file does not exist. Downloading...")
 				err := downloadMetadata()
 				if err != nil {
@@ -270,7 +78,7 @@ var (
 				return fmt.Errorf("error loading metadata: %s", err)
 			}
 
-			file, err := os.Stat(viper.GetString("prefix") + "/" + metadataFile)
+			file, err := os.Stat(config.prefix + "/" + config.metadataFile)
 			if err != nil {
 				return fmt.Errorf("error stating metadata file: %s", err)
 			}
@@ -278,45 +86,6 @@ var (
 			modifiedtime := file.ModTime()
 			if now.Sub(modifiedtime).Hours() > 24 {
 				logging.Warning.Println("Metadata file is older than 24 hours")
-			}
-
-			switch viper.GetString("cache") {
-			case "none":
-				logging.Debug("Using no cache")
-				toolCache = cache.NewNoneCache()
-
-			case "file":
-				logging.Debug("Using file cache")
-				fileCacheDir := viper.GetString("prefix") + "/" + viper.GetString("cachedirectory")
-				assertDirectory(fileCacheDir)
-				toolCache = cache.NewFileCache(fileCacheDir, viper.GetInt("cacheretention"))
-
-			case "docker":
-				if containers.DockerIsAvailable() {
-					logging.Debug("Using docker cache")
-					toolCache, err = cache.NewDockerCache()
-					if err != nil {
-						return fmt.Errorf("error creating Docker cache: %s", err)
-					}
-				} else {
-					logging.Warning.Println("Docker is not available. Falling back to no cache")
-					toolCache = cache.NewNoneCache()
-				}
-
-			case "containerd":
-				if containers.ContainerdIsAvailable() {
-					logging.Debug("Using containerd cache")
-					toolCache, err = cache.NewContainerdCache(projectName)
-					if err != nil {
-						return fmt.Errorf("error creating Containerd cache: %s", err)
-					}
-				} else {
-					logging.Warning.Println("Containerd is not available. Falling back to no cache")
-					toolCache = cache.NewNoneCache()
-				}
-
-			default:
-				return fmt.Errorf("unsupported cache backend: %s", viper.GetString("cache"))
 			}
 
 			return nil
@@ -329,16 +98,6 @@ var (
 )
 
 func init() {
-	switch altArch {
-	case "amd64":
-		arch = "x86_64"
-	case "arm64":
-		arch = "aarch64"
-	default:
-		logging.Error.Printfln("Unsupported architecture: %s", arch)
-		os.Exit(1)
-	}
-
 	initBumpCmd()
 	initCacheCmd()
 	initCronCmd()
@@ -365,61 +124,28 @@ func init() {
 	initVersionCmd()
 }
 
-func addViperBindings(flags *flag.FlagSet, cobraLongName string, viperName string) {
-	err := viper.BindPFlag(viperName, flags.Lookup(cobraLongName))
-	if err != nil {
-		fmt.Printf("unable to bind flag %s: %s", cobraLongName, err)
-		os.Exit(1)
-	}
-
-	if viperName != cobraLongName {
-		err = viper.BindEnv(viperName, strings.ToUpper(viper.GetEnvPrefix()+"_"+strings.ReplaceAll(cobraLongName, "-", "_")))
-		if err != nil {
-			fmt.Printf("unable to bind environment variable for flag %s: %s", cobraLongName, err)
-			os.Exit(1)
-		}
-	}
-}
-
 func main() {
 	var err error
 
-	viper.SetDefault("loglevel", pterm.LogLevelInfo.String())
-	viper.SetDefault("debug", false)
-	viper.SetDefault("trace", false)
-	viper.SetDefault("prefix", "")
-	viper.SetDefault("target", "usr/local")
-	viper.SetDefault("user", false)
-	viper.SetDefault("autoupdate", false)
-	viper.SetDefault("integrateprofiled", false)
-	viper.SetDefault("integrateetc", false)
-	viper.SetDefault("integrateall", false)
-	viper.SetDefault("registry", registry)
-	viper.SetDefault("repository", imageRepository)
-	viper.SetDefault("toolseparator", toolSeparator)
-	viper.SetDefault("cache", "none")
-	viper.SetDefault("cachedirectory", cacheDirectory+"/"+fileCacheDirectoryName)
-	viper.SetDefault("cacheretention", 24*60*60)
-
 	pf := rootCmd.PersistentFlags()
 
-	pf.String("log-level", viper.GetString("loglevel"), "Log level (trace, debug, info, warning, error)")
-	pf.BoolP("debug", "d", viper.GetBool("debug"), "Set log level to debug")
-	pf.Bool("trace", viper.GetBool("trace"), "Set log level to trace")
-	pf.StringP("prefix", "p", viper.GetString("prefix"), "Base directory for the installation (useful when preparing a chroot environment)")
-	pf.StringP("target", "t", viper.GetString("target"), "Target directory for installation relative to PREFIX")
-	pf.BoolP("user", "u", viper.GetBool("user"), "Install in user context")
-	pf.Bool("auto-update", viper.GetBool("autoupdate"), "Automatically update metadata")
-	pf.Bool("integrate-profiled", viper.GetBool("integrateprofiled"), "Integrate profile.d scripts")
-	pf.Bool("integrate-etc", viper.GetBool("integrateetc"), "Integrate configuration files from /etc")
-	pf.Bool("integrate-all", viper.GetBool("integrateall"), "Integrate all available integrations")
-	pf.String("registry", viper.GetString("registry"), "Registry for the image repository")
-	pf.String("repository", viper.GetString("repository"), "Repository for the image repository")
-	pf.String("tool-separator", viper.GetString("toolseparator"), "Separator between repository and tool name")
-	pf.String("cache", viper.GetString("cache"), "Cache backend to use (none, file, docker, containerd)")
-	pf.String("cache-directory", viper.GetString("cachedirectory"), "Directory for the file cache")
-	pf.Int("cache-retention", viper.GetInt("cacheretention"), "Retention in seconds for the file cache")
-	pf.StringVar(&metadataImageTag, "metadata-image-tag", metadataImageTag, "Tag for the metadata image")
+	pf.StringVar(&config.logLevel, "log-level", config.logLevel, "Log level (trace, debug, info, warning, error)")
+	pf.BoolVarP(&config.debug, "debug", "d", config.debug, "Set log level to debug")
+	pf.BoolVar(&config.trace, "trace", config.trace, "Set log level to trace")
+	pf.StringVarP(&config.prefix, "prefix", "p", config.prefix, "Base directory for the installation (useful when preparing a chroot environment)")
+	pf.StringVarP(&config.target, "target", "t", config.target, "Target directory for installation relative to PREFIX")
+	pf.BoolVarP(&config.user, "user", "u", config.user, "Install in user context")
+	pf.BoolVar(&config.autoUpdate, "auto-update", config.autoUpdate, "Automatically update metadata")
+	pf.BoolVar(&config.integrateProfileD, "integrate-profiled", config.integrateProfileD, "Integrate profile.d scripts")
+	pf.BoolVar(&config.integrateEtc, "integrate-etc", config.integrateEtc, "Integrate configuration files from /etc")
+	pf.BoolVar(&config.integrateAll, "integrate-all", config.integrateAll, "Integrate all available integrations")
+	pf.StringVar(&config.registry, "registry", config.registry, "Registry for the image repository")
+	pf.StringVar(&config.imageRepository, "repository", config.imageRepository, "Repository for the image repository")
+	pf.StringVar(&config.toolSeparator, "tool-separator", config.toolSeparator, "Separator between repository and tool name")
+	pf.StringVar(&config.cache, "cache", config.cache, "Cache backend to use (none, file, docker, containerd)")
+	pf.StringVar(&config.cacheDir, "cache-directory", config.cacheDir, "Directory for the file cache")
+	pf.IntVar(&config.cacheRetention, "cache-retention", config.cacheRetention, "Retention in seconds for the file cache")
+	pf.StringVar(&config.metadataImageTag, "metadata-image-tag", config.metadataImageTag, "Tag for the metadata image")
 
 	rootCmd.MarkFlagsMutuallyExclusive("prefix", "user")
 	rootCmd.MarkFlagsMutuallyExclusive("target", "user")
@@ -459,26 +185,6 @@ func main() {
 		logging.Error.Printfln("Unable to mark metadata-image-tag as hidden: %s", err)
 		os.Exit(1)
 	}
-
-	viper.AutomaticEnv()
-	viper.SetEnvPrefix("uniget")
-
-	addViperBindings(pf, "log-level", "loglevel")
-	addViperBindings(pf, "debug", "debug")
-	addViperBindings(pf, "trace", "trace")
-	addViperBindings(pf, "prefix", "prefix")
-	addViperBindings(pf, "target", "target")
-	addViperBindings(pf, "user", "user")
-	addViperBindings(pf, "auto-update", "autoupdate")
-	addViperBindings(pf, "integrate-profiled", "integrateprofiled")
-	addViperBindings(pf, "integrate-etc", "integrateetc")
-	addViperBindings(pf, "integrate-all", "integrateall")
-	addViperBindings(pf, "registry", "registry")
-	addViperBindings(pf, "repository", "repository")
-	addViperBindings(pf, "tool-separator", "toolseparator")
-	addViperBindings(pf, "cache", "cache")
-	addViperBindings(pf, "cache-directory", "cachedirectory")
-	addViperBindings(pf, "cache-retention", "cacheretention")
 
 	err = rootCmd.Execute()
 	if err != nil {

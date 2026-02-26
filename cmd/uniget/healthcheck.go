@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 )
 
@@ -36,8 +35,8 @@ var healthcheckCmd = &cobra.Command{
 		}
 		checkClientVersionRequirement(tool)
 
-		tool.ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
-		err = tool.GetMarkerFileStatus(viper.GetString("prefix") + "/" + cacheDirectory)
+		tool.ReplaceVariables(config.prefix+"/"+config.target, config.arch, config.altArch)
+		err = tool.GetMarkerFileStatus(config.prefix + "/" + config.cacheDirectory)
 		if err != nil {
 			return fmt.Errorf("error getting marker file status: %s", err)
 		}
@@ -66,7 +65,7 @@ var healthcheckCmd = &cobra.Command{
 			testFailed = true
 		}
 
-		markerFilePresent := fileExists(viper.GetString("prefix") + "/" + libDirectory + "/manifests/" + tool.Name + ".txt")
+		markerFilePresent := fileExists(config.prefix + "/" + config.libDirectory + "/manifests/" + tool.Name + ".txt")
 		if !tool.Status.MarkerFilePresent && !tool.Status.BinaryPresent && !markerFilePresent {
 			logging.Warning.Printfln("Tool %s is not installed", tool.Name)
 			testFailed = true
@@ -77,7 +76,7 @@ var healthcheckCmd = &cobra.Command{
 			logging.Info.Printfln("%s: Manifest version is %s", tool.Name, tool.Version)
 
 		} else {
-			tool.ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
+			tool.ReplaceVariables(config.prefix+"/"+config.target, config.arch, config.altArch)
 			version, err := tool.RunVersionCheck()
 			if err != nil {
 				logging.Error.Printfln("%s: Error getting version: %s", tool.Name, err)

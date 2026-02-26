@@ -86,7 +86,7 @@ var selfUpgradeCmd = &cobra.Command{
 			return fmt.Errorf("failed to remove %s: %s", selfExe, err)
 		}
 
-		registries, repositories := unigetTool.GetSourcesWithFallback(registry, imageRepository)
+		registries, repositories := unigetTool.GetSourcesWithFallback(config.registry, config.imageRepository)
 		ref, err := containers.FindToolRef(registries, repositories, unigetTool.Name, "main")
 		if err != nil {
 			installSpinner.Fail()

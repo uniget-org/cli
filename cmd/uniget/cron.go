@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var (
@@ -109,8 +108,8 @@ func createCron() error {
 		return fmt.Errorf("cannot get user crontab: %w", err)
 	}
 	lines = removeUserCronTab(lines)
-	lines = append(lines, fmt.Sprintf("%s uniget --user=%t upgrade --auto-update", createUpgradeCron, viper.GetBool("user")))
-	lines = append(lines, fmt.Sprintf("%s uniget --user=%t self-upgrade", createSelfUpgradeCron, viper.GetBool("user")))
+	lines = append(lines, fmt.Sprintf("%s uniget --user=%t upgrade --auto-update", createUpgradeCron, config.user))
+	lines = append(lines, fmt.Sprintf("%s uniget --user=%t self-upgrade", createSelfUpgradeCron, config.user))
 
 	err = setUserCrontab(lines)
 	if err != nil {
