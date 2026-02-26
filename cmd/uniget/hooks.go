@@ -143,22 +143,22 @@ var removeHooksCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var err error
 		hookFileName := args[0]
-		hooksDir := viper.GetString("prefix") + "/" + configDirectory
+		hooksDir := config.prefix + "/" + config.configDirectory
 		hookFile := ""
 		switch hookType {
 		case "pre-install":
-			preInstallHooksDir := hooksDir + "/" + hooksPreInstallDirectory
+			preInstallHooksDir := hooksDir + "/" + config.hooksPreInstallDirectory
 			hookFile = preInstallHooksDir + "/" + hookFileName
 		case "post-install":
-			postInstallHooksDir := hooksDir + "/" + hooksPostInstallDirectory
+			postInstallHooksDir := hooksDir + "/" + config.hooksPostInstallDirectory
 			assertDirectory(postInstallHooksDir)
 			hookFile = postInstallHooksDir + "/" + hookFileName
 		case "pre-uninstall":
-			preUninstallHooksDir := hooksDir + "/" + hooksPreInstallDirectory
+			preUninstallHooksDir := hooksDir + "/" + config.hooksPreInstallDirectory
 			assertDirectory(preUninstallHooksDir)
 			hookFile = preUninstallHooksDir + "/" + hookFileName
 		case "post-uninstall":
-			postUninstallHooksDir := hooksDir + "/" + hooksPostInstallDirectory
+			postUninstallHooksDir := hooksDir + "/" + config.hooksPostInstallDirectory
 			assertDirectory(postUninstallHooksDir)
 			hookFile = postUninstallHooksDir + "/" + hookFileName
 		}
@@ -274,13 +274,6 @@ var listHooksCmd = &cobra.Command{
 						return nil
 					})
 
-				case "post-install":
-					postInstallHooksDir := hooksDir + "/" + config.hooksPostInstallDirectory
-					err = processHooks(postInstallHooksDir, func(hookFile string) error {
-						fmt.Printf("%s: %s\n", availableHookType, hookFile)
-						return nil
-					})
-
 				case "pre-uninstall":
 					preUninstallHooksDir := hooksDir + "/" + config.hooksPreUninstallDirectory
 					err = processHooks(preUninstallHooksDir, func(hookFile string) error {
@@ -344,19 +337,19 @@ var testHookCmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var err error
-		hooksDir := viper.GetString("prefix") + "/" + configDirectory
+		hooksDir := config.prefix + "/" + config.configDirectory
 		hookName := args[0]
 		hookArgs := args[1:]
 		var hookFile string
 		switch hookType {
 		case "pre-install":
-			hookFile = hooksDir + "/" + hooksPreInstallDirectory + "/" + hookName
+			hookFile = hooksDir + "/" + config.hooksPreInstallDirectory + "/" + hookName
 		case "post-install":
-			hookFile = hooksDir + "/" + hooksPostInstallDirectory + "/" + hookName
+			hookFile = hooksDir + "/" + config.hooksPostInstallDirectory + "/" + hookName
 		case "pre-uninstall":
-			hookFile = hooksDir + "/" + hooksPreUninstallDirectory + "/" + hookName
+			hookFile = hooksDir + "/" + config.hooksPreUninstallDirectory + "/" + hookName
 		case "post-uninstall":
-			hookFile = hooksDir + "/" + hooksPostUninstallDirectory + "/" + hookName
+			hookFile = hooksDir + "/" + config.hooksPostUninstallDirectory + "/" + hookName
 		}
 
 		output, err = runHook(hookFile, hookArgs...)
