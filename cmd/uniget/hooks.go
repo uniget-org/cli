@@ -418,6 +418,9 @@ func processHooks(path string, callback func(file string) error) error {
 		if file.IsDir() {
 			continue
 		}
+		if strings.HasPrefix(file.Name(), ".") {
+			continue
+		}
 
 		hookFile := path + "/" + file.Name()
 		err := callback(hookFile)
