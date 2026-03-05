@@ -348,6 +348,7 @@ func init() {
 	initGenerateCmd()
 	initHealthcheckCmd()
 	initHooksCmd()
+	initImportCmd()
 	initInspectCmd()
 	initInstallCmd()
 	initListCmd()
