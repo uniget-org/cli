@@ -28,7 +28,7 @@ var uninstallCmd = &cobra.Command{
 	},
 	Short: "Uninstall tool",
 	Long:  header + "\nUninstall tools",
-	Args:  cobra.ExactArgs(1),
+	Args:  cobra.OnlyValidArgs,
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},
@@ -39,55 +39,59 @@ var uninstallCmd = &cobra.Command{
 		assertWritableTarget()
 		assertLibDirectory()
 
-		tool, err := tools.GetByName(args[0])
-		if err != nil {
-			return fmt.Errorf("unable to find tool %s: %s", args[0], err)
-		}
-		checkClientVersionRequirement(tool)
-
-		tool.ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
-		err = tool.GetBinaryStatus()
-		if err != nil {
-			return fmt.Errorf("unable to get binary status: %s", err)
-		}
-		err = tool.GetMarkerFileStatus(viper.GetString("prefix") + "/" + cacheDirectory)
-		if err != nil {
-			return fmt.Errorf("unable to get marker file status: %s", err)
-		}
-		err = tool.GetVersionStatus()
-		if err != nil {
-			return fmt.Errorf("unable to get version status: %s", err)
-		}
-
-		if !force && !tool.Status.MarkerFilePresent && !tool.Status.BinaryPresent {
-			logging.Warning.Printfln("Tool %s is not installed", args[0])
-			return nil
-		}
-
-		var uninstallSpinner *pterm.SpinnerPrinter
-		installMessage := fmt.Sprintf("Uninstalling %s", tool.Name)
-		if viper.GetString("loglevel") == "warning" {
-			uninstallSpinner, _ = pterm.DefaultSpinner.Start(installMessage)
-		} else {
-			logging.Info.Println(installMessage)
-		}
-
-		err = runPreUninstallHooks(args[0])
+		err := runPreUninstallHooks(args...)
 		if err != nil {
 			return fmt.Errorf("unable to run pre-uninstall hooks: %s", err)
 		}
-		err = uninstallTool(args[0])
-		if err != nil {
-			if uninstallSpinner != nil {
-				uninstallSpinner.Fail()
+
+		for _, toolName := range args {
+			tool, err := tools.GetByName(toolName)
+			if err != nil {
+				return fmt.Errorf("unable to find tool %s: %s", toolName, err)
 			}
-			return fmt.Errorf("unable to uninstall tool %s: %s", args[0], err)
+			checkClientVersionRequirement(tool)
+
+			tool.ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
+			err = tool.GetBinaryStatus()
+			if err != nil {
+				return fmt.Errorf("unable to get binary status: %s", err)
+			}
+			err = tool.GetMarkerFileStatus(viper.GetString("prefix") + "/" + cacheDirectory)
+			if err != nil {
+				return fmt.Errorf("unable to get marker file status: %s", err)
+			}
+			err = tool.GetVersionStatus()
+			if err != nil {
+				return fmt.Errorf("unable to get version status: %s", err)
+			}
+
+			if !force && !tool.Status.MarkerFilePresent && !tool.Status.BinaryPresent {
+				logging.Warning.Printfln("Tool %s is not installed", toolName)
+				return nil
+			}
+
+			var uninstallSpinner *pterm.SpinnerPrinter
+			installMessage := fmt.Sprintf("Uninstalling %s", tool.Name)
+			if viper.GetString("loglevel") == "warning" {
+				uninstallSpinner, _ = pterm.DefaultSpinner.Start(installMessage)
+			} else {
+				logging.Info.Println(installMessage)
+			}
+
+			err = uninstallTool(toolName)
+			if err != nil {
+				if uninstallSpinner != nil {
+					uninstallSpinner.Fail()
+				}
+				return fmt.Errorf("unable to uninstall tool %s: %s", toolName, err)
+			}
+
+			if uninstallSpinner != nil {
+				uninstallSpinner.Success()
+			}
 		}
 
-		if uninstallSpinner != nil {
-			uninstallSpinner.Success()
-		}
-		err = runPostUninstallHooks(args[0])
+		err = runPostUninstallHooks(args...)
 		if err != nil {
 			return fmt.Errorf("unable to run post-uninstall hooks: %s", err)
 		}
