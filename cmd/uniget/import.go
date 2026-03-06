@@ -71,7 +71,10 @@ var importCmd = &cobra.Command{
 		}
 
 		plannedTools := tools.GetByNames(toolsToImport)
-		installTools(cmd.OutOrStdout(), plannedTools, false, false, true, true, true)
+		err = installTools(cmd.OutOrStdout(), plannedTools, false, false, true, true, true)
+		if err != nil {
+			return fmt.Errorf("failed to import tools: %s", err)
+		}
 
 		return nil
 	},
