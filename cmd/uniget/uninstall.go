@@ -51,21 +51,12 @@ var uninstallCmd = &cobra.Command{
 			}
 			checkClientVersionRequirement(tool)
 
-			tool.ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
-			err = tool.GetBinaryStatus()
+			err = tool.UpdateStatus(viper.GetString("prefix"), viper.GetString("target"), cacheDirectory, arch, altArch)
 			if err != nil {
-				return fmt.Errorf("unable to get binary status: %s", err)
-			}
-			err = tool.GetMarkerFileStatus(viper.GetString("prefix") + "/" + cacheDirectory)
-			if err != nil {
-				return fmt.Errorf("unable to get marker file status: %s", err)
-			}
-			err = tool.GetVersionStatus()
-			if err != nil {
-				return fmt.Errorf("unable to get version status: %s", err)
+				return fmt.Errorf("failed to update status for tool %s: %s", tool.Name, err)
 			}
 
-			if !force && !tool.Status.MarkerFilePresent && !tool.Status.BinaryPresent {
+			if !force && !tool.IsInstalled() {
 				logging.Warning.Printfln("Tool %s is not installed", toolName)
 				return nil
 			}

@@ -117,19 +117,13 @@ func findInstalledTools(tools tool.Tools) (tool.Tools, error) {
 	var requestedTools tool.Tools
 	for index, tool := range tools.Tools {
 		logging.Debugf("Getting status for requested tool %s", tool.Name)
-		tools.Tools[index].ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
 
-		err := tools.Tools[index].GetBinaryStatus()
+		err := tools.Tools[index].UpdateStatus(viper.GetString("prefix"), viper.GetString("target"), cacheDirectory, arch, altArch)
 		if err != nil {
-			return requestedTools, fmt.Errorf("unable to determine binary status of %s: %s", tool.Name, err)
+			return requestedTools, fmt.Errorf("failed to update status for tool %s: %s", tool.Name, err)
 		}
 
-		err = tools.Tools[index].GetMarkerFileStatus(viper.GetString("prefix") + "/" + cacheDirectory)
-		if err != nil {
-			return requestedTools, fmt.Errorf("unable to determine marker file status of %s: %s", tool.Name, err)
-		}
-
-		if tools.Tools[index].Status.MarkerFilePresent && tools.Tools[index].Status.BinaryPresent {
+		if tools.Tools[index].IsInstalled() {
 			logging.Debugf("Adding %s to requested tools", tool.Name)
 			requestedTools.Tools = append(requestedTools.Tools, tool)
 		}
@@ -165,22 +159,9 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 		}
 
 		logging.Debugf("Getting status for requested tool %s", tool.Name)
-
-		plannedTools.Tools[index].ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
-
-		err := plannedTools.Tools[index].GetBinaryStatus()
+		err := plannedTools.Tools[index].UpdateStatus(viper.GetString("prefix"), viper.GetString("target"), cacheDirectory, arch, altArch)
 		if err != nil {
-			return fmt.Errorf("unable to determine binary status of %s: %s", tool.Name, err)
-		}
-
-		err = plannedTools.Tools[index].GetMarkerFileStatus(viper.GetString("prefix") + "/" + cacheDirectory)
-		if err != nil {
-			return fmt.Errorf("unable to determine marker file status of %s: %s", tool.Name, err)
-		}
-
-		err = plannedTools.Tools[index].GetVersionStatus()
-		if err != nil {
-			return fmt.Errorf("unable to determine version status of %s: %s", tool.Name, err)
+			return fmt.Errorf("failed to update status for tool %s: %s", plannedTools.Tools[index].Name, err)
 		}
 	}
 
@@ -286,7 +267,7 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 		if reinstall {
 			installMessage = fmt.Sprintf("Reinstalling %s %s", plannedTool.Name, plannedTool.Version)
 
-		} else if plannedTool.Status.BinaryPresent || plannedTool.Status.MarkerFilePresent {
+		} else if plannedTool.IsInstalled() {
 			uninstall = true
 			installMessage = fmt.Sprintf("Updating %s %s", plannedTool.Name, plannedTool.Version)
 		}

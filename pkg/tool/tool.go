@@ -203,6 +203,36 @@ func (tool *Tool) GetMarkerFileStatus(markerFileDirectory string) error {
 	return nil
 }
 
+func (tool *Tool) UpdateStatus(prefix string, target string, cacheDirectory, arch string, altArch string) error {
+	tool.ReplaceVariables(prefix+"/"+target, arch, altArch)
+	err := tool.GetMarkerFileStatus(prefix + "/" + cacheDirectory)
+	if err != nil {
+		return fmt.Errorf("error getting marker file status: %s", err)
+	}
+	err = tool.GetBinaryStatus()
+	if err != nil {
+		return fmt.Errorf("error getting binary status: %s", err)
+	}
+	err = tool.GetVersionStatus()
+	if err != nil {
+		return fmt.Errorf("error getting version status: %s", err)
+	}
+
+	return nil
+}
+
+func (tool *Tool) IsInstalled() bool {
+	return tool.Status.BinaryPresent && tool.Status.MarkerFilePresent
+}
+
+func (tool *Tool) IsUpgradable() bool {
+	return tool.IsInstalled() && !tool.Status.VersionMatches
+}
+
+func (tool *Tool) IsImportable() bool {
+	return tool.Status.BinaryPresent && !tool.Status.MarkerFilePresent
+}
+
 func (tool *Tool) CreateMarkerFile(markerFileDirectory string) error {
 	logging.Tracef("Creating marker file for %s", tool.Name)
 

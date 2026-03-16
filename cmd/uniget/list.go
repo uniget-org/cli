@@ -49,21 +49,12 @@ var listCmd = &cobra.Command{
 			for index := range tools.Tools {
 				checkClientVersionRequirement(&tools.Tools[index])
 
-				tools.Tools[index].ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
-				err := tools.Tools[index].GetMarkerFileStatus(viper.GetString("prefix") + "/" + cacheDirectory)
+				err := tools.Tools[index].UpdateStatus(viper.GetString("prefix"), viper.GetString("target"), cacheDirectory, arch, altArch)
 				if err != nil {
-					return fmt.Errorf("error getting marker file status: %s", err)
-				}
-				err = tools.Tools[index].GetBinaryStatus()
-				if err != nil {
-					return fmt.Errorf("error getting binary status: %s", err)
-				}
-				err = tools.Tools[index].GetVersionStatus()
-				if err != nil {
-					return fmt.Errorf("error getting version status: %s", err)
+					return fmt.Errorf("failed to update status for tool %s: %s", tools.Tools[index].Name, err)
 				}
 
-				if tools.Tools[index].Status.BinaryPresent || tools.Tools[index].Status.MarkerFilePresent {
+				if tools.Tools[index].IsInstalled() {
 					installedTools.Tools = append(installedTools.Tools, tools.Tools[index])
 				}
 			}
@@ -74,21 +65,12 @@ var listCmd = &cobra.Command{
 			for index := range tools.Tools {
 				checkClientVersionRequirement(&tools.Tools[index])
 
-				tools.Tools[index].ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
-				err := tools.Tools[index].GetMarkerFileStatus(viper.GetString("prefix") + "/" + cacheDirectory)
+				err := tools.Tools[index].UpdateStatus(viper.GetString("prefix"), viper.GetString("target"), cacheDirectory, arch, altArch)
 				if err != nil {
-					return fmt.Errorf("error getting marker file status: %s", err)
-				}
-				err = tools.Tools[index].GetBinaryStatus()
-				if err != nil {
-					return fmt.Errorf("error getting binary status: %s", err)
-				}
-				err = tools.Tools[index].GetVersionStatus()
-				if err != nil {
-					return fmt.Errorf("error getting version status: %s", err)
+					return fmt.Errorf("failed to update status for tool %s: %s", tools.Tools[index].Name, err)
 				}
 
-				if (tools.Tools[index].Status.BinaryPresent || tools.Tools[index].Status.MarkerFilePresent) && !tools.Tools[index].Status.VersionMatches {
+				if tools.Tools[index].IsUpgradable() {
 					installedTools.Tools = append(installedTools.Tools, tools.Tools[index])
 				}
 			}

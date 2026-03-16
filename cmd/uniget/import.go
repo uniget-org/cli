@@ -33,21 +33,12 @@ var importCmd = &cobra.Command{
 
 		importableTools := make([]huh.Option[string], 0)
 		for _, tool := range tools.Tools {
-			tool.ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
-			err = tool.GetMarkerFileStatus(viper.GetString("prefix") + "/" + cacheDirectory)
+			err = tool.UpdateStatus(viper.GetString("prefix"), viper.GetString("target"), cacheDirectory, arch, altArch)
 			if err != nil {
-				return fmt.Errorf("error getting marker file status: %s", err)
-			}
-			err = tool.GetBinaryStatus()
-			if err != nil {
-				return fmt.Errorf("error getting binary status: %s", err)
-			}
-			err = tool.GetVersionStatus()
-			if err != nil {
-				return fmt.Errorf("error getting version status: %s", err)
+				return fmt.Errorf("failed to update status for tool %s: %s", tool.Name, err)
 			}
 
-			if tool.Status.BinaryPresent && !tool.Status.MarkerFilePresent {
+			if tool.IsImportable() {
 				importableTools = append(importableTools, huh.NewOption(tool.Name, tool.Name))
 			}
 

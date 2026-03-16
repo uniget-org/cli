@@ -40,18 +40,9 @@ var versionCmd = &cobra.Command{
 		}
 		checkClientVersionRequirement(tool)
 
-		tool.ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
-		err = tool.GetMarkerFileStatus(viper.GetString("prefix") + "/" + cacheDirectory)
+		err = tool.UpdateStatus(viper.GetString("prefix"), viper.GetString("target"), cacheDirectory, arch, altArch)
 		if err != nil {
-			return fmt.Errorf("failed to get marker file status: %s", err)
-		}
-		err = tool.GetBinaryStatus()
-		if err != nil {
-			return fmt.Errorf("failed to get binary status: %s", err)
-		}
-		err = tool.GetVersionStatus()
-		if err != nil {
-			return fmt.Errorf("failed to get version status: %s", err)
+			return fmt.Errorf("failed to update status for tool %s: %s", tool.Name, err)
 		}
 
 		markerFilePresent := fileExists(viper.GetString("prefix") + "/" + libDirectory + "/manifests/" + tool.Name + ".txt")

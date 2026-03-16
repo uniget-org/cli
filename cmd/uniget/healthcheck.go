@@ -36,18 +36,9 @@ var healthcheckCmd = &cobra.Command{
 		}
 		checkClientVersionRequirement(tool)
 
-		tool.ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
-		err = tool.GetMarkerFileStatus(viper.GetString("prefix") + "/" + cacheDirectory)
+		err = tool.UpdateStatus(viper.GetString("prefix"), viper.GetString("target"), cacheDirectory, arch, altArch)
 		if err != nil {
-			return fmt.Errorf("error getting marker file status: %s", err)
-		}
-		err = tool.GetBinaryStatus()
-		if err != nil {
-			return fmt.Errorf("error getting binary status: %s", err)
-		}
-		err = tool.GetVersionStatus()
-		if err != nil {
-			return fmt.Errorf("error getting version status: %s", err)
+			return fmt.Errorf("failed to update status for tool %s: %s", tool.Name, err)
 		}
 
 		testFailed := false
