@@ -474,7 +474,7 @@ func createPatchFileCallback(tool tool.Tool) func(path string) string {
 		}
 		fullTemplatePath := filepath.Join(curDir, templatePath)
 
-		values := make(map[string]interface{})
+		values := make(map[string]any)
 		values["Target"] = viper.GetString("target")
 		values["RelativeTarget"] = viper.GetString("target")
 		values["Prefix"] = viper.GetString("prefix")

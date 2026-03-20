@@ -198,7 +198,7 @@ func fetchGitHubReleases(project string) ([]string, error) {
 		return []string{}, fmt.Errorf("failed to fetch body of GitHub release: %s", err)
 	}
 
-	var releases []interface{}
+	var releases []any
 	err = json.Unmarshal(bodyBytes, &releases)
 	if err != nil {
 		return []string{}, fmt.Errorf("failed to parse body of GitHub releases: %s", err)
@@ -206,7 +206,7 @@ func fetchGitHubReleases(project string) ([]string, error) {
 
 	var releaseTags = make([]string, 0)
 	for index := range releases {
-		release := releases[index].(map[string]interface{})
+		release := releases[index].(map[string]any)
 		releaseTags = append(releaseTags, release["tag_name"].(string))
 	}
 
@@ -223,7 +223,7 @@ func fetchGitLabReleases(project string) ([]string, error) {
 		return []string{}, fmt.Errorf("failed to fetch body of GitLab release: %s", err)
 	}
 
-	var releases []interface{}
+	var releases []any
 	err = json.Unmarshal(bodyBytes, &releases)
 	if err != nil {
 		return []string{}, fmt.Errorf("failed to parse body of GitLab releases: %s", err)
@@ -231,7 +231,7 @@ func fetchGitLabReleases(project string) ([]string, error) {
 
 	var releaseTags = make([]string, 0)
 	for index := range releases {
-		release := releases[index].(map[string]interface{})
+		release := releases[index].(map[string]any)
 		releaseTags = append(releaseTags, release["tag_name"].(string))
 	}
 
@@ -247,7 +247,7 @@ func fetchGiteaReleases(project string) ([]string, error) {
 		return []string{}, fmt.Errorf("failed to fetch body of Gitea release: %s", err)
 	}
 
-	var releases []interface{}
+	var releases []any
 	err = json.Unmarshal(bodyBytes, &releases)
 	if err != nil {
 		return []string{}, fmt.Errorf("failed to parse body of Gitea releases: %s", err)
@@ -255,7 +255,7 @@ func fetchGiteaReleases(project string) ([]string, error) {
 
 	var releaseTags = make([]string, 0)
 	for index := range releases {
-		release := releases[index].(map[string]interface{})
+		release := releases[index].(map[string]any)
 		releaseTags = append(releaseTags, release["tag_name"].(string))
 	}
 
@@ -271,14 +271,14 @@ func fetchNpmReleases(project string) ([]string, error) {
 		return []string{}, fmt.Errorf("failed to fetch body of npm release: %s", err)
 	}
 
-	var npmPackage map[string]interface{}
+	var npmPackage map[string]any
 	err = json.Unmarshal(bodyBytes, &npmPackage)
 	if err != nil {
 		return []string{}, fmt.Errorf("failed to parse body of npm releases: %s", err)
 	}
 
 	var versionTags = make([]string, 0)
-	versions := npmPackage["versions"].(map[string]interface{})
+	versions := npmPackage["versions"].(map[string]any)
 	for versionTag := range versions {
 		versionTags = append(versionTags, versionTag)
 	}
@@ -295,14 +295,14 @@ func fetchPypiReleases(project string) ([]string, error) {
 		return []string{}, fmt.Errorf("failed to fetch body of pypi release: %s", err)
 	}
 
-	var pypiPackage map[string]interface{}
+	var pypiPackage map[string]any
 	err = json.Unmarshal(bodyBytes, &pypiPackage)
 	if err != nil {
 		return []string{}, fmt.Errorf("failed to parse body of pypi releases: %s", err)
 	}
 
 	var versionTags = make([]string, 0)
-	versions := pypiPackage["releases"].(map[string]interface{})
+	versions := pypiPackage["releases"].(map[string]any)
 	for versionTag := range versions {
 		versionTags = append(versionTags, versionTag)
 	}

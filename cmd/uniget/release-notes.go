@@ -216,13 +216,13 @@ func fetchBodyFromNpm(project string, versionTag string) ([]byte, error) {
 		return []byte{}, fmt.Errorf("failed to fetch body from npm: %s", err)
 	}
 
-	var result map[string]interface{}
+	var result map[string]any
 	err = json.Unmarshal(bodyBytes, &result)
 	if err != nil {
 		return []byte{}, fmt.Errorf("failed to parse npm response: %s", err)
 	}
 
-	repo := result["repository"].(map[string]interface{})
+	repo := result["repository"].(map[string]any)
 	if repo["type"] == "git" && strings.Contains(repo["url"].(string), "github.com") {
 		project, err := extractGitHubOwnerAndProject(repo["url"].(string))
 		if err != nil {
@@ -250,14 +250,14 @@ func fetchBodyFromPypi(project string, versionTag string) ([]byte, error) {
 		return []byte{}, fmt.Errorf("failed to fetch body from pypi: %s", err)
 	}
 
-	var result map[string]interface{}
+	var result map[string]any
 	err = json.Unmarshal(bodyBytes, &result)
 	if err != nil {
 		return []byte{}, fmt.Errorf("failed to parse pypi response: %s", err)
 	}
 
-	info := result["info"].(map[string]interface{})
-	urls := info["project_urls"].(map[string]interface{})
+	info := result["info"].(map[string]any)
+	urls := info["project_urls"].(map[string]any)
 	if urls["Homepage"] != nil {
 		project, err := extractGitHubOwnerAndProject(urls["Homepage"].(string))
 		if err != nil {

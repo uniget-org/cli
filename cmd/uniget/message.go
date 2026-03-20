@@ -89,8 +89,8 @@ var messageCmd = &cobra.Command{
 	},
 }
 
-func createTemplateVariablesForTool(tool *tool.Tool) (map[string]interface{}, error) {
-	values := make(map[string]interface{})
+func createTemplateVariablesForTool(tool *tool.Tool) (map[string]any, error) {
+	values := make(map[string]any)
 	values["Target"] = fmt.Sprintf("%s/%s", viper.GetString("prefix"), viper.GetString("target"))
 	values["Name"] = tool.Name
 	values["Version"] = tool.Version
@@ -98,7 +98,7 @@ func createTemplateVariablesForTool(tool *tool.Tool) (map[string]interface{}, er
 	return values, nil
 }
 
-func createTemplateVariablesForToolByName(toolName string) (map[string]interface{}, error) {
+func createTemplateVariablesForToolByName(toolName string) (map[string]any, error) {
 	tool, err := tools.GetByName(toolName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get tool: %s", err)
@@ -115,7 +115,7 @@ func printToolInternals(w io.Writer, toolName string) error {
 	return printToolInternalsWithIndentation(w, toolName, 2, values)
 }
 
-func printToolInternalsWithIndentation(w io.Writer, toolName string, indentation int, values map[string]interface{}) error {
+func printToolInternalsWithIndentation(w io.Writer, toolName string, indentation int, values map[string]any) error {
 	tool, err := tools.GetByName(toolName)
 	if err != nil {
 		return fmt.Errorf("failed to get tool: %s", err)
@@ -149,7 +149,7 @@ func printToolUsage(w io.Writer, toolName string) error {
 	return printToolUsageWithIndentation(w, toolName, 2, values)
 }
 
-func printToolUsageWithIndentation(w io.Writer, toolName string, indentation int, values map[string]interface{}) error {
+func printToolUsageWithIndentation(w io.Writer, toolName string, indentation int, values map[string]any) error {
 	tool, err := tools.GetByName(toolName)
 	if err != nil {
 		return fmt.Errorf("failed to get tool: %s", err)
@@ -183,7 +183,7 @@ func printToolUpdate(w io.Writer, toolName string) error {
 	return printToolUpdateWithIndentation(w, toolName, 2, values)
 }
 
-func printToolUpdateWithIndentation(w io.Writer, toolName string, indentation int, values map[string]interface{}) error {
+func printToolUpdateWithIndentation(w io.Writer, toolName string, indentation int, values map[string]any) error {
 	tool, err := tools.GetByName(toolName)
 	if err != nil {
 		return fmt.Errorf("failed to get tool: %s", err)
