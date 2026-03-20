@@ -12,12 +12,14 @@ var (
 	bumpDockerfileName     = "Dockerfile"
 	bumpComposeFileName    = "compose.yaml"
 	bumpKubernetesFileName = ""
+	bumpGitLabCiFileName   = ".gitlab-ci.yml"
 )
 
 func initBumpCmd() {
 	bumpDockerfileCmd.Flags().StringVarP(&bumpDockerfileName, "file", "f", bumpDockerfileName, "Path to Dockerfile")
 	bumpComposeCmd.Flags().StringVarP(&bumpComposeFileName, "file", "f", bumpComposeFileName, "Path to compose file")
 	bumpKubernetesCmd.Flags().StringVarP(&bumpKubernetesFileName, "file", "f", bumpKubernetesFileName, "Path to Kubernetes manifest")
+	bumpGitlabCiCmd.Flags().StringVarP(&bumpGitLabCiFileName, "file", "f", bumpGitLabCiFileName, "Path to GitLab CI file")
 
 	err := bumpKubernetesCmd.MarkFlagRequired("file")
 	if err != nil {
@@ -27,6 +29,7 @@ func initBumpCmd() {
 	bumpCmd.AddCommand(bumpDockerfileCmd)
 	bumpCmd.AddCommand(bumpComposeCmd)
 	bumpCmd.AddCommand(bumpKubernetesCmd)
+	bumpCmd.AddCommand(bumpGitlabCiCmd)
 	rootCmd.AddCommand(bumpCmd)
 }
 
@@ -77,6 +80,18 @@ var bumpKubernetesCmd = &cobra.Command{
 	RunE:  processKubernetesFileCmd,
 }
 
+var bumpGitlabCiCmd = &cobra.Command{
+	Use: "gitlab-ci",
+	Aliases: []string{
+		"gitlab",
+		"gl",
+	},
+	Short: "Bump image references in a GitLab CI file",
+	Long:  header + "\nBump image references in a GitLab CI file",
+	Args:  cobra.NoArgs,
+	RunE:  processGitlabCiFileCmd,
+}
+
 func processBumpDockerfileCmd(cmd *cobra.Command, args []string) error {
 	assertMetadataFileExists()
 	assertMetadataIsLoaded()
@@ -108,6 +123,18 @@ func processKubernetesFileCmd(cmd *cobra.Command, args []string) error {
 	err := parse.BumpKubernetesFile(bumpKubernetesFileName, &tools)
 	if err != nil {
 		return fmt.Errorf("failed to bump kubernetes file: %w", err)
+	}
+
+	return nil
+}
+
+func processGitlabCiFileCmd(cmd *cobra.Command, args []string) error {
+	assertMetadataFileExists()
+	assertMetadataIsLoaded()
+
+	err := parse.BumpGitlabCiFile(bumpGitLabCiFileName, &tools)
+	if err != nil {
+		return fmt.Errorf("failed to bump GitLab CI file: %w", err)
 	}
 
 	return nil
