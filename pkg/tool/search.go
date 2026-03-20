@@ -157,3 +157,24 @@ func (tools *Tools) ResolveDependencies(queue *Tools, toolName string) error {
 
 	return nil
 }
+
+func (tools *Tools) TraverseRuntimeDependencies(toolName string, skipDependencies bool, callback func(tool *Tool) error) error {
+	tool, err := tools.GetByName(toolName)
+	if err != nil {
+		logging.Error.Printfln("Error getting tool %s", toolName)
+		return fmt.Errorf("unable to find tool %s: %s", toolName, err)
+	}
+
+	if !skipDependencies {
+		for _, depName := range tool.RuntimeDependencies {
+			tools.TraverseRuntimeDependencies(depName, skipDependencies, callback)
+		}
+	}
+
+	err = callback(tool)
+	if err != nil {
+		return fmt.Errorf("failed callback for tool %s: %s", tool.Name, err)
+	}
+
+	return nil
+}

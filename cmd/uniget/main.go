@@ -360,6 +360,7 @@ func init() {
 	initSelfUpgradeCmd()
 	initShimCmd()
 	initTagsCmd()
+	initTestCmd()
 	initUninstallCmd()
 	initUpdateCmd()
 	initUpgradeCmd()
