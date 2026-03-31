@@ -221,6 +221,16 @@ func (tool *Tool) Print(w io.Writer) {
 		}
 	}
 
+	if len(tool.Lifecycle.RenamedTo) > 0 {
+		//nolint:errcheck
+		fmt.Fprintf(w, "  Lifecycle:\n")
+		fmt.Fprintf(w, "    Renamed to: %s\n", tool.Lifecycle.RenamedTo)
+	} else if len(tool.Lifecycle.RemovedWithReason) > 0 {
+		//nolint:errcheck
+		fmt.Fprintf(w, "  Lifecycle:\n")
+		fmt.Fprintf(w, "    Removed with reason: %s\n", tool.Lifecycle.RemovedWithReason)
+	}
+
 	//nolint:errcheck
 	fmt.Fprintf(w, "  Status\n")
 	//nolint:errcheck

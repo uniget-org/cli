@@ -152,6 +152,30 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 	}
 	logging.Debugf("Planned %d tool(s)", len(plannedTools.Tools))
 
+	renamedTools := make(map[string]string, 0)
+	removedTools := make(map[string]string, 0)
+	for _, plannedTool := range plannedTools.Tools {
+		if len(plannedTool.Lifecycle.RenamedTo) > 0 {
+			renamedTools[plannedTool.Name] = plannedTool.Lifecycle.RenamedTo
+
+		} else if len(plannedTool.Lifecycle.RemovedWithReason) > 0 {
+			removedTools[plannedTool.Name] = plannedTool.Lifecycle.RemovedWithReason
+		}
+	}
+	if len(renamedTools) > 0 {
+		for oldName, newName := range renamedTools {
+			logging.Warning.Printfln("%s was renamed. Please uninstall %s and install %s manually and try again.", oldName, oldName, newName)
+		}
+	}
+	if len(removedTools) > 0 {
+		for oldName, reason := range removedTools {
+			logging.Warning.Printfln("%s was removed: %s. Please uninstall %s manually and try again.", oldName, reason, oldName)
+		}
+	}
+	if len(renamedTools) > 0 || len(removedTools) > 0 {
+
+	}
+
 	// Populate status of planned tools
 	for index, tool := range plannedTools.Tools {
 		if skipDependencies && !tool.Status.IsRequested {

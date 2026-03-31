@@ -23,6 +23,11 @@ type Source struct {
 	Repository string `json:"repository" yaml:"repository"`
 }
 
+type Lifecycle struct {
+	RenamedTo         string `json:"renamed_to" yaml:"renamed_to"`
+	RemovedWithReason string `json:"removed_with_reason" yaml:"removed_with_reason"`
+}
+
 type Tool struct {
 	SchemaVersion       string     `json:"schema_version,omitempty" yaml:"schema_version,omitempty"`
 	Name                string     `json:"name" yaml:"name"`
@@ -41,6 +46,7 @@ type Tool struct {
 	Messages            Messages   `json:"messages,omitempty" yaml:"messages,omitempty"`
 	Renovate            Renovate   `json:"renovate,omitempty" yaml:"renovate,omitempty"`
 	Sources             []Source   `json:"sources" yaml:"sources"`
+	Lifecycle           Lifecycle  `json:"lifecycle,omitempty" yaml:"lifecycle,omitempty"`
 	Status              ToolStatus //`json:"status,omitempty" yaml:"status,omitempty"`
 }
 
