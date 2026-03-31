@@ -1,4 +1,4 @@
-#syntax=docker/dockerfile:1.22.0
+#syntax=docker/dockerfile:1.23.0
 #check=skip=SecretsUsedInArgOrEnv
 
 FROM ghcr.io/uniget-org/tools/goreleaser:2.13.3@sha256:71935839d528f9abd9182763d070b90bf22c3e9ddbe5307fe4e314c0e96bedfe AS uniget-goreleaser
