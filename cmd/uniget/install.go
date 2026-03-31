@@ -173,7 +173,7 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 		}
 	}
 	if len(renamedTools) > 0 || len(removedTools) > 0 {
-		return fmt.Errorf("renamed or removed tools require your attention.")
+		return fmt.Errorf("renamed or removed tools require your attention")
 	}
 
 	// Populate status of planned tools

@@ -186,6 +186,14 @@ func uninstallFiles(installedFiles []string) error {
 		if file == "" {
 			continue
 		}
+
+		root, err := os.OpenRoot(viper.GetString("prefix") + "/" + viper.GetString("target"))
+		if err != nil {
+			return err
+		}
+		//nolint:errcheck
+		defer root.Close()
+
 		if strings.HasPrefix(file, "/") {
 			if !strings.HasPrefix(file, viper.GetString("prefix")+"/"+viper.GetString("target")) {
 				logging.Warning.Printfln("Skipping %s because it is not safe to remove", file)
@@ -196,13 +204,13 @@ func uninstallFiles(installedFiles []string) error {
 		prefixedFile := viper.GetString("prefix") + "/" + file
 		logging.Debugf("prefixed line %s", prefixedFile)
 
-		_, err := os.Lstat(prefixedFile)
+		_, err = root.Lstat(prefixedFile) // #nosec G703 - Path is checked for correct prefix
 		if err != nil {
 			logging.Debugf("Unable to stat %s: %s", prefixedFile, err)
 			continue
 		}
 
-		err = os.Remove(prefixedFile)
+		err = root.Remove(prefixedFile) // #nosec G703 - Path is checked for correct prefix
 		if err != nil {
 			return fmt.Errorf("unable to remove %s: %s", prefixedFile, err)
 		}

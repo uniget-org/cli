@@ -252,12 +252,20 @@ func dirList(path string) ([]string, error) {
 
 func dirPrune(path string) (int, error) {
 	var deleted int
-	err := filepath.Walk(path, func(p string, info os.FileInfo, err error) error {
+
+	root, err := os.OpenRoot(path)
+	if err != nil {
+		return deleted, err
+	}
+	//nolint:errcheck
+	defer root.Close()
+
+	err = filepath.Walk(path, func(p string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 		if !info.IsDir() {
-			if removeErr := os.Remove(p); removeErr != nil {
+			if removeErr := root.Remove(p); removeErr != nil {
 				return fmt.Errorf("failed to remove file %s: %w", p, removeErr)
 			}
 			deleted++
