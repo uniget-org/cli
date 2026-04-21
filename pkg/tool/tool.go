@@ -6,13 +6,14 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"slices"
 	"strings"
 
 	"gitlab.com/uniget-org/cli/pkg/logging"
 )
 
 func (tool *Tool) GetCamelCaseName() string {
-	camelCaseName := ""
+	var camelCaseName strings.Builder
 	re, err := regexp.Compile("[a-zA-Z0-9]") // Ensure the regex is compiled
 	if err != nil {
 		logging.Error.Printfln("Error compiling regex: %s", err)
@@ -24,7 +25,7 @@ func (tool *Tool) GetCamelCaseName() string {
 
 		// if a new word was detected, uppercase the character
 		if newWord {
-			camelCaseName += strings.ToUpper(string(char))
+			camelCaseName.WriteString(strings.ToUpper(string(char)))
 			newWord = false
 			continue
 		}
@@ -36,9 +37,9 @@ func (tool *Tool) GetCamelCaseName() string {
 		}
 
 		// all other characters are added as lowercase
-		camelCaseName += strings.ToLower(string(char))
+		camelCaseName.WriteString(strings.ToLower(string(char)))
 	}
-	return camelCaseName
+	return camelCaseName.String()
 }
 
 func (tool *Tool) MatchesName(term string) bool {
@@ -52,13 +53,7 @@ func (tool *Tool) MatchesDescription(term string) bool {
 }
 
 func (tool *Tool) HasTag(term string) bool {
-	for _, tag := range tool.Tags {
-		if tag == term {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(tool.Tags, term)
 }
 
 func (tool *Tool) MatchesTag(term string) bool {
@@ -72,23 +67,11 @@ func (tool *Tool) MatchesTag(term string) bool {
 }
 
 func (tool *Tool) HasBuildDependency(term string) bool {
-	for _, dep := range tool.BuildDependencies {
-		if dep == term {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(tool.BuildDependencies, term)
 }
 
 func (tool *Tool) HasRuntimeDependency(term string) bool {
-	for _, dep := range tool.RuntimeDependencies {
-		if dep == term {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(tool.RuntimeDependencies, term)
 }
 
 func (tool *Tool) MatchesBuildDependency(term string) bool {

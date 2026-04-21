@@ -29,8 +29,8 @@ func applyPathRewrites(path string, rules []PathRewrite) string {
 
 		switch rule.Operation {
 		case "REPLACE":
-			if strings.HasPrefix(newPath, rule.Source) {
-				newPath = rule.Target + strings.TrimPrefix(newPath, rule.Source)
+			if after, ok := strings.CutPrefix(newPath, rule.Source); ok {
+				newPath = rule.Target + after
 				logging.Tracef("    Applied rule")
 				ruleWasApplied = true
 			}

@@ -43,10 +43,10 @@ type Tool struct {
 	Homepage            string     `json:"homepage,omitempty" yaml:"homepage,omitempty"`
 	Repository          string     `json:"repository" yaml:"repository"`
 	Description         string     `json:"description" yaml:"description"`
-	Messages            Messages   `json:"messages,omitempty" yaml:"messages,omitempty"`
-	Renovate            Renovate   `json:"renovate,omitempty" yaml:"renovate,omitempty"`
+	Messages            Messages   `json:"messages" yaml:"messages,omitempty"`
+	Renovate            Renovate   `json:"renovate" yaml:"renovate,omitempty"`
 	Sources             []Source   `json:"sources" yaml:"sources"`
-	Lifecycle           Lifecycle  `json:"lifecycle,omitempty" yaml:"lifecycle,omitempty"`
+	Lifecycle           Lifecycle  `json:"lifecycle" yaml:"lifecycle,omitempty"`
 	Status              ToolStatus //`json:"status,omitempty" yaml:"status,omitempty"`
 }
 

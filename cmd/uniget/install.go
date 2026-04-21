@@ -81,7 +81,7 @@ var installCmd = &cobra.Command{
 			if err != nil {
 				return fmt.Errorf("unable to read file %s: %s", filename, err)
 			}
-			for _, line := range strings.Split(string(data), "\n") {
+			for line := range strings.SplitSeq(string(data), "\n") {
 				if len(line) == 0 {
 					continue
 				} else if strings.HasPrefix(line, "#") {

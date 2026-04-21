@@ -63,39 +63,39 @@ func (tools *Tools) ListWithStatus(w io.Writer) {
 }
 
 func (tool *Tool) ShowInternals(indentation int) string {
-	result := ""
-	for _, line := range strings.Split(tool.Messages.Internals, "\n") {
+	var result strings.Builder
+	for line := range strings.SplitSeq(tool.Messages.Internals, "\n") {
 		if line == "" {
 			continue
 		}
-		result += fmt.Sprintf("%s%s\n", strings.Repeat(" ", indentation), line)
+		result.WriteString(fmt.Sprintf("%s%s\n", strings.Repeat(" ", indentation), line))
 	}
 
-	return result
+	return result.String()
 }
 
 func (tool *Tool) ShowUsage(indentation int) string {
-	result := ""
-	for _, line := range strings.Split(tool.Messages.Usage, "\n") {
+	var result strings.Builder
+	for line := range strings.SplitSeq(tool.Messages.Usage, "\n") {
 		if line == "" {
 			continue
 		}
-		result += fmt.Sprintf("%s%s\n", strings.Repeat(" ", indentation), line)
+		result.WriteString(fmt.Sprintf("%s%s\n", strings.Repeat(" ", indentation), line))
 	}
 
-	return result
+	return result.String()
 }
 
 func (tool *Tool) ShowUpdate(indentation int) string {
-	result := ""
-	for _, line := range strings.Split(tool.Messages.Update, "\n") {
+	var result strings.Builder
+	for line := range strings.SplitSeq(tool.Messages.Update, "\n") {
 		if line == "" {
 			continue
 		}
-		result += fmt.Sprintf("%s%s\n", strings.Repeat(" ", indentation), line)
+		result.WriteString(fmt.Sprintf("%s%s\n", strings.Repeat(" ", indentation), line))
 	}
 
-	return result
+	return result.String()
 }
 
 func (tool *Tool) Print(w io.Writer) {
