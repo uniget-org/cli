@@ -5,6 +5,10 @@ GO_VERSION = $(shell git describe --tags --abbrev=0 | tr -d v)
 info:
 	@echo "GO_VERSION: $(GO_VERSION)"
 
+.PHONY:
+fix:
+	@go fix ./...
+
 coverage.out.tmp: \
 		$(GO_SOURCES)
 	@go test -v -buildvcs -coverprofile ./coverage.out.tmp ./...
