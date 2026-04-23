@@ -68,7 +68,7 @@ func (tool *Tool) ShowInternals(indentation int) string {
 		if line == "" {
 			continue
 		}
-		result.WriteString(fmt.Sprintf("%s%s\n", strings.Repeat(" ", indentation), line))
+		fmt.Fprintf(&result, "%s%s\n", strings.Repeat(" ", indentation), line)
 	}
 
 	return result.String()
@@ -80,7 +80,7 @@ func (tool *Tool) ShowUsage(indentation int) string {
 		if line == "" {
 			continue
 		}
-		result.WriteString(fmt.Sprintf("%s%s\n", strings.Repeat(" ", indentation), line))
+		fmt.Fprintf(&result, "%s%s\n", strings.Repeat(" ", indentation), line)
 	}
 
 	return result.String()
@@ -92,7 +92,7 @@ func (tool *Tool) ShowUpdate(indentation int) string {
 		if line == "" {
 			continue
 		}
-		result.WriteString(fmt.Sprintf("%s%s\n", strings.Repeat(" ", indentation), line))
+		fmt.Fprintf(&result, "%s%s\n", strings.Repeat(" ", indentation), line)
 	}
 
 	return result.String()
