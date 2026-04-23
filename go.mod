@@ -1,6 +1,6 @@
 module gitlab.com/uniget-org/cli
 
-go 1.25.5
+go 1.26.0
 
 require (
 	github.com/charmbracelet/glamour v1.0.0
@@ -13,7 +13,7 @@ require (
 	github.com/google/safearchive v0.0.0-20241025131057-f7ce9d7b6f9c
 	github.com/google/safeopen v0.0.0-20260327150837-43626d6f4685
 	github.com/hashicorp/go-version v1.9.0
-	github.com/jedib0t/go-pretty/v6 v6.7.9
+	github.com/jedib0t/go-pretty/v6 v6.7.10
 	github.com/moby/buildkit v0.29.0
 	github.com/moby/moby/api v1.54.2
 	github.com/moby/moby/client v0.4.1
@@ -27,9 +27,9 @@ require (
 	github.com/spf13/viper v1.21.0
 	go.yaml.in/yaml/v3 v3.0.4
 	golang.org/x/sys v0.43.0
-	k8s.io/api v0.35.4
-	k8s.io/apimachinery v0.35.4
-	k8s.io/client-go v0.35.4
+	k8s.io/api v0.36.0
+	k8s.io/apimachinery v0.36.0
+	k8s.io/client-go v0.36.0
 )
 
 require (
@@ -54,7 +54,7 @@ require (
 	github.com/charmbracelet/lipgloss v1.1.1-0.20250404203927-76690c660834 // indirect
 	github.com/charmbracelet/x/ansi v0.11.7 // indirect
 	github.com/charmbracelet/x/cellbuf v0.0.15 // indirect
-	github.com/charmbracelet/x/exp/slice v0.0.0-20260420102150-fe550f2efce5 // indirect
+	github.com/charmbracelet/x/exp/slice v0.0.0-20260422141420-a6cbdff8a7e2 // indirect
 	github.com/charmbracelet/x/exp/strings v0.1.0 // indirect
 	github.com/clipperhouse/displaywidth v0.11.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
@@ -190,7 +190,7 @@ require (
 	google.golang.org/genproto/googleapis/api v0.0.0-20260420184626-e10c466a9529 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260420184626-e10c466a9529 // indirect
 	google.golang.org/grpc v1.80.0 // indirect
-	google.golang.org/protobuf v1.36.11 // indirect
+	google.golang.org/protobuf v1.36.12-0.20260120151049-f2248ac996af // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	k8s.io/klog/v2 v2.140.0 // indirect
