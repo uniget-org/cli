@@ -17,11 +17,11 @@ func NewProgressReader(onTotalUpdate func(int64), onProgress func(int64)) Progre
 	}
 }
 
-func (pr ProgressReader) SetReader(reader io.ReadCloser) {
+func (pr *ProgressReader) SetReader(reader io.ReadCloser) {
 	pr.reader = reader
 }
 
-func (pr ProgressReader) SetTotal(n int64) {
+func (pr *ProgressReader) SetTotal(n int64) {
 	pr.total = n
 	pr.onTotalUpdate(pr.total)
 }
