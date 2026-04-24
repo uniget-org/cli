@@ -322,9 +322,6 @@ var (
 			return nil
 		},
 	}
-	minimumCliVersionForSchemaVersion = map[string]string{
-		"1": "0.1.0",
-	}
 	toolCache cache.Cache = cache.NewNoneCache()
 )
 
