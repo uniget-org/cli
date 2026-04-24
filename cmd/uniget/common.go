@@ -3,42 +3,10 @@ package main
 import (
 	"os"
 
-	goversion "github.com/hashicorp/go-version"
 	"github.com/spf13/viper"
 	"gitlab.com/uniget-org/cli/pkg/logging"
-	"gitlab.com/uniget-org/cli/pkg/tool"
 	"golang.org/x/sys/unix"
 )
-
-func checkClientVersionRequirement(tool *tool.Tool) {
-	if version == "main" {
-		logging.Warning.Printfln("You are running an unreleased version of uniget. Cannot check client version requirement for %s", tool.Name)
-		return
-	}
-
-	var requiredCliVersion = "0.0.0"
-	for schemaVersion, cliVersion := range minimumCliVersionForSchemaVersion {
-		if tool.SchemaVersion > schemaVersion {
-			requiredCliVersion = cliVersion
-		}
-	}
-
-	logging.Debugf("Checking if client version %s is at least %s", version, requiredCliVersion)
-
-	v1, err := goversion.NewVersion(requiredCliVersion)
-	if err != nil {
-		panic(err)
-	}
-	v2, err := goversion.NewVersion(version)
-	if err != nil {
-		panic(err)
-	}
-
-	if v1.GreaterThan(v2) {
-		logging.Error.Printfln("The tool %s requires at least version %s but you have %s", tool.Name, requiredCliVersion, version)
-		os.Exit(1)
-	}
-}
 
 func directoryExists(directory string) bool {
 	logging.Debugf("Checking if directory %s exists", directory)

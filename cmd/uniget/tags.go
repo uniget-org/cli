@@ -32,9 +32,7 @@ var tagsCmd = &cobra.Command{
 		assertMetadataIsLoaded()
 
 		tags := make(map[string]int)
-		for index, tool := range tools.Tools {
-			checkClientVersionRequirement(&tools.Tools[index])
-
+		for _, tool := range tools.Tools {
 			for _, name := range tool.Tags {
 				_, exists := tags[name]
 				if !exists {

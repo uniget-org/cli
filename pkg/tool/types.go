@@ -29,7 +29,6 @@ type Lifecycle struct {
 }
 
 type Tool struct {
-	SchemaVersion       string     `json:"schema_version,omitempty" yaml:"schema_version,omitempty"`
 	Name                string     `json:"name" yaml:"name"`
 	License             License    `json:"license" yaml:"license"`
 	Version             string     `json:"version" yaml:"version"`

@@ -56,7 +56,6 @@ var describeCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("error getting tool %s", toolName)
 		}
-		checkClientVersionRequirement(tool)
 
 		err = tool.UpdateStatus(viper.GetString("prefix"), viper.GetString("target"), cacheDirectory, arch, altArch)
 		if err != nil {

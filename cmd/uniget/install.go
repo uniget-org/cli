@@ -269,8 +269,7 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 		return fmt.Errorf("unable to run pre-install hooks: %s", err)
 	}
 	var postHookTools tool.Tools
-	for index, plannedTool := range plannedTools.Tools {
-		checkClientVersionRequirement(&plannedTools.Tools[index])
+	for _, plannedTool := range plannedTools.Tools {
 
 		if plannedTool.Status.VersionMatches && !reinstall {
 			//logging.Skip.Printfln("Skipping %s %s because it is already installed.", plannedTool.Name, plannedTool.Version)
@@ -317,7 +316,6 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 					installSpinner.Fail()
 					return fmt.Errorf("unable to find dependency %s", depName)
 				}
-				checkClientVersionRequirement(dep)
 
 				err = dep.GetBinaryStatus()
 				if err != nil {

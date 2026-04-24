@@ -49,7 +49,6 @@ var uninstallCmd = &cobra.Command{
 			if err != nil {
 				return fmt.Errorf("unable to find tool %s: %s", toolName, err)
 			}
-			checkClientVersionRequirement(tool)
 
 			err = tool.UpdateStatus(viper.GetString("prefix"), viper.GetString("target"), cacheDirectory, arch, altArch)
 			if err != nil {

@@ -47,7 +47,6 @@ var listCmd = &cobra.Command{
 		if installedOnly {
 			var installedTools tool.Tools
 			for index := range tools.Tools {
-				checkClientVersionRequirement(&tools.Tools[index])
 
 				err := tools.Tools[index].UpdateStatus(viper.GetString("prefix"), viper.GetString("target"), cacheDirectory, arch, altArch)
 				if err != nil {
@@ -63,7 +62,6 @@ var listCmd = &cobra.Command{
 		} else if upgradableOnly {
 			var installedTools tool.Tools
 			for index := range tools.Tools {
-				checkClientVersionRequirement(&tools.Tools[index])
 
 				err := tools.Tools[index].UpdateStatus(viper.GetString("prefix"), viper.GetString("target"), cacheDirectory, arch, altArch)
 				if err != nil {

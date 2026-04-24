@@ -43,10 +43,6 @@ func LoadFromReader(data io.ReadCloser) (Tools, error) {
 		if tool.Binary == "" {
 			tools.Tools[index].Binary = fmt.Sprintf("${target}/bin/%s", tool.Name)
 		}
-
-		if tool.SchemaVersion == "" {
-			tools.Tools[index].SchemaVersion = "1"
-		}
 	}
 
 	return tools, nil

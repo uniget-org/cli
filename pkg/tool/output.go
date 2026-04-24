@@ -101,10 +101,6 @@ func (tool *Tool) ShowUpdate(indentation int) string {
 func (tool *Tool) Print(w io.Writer) {
 	//nolint:errcheck
 	fmt.Fprintf(w, "Name: %s\n", tool.Name)
-	if len(tool.SchemaVersion) > 0 {
-		//nolint:errcheck
-		fmt.Fprintf(w, "  Schema version: %s\n", tool.SchemaVersion)
-	}
 	//nolint:errcheck
 	fmt.Fprintf(w, "  Description: %s\n", tool.Description)
 	//nolint:errcheck

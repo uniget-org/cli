@@ -47,7 +47,6 @@ var releaseNotesCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("failed to get tool: %s", err)
 		}
-		checkClientVersionRequirement(tool)
 
 		var payload []byte
 		var bodyFieldName string
