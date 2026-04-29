@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"gitlab.com/uniget-org/cli/pkg/containers"
+	"gitlab.com/uniget-org/cli/pkg/tui"
 )
 
 func TestToolRefKey(t *testing.T) {
@@ -86,7 +87,7 @@ func TestFileCacheGet(t *testing.T) {
 		t.Errorf("unexpected cache hit")
 	}
 
-	err := cache.Get(toolRef, func(reader io.ReadCloser) error {
+	err := cache.Get(toolRef, tui.NewProgressReader(nil, nil), func(reader io.ReadCloser) error {
 		data, err := io.ReadAll(reader)
 		if err != nil {
 			t.Errorf("failed to read data for key %s after cache hit: %v", toolRef.Key(), err)
@@ -104,7 +105,7 @@ func TestFileCacheGet(t *testing.T) {
 		t.Errorf("failed to get data from cache: %v", err)
 	}
 
-	err = cache.Get(toolRef, func(reader io.ReadCloser) error {
+	err = cache.Get(toolRef, tui.NewProgressReader(nil, nil), func(reader io.ReadCloser) error {
 		data, err := io.ReadAll(reader)
 		if err != nil {
 			t.Errorf("failed to read data for key %s after cache hit: %v", toolRef.Key(), err)

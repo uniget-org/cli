@@ -15,6 +15,7 @@ import (
 	"gitlab.com/uniget-org/cli/pkg/archive"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
+	"gitlab.com/uniget-org/cli/pkg/tui"
 )
 
 func LoadFromFile(filename string) (Tools, error) {
@@ -52,7 +53,7 @@ func LoadFromBytes(data []byte) (Tools, error) {
 	return LoadFromReader(io.NopCloser(bytes.NewReader(data)))
 }
 
-func LoadMetadata(registry []string, repository []string, tag string) (*Tools, error) {
+func LoadMetadata(registry []string, repository []string, tag string, p tui.ProgressReader) (*Tools, error) {
 	t, err := containers.FindToolRef(registry, repository, "metadata", tag)
 	if err != nil {
 		return nil, fmt.Errorf("error finding metadata: %s", err)
@@ -66,7 +67,7 @@ func LoadMetadata(registry []string, repository []string, tag string) (*Tools, e
 	}()
 
 	var metadataJsonReader io.ReadCloser
-	err = containers.GetFirstLayerFromRegistry(context.Background(), rc, t.GetRef(), func(reader io.ReadCloser) error {
+	err = containers.GetFirstLayerFromRegistry(context.Background(), rc, t.GetRef(), p, func(reader io.ReadCloser) error {
 		return archive.ProcessTarContents(reader, func(reader *tar.Reader, header *tar.Header) error {
 			if header.Typeflag == tar.TypeReg && header.Name == "metadata.json" {
 				metadataJsonReader = io.NopCloser(reader)
@@ -88,7 +89,7 @@ func LoadMetadata(registry []string, repository []string, tag string) (*Tools, e
 	return &tools, nil
 }
 
-func LoadMetadataFromRegistry(registry string, imageRepository string, metadataImageTag string) ([]byte, error) {
+func LoadMetadataFromRegistry(registry string, imageRepository string, metadataImageTag string, p tui.ProgressReader) ([]byte, error) {
 	t, err := containers.FindToolRef([]string{registry}, []string{imageRepository}, "metadata", metadataImageTag)
 	if err != nil {
 		return nil, fmt.Errorf("error finding metadata: %s", err)
@@ -102,7 +103,7 @@ func LoadMetadataFromRegistry(registry string, imageRepository string, metadataI
 	}()
 
 	var metadata Tools
-	err = containers.GetFirstLayerFromRegistry(context.Background(), rc, t.GetRef(), func(reader io.ReadCloser) error {
+	err = containers.GetFirstLayerFromRegistry(context.Background(), rc, t.GetRef(), p, func(reader io.ReadCloser) error {
 		err = archive.ProcessTarContents(reader, func(reader *tar.Reader, header *tar.Header) error {
 			if header.Typeflag == tar.TypeReg && header.Name == "metadata.json" {
 				data, err := io.ReadAll(reader)

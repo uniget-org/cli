@@ -11,6 +11,7 @@ import (
 	"github.com/moby/moby/api/types/image"
 	"github.com/moby/moby/client"
 	"gitlab.com/uniget-org/cli/pkg/logging"
+	"gitlab.com/uniget-org/cli/pkg/tui"
 )
 
 func GetDockerClient() (*client.Client, error) {
@@ -37,7 +38,7 @@ func DockerIsAvailable() bool {
 	return ping.APIVersion != ""
 }
 
-func GetFirstLayerFromDockerImage(cli *client.Client, ref *ToolRef, callback func(reader io.ReadCloser) error) error {
+func GetFirstLayerFromDockerImage(cli *client.Client, ref *ToolRef, p tui.ProgressReader, callback func(reader io.ReadCloser) error) error {
 	logging.Tracef("Getting first layer for %s using docker", ref)
 
 	shaString, err := GetFirstLayerShaFromRegistry(ref)
@@ -46,7 +47,7 @@ func GetFirstLayerFromDockerImage(cli *client.Client, ref *ToolRef, callback fun
 	}
 	sha := shaString[7:]
 
-	err = ReadDockerImage(cli, ref.String(), func(reader io.ReadCloser) error {
+	err = ReadDockerImage(cli, ref.String(), p, func(reader io.ReadCloser) error {
 		err := UnpackLayerFromDockerImage(reader, sha, func(reader io.ReadCloser) error {
 			err = callback(reader)
 			if err != nil {
@@ -92,7 +93,7 @@ func CheckDockerImageExists(cli *client.Client, ref string) bool {
 	return err == nil
 }
 
-func ReadDockerImage(cli *client.Client, ref string, callback func(reader io.ReadCloser) error) error {
+func ReadDockerImage(cli *client.Client, ref string, p tui.ProgressReader, callback func(reader io.ReadCloser) error) error {
 	ctx := context.Background()
 
 	err := PullDockerImage(cli, ref)
@@ -111,7 +112,9 @@ func ReadDockerImage(cli *client.Client, ref string, callback func(reader io.Rea
 		return fmt.Errorf("failed to save image: %s", err)
 	}
 
-	err = callback(reader)
+	p.SetTotal(imageInspect.Size)
+	p.SetReader(reader)
+	err = callback(p)
 	if err != nil {
 		return fmt.Errorf("failed to execute callback: %w", err)
 	}

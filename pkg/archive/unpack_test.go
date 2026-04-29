@@ -10,6 +10,7 @@ import (
 	"github.com/google/safearchive/tar"
 
 	"gitlab.com/uniget-org/cli/pkg/containers"
+	"gitlab.com/uniget-org/cli/pkg/tui"
 )
 
 var (
@@ -30,7 +31,7 @@ func loadTool(t *testing.T, callback func(reader io.ReadCloser) error) error {
 			t.Errorf("failed to close ref %s: %v", r, err)
 		}
 	}()
-	err := containers.GetFirstLayerFromRegistry(ctx, rc, r, func(reader io.ReadCloser) error {
+	err := containers.GetFirstLayerFromRegistry(ctx, rc, r, tui.NewProgressReader(nil, nil), func(reader io.ReadCloser) error {
 		return callback(reader)
 	})
 	if err != nil {

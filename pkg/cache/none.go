@@ -10,6 +10,7 @@ import (
 	rref "github.com/regclient/regclient/types/ref"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
+	"gitlab.com/uniget-org/cli/pkg/tui"
 )
 
 type NoneCache struct{}
@@ -18,7 +19,7 @@ func NewNoneCache() *NoneCache {
 	return &NoneCache{}
 }
 
-func (c *NoneCache) Get(tool *containers.ToolRef, callback func(reader io.ReadCloser) error) error {
+func (c *NoneCache) Get(tool *containers.ToolRef, p tui.ProgressReader, callback func(reader io.ReadCloser) error) error {
 	ctx := context.Background()
 
 	r, err := rref.New(tool.String())
@@ -39,7 +40,7 @@ func (c *NoneCache) Get(tool *containers.ToolRef, callback func(reader io.ReadCl
 
 	logging.Debugf("NoneCache: Pulling %s", r)
 
-	err = containers.GetFirstLayerFromRegistry(ctx, rc, r, func(reader io.ReadCloser) error {
+	err = containers.GetFirstLayerFromRegistry(ctx, rc, r, p, func(reader io.ReadCloser) error {
 		err := callback(reader)
 		if err != nil {
 			return fmt.Errorf("failed to execute callback: %w", err)

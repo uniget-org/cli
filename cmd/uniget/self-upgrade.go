@@ -14,6 +14,7 @@ import (
 	"gitlab.com/uniget-org/cli/pkg/archive"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
+	"gitlab.com/uniget-org/cli/pkg/tui"
 )
 
 func initSelfUpgradeCmd() {
@@ -106,12 +107,26 @@ var selfUpgradeCmd = &cobra.Command{
 
 			return nil
 		}
-		err = toolCache.Get(ref, func(reader io.ReadCloser) error { return nil })
+
+		progressPrinter, err := pterm.DefaultProgressbar.WithTitle("Downloading uniget").WithTotal(0).WithRemoveWhenDone().Start()
+		if err != nil {
+			panic(err)
+		}
+		p := tui.NewProgressReader(
+			func(n int64) {
+				progressPrinter.Total = int(n)
+			},
+			func(n int64) {
+				progressPrinter.Add(int(n))
+			},
+		)
+
+		err = toolCache.Get(ref, p, func(reader io.ReadCloser) error { return nil })
 		if err != nil {
 			installSpinner.Fail()
 			return fmt.Errorf("unable to get image: %s", err)
 		}
-		err = toolCache.Get(ref, func(reader io.ReadCloser) error {
+		err = toolCache.Get(ref, tui.NewProgressReader(nil, nil), func(reader io.ReadCloser) error {
 			err := archive.ProcessTarContents(reader, unpackUnigetBinary)
 			if err != nil {
 				return fmt.Errorf("unable to process tar contents: %s", err)

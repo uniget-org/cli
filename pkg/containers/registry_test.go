@@ -10,6 +10,7 @@ import (
 
 	"github.com/regclient/regclient/types/platform"
 	"github.com/regclient/regclient/types/ref"
+	"gitlab.com/uniget-org/cli/pkg/tui"
 )
 
 func TestGetRegclient(t *testing.T) {
@@ -148,7 +149,7 @@ func TestGetFirstLayerFromManifest(t *testing.T) {
 		t.Errorf("failed to get platform manifest: %s", err)
 	}
 
-	err = GetFirstLayerFromManifest(context.Background(), rc, m, func(reader io.ReadCloser) error {
+	err = GetFirstLayerFromManifest(context.Background(), rc, m, tui.NewProgressReader(nil, nil), func(reader io.ReadCloser) error {
 		layer, err := io.ReadAll(reader)
 		if err != nil {
 			t.Errorf("failed to read layer: %s", err)
@@ -191,7 +192,7 @@ func TestGetFirstLayerFromRegistry(t *testing.T) {
 		}
 	}()
 
-	err = GetFirstLayerFromRegistry(context.Background(), rc, r, func(reader io.ReadCloser) error {
+	err = GetFirstLayerFromRegistry(context.Background(), rc, r, tui.NewProgressReader(nil, nil), func(reader io.ReadCloser) error {
 		layer, err := io.ReadAll(reader)
 		if err != nil {
 			t.Errorf("failed to read layer: %s", err)

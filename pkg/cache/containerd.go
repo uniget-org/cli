@@ -6,6 +6,7 @@ import (
 
 	containerd "github.com/containerd/containerd/v2/client"
 	"gitlab.com/uniget-org/cli/pkg/containers"
+	"gitlab.com/uniget-org/cli/pkg/tui"
 )
 
 type ContainerdCache struct {
@@ -27,8 +28,8 @@ func NewContainerdCache(namespace string) (*ContainerdCache, error) {
 	}, nil
 }
 
-func (c *ContainerdCache) Get(tool *containers.ToolRef, callback func(reader io.ReadCloser) error) error {
-	err := containers.GetFirstLayerFromContainerdImage(c.client, tool, func(reader io.ReadCloser) error {
+func (c *ContainerdCache) Get(tool *containers.ToolRef, p tui.ProgressReader, callback func(reader io.ReadCloser) error) error {
+	err := containers.GetFirstLayerFromContainerdImage(c.client, tool, p, func(reader io.ReadCloser) error {
 		err := callback(reader)
 		if err != nil {
 			return fmt.Errorf("failed to execute callback: %w", err)

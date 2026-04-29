@@ -5,6 +5,8 @@ import (
 	"encoding/hex"
 	"io"
 	"testing"
+
+	"gitlab.com/uniget-org/cli/pkg/tui"
 )
 
 func TestNewNoneCache(t *testing.T) {
@@ -16,7 +18,7 @@ func TestNewNoneCache(t *testing.T) {
 
 func TestNoneCacheGet(t *testing.T) {
 	c := NewNoneCache()
-	err := c.Get(toolRef, func(reader io.ReadCloser) error {
+	err := c.Get(toolRef, tui.NewProgressReader(nil, nil), func(reader io.ReadCloser) error {
 		image, err := io.ReadAll(reader)
 		if err != nil {
 			t.Errorf("Error reading image: %v", err)

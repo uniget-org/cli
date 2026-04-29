@@ -1,4 +1,4 @@
-package main
+package tui
 
 import "io"
 
@@ -23,7 +23,9 @@ func (pr *ProgressReader) SetReader(reader io.ReadCloser) {
 
 func (pr *ProgressReader) SetTotal(n int64) {
 	pr.total = n
-	pr.onTotalUpdate(pr.total)
+	if pr.onTotalUpdate != nil {
+		pr.onTotalUpdate(pr.total)
+	}
 }
 
 func (pr ProgressReader) Close() error {
@@ -32,7 +34,7 @@ func (pr ProgressReader) Close() error {
 
 func (pr ProgressReader) Read(p []byte) (int, error) {
 	n, err := pr.reader.Read(p)
-	if n > 0 {
+	if n > 0 && pr.onProgress != nil {
 		pr.onProgress(int64(n))
 	}
 	return n, err

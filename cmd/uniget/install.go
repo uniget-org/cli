@@ -17,6 +17,7 @@ import (
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 	"gitlab.com/uniget-org/cli/pkg/tool"
+	"gitlab.com/uniget-org/cli/pkg/tui"
 )
 
 var tagsMode bool
@@ -409,13 +410,27 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 				installSpinner.Fail()
 				return fmt.Errorf("error finding tool %s:%s: %s", plannedTool.Name, plannedTool.Version, err)
 			}
+
+			progressPrinter, err := pterm.DefaultProgressbar.WithTitle("Downloading").WithTotal(0).WithRemoveWhenDone().Start()
+			if err != nil {
+				panic(err)
+			}
+			p := tui.NewProgressReader(
+				func(n int64) {
+					progressPrinter.Total = int(n)
+				},
+				func(n int64) {
+					progressPrinter.Add(int(n))
+				},
+			)
+
 			logging.Debugf("Getting image %s", ref)
-			err = toolCache.Get(ref, func(reader io.ReadCloser) error { return nil })
+			err = toolCache.Get(ref, p, func(reader io.ReadCloser) error { return nil })
 			if err != nil {
 				installSpinner.Fail()
 				return fmt.Errorf("unable to get image: %s", err)
 			}
-			err = toolCache.Get(ref, func(reader io.ReadCloser) error {
+			err = toolCache.Get(ref, tui.NewProgressReader(nil, nil), func(reader io.ReadCloser) error {
 				err := installTool(plannedTool, reader)
 				if err != nil {
 					installSuccessful = false

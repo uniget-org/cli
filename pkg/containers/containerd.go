@@ -11,6 +11,7 @@ import (
 	containerd "github.com/containerd/containerd/v2/client"
 	"github.com/containerd/containerd/v2/core/images/archive"
 	"github.com/containerd/platforms"
+	"gitlab.com/uniget-org/cli/pkg/tui"
 )
 
 func GetContainerdClient() (*containerd.Client, error) {
@@ -37,14 +38,14 @@ func ContainerdIsAvailable() bool {
 	return version.Version != ""
 }
 
-func GetFirstLayerFromContainerdImage(client *containerd.Client, ref *ToolRef, callback func(reader io.ReadCloser) error) error {
+func GetFirstLayerFromContainerdImage(client *containerd.Client, ref *ToolRef, p tui.ProgressReader, callback func(reader io.ReadCloser) error) error {
 	shaString, err := GetFirstLayerShaFromRegistry(ref)
 	if err != nil {
 		return fmt.Errorf("failed to get first layer sha: %s", err)
 	}
 	sha := shaString[7:]
 
-	err = ReadContainerdImage(client, ref.String(), func(reader io.ReadCloser) error {
+	err = ReadContainerdImage(client, ref.String(), p, func(reader io.ReadCloser) error {
 		err = UnpackLayerFromDockerImage(reader, sha, func(reader io.ReadCloser) error {
 			reader, err := gzip.NewReader(reader)
 			if err != nil {
@@ -89,7 +90,7 @@ func PullContainerdImage(client *containerd.Client, ref string) error {
 	return nil
 }
 
-func ReadContainerdImage(client *containerd.Client, ref string, callback func(reader io.ReadCloser) error) error {
+func ReadContainerdImage(client *containerd.Client, ref string, p tui.ProgressReader, callback func(reader io.ReadCloser) error) error {
 	ctx := context.Background()
 
 	err := PullContainerdImage(client, ref)
@@ -105,7 +106,9 @@ func ReadContainerdImage(client *containerd.Client, ref string, callback func(re
 		return fmt.Errorf("failed to export image: %s", err)
 	}
 
-	err = callback(io.NopCloser(&imageBuffer))
+	p.SetTotal(int64(imageBuffer.Len()))
+	p.SetReader(io.NopCloser(&imageBuffer))
+	err = callback(p)
 	if err != nil {
 		return fmt.Errorf("failed to execute callback: %w", err)
 	}
