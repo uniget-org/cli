@@ -198,8 +198,6 @@ func GetLayerFromManifestByIndex(ctx context.Context, rc *regclient.RegClient, m
 	}
 
 	layer := layers[index]
-	p.SetTotal(layer.Size)
-
 	if layer.MediaType == mediatype.OCI1Layer || layer.MediaType == mediatype.OCI1LayerZstd {
 		return fmt.Errorf("only layers with gzip compression are supported (not %s)", layer.MediaType)
 	}
@@ -215,8 +213,9 @@ func GetLayerFromManifestByIndex(ctx context.Context, rc *regclient.RegClient, m
 			return fmt.Errorf("failed to get blob for digest %s: %s", layer.Digest, err)
 		}
 
+		p.SetTotal(layer.Size)
 		p.SetReader(blob)
-		err = callback(blob)
+		err = callback(p)
 		if err != nil {
 			return fmt.Errorf("failed to execute callback: %w", err)
 		}
