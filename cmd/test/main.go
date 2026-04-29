@@ -106,9 +106,9 @@ func main() {
 		}
 
 		return archive.ProcessTarContents(gzipReader, func(tarReader *tar.Reader, header *tar.Header) error {
-			if header.Typeflag == tar.TypeReg {
-				//fmt.Printf("Processing tar item: %s\n", header.Name)
-			}
+			//if header.Typeflag == tar.TypeReg {
+			//	fmt.Printf("Processing tar item: %s\n", header.Name)
+			//}
 
 			return nil
 		})
