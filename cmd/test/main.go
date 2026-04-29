@@ -84,7 +84,7 @@ func main() {
 		panic(err)
 	}
 
-	progressPrinter, err := pterm.DefaultProgressbar.WithTitle("Downloading stuff").WithTotal(0).Start()
+	progressPrinter, err := pterm.DefaultProgressbar.WithTitle("Downloading stuff").WithTotal(0).WithRemoveWhenDone().Start()
 	if err != nil {
 		panic(err)
 	}
