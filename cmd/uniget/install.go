@@ -363,6 +363,7 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 					progressPrinter.Add(int(n))
 				},
 			)
+			//nolint:errcheck
 			defer progressPrinter.Stop()
 
 		} else {
