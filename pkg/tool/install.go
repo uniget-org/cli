@@ -1,6 +1,7 @@
 package tool
 
 import (
+	"fmt"
 	"io"
 	"path/filepath"
 	"strings"
@@ -9,6 +10,7 @@ import (
 
 	"gitlab.com/uniget-org/cli/pkg/archive"
 	"gitlab.com/uniget-org/cli/pkg/logging"
+	myos "gitlab.com/uniget-org/cli/pkg/os"
 )
 
 type PathRewrite struct {
@@ -57,16 +59,43 @@ func applyPathRewrites(path string, rules []PathRewrite) string {
 	return newPath
 }
 
-func (tool *Tool) Inspect(w io.Writer, layer io.ReadCloser, rules []PathRewrite) error {
-	return archive.ProcessTarContents(layer, func(reader *tar.Reader, header *tar.Header) error {
+func (tool *Tool) Inspect(w io.Writer, layer io.ReadCloser, rules []PathRewrite) ([]string, error) {
+	result := make([]string, 0)
+	err := archive.ProcessTarContents(layer, func(reader *tar.Reader, header *tar.Header) error {
 		if header.Typeflag == tar.TypeDir {
 			return nil
 		}
 		if len(rules) > 0 {
 			header.Name = applyPathRewrites(header.Name, rules)
 		}
-		return archive.CallbackDisplayTarItem(reader, header)
+
+		switch header.Typeflag {
+		case tar.TypeDir:
+		case tar.TypeReg:
+			mode, err := myos.ConvertFileModeToString(header.Mode)
+			if err != nil {
+				return fmt.Errorf("unable to convert mode: %s", err)
+			}
+			result = append(result, fmt.Sprintf("-%s %s", mode, header.Name))
+
+		case tar.TypeSymlink, tar.TypeLink:
+			mode, err := myos.ConvertFileModeToString(header.Mode)
+			if err != nil {
+				return fmt.Errorf("unable to convert mode: %s", err)
+			}
+			result = append(result, fmt.Sprintf("l%s %s -> %s", mode, header.Name, header.Linkname))
+
+		default:
+			result = append(result, fmt.Sprintf("Unknown: %s", header.Name))
+		}
+
+		return nil
 	})
+	if err != nil {
+		return result, err
+	}
+
+	return result, nil
 }
 
 func (tool *Tool) Install(w io.Writer, layer io.ReadCloser, rules []PathRewrite, patchFile func(path string) string) ([]string, error) {
