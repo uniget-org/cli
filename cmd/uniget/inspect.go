@@ -110,7 +110,8 @@ var inspectCmd = &cobra.Command{
 		}
 
 		for _, file := range files {
-			fmt.Println(file)
+			//nolint:errcheck
+			fmt.Fprintln(logging.OutputWriter, file)
 		}
 
 		return nil
