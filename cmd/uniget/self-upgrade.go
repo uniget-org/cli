@@ -14,6 +14,7 @@ import (
 	"gitlab.com/uniget-org/cli/pkg/archive"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
+	"gitlab.com/uniget-org/cli/pkg/tui"
 )
 
 func initSelfUpgradeCmd() {
@@ -48,23 +49,17 @@ var selfUpgradeCmd = &cobra.Command{
 			return nil
 		}
 
-		var installSpinner *pterm.SpinnerPrinter
-		installSpinner, _ = pterm.DefaultSpinner.Start("Upgrading uniget")
-
 		selfExe := filepath.Base(os.Args[0])
 		if selfExe == "." {
-			installSpinner.Fail()
 			return fmt.Errorf("failed to get base name for %s", os.Args[0])
 		}
 		if selfExe != "uniget" {
-			installSpinner.Fail()
 			logging.Warning.Printf("Binary must be called uniget but is %s\n", selfExe)
 			return nil
 		}
 
 		path, err := exec.LookPath(selfExe)
 		if err != nil {
-			installSpinner.Fail()
 			logging.Error.Printfln("Failed to find %s in PATH", selfExe)
 			return fmt.Errorf("failed to find %s in PATH: %s", selfExe, err)
 		}
@@ -76,20 +71,17 @@ var selfUpgradeCmd = &cobra.Command{
 		logging.Tracef("Changing directory to %s", selfDir)
 		err = os.Chdir(selfDir)
 		if err != nil {
-			installSpinner.Fail()
 			return fmt.Errorf("error changing directory to %s: %s", selfDir, err)
 		}
 		logging.Tracef("Removing %s", selfExe)
 		err = os.Remove(selfExe)
 		if err != nil {
-			installSpinner.Fail()
 			return fmt.Errorf("failed to remove %s: %s", selfExe, err)
 		}
 
 		registries, repositories := unigetTool.GetSourcesWithFallback(registry, imageRepository)
 		ref, err := containers.FindToolRef(registries, repositories, unigetTool.Name, "main")
 		if err != nil {
-			installSpinner.Fail()
 			return fmt.Errorf("error finding tool %s:%s: %s", unigetTool.Name, unigetTool.Version, err)
 		}
 		logging.Debugf("Getting image %s", ref)
@@ -106,12 +98,25 @@ var selfUpgradeCmd = &cobra.Command{
 
 			return nil
 		}
-		err = toolCache.Get(ref, func(reader io.ReadCloser) error { return nil })
+
+		progressPrinter, err := pterm.DefaultProgressbar.WithTitle("Downloading uniget").WithTotal(0).WithRemoveWhenDone().Start()
 		if err != nil {
-			installSpinner.Fail()
+			panic(err)
+		}
+		progressReader := tui.NewProgressReader(
+			func(n int64) {
+				progressPrinter.Total = int(n)
+			},
+			func(n int64) {
+				progressPrinter.Add(int(n))
+			},
+		)
+
+		err = toolCache.Get(ref, progressReader, func(reader io.ReadCloser) error { return nil })
+		if err != nil {
 			return fmt.Errorf("unable to get image: %s", err)
 		}
-		err = toolCache.Get(ref, func(reader io.ReadCloser) error {
+		err = toolCache.Get(ref, progressReader, func(reader io.ReadCloser) error {
 			err := archive.ProcessTarContents(reader, unpackUnigetBinary)
 			if err != nil {
 				return fmt.Errorf("unable to process tar contents: %s", err)
@@ -120,11 +125,9 @@ var selfUpgradeCmd = &cobra.Command{
 			return nil
 		})
 		if err != nil {
-			installSpinner.Fail()
 			return fmt.Errorf("unable to upgrade from image: %s", err)
 		}
 
-		installSpinner.Success()
 		return nil
 	},
 }

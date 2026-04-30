@@ -8,6 +8,7 @@ import (
 
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
+	"gitlab.com/uniget-org/cli/pkg/tui"
 )
 
 type FileCache struct {
@@ -94,11 +95,11 @@ func (c *FileCache) readDataFromCache(ref string, callback func(reader io.ReadCl
 	return callback(fileReader)
 }
 
-func (c *FileCache) Get(tool *containers.ToolRef, callback func(reader io.ReadCloser) error) error {
+func (c *FileCache) Get(tool *containers.ToolRef, p tui.ProgressReader, callback func(reader io.ReadCloser) error) error {
 	cacheKey := tool.Key()
 	if !c.checkDataInCache(tool.String()) {
 		logging.Debugf("FileCache: Cache miss for %s", tool.String())
-		err := c.n.Get(tool, func(reader io.ReadCloser) error {
+		err := c.n.Get(tool, p, func(reader io.ReadCloser) error {
 			logging.Debugf("FileCache: Caching %s", tool.String())
 			err := c.writeDataToCache(reader, cacheKey)
 			if err != nil {

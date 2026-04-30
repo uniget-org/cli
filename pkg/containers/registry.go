@@ -11,6 +11,7 @@ import (
 	_ "crypto/sha512"
 
 	"github.com/opencontainers/go-digest"
+	"gitlab.com/uniget-org/cli/pkg/tui"
 
 	"github.com/regclient/regclient"
 	"github.com/regclient/regclient/config"
@@ -173,11 +174,11 @@ func GetManifest(ctx context.Context, rc *regclient.RegClient, r ref.Ref) (manif
 	return m, nil
 }
 
-func GetFirstLayerFromManifest(ctx context.Context, rc *regclient.RegClient, m manifest.Manifest, callback func(reader io.ReadCloser) error) error {
-	return GetLayerFromManifestByIndex(ctx, rc, m, 0, callback)
+func GetFirstLayerFromManifest(ctx context.Context, rc *regclient.RegClient, m manifest.Manifest, p tui.ProgressReader, callback func(reader io.ReadCloser) error) error {
+	return GetLayerFromManifestByIndex(ctx, rc, m, 0, p, callback)
 }
 
-func GetLayerFromManifestByIndex(ctx context.Context, rc *regclient.RegClient, m manifest.Manifest, index int, callback func(reader io.ReadCloser) error) error {
+func GetLayerFromManifestByIndex(ctx context.Context, rc *regclient.RegClient, m manifest.Manifest, index int, p tui.ProgressReader, callback func(reader io.ReadCloser) error) error {
 	if m.IsList() {
 		return fmt.Errorf("manifest is a list")
 	}
@@ -212,7 +213,9 @@ func GetLayerFromManifestByIndex(ctx context.Context, rc *regclient.RegClient, m
 			return fmt.Errorf("failed to get blob for digest %s: %s", layer.Digest, err)
 		}
 
-		err = callback(blob)
+		p.SetTotal(layer.Size)
+		p.SetReader(blob)
+		err = callback(p)
 		if err != nil {
 			return fmt.Errorf("failed to execute callback: %w", err)
 		}
@@ -223,13 +226,13 @@ func GetLayerFromManifestByIndex(ctx context.Context, rc *regclient.RegClient, m
 	return fmt.Errorf("unsupported layer media type %s", layer.MediaType)
 }
 
-func GetFirstLayerFromRegistry(ctx context.Context, rc *regclient.RegClient, r ref.Ref, callback func(reader io.ReadCloser) error) error {
+func GetFirstLayerFromRegistry(ctx context.Context, rc *regclient.RegClient, r ref.Ref, p tui.ProgressReader, callback func(reader io.ReadCloser) error) error {
 	m, err := GetManifest(ctx, rc, r)
 	if err != nil {
 		return fmt.Errorf("failed to get manifest: %s", err)
 	}
 
-	err = GetFirstLayerFromManifest(ctx, rc, m, func(reader io.ReadCloser) error {
+	err = GetFirstLayerFromManifest(ctx, rc, m, p, func(reader io.ReadCloser) error {
 		imageReader, err := gzip.NewReader(reader)
 		if err != nil {
 			return fmt.Errorf("failed to gunzip layer: %s", err)

@@ -7,6 +7,7 @@ import (
 	"github.com/moby/moby/client"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
+	"gitlab.com/uniget-org/cli/pkg/tui"
 )
 
 type DockerCache struct {
@@ -25,9 +26,9 @@ func NewDockerCache() (*DockerCache, error) {
 	}, nil
 }
 
-func (c *DockerCache) Get(tool *containers.ToolRef, callback func(reader io.ReadCloser) error) error {
+func (c *DockerCache) Get(tool *containers.ToolRef, p tui.ProgressReader, callback func(reader io.ReadCloser) error) error {
 	logging.Debugf("DockerCache: Pulling %s", tool)
-	err := containers.GetFirstLayerFromDockerImage(c.cli, tool, func(reader io.ReadCloser) error {
+	err := containers.GetFirstLayerFromDockerImage(c.cli, tool, p, func(reader io.ReadCloser) error {
 		err := callback(reader)
 		if err != nil {
 			return fmt.Errorf("failed to execute callback: %w", err)

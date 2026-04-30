@@ -4,10 +4,13 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
+	myos "gitlab.com/uniget-org/cli/pkg/os"
+	"gitlab.com/uniget-org/cli/pkg/tui"
 
 	"gitlab.com/uniget-org/cli/pkg/tool"
 )
@@ -70,12 +73,33 @@ var inspectCmd = &cobra.Command{
 		if rawInspect {
 			effectivePathRewriteRules = []tool.PathRewrite{}
 		}
-		err = toolCache.Get(toolRef, func(reader io.ReadCloser) error { return nil })
+
+		var progressPrinter *pterm.ProgressbarPrinter
+		progressReader := tui.NewProgressReader(nil, nil)
+		if myos.IsTty() && !viper.GetBool("debug") && !viper.GetBool("trace") {
+			progressPrinter, err = pterm.DefaultProgressbar.WithTitle("Downloading").WithTotal(0).WithRemoveWhenDone().Start()
+			if err != nil {
+				panic(err)
+			}
+			progressReader = tui.NewProgressReader(
+				func(n int64) {
+					progressPrinter.Total = int(n)
+				},
+				func(n int64) {
+					progressPrinter.Add(int(n))
+				},
+			)
+			//nolint:errcheck
+			defer progressPrinter.Stop()
+		}
+
+		err = toolCache.Get(toolRef, progressReader, func(reader io.ReadCloser) error { return nil })
 		if err != nil {
 			return fmt.Errorf("unable to get image: %s", err)
 		}
-		err = toolCache.Get(toolRef, func(reader io.ReadCloser) error {
-			err = inspectTool.Inspect(cmd.OutOrStdout(), reader, effectivePathRewriteRules)
+		var files []string
+		err = toolCache.Get(toolRef, progressReader, func(reader io.ReadCloser) error {
+			files, err = inspectTool.Inspect(cmd.OutOrStdout(), reader, effectivePathRewriteRules)
 			if err != nil {
 				return fmt.Errorf("unable to inspect %s: %s", inspectTool.Name, err)
 			}
@@ -83,6 +107,11 @@ var inspectCmd = &cobra.Command{
 		})
 		if err != nil {
 			return fmt.Errorf("unable to inspect image: %s", err)
+		}
+
+		for _, file := range files {
+			//nolint:errcheck
+			fmt.Fprintln(logging.OutputWriter, file)
 		}
 
 		return nil

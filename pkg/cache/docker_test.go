@@ -11,6 +11,7 @@ import (
 
 	"gitlab.com/uniget-org/cli/pkg/archive"
 	"gitlab.com/uniget-org/cli/pkg/containers"
+	"gitlab.com/uniget-org/cli/pkg/tui"
 )
 
 func TestNewDockerCache(t *testing.T) {
@@ -27,7 +28,7 @@ func TestDockerCacheGet(t *testing.T) {
 	}
 
 	toolRef := containers.NewToolRef("ghcr.io", "uniget-org/tools", "uniget", "main")
-	err = cache.Get(toolRef, func(reader io.ReadCloser) error {
+	err = cache.Get(toolRef, tui.NewProgressReader(nil, nil), func(reader io.ReadCloser) error {
 		foundUniget := false
 		err = archive.ProcessTarContents(reader, func(reader *tar.Reader, header *tar.Header) error {
 			if header.Typeflag == tar.TypeReg && header.Name == "bin/uniget" {
