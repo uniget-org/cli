@@ -103,7 +103,7 @@ var selfUpgradeCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		p := tui.NewProgressReader(
+		progressReader := tui.NewProgressReader(
 			func(n int64) {
 				progressPrinter.Total = int(n)
 			},
@@ -112,11 +112,11 @@ var selfUpgradeCmd = &cobra.Command{
 			},
 		)
 
-		err = toolCache.Get(ref, p, func(reader io.ReadCloser) error { return nil })
+		err = toolCache.Get(ref, progressReader, func(reader io.ReadCloser) error { return nil })
 		if err != nil {
 			return fmt.Errorf("unable to get image: %s", err)
 		}
-		err = toolCache.Get(ref, tui.NewProgressReader(nil, nil), func(reader io.ReadCloser) error {
+		err = toolCache.Get(ref, progressReader, func(reader io.ReadCloser) error {
 			err := archive.ProcessTarContents(reader, unpackUnigetBinary)
 			if err != nil {
 				return fmt.Errorf("unable to process tar contents: %s", err)

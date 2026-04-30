@@ -77,7 +77,7 @@ var inspectCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		p := tui.NewProgressReader(
+		progressReader := tui.NewProgressReader(
 			func(n int64) {
 				progressPrinter.Total = int(n)
 			},
@@ -86,7 +86,7 @@ var inspectCmd = &cobra.Command{
 			},
 		)
 
-		err = toolCache.Get(toolRef, p, func(reader io.ReadCloser) error { return nil })
+		err = toolCache.Get(toolRef, progressReader, func(reader io.ReadCloser) error { return nil })
 		if err != nil {
 			return fmt.Errorf("unable to get image: %s", err)
 		}

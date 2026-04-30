@@ -95,13 +95,13 @@ func downloadMetadata() error {
 		return fmt.Errorf("error changing directory to %s: %s", viper.GetString("prefix")+"/"+cacheDirectory, err)
 	}
 
-	p := tui.NewProgressReader(nil, nil)
+	progressReader := tui.NewProgressReader(nil, nil)
 	if myos.IsTty() {
 		progressPrinter, err := pterm.DefaultProgressbar.WithTitle("Downloading metadata").WithTotal(0).WithRemoveWhenDone().Start()
 		if err != nil {
 			panic(err)
 		}
-		p = tui.NewProgressReader(
+		progressReader = tui.NewProgressReader(
 			func(n int64) {
 				progressPrinter.Total = int(n)
 			},
@@ -112,7 +112,7 @@ func downloadMetadata() error {
 	}
 
 	logging.Debugf("Extracting archive to %s", viper.GetString("prefix")+"/"+cacheDirectory)
-	err = containers.GetFirstLayerFromRegistry(context.Background(), rc, t.GetRef(), p, func(reader io.ReadCloser) error {
+	err = containers.GetFirstLayerFromRegistry(context.Background(), rc, t.GetRef(), progressReader, func(reader io.ReadCloser) error {
 		err := archive.ProcessTarContents(reader, func(reader *tar.Reader, header *tar.Header) error {
 			err := archive.CallbackExtractTarItem(reader, header)
 			if err != nil {
