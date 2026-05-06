@@ -14,9 +14,7 @@ import (
 	"gitlab.com/uniget-org/cli/pkg/archive"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
-	myos "gitlab.com/uniget-org/cli/pkg/os"
 	"gitlab.com/uniget-org/cli/pkg/tool"
-	"gitlab.com/uniget-org/cli/pkg/tui"
 )
 
 var quiet bool
@@ -95,22 +93,7 @@ func downloadMetadata() error {
 		return fmt.Errorf("error changing directory to %s: %s", viper.GetString("prefix")+"/"+cacheDirectory, err)
 	}
 
-	progressReader := tui.NewProgressReader(nil, nil)
-	if myos.IsTty() {
-		progressPrinter, err := pterm.DefaultProgressbar.WithTitle("Downloading metadata").WithTotal(0).WithRemoveWhenDone().Start()
-		if err != nil {
-			panic(err)
-		}
-		progressReader = tui.NewProgressReader(
-			func(n int64) {
-				progressPrinter.Total = int(n)
-			},
-			func(n int64) {
-				progressPrinter.Add(int(n))
-			},
-		)
-	}
-
+	progressReader := createProgressReader("Downloading metadata")
 	logging.Debugf("Extracting archive to %s", viper.GetString("prefix")+"/"+cacheDirectory)
 	err = containers.GetFirstLayerFromRegistry(context.Background(), rc, t.GetRef(), progressReader, func(reader io.ReadCloser) error {
 		err := archive.ProcessTarContents(reader, func(reader *tar.Reader, header *tar.Header) error {

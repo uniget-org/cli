@@ -17,6 +17,10 @@ func NewProgressReader(onTotalUpdate func(int64), onProgress func(int64)) Progre
 	}
 }
 
+func NewQuietProgressReader() ProgressReader {
+	return NewProgressReader(nil, nil)
+}
+
 func (pr *ProgressReader) SetReader(reader io.ReadCloser) {
 	pr.reader = reader
 }
@@ -26,6 +30,10 @@ func (pr *ProgressReader) SetTotal(n int64) {
 	if pr.onTotalUpdate != nil {
 		pr.onTotalUpdate(pr.total)
 	}
+}
+
+func (pr *ProgressReader) IsQuiet() bool {
+	return pr.onTotalUpdate == nil && pr.onProgress == nil
 }
 
 func (pr ProgressReader) Close() error {

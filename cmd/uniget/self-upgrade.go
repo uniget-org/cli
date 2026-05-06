@@ -8,13 +8,11 @@ import (
 	"path/filepath"
 
 	"github.com/google/safearchive/tar"
-	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 
 	"gitlab.com/uniget-org/cli/pkg/archive"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
-	"gitlab.com/uniget-org/cli/pkg/tui"
 )
 
 func initSelfUpgradeCmd() {
@@ -99,19 +97,7 @@ var selfUpgradeCmd = &cobra.Command{
 			return nil
 		}
 
-		progressPrinter, err := pterm.DefaultProgressbar.WithTitle("Downloading uniget").WithTotal(0).WithRemoveWhenDone().Start()
-		if err != nil {
-			panic(err)
-		}
-		progressReader := tui.NewProgressReader(
-			func(n int64) {
-				progressPrinter.Total = int(n)
-			},
-			func(n int64) {
-				progressPrinter.Add(int(n))
-			},
-		)
-
+		progressReader := createProgressReader("Downloading uniget")
 		err = toolCache.Get(ref, progressReader, func(reader io.ReadCloser) error { return nil })
 		if err != nil {
 			return fmt.Errorf("unable to get image: %s", err)

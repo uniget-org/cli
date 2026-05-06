@@ -10,15 +10,12 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
-	myos "gitlab.com/uniget-org/cli/pkg/os"
 	"gitlab.com/uniget-org/cli/pkg/tool"
-	"gitlab.com/uniget-org/cli/pkg/tui"
 )
 
 var tagsMode bool
@@ -348,25 +345,8 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 		}
 		logging.Debugf("Current directory: %s", dir)
 
-		var progressPrinter *pterm.ProgressbarPrinter
-		progressReader := tui.NewProgressReader(nil, nil)
-		if myos.IsTty() && !viper.GetBool("debug") && !viper.GetBool("trace") {
-			progressPrinter, err = pterm.DefaultProgressbar.WithTitle("Downloading and installing " + plannedTool.Name).WithTotal(0).WithRemoveWhenDone().Start()
-			if err != nil {
-				panic(err)
-			}
-			progressReader = tui.NewProgressReader(
-				func(n int64) {
-					progressPrinter.Total = int(n)
-				},
-				func(n int64) {
-					progressPrinter.Add(int(n))
-				},
-			)
-			//nolint:errcheck
-			defer progressPrinter.Stop()
-
-		} else {
+		progressReader := createProgressReader("Downloading and installing " + plannedTool.Name)
+		if progressReader.IsQuiet() {
 			logging.Info.Printfln("Installing %s %s", plannedTool.Name, plannedTool.Version)
 		}
 
