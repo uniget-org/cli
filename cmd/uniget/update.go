@@ -14,6 +14,7 @@ import (
 	"gitlab.com/uniget-org/cli/pkg/archive"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
+	"gitlab.com/uniget-org/cli/pkg/security"
 	"gitlab.com/uniget-org/cli/pkg/tool"
 )
 
@@ -118,6 +119,19 @@ func downloadMetadata() error {
 
 func loadMetadata() error {
 	var err error
+
+	_, err = security.VerifySigstoreBundle(
+		viper.GetString("prefix")+"/"+metadataFile,
+		viper.GetString("prefix")+"/"+metadataFile+".sigstore.json",
+		"https://token.actions.githubusercontent.com",
+		"",
+		"",
+		"https://github\\.com/uniget-org/tools/\\.github/workflows/[^.]+\\.yml@refs/heads/main",
+	)
+	if err != nil {
+		return fmt.Errorf("error verifying sigstore bundle for metadata: %s", err)
+	}
+
 	tools, err = tool.LoadFromFile(viper.GetString("prefix") + "/" + metadataFile)
 	if err != nil {
 		return fmt.Errorf("failed to load metadata from file %s: %s", viper.GetString("prefix")+"/"+metadataFile, err)
