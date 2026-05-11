@@ -46,6 +46,8 @@ var (
 	metadataImageTag            = "main"
 	metadataFileName            = "metadata.json"
 	metadataFile                = cacheDirectory + "/" + metadataFileName
+	metadataDownloaded          = false
+	metadataLoaded              = false
 	fileCacheDirectoryName      = "downloads"
 	registry                    = "ghcr.io"
 	organization                = "uniget-org"
@@ -256,7 +258,10 @@ var (
 				}
 			}
 
-			if !fileExists(viper.GetString("prefix") + "/" + metadataFile) {
+			if !fileExists(viper.GetString("prefix")+"/"+metadataFile) ||
+				(os.Getenv("UNIGET_IGNORE_METADATA_SIGNATURE") != "true" &&
+					!fileExists(viper.GetString("prefix")+"/"+metadataFile+".sigstore.json")) {
+
 				logging.Debugf("Metadata does not exist. Downloading...")
 				err := downloadMetadata()
 				if err != nil {

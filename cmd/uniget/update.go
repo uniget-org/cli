@@ -82,6 +82,11 @@ var updateCmd = &cobra.Command{
 }
 
 func downloadMetadata() error {
+	if metadataDownloaded {
+		logging.Debugf("Metadata already downloaded, skipping download")
+		return nil
+	}
+
 	assertCacheDirectory()
 	t, err := containers.FindToolRef([]string{registry}, []string{imageRepository}, "metadata", metadataImageTag)
 	if err != nil {
@@ -121,11 +126,17 @@ func downloadMetadata() error {
 		return fmt.Errorf("error getting first layer from registry: %s", err)
 	}
 
+	metadataDownloaded = true
+	metadataLoaded = false
+
 	return nil
 }
 
-func loadMetadata() error {
-	var err error
+func loadMetadata() (err error) {
+	if metadataLoaded {
+		logging.Debugf("Metadata already loaded, skipping load")
+		return nil
+	}
 
 	if os.Getenv("UNIGET_IGNORE_METADATA_SIGNATURE") != "true" {
 		_, err = security.VerifySigstoreBundle(
@@ -145,6 +156,8 @@ func loadMetadata() error {
 	if err != nil {
 		return fmt.Errorf("failed to load metadata from file %s: %s", viper.GetString("prefix")+"/"+metadataFile, err)
 	}
+
+	metadataLoaded = true
 
 	return nil
 }
