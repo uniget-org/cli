@@ -257,7 +257,7 @@ var (
 			}
 
 			if !fileExists(viper.GetString("prefix") + "/" + metadataFile) {
-				logging.Debugf("Metadata file does not exist. Downloading...")
+				logging.Debugf("Metadata does not exist. Downloading...")
 				err := downloadMetadata()
 				if err != nil {
 					return fmt.Errorf("error downloading metadata: %s", err)
