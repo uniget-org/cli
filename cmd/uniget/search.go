@@ -52,7 +52,7 @@ var searchCmd = &cobra.Command{
 	Long:  header + "\nSearch for tools",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if viper.GetBool("update") {
+		if viper.GetBool("autoupdate") {
 			err := downloadMetadata()
 			if err != nil {
 				return fmt.Errorf("error downloading metadata: %s", err)

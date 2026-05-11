@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"gitlab.com/uniget-org/cli/pkg/tool"
 	//"gitlab.com/uniget-org/cli/pkg/tool"
 )
@@ -37,6 +38,15 @@ var generateCmd = &cobra.Command{
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if viper.GetBool("autoupdate") {
+			err := downloadMetadata()
+			if err != nil {
+				return fmt.Errorf("error downloading metadata: %s", err)
+			}
+		}
+		assertMetadataFileExists()
+		assertMetadataIsLoaded()
+
 		var requestedTools tool.Tools
 		var plannedTools tool.Tools
 		for _, toolName := range args {

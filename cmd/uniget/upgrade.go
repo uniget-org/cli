@@ -20,7 +20,7 @@ var upgradeCmd = &cobra.Command{
 	Long:    header + "\nUpgrade all tools to latest version",
 	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if viper.GetBool("update") {
+		if viper.GetBool("autoupdate") {
 			err := downloadMetadata()
 			if err != nil {
 				return fmt.Errorf("error downloading metadata: %s", err)

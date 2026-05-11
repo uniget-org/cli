@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/safearchive/tar"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	"gitlab.com/uniget-org/cli/pkg/archive"
 	"gitlab.com/uniget-org/cli/pkg/containers"
@@ -26,16 +27,14 @@ var selfUpgradeCmd = &cobra.Command{
 	Long:    header + "\nUpgrade " + projectName + " to latest version",
 	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		err := downloadMetadata()
-		if err != nil {
-			return fmt.Errorf("error downloading metadata: %s", err)
+		if viper.GetBool("autoupdate") {
+			err := downloadMetadata()
+			if err != nil {
+				return fmt.Errorf("error downloading metadata: %s", err)
+			}
 		}
 		assertMetadataFileExists()
 		assertMetadataIsLoaded()
-		err = loadMetadata()
-		if err != nil {
-			return fmt.Errorf("error loading metadata: %s", err)
-		}
 
 		unigetTool, err := tools.GetByName("uniget")
 		if err != nil {

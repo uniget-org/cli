@@ -73,6 +73,12 @@ func assertMetadataFileExists() {
 		logging.Error.Printfln("Metadata file %s does not exist: %s", viper.GetString("prefix")+"/"+metadataFile, err)
 		os.Exit(1)
 	}
+
+	_, err = os.Stat(viper.GetString("prefix") + "/" + metadataFile + ".sigstore.json")
+	if err != nil {
+		logging.Error.Printfln("Metadata signature %s does not exist: %s", viper.GetString("prefix")+"/"+metadataFile+".sigstore.json", err)
+		os.Exit(1)
+	}
 }
 
 func assertMetadataIsLoaded() {

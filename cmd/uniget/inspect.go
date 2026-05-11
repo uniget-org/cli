@@ -37,15 +37,19 @@ var inspectCmd = &cobra.Command{
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		var err error
-		var inspectTool *tool.Tool
+	RunE: func(cmd *cobra.Command, args []string) (err error) {
+		if viper.GetBool("autoupdate") {
+			err := downloadMetadata()
+			if err != nil {
+				return fmt.Errorf("error downloading metadata: %s", err)
+			}
+		}
+		assertMetadataFileExists()
+		assertMetadataIsLoaded()
 
+		var inspectTool *tool.Tool
 		inspectToolImageTag := "main"
 		if len(toolVersion) == 0 {
-			assertMetadataFileExists()
-			assertMetadataIsLoaded()
-
 			inspectTool, err = tools.GetByName(args[0])
 			if err != nil {
 				return fmt.Errorf("error getting tool %s", args[0])

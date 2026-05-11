@@ -20,6 +20,12 @@ var importCmd = &cobra.Command{
 	Long:    header + "\nStart managing existing binaries",
 	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if viper.GetBool("autoupdate") {
+			err := downloadMetadata()
+			if err != nil {
+				return fmt.Errorf("error downloading metadata: %s", err)
+			}
+		}
 		assertMetadataFileExists()
 		assertMetadataIsLoaded()
 
