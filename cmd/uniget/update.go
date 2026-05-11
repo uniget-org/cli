@@ -49,7 +49,7 @@ var updateCmd = &cobra.Command{
 			for _, tool := range tools.Tools {
 				oldTool, _ := oldTools.GetByName(tool.Name)
 
-				if tool.Name == "uniget" && tool.Version != version {
+				if tool.Name == "uniget" && tool.Version > version {
 					newUnigetVersion = tool.Version
 				}
 
