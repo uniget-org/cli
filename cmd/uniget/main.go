@@ -259,7 +259,7 @@ var (
 			}
 
 			if !fileExists(viper.GetString("prefix")+"/"+metadataFile) ||
-				(os.Getenv("UNIGET_IGNORE_METADATA_SIGNATURE") != "true" &&
+				(len(os.Getenv("UNIGET_IGNORE_METADATA_SIGNATURE")) > 0 &&
 					!fileExists(viper.GetString("prefix")+"/"+metadataFile+".sigstore.json")) {
 
 				logging.Debugf("Metadata does not exist. Downloading...")

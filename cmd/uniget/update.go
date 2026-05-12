@@ -138,7 +138,7 @@ func loadMetadata() (err error) {
 		return nil
 	}
 
-	if os.Getenv("UNIGET_IGNORE_METADATA_SIGNATURE") != "true" {
+	if len(os.Getenv("UNIGET_IGNORE_METADATA_SIGNATURE")) > 0 {
 		_, err = security.VerifySigstoreBundle(
 			viper.GetString("prefix")+"/"+metadataFile,
 			viper.GetString("prefix")+"/"+metadataFile+".sigstore.json",
