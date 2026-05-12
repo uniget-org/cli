@@ -9,7 +9,7 @@ on:
       tag:
         description: 'Tag to mirror (e.g. v1.2.3)'
         required: true
-        default: ${GITHUB_REF_NAME}
+        default: ${{ github.ref_name }}
 
 permissions:
   contents: write
@@ -21,8 +21,8 @@ jobs:
       GITLAB_PROJECT: uniget-org/cli
       GITLAB_PROJECT_API: uniget-org%2Fcli
       GITLAB_REPO_URL: https://gitlab.com/${GITLAB_PROJECT}
-      GITLAB_RELEASE_API_URL: https://gitlab.com/${GITLAB_PROJECT}/-/releases/${{ inputs.tag }}
-      GITLAB_PROJECT_API_URL: "https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_API}/releases/${{ inputs.tag }}"
+      GITLAB_RELEASE_URL: https://gitlab.com/${GITLAB_PROJECT}/-/releases
+      GITLAB_PROJECT_API_URL: "https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_API}/releases"
     steps:
       - name: Mirror release from GitLab
         shell: bash
@@ -30,15 +30,15 @@ jobs:
           set -euo pipefail
 
           echo "Fetching GitLab release for tag: ${{ inputs.tag }}"
-          if ! curl --silent --show-error --location --fail --output release.json "${GITLAB_PROJECT_API_URL}"; then
-            echo "ERROR: Failed to fetch GitLab release for tag >${{ inputs.tag }}>."
+          if ! curl --silent --show-error --location --fail --output release.json "${GITLAB_PROJECT_API_URL}/${{ inputs.tag }}"; then
+            echo "ERROR: Failed to fetch GitLab release for tag <${{ inputs.tag }}>."
             exit 1
           fi
 
           title="$(jq -r '.name // .tag_name' release.json)"
           notes_file=release_notes.md
           {
-            echo "Mirrored from GitLab: ${GITLAB_RELEASE_API_URL}"
+            echo "Mirrored from GitLab: ${GITLAB_RELEASE_URL}/${{ inputs.tag }}"
             echo
             jq -r '.description // ""' release.json
           } >"${notes_file}"
