@@ -16,12 +16,6 @@ permissions:
 jobs:
   mirror-release:
     runs-on: ubuntu-latest
-    env:
-      GITLAB_PROJECT: uniget-org/cli
-      GITLAB_PROJECT_API: uniget-org%2Fcli
-      GITLAB_REPO_URL: https://gitlab.com/${GITLAB_PROJECT}
-      GITLAB_RELEASE_URL: https://gitlab.com/${GITLAB_PROJECT}/-/releases
-      GITLAB_PROJECT_API_URL: "https://gitlab.com/api/v4/projects/${GITLAB_PROJECT_API}/releases"
     steps:
       - name: Mirror release from GitLab
         shell: bash
@@ -39,7 +33,7 @@ jobs:
           echo "Using tag name: $TAG_NAME"
 
           echo "Fetching GitLab release for tag: $TAG_NAME"
-          if ! curl --silent --verbose --show-error --location --fail --output release.json "${GITLAB_PROJECT_API_URL}/${TAG_NAME}"; then
+          if ! curl --silent --verbose --show-error --location --fail --output release.json "https://gitlab.com/api/v4/projects/uniget-org%2fcli/releases/${TAG_NAME}"; then
             echo "ERROR: Failed to fetch GitLab release for tag <$TAG_NAME>."
             exit 1
           fi
@@ -47,7 +41,7 @@ jobs:
           title="$(jq -r '.name // .tag_name' release.json)"
           notes_file=release_notes.md
           {
-            echo "Mirrored from GitLab: ${GITLAB_RELEASE_URL}/${TAG_NAME}"
+            echo "Mirrored from GitLab: https://gitlab.com/uniget-org/cli/-/releases/${TAG_NAME}"
             echo
             jq -r '.description // ""' release.json
           } >"${notes_file}"
