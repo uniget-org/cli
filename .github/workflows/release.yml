@@ -9,7 +9,6 @@ on:
       tag:
         description: 'Tag to mirror (e.g. v1.2.3)'
         required: true
-        default: ${{ github.ref_name }}
 
 permissions:
   contents: write
@@ -29,24 +28,35 @@ jobs:
         run: |
           set -euo pipefail
 
-          echo "Fetching GitLab release for tag: ${{ inputs.tag }}"
-          if ! curl --silent --show-error --location --fail --output release.json "${GITLAB_PROJECT_API_URL}/${{ inputs.tag }}"; then
-            echo "ERROR: Failed to fetch GitLab release for tag <${{ inputs.tag }}>."
+          TAG_NAME="${{ inputs.tag }}"
+          if test -z "$TAG_NAME"; then
+            TAG_NAME="${GITHUB_REF_NAME}"
+          fi
+          if [[ $TAG_NAME =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Using tag: $TAG_NAME"
+          else
+            echo "ERROR: Invalid tag name '$TAG_NAME'. Expected format: vX.Y.Z"
+            exit 1
+          fi
+
+          echo "Fetching GitLab release for tag: $TAG_NAME"
+          if ! curl --silent --show-error --location --fail --output release.json "${GITLAB_PROJECT_API_URL}/${TAG_NAME}"; then
+            echo "ERROR: Failed to fetch GitLab release for tag <$TAG_NAME>."
             exit 1
           fi
 
           title="$(jq -r '.name // .tag_name' release.json)"
           notes_file=release_notes.md
           {
-            echo "Mirrored from GitLab: ${GITLAB_RELEASE_URL}/${{ inputs.tag }}"
+            echo "Mirrored from GitLab: ${GITLAB_RELEASE_URL}/${TAG_NAME}"
             echo
             jq -r '.description // ""' release.json
           } >"${notes_file}"
 
-          if gh release view "${{ inputs.tag }}" >/dev/null 2>&1; then
-            echo "Updating existing GitHub release ${{ inputs.tag }}"
-            gh release edit "${{ inputs.tag }}" --title "${title}" --notes-file "${notes_file}"
+          if gh release view "${TAG_NAME}" >/dev/null 2>&1; then
+            echo "Updating existing GitHub release ${TAG_NAME}"
+            gh release edit "${TAG_NAME}" --title "${title}" --notes-file "${notes_file}"
           else
-            echo "Creating GitHub release ${{ inputs.tag }}"
-            gh release create "${{ inputs.tag }}" --title "${title}" --notes-file "${notes_file}"
+            echo "Creating GitHub release ${TAG_NAME}"
+            gh release create "${TAG_NAME}" --title "${title}" --notes-file "${notes_file}"
           fi
