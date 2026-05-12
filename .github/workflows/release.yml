@@ -32,15 +32,14 @@ jobs:
           if test -z "$TAG_NAME"; then
             TAG_NAME="${GITHUB_REF_NAME}"
           fi
-          if [[ $TAG_NAME =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "Using tag: $TAG_NAME"
-          else
+          if [[ $TAG_NAME !~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "ERROR: Invalid tag name '$TAG_NAME'. Expected format: vX.Y.Z"
             exit 1
           fi
+          echo "Using tag name: $TAG_NAME"
 
           echo "Fetching GitLab release for tag: $TAG_NAME"
-          if ! curl --silent --show-error --location --fail --output release.json "${GITLAB_PROJECT_API_URL}/${TAG_NAME}"; then
+          if ! curl --silent --verbose --show-error --location --fail --output release.json "${GITLAB_PROJECT_API_URL}/${TAG_NAME}"; then
             echo "ERROR: Failed to fetch GitLab release for tag <$TAG_NAME>."
             exit 1
           fi
