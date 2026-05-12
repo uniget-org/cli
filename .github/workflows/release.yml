@@ -19,6 +19,10 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Mirror release from GitLab
         shell: bash
         run: |
