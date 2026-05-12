@@ -16,6 +16,8 @@ permissions:
 jobs:
   mirror-release:
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
       - name: Mirror release from GitLab
         shell: bash
