@@ -239,8 +239,12 @@ var editHooksCmd = &cobra.Command{
 		if !strings.HasPrefix(hookFileAbs, hooksDir) {
 			return fmt.Errorf("hook file %s is outside of hookDir %s", hookFile, hooksDir)
 		}
-		_, err = os.Lstat(hookFile)
-		if err == nil {
+
+		hookFileInfo, err := os.Lstat(hookFile)
+		if err != nil {
+			return fmt.Errorf("unable to stat hook file %s: %w", hookFile, err)
+		}
+		if hookFileInfo.Mode()&os.ModeSymlink != 0 {
 			return fmt.Errorf("hook file %s is a symlink, which is not allowed for security reasons", hookFile)
 		}
 
@@ -443,8 +447,11 @@ func processHooks(path string, callback func(file string) error) error {
 		}
 
 		hookFile := path + "/" + file.Name()
-		_, err := os.Lstat(hookFile)
-		if err == nil {
+		hookFileInfo, err := os.Lstat(hookFile)
+		if err != nil {
+			return fmt.Errorf("unable to stat hook file %s: %w", hookFile, err)
+		}
+		if hookFileInfo.Mode()&os.ModeSymlink != 0 {
 			return fmt.Errorf("hook file %s is a symlink, which is not allowed for security reasons", hookFile)
 		}
 
