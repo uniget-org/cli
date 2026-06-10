@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -164,6 +165,14 @@ var removeHooksCmd = &cobra.Command{
 			hookFile = postUninstallHooksDir + "/" + hookFileName
 		}
 
+		hookFileAbs, err := filepath.Abs(hookFile)
+		if err != nil {
+			return fmt.Errorf("unable to get absolute path of hook file %s: %w", hookFile, err)
+		}
+		if !strings.HasPrefix(hookFileAbs, hooksDir) {
+			return fmt.Errorf("hook file %s is outside of hookDir %s", hookFile, hooksDir)
+		}
+
 		if !fileExists(hookFile) {
 			return fmt.Errorf("hook file does not exist: %s", hookFile)
 		}
@@ -189,14 +198,14 @@ var editHooksCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var err error
 
-		editor := os.Getenv("UNIGET_EDITOR")
-		if len(editor) == 0 {
-			editor = os.Getenv("EDITOR")
-			if len(editor) == 0 {
+		editorFromVariable := os.Getenv("UNIGET_EDITOR")
+		if len(editorFromVariable) == 0 {
+			editorFromVariable = os.Getenv("EDITOR")
+			if len(editorFromVariable) == 0 {
 				return fmt.Errorf("unable to find editor from environment variables UNIGET_EDITOR and EDITOR")
 			}
 		}
-		editorWithArgs := strings.Split(editor, " ")
+		editor := strings.Split(editorFromVariable, " ")[0]
 
 		hooksDir := viper.GetString("prefix") + "/" + configDirectory
 
@@ -223,8 +232,19 @@ var editHooksCmd = &cobra.Command{
 		}
 		assertDirectory(hookDir)
 
-		editorWithArgs = append(editorWithArgs, hookFile)
-		command := exec.Command(editorWithArgs[0], editorWithArgs[1:]...) // #nosec G204 -- THis is always the case when relying on EDITOR
+		hookFileAbs, err := filepath.Abs(hookFile)
+		if err != nil {
+			return fmt.Errorf("unable to get absolute path of hook file %s: %w", hookFile, err)
+		}
+		if !strings.HasPrefix(hookFileAbs, hooksDir) {
+			return fmt.Errorf("hook file %s is outside of hookDir %s", hookFile, hooksDir)
+		}
+		_, err = os.Lstat(hookFile)
+		if err == nil {
+			return fmt.Errorf("hook file %s is a symlink, which is not allowed for security reasons", hookFile)
+		}
+
+		command := exec.Command(editor, hookFile) // #nosec G204 -- THis is always the case when relying on EDITOR
 		command.Stdin = os.Stdin
 		command.Stdout = os.Stdout
 		command.Stderr = os.Stderr
@@ -423,7 +443,12 @@ func processHooks(path string, callback func(file string) error) error {
 		}
 
 		hookFile := path + "/" + file.Name()
-		err := callback(hookFile)
+		_, err := os.Lstat(hookFile)
+		if err == nil {
+			return fmt.Errorf("hook file %s is a symlink, which is not allowed for security reasons", hookFile)
+		}
+
+		err = callback(hookFile)
 		if err != nil {
 			return fmt.Errorf("error processing hook file %s: %w", hookFile, err)
 		}
