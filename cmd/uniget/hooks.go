@@ -106,11 +106,11 @@ var addHooksCmd = &cobra.Command{
 			assertDirectory(postInstallHooksDir)
 			hookFile = postInstallHooksDir + "/" + hookFileName
 		case "pre-uninstall":
-			preUninstallHooksDir := hooksDir + "/" + hooksPreInstallDirectory
+			preUninstallHooksDir := hooksDir + "/" + hooksPreUninstallDirectory
 			assertDirectory(preUninstallHooksDir)
 			hookFile = preUninstallHooksDir + "/" + hookFileName
 		case "post-uninstall":
-			postUninstallHooksDir := hooksDir + "/" + hooksPostInstallDirectory
+			postUninstallHooksDir := hooksDir + "/" + hooksPostUninstallDirectory
 			assertDirectory(postUninstallHooksDir)
 			hookFile = postUninstallHooksDir + "/" + hookFileName
 		}
@@ -155,11 +155,11 @@ var removeHooksCmd = &cobra.Command{
 			assertDirectory(postInstallHooksDir)
 			hookFile = postInstallHooksDir + "/" + hookFileName
 		case "pre-uninstall":
-			preUninstallHooksDir := hooksDir + "/" + hooksPreInstallDirectory
+			preUninstallHooksDir := hooksDir + "/" + hooksPreUninstallDirectory
 			assertDirectory(preUninstallHooksDir)
 			hookFile = preUninstallHooksDir + "/" + hookFileName
 		case "post-uninstall":
-			postUninstallHooksDir := hooksDir + "/" + hooksPostInstallDirectory
+			postUninstallHooksDir := hooksDir + "/" + hooksPostUninstallDirectory
 			assertDirectory(postUninstallHooksDir)
 			hookFile = postUninstallHooksDir + "/" + hookFileName
 		}
@@ -213,11 +213,11 @@ var editHooksCmd = &cobra.Command{
 			hookDir = postInstallHooksDir
 			hookFile = hookDir + "/" + hookFileName
 		case "pre-uninstall":
-			preUninstallHooksDir := hooksDir + "/" + hooksPreInstallDirectory
+			preUninstallHooksDir := hooksDir + "/" + hooksPreUninstallDirectory
 			hookDir = preUninstallHooksDir
 			hookFile = hookDir + "/" + hookFileName
 		case "post-uninstall":
-			postUninstallHooksDir := hooksDir + "/" + hooksPostInstallDirectory
+			postUninstallHooksDir := hooksDir + "/" + hooksPostUninstallDirectory
 			hookDir = postUninstallHooksDir
 			hookFile = hookDir + "/" + hookFileName
 		}
