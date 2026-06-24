@@ -5,7 +5,7 @@ include:
     rules:
     - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULED_JOB == "renovate"
     - if: $CI_PIPELINE_SOURCE == "web" && $SCHEDULED_JOB == "renovate"
-    token_variable_name: RENOVATE_TOKEN_TF
+    token_variable_name: RENOVATE_GROUP_TOKEN
     github_token_variable_name: RENOVATE_GITHUB_TOKEN
 
 test:
