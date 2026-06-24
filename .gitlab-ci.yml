@@ -27,7 +27,7 @@ release_notes:
     GLAB_SEND_TELEMETRY: 0
   before_script: |
     uniget install glab 
-    glab auth login --hostname="${CI_SERVER_HOST}" --token="${BACKLOG_TOKEN_TF}"
+    glab auth login --hostname="${CI_SERVER_HOST}" --token="${BACKLOG_TOKEN}"
   script: |
     bash scripts/release-notes-gitlab.sh >release-notes.md
   artifacts:
@@ -57,14 +57,14 @@ release:
   script:
   - test -n "$CI_SERVER_HOST"
   - test -n "$CI_JOB_TOKEN"
-  - test -n "$GITLAB_TOKEN_TF"
+  - test -n "$GITLAB_TOKEN"
   - test -n "$SIGSTORE_ID_TOKEN"
   - |
     docker buildx build \
         --target=publish-gitlab \
         --build-arg=CI_SERVER_HOST \
         --build-arg=CI_JOB_TOKEN \
-        --build-arg=GITLAB_TOKEN="${GITLAB_TOKEN_TF}" \
+        --build-arg=GITLAB_TOKEN" \
         --build-arg=SIGSTORE_ID_TOKEN \
         .
   artifacts:
