@@ -19,9 +19,11 @@ import (
 )
 
 var quiet bool
+var showAllTools bool
 
 func initUpdateCmd() {
 	updateCmd.Flags().BoolVarP(&quiet, "quiet", "q", false, "Do not print new tools")
+	updateCmd.Flags().BoolVar(&showAllTools, "all", false, "Show all updates including tools that are not installed")
 
 	rootCmd.AddCommand(updateCmd)
 }
@@ -51,8 +53,11 @@ var updateCmd = &cobra.Command{
 			return fmt.Errorf("error loading metadata: %s", err)
 		}
 
+		var updatedTools tool.Tools
+		var updatedInstalledTools tool.Tools
+		var newTools tool.Tools
 		newUnigetVersion := ""
-		if !quiet && len(oldTools.Tools) > 0 {
+		if len(oldTools.Tools) > 0 {
 			for _, tool := range tools.Tools {
 				oldTool, _ := oldTools.GetByName(tool.Name)
 
@@ -61,20 +66,43 @@ var updateCmd = &cobra.Command{
 				}
 
 				if oldTool == nil {
-					logging.Info.Printfln("New %s %s", tool.Name, tool.Version)
+					newTools.Tools = append(newTools.Tools, tool)
 
 				} else if tool.Version != oldTool.Version {
-					logging.Info.Printfln("Update %s to %s", tool.Name, tool.Version)
+					err := tool.UpdateStatus(viper.GetString("prefix"), viper.GetString("target"), cacheDirectory, arch, altArch)
+					if err != nil {
+						logging.Warning.Printfln("Error updating status for %s: %s", tool.Name, err)
+					}
+
+					updatedTools.Tools = append(updatedTools.Tools, tool)
+					if tool.IsInstalled() {
+						updatedInstalledTools.Tools = append(updatedInstalledTools.Tools, tool)
+						logging.Info.Printfln("Update: %s %s", tool.Name, tool.Version)
+					}
 				}
 			}
 		}
 
-		if len(newUnigetVersion) > 0 {
-			prefix := pterm.NewStyle(pterm.FgBlack, pterm.BgYellow)
-			suffix := pterm.NewStyle(pterm.FgWhite)
-			prefix.Println()
-			prefix.Print(" NEWS  ")
-			suffix.Printfln(" Update to uniget %s by running 'uniget self-upgrade'", newUnigetVersion)
+		if !quiet {
+			for _, tool := range newTools.Tools {
+				logging.Info.Printfln("New: %s (%s)", tool.Name, tool.Description)
+			}
+
+			toolsToShow := updatedInstalledTools
+			if showAllTools {
+				toolsToShow = updatedTools
+			}
+			for _, tool := range toolsToShow.Tools {
+				logging.Info.Printfln("Updated: %s (%s)", tool.Name, tool.Description)
+			}
+
+			if len(newUnigetVersion) > 0 {
+				prefix := pterm.NewStyle(pterm.FgBlack, pterm.BgYellow)
+				suffix := pterm.NewStyle(pterm.FgWhite)
+				prefix.Println()
+				prefix.Print(" NEWS  ")
+				suffix.Printfln(" Update to uniget %s by running 'uniget self-upgrade'", newUnigetVersion)
+			}
 		}
 
 		return nil
