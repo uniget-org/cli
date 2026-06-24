@@ -27,7 +27,7 @@ func TestDockerCacheGet(t *testing.T) {
 		t.Fatalf("TestDockerCacheGet(): failed to create DockerCache (%v)", err)
 	}
 
-	toolRef := containers.NewToolRef("ghcr.io", "uniget-org/tools", "uniget", "main")
+	toolRef := containers.NewToolRef("ghcr.io", "uniget-org/tools", "uniget", "latest")
 	err = cache.Get(toolRef, tui.NewProgressReader(nil, nil), func(reader io.ReadCloser) error {
 		foundUniget := false
 		err = archive.ProcessTarContents(reader, func(reader *tar.Reader, header *tar.Header) error {

@@ -48,7 +48,7 @@ var inspectCmd = &cobra.Command{
 		assertMetadataIsLoaded()
 
 		var inspectTool *tool.Tool
-		inspectToolImageTag := "main"
+		inspectToolImageTag := "latest"
 		if len(toolVersion) == 0 {
 			inspectTool, err = tools.GetByName(args[0])
 			if err != nil {

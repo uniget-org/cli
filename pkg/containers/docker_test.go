@@ -41,7 +41,7 @@ func TestReadFirstLayerFromDockerImage(t *testing.T) {
 	//nolint:errcheck
 	defer cli.Close()
 
-	toolRef := NewToolRef("ghcr.io", "uniget-org/tools", "continue", "main")
+	toolRef := NewToolRef("ghcr.io", "uniget-org/tools", "continue", "latest")
 	image := toolRef.String()
 
 	if !CheckDockerImageExists(cli, image) {

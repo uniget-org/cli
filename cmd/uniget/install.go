@@ -392,7 +392,7 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 		} else {
 			logging.Debugf("Using default behaviour for installation")
 			registries, repositories := plannedTool.GetSourcesWithFallback(registry, imageRepository)
-			ref, err := containers.FindToolRef(registries, repositories, plannedTool.Name, "main")
+			ref, err := containers.FindToolRef(registries, repositories, plannedTool.Name, "latest")
 			if err != nil {
 				return fmt.Errorf("error finding tool %s:%s: %s", plannedTool.Name, plannedTool.Version, err)
 			}

@@ -77,7 +77,7 @@ var selfUpgradeCmd = &cobra.Command{
 		}
 
 		registries, repositories := unigetTool.GetSourcesWithFallback(registry, imageRepository)
-		ref, err := containers.FindToolRef(registries, repositories, unigetTool.Name, "main")
+		ref, err := containers.FindToolRef(registries, repositories, unigetTool.Name, "latest")
 		if err != nil {
 			return fmt.Errorf("error finding tool %s:%s: %s", unigetTool.Name, unigetTool.Version, err)
 		}
