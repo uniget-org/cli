@@ -14,13 +14,16 @@ import (
 )
 
 var (
-	regVersion          = "main"
+	regResolveLatest    = false
+	regVersion          = "latest"
 	regFormat           = "pretty"
 	regManifestPlatform = ""
 	regSizeHuman        = false
 )
 
 func initRegCmd() {
+	regCmd.PersistentFlags().BoolVarP(&regResolveLatest, "resolve-latest", "", regResolveLatest, "Resolve latest version to the actual version")
+
 	regIndexCmd.Flags().StringVarP(&regVersion, "version", "", regVersion, "Specify the version for the index")
 	regIndexCmd.Flags().StringVarP(&regFormat, "format", "f", regFormat, "Specify the output format (pretty|json)")
 
@@ -67,7 +70,19 @@ func getFormatString() string {
 	return format
 }
 
+func resolveLatestToVersion(toolName string) string {
+	tool, err := tools.GetByName(toolName)
+	if err == nil {
+		return tool.Version
+	}
+
+	return "latest"
+}
+
 func buildReference(tool string) string {
+	if regVersion == "latest" && regResolveLatest {
+		regVersion = resolveLatestToVersion(tool)
+	}
 	return registry + "/" + imageRepository + toolSeparator + tool + ":" + regVersion
 }
 
