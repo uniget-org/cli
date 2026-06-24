@@ -5,7 +5,7 @@ include:
     rules:
     - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULED_JOB == "renovate"
     - if: $CI_PIPELINE_SOURCE == "web" && $SCHEDULED_JOB == "renovate"
-    token_variable_name: RENOVATE_TOKEN
+    token_variable_name: RENOVATE_TOKEN_TF
     github_token_variable_name: RENOVATE_GITHUB_TOKEN
 
 test:
@@ -27,7 +27,7 @@ release_notes:
     GLAB_SEND_TELEMETRY: 0
   before_script: |
     uniget install glab 
-    glab auth login --hostname="${CI_SERVER_HOST}" --token="${BACKLOG_TOKEN}"
+    glab auth login --hostname="${CI_SERVER_HOST}" --token="${BACKLOG_TOKEN_TF}"
   script: |
     bash scripts/release-notes-gitlab.sh >release-notes.md
   artifacts:
@@ -57,14 +57,14 @@ release:
   script:
   - test -n "$CI_SERVER_HOST"
   - test -n "$CI_JOB_TOKEN"
-  - test -n "$GITLAB_TOKEN"
+  - test -n "$GITLAB_TOKEN_TF"
   - test -n "$SIGSTORE_ID_TOKEN"
   - |
     docker buildx build \
         --target=publish-gitlab \
         --build-arg=CI_SERVER_HOST \
         --build-arg=CI_JOB_TOKEN \
-        --build-arg=GITLAB_TOKEN \
+        --build-arg=GITLAB_TOKEN="${GITLAB_TOKEN_TF}" \
         --build-arg=SIGSTORE_ID_TOKEN \
         .
   artifacts:
