@@ -77,7 +77,6 @@ var updateCmd = &cobra.Command{
 					updatedTools.Tools = append(updatedTools.Tools, tool)
 					if tool.IsInstalled() {
 						updatedInstalledTools.Tools = append(updatedInstalledTools.Tools, tool)
-						logging.Info.Printfln("Update: %s %s", tool.Name, tool.Version)
 					}
 				}
 			}
@@ -93,7 +92,7 @@ var updateCmd = &cobra.Command{
 				toolsToShow = updatedTools
 			}
 			for _, tool := range toolsToShow.Tools {
-				logging.Info.Printfln("Updated: %s (%s)", tool.Name, tool.Description)
+				logging.Info.Printfln("Update: %s %s", tool.Name, tool.Version)
 			}
 
 			if len(newUnigetVersion) > 0 {
