@@ -83,23 +83,29 @@ var updateCmd = &cobra.Command{
 		}
 
 		if !quiet {
+			prefix := pterm.NewStyle(pterm.FgBlack, pterm.BgGreen)
+			suffix := pterm.NewStyle(pterm.FgWhite)
 			for _, tool := range newTools.Tools {
-				logging.Info.Printfln("New: %s (%s)", tool.Name, tool.Description)
+				prefix.Print("  NEW   ")
+				suffix.Printfln(" %s (%s)", tool.Name, tool.Description)
 			}
 
 			toolsToShow := updatedInstalledTools
 			if showAllTools {
 				toolsToShow = updatedTools
 			}
+			prefix = pterm.NewStyle(pterm.FgBlack, pterm.BgYellow)
+			suffix = pterm.NewStyle(pterm.FgWhite)
 			for _, tool := range toolsToShow.Tools {
-				logging.Info.Printfln("Update: %s %s", tool.Name, tool.Version)
+				prefix.Print(" UPDATE ")
+				suffix.Printfln(" %s %s", tool.Name, tool.Version)
 			}
 
 			if len(newUnigetVersion) > 0 {
-				prefix := pterm.NewStyle(pterm.FgBlack, pterm.BgYellow)
-				suffix := pterm.NewStyle(pterm.FgWhite)
+				prefix = pterm.NewStyle(pterm.FgBlack, pterm.BgYellow)
+				suffix = pterm.NewStyle(pterm.FgWhite)
 				prefix.Println()
-				prefix.Print(" NEWS  ")
+				prefix.Print("  NEWS  ")
 				suffix.Printfln(" Update to uniget %s by running 'uniget self-upgrade'", newUnigetVersion)
 			}
 		}
