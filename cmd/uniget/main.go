@@ -9,10 +9,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/njayp/ophis"
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 	flag "github.com/spf13/pflag"
 	"github.com/spf13/viper"
+
 	"gitlab.com/uniget-org/cli/pkg/cache"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
@@ -482,6 +484,8 @@ func main() {
 	addViperBindings(pf, "cache", "cache")
 	addViperBindings(pf, "cache-directory", "cachedirectory")
 	addViperBindings(pf, "cache-retention", "cacheretention")
+
+	rootCmd.AddCommand(ophis.Command(nil))
 
 	err = rootCmd.Execute()
 	if err != nil {
