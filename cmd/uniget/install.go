@@ -345,7 +345,7 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 		}
 		logging.Debugf("Current directory: %s", dir)
 
-		progressReader := createProgressReader("Downloading and installing " + plannedTool.Name)
+		progressReader := createProgressReader(fmt.Sprintf("%s %s", plannedTool.Name, plannedTool.Version))
 		if progressReader.IsQuiet() {
 			logging.Info.Printfln("Installing %s %s", plannedTool.Name, plannedTool.Version)
 		}

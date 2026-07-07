@@ -96,7 +96,7 @@ var selfUpgradeCmd = &cobra.Command{
 			return nil
 		}
 
-		progressReader := createProgressReader("Downloading uniget")
+		progressReader := createProgressReader("Downloading")
 		err = toolCache.Get(ref, progressReader, func(reader io.ReadCloser) error { return nil })
 		if err != nil {
 			return fmt.Errorf("unable to get image: %s", err)
