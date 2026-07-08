@@ -158,7 +158,7 @@ LABEL \
     org.opencontainers.image.description="The universal installer and updater for (container) tools" \
     org.opencontainers.image.version="${version}"
 
-FROM registry.gitlab.com/uniget-org/images/systemd:26.04@sha256:01b5b14ed5a786cde26b2f3adf72eeb917e0d585b3d17efa11a0ea53aebeae86 AS systemd-uniget
+FROM registry.gitlab.com/uniget-org/images/systemd:26.04@sha256:ee7ccac3cc1214d9705eaa73198746ba31f679681aded56a63bfe33b19f11edf AS systemd-uniget
 ARG version
 COPY --from=uniget-release /usr/local/bin/uniget /usr/local/bin/uniget
 RUN <<EOF
