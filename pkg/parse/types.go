@@ -3,6 +3,7 @@ package parse
 import (
 	"bytes"
 	"fmt"
+	"slices"
 
 	"github.com/regclient/regclient/types/ref"
 	"gitlab.com/uniget-org/cli/pkg/containers"
@@ -22,10 +23,15 @@ func (r *ImageRefs) Add(ref ref.Ref) {
 func (imageRefs *ImageRefs) Bump(tools *tool.Tools, callback func(toolName string, oldVersion string, newVersion string)) error {
 	imageRefs.BumpedRefs = make([]ref.Ref, len(imageRefs.Refs))
 
+	supportRegistries := []string{
+		"ghcr.io",
+		"registry.gitlab.com",
+	}
+
 	for index, reference := range imageRefs.Refs {
 		logging.Debugf("Bumping image reference: %s", reference)
 
-		if reference.Registry == "ghcr.io" && reference.Repository[0:17] == "uniget-org/tools/" {
+		if slices.Contains(supportRegistries, reference.Registry) && reference.Repository[0:17] == "uniget-org/tools/" {
 			toolName := reference.Repository[17:]
 			oldVersion := reference.Tag
 
