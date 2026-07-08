@@ -85,6 +85,7 @@ images:
     - Dockerfile
     variables:
       PUSH: "false"
+    when: never
   - if: $CI_PIPELINE_SOURCE == "web"
     variables:
       PUSH: "true"
