@@ -5,7 +5,7 @@ FROM ghcr.io/uniget-org/tools/git:2.54.0 AS git
 FROM ghcr.io/uniget-org/tools/go:1.26.4 AS go
 FROM ghcr.io/uniget-org/tools/make:4.4.1 AS make
 
-FROM ubuntu:26.04@sha256:53958ec7b67c2c9355df922dd08dbf0360611f8c3cdb656875e81873db9ffdba
+FROM ubuntu:26.04@sha256:b7f48194d4d8b763a478a621cdc81c27be222ba2206ca3ca6bc42b49685f3d9e
 COPY --link --from=uniget / /usr/local
 COPY --link --from=git / /usr/local
 COPY --link --from=go / /usr/local
