@@ -154,7 +154,7 @@ func ExtractImageReferencesFromGitlabCi(pipeline GitlabCi) (ImageRefs, error) {
 	return imageRefs, nil
 }
 
-func BumpGitlabCiFile(filename string, tools *tool.Tools) error {
+func BumpGitlabCiFile(filename string, tools *tool.Tools, callback func(toolName string, oldVersion string, newVersion string)) error {
 	pipeline, err := LoadGitlabCiFromFile(filename)
 	if err != nil {
 		return fmt.Errorf("failed to load GitLab CI file: %w", err)
@@ -169,7 +169,7 @@ func BumpGitlabCiFile(filename string, tools *tool.Tools) error {
 		return nil
 	}
 
-	err = ReplaceInFile(filename, &imageRefs, tools)
+	err = ReplaceInFile(filename, &imageRefs, tools, callback)
 	if err != nil {
 		return fmt.Errorf("failed to bump image references: %w", err)
 	}

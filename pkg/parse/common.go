@@ -8,13 +8,13 @@ import (
 	"gitlab.com/uniget-org/cli/pkg/tool"
 )
 
-func ReplaceInFile(filename string, imageRefs *ImageRefs, tools *tool.Tools) error {
+func ReplaceInFile(filename string, imageRefs *ImageRefs, tools *tool.Tools, callback func(toolName string, oldVersion string, newVersion string)) error {
 	file, err := myos.SlurpFile(filename)
 	if err != nil {
 		return fmt.Errorf("failed to read file: %w", err)
 	}
 
-	err = imageRefs.Bump(tools)
+	err = imageRefs.Bump(tools, callback)
 	if err != nil {
 		return fmt.Errorf("failed to bump image references: %w", err)
 	}

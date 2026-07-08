@@ -19,7 +19,7 @@ func (r *ImageRefs) Add(ref ref.Ref) {
 	r.Refs = append(r.Refs, ref)
 }
 
-func (imageRefs *ImageRefs) Bump(tools *tool.Tools) error {
+func (imageRefs *ImageRefs) Bump(tools *tool.Tools, callback func(toolName string, oldVersion string, newVersion string)) error {
 	imageRefs.BumpedRefs = make([]ref.Ref, len(imageRefs.Refs))
 
 	for index, reference := range imageRefs.Refs {
@@ -27,9 +27,15 @@ func (imageRefs *ImageRefs) Bump(tools *tool.Tools) error {
 
 		if reference.Registry == "ghcr.io" && reference.Repository[0:17] == "uniget-org/tools/" {
 			toolName := reference.Repository[17:]
+			oldVersion := reference.Tag
+
 			tool, err := tools.GetByName(toolName)
 			if err != nil {
 				return fmt.Errorf("tool %s not found in metadata: %s", toolName, err)
+			}
+
+			if oldVersion != tool.Version {
+				callback(toolName, oldVersion, tool.Version)
 			}
 
 			reference.Tag = tool.Version

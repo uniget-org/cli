@@ -75,7 +75,7 @@ func ExtractImageReferencesFromKubernetesManifest(manifest runtime.Object) (Imag
 	return imageRefs, nil
 }
 
-func BumpKubernetesFile(filename string, tools *tool.Tools) error {
+func BumpKubernetesFile(filename string, tools *tool.Tools, callback func(toolName string, oldVersion string, newVersion string)) error {
 	manifest, err := LoadKubernetesManifestFromFile(filename)
 	if err != nil {
 		return fmt.Errorf("failed to load kubernetes file: %w", err)
@@ -90,7 +90,7 @@ func BumpKubernetesFile(filename string, tools *tool.Tools) error {
 		return nil
 	}
 
-	err = ReplaceInFile(filename, &imageRefs, tools)
+	err = ReplaceInFile(filename, &imageRefs, tools, callback)
 	if err != nil {
 		return fmt.Errorf("failed to bump image references: %w", err)
 	}

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 	"gitlab.com/uniget-org/cli/pkg/parse"
@@ -14,6 +15,11 @@ var (
 	bumpKubernetesFileName = ""
 	bumpGitLabCiFileName   = ".gitlab-ci.yml"
 )
+
+var outputCallback = func(toolName string, oldVersion string, newVersion string) {
+	pterm.NewStyle(pterm.FgBlack, pterm.BgYellow).Print("  BUMP  ")
+	pterm.NewStyle(pterm.FgWhite).Printfln(" %s %s", toolName, newVersion)
+}
 
 func initBumpCmd() {
 	bumpDockerfileCmd.Flags().StringVarP(&bumpDockerfileName, "file", "f", bumpDockerfileName, "Path to Dockerfile")
@@ -96,7 +102,7 @@ func processBumpDockerfileCmd(cmd *cobra.Command, args []string) error {
 	assertMetadataFileExists()
 	assertMetadataIsLoaded()
 
-	err := parse.BumpDockerfile(bumpDockerfileName, &tools)
+	err := parse.BumpDockerfile(bumpDockerfileName, &tools, outputCallback)
 	if err != nil {
 		return fmt.Errorf("failed to bump dockerfile: %w", err)
 	}
@@ -108,7 +114,7 @@ func processComposeFileCmd(cmd *cobra.Command, args []string) error {
 	assertMetadataFileExists()
 	assertMetadataIsLoaded()
 
-	err := parse.BumpComposeFile(bumpComposeFileName, &tools)
+	err := parse.BumpComposeFile(bumpComposeFileName, &tools, outputCallback)
 	if err != nil {
 		return fmt.Errorf("failed to bump compose file: %w", err)
 	}
@@ -120,7 +126,7 @@ func processKubernetesFileCmd(cmd *cobra.Command, args []string) error {
 	assertMetadataFileExists()
 	assertMetadataIsLoaded()
 
-	err := parse.BumpKubernetesFile(bumpKubernetesFileName, &tools)
+	err := parse.BumpKubernetesFile(bumpKubernetesFileName, &tools, outputCallback)
 	if err != nil {
 		return fmt.Errorf("failed to bump kubernetes file: %w", err)
 	}
@@ -132,7 +138,7 @@ func processGitlabCiFileCmd(cmd *cobra.Command, args []string) error {
 	assertMetadataFileExists()
 	assertMetadataIsLoaded()
 
-	err := parse.BumpGitlabCiFile(bumpGitLabCiFileName, &tools)
+	err := parse.BumpGitlabCiFile(bumpGitLabCiFileName, &tools, outputCallback)
 	if err != nil {
 		return fmt.Errorf("failed to bump GitLab CI file: %w", err)
 	}

@@ -45,7 +45,7 @@ func ExtractImageReferencesFromComposeFile(project *types.Project) (ImageRefs, e
 	return imageRefs, nil
 }
 
-func BumpComposeFile(composeFile string, tools *tool.Tools) error {
+func BumpComposeFile(composeFile string, tools *tool.Tools, callback func(toolName string, oldVersion string, newVersion string)) error {
 	project, err := LoadComposeFile(composeFile)
 	if err != nil {
 		return fmt.Errorf("failed to load compose file: %w", err)
@@ -62,7 +62,7 @@ func BumpComposeFile(composeFile string, tools *tool.Tools) error {
 		}
 	}
 	for dockerfileName := range dockerfileNames {
-		err := BumpDockerfile(dockerfileName, tools)
+		err := BumpDockerfile(dockerfileName, tools, callback)
 		if err != nil {
 			return fmt.Errorf("failed to bump dockerfile %s: %w", dockerfileName, err)
 		}
@@ -77,7 +77,7 @@ func BumpComposeFile(composeFile string, tools *tool.Tools) error {
 		return nil
 	}
 
-	err = ReplaceInFile(composeFile, &imageRefs, tools)
+	err = ReplaceInFile(composeFile, &imageRefs, tools, callback)
 	if err != nil {
 		return fmt.Errorf("failed to replace image references in file: %w", err)
 	}

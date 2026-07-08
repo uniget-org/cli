@@ -53,7 +53,7 @@ func ExtractImageReferencesFromDockerfile(reader io.Reader) (ImageRefs, error) {
 	return imageRefs, nil
 }
 
-func BumpDockerfile(dockerfile string, tools *tool.Tools) error {
+func BumpDockerfile(dockerfile string, tools *tool.Tools, callback func(toolName string, oldVersion string, newVersion string)) error {
 	file, err := myos.SlurpFile(dockerfile)
 	if err != nil {
 		return fmt.Errorf("failed to read file: %w", err)
@@ -69,7 +69,7 @@ func BumpDockerfile(dockerfile string, tools *tool.Tools) error {
 		return nil
 	}
 
-	err = ReplaceInFile(dockerfile, &imageRefs, tools)
+	err = ReplaceInFile(dockerfile, &imageRefs, tools, callback)
 	if err != nil {
 		return fmt.Errorf("failed to replace image references in file: %w", err)
 	}
