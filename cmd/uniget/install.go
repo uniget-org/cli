@@ -285,12 +285,13 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 
 		if plannedTool.IsInstalled() {
 			binaryFilePath := plannedTool.Binary
-			file, err := os.OpenFile(binaryFilePath, os.O_WRONLY, 0644)
+			file, err := os.OpenFile(binaryFilePath, os.O_WRONLY, 0600) // #nosec G304 -- Retrieved from signed metadata
 			if err != nil {
 				logging.Warning.Printfln("%s: Binary is in use", plannedTool.Name)
 				continue
 			}
-			file.Close()
+			//nolint:errcheck
+			file.Close() // #nosec G104 -- File is closed immediately after opening
 
 			err = uninstallTool(plannedTool.Name)
 			if err != nil {
