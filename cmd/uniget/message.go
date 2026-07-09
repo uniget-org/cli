@@ -76,15 +76,15 @@ var messageCmd = &cobra.Command{
 			}
 
 		} else {
-			err := printToolInternals(cmd.OutOrStdout(), toolName)
+			err := printToolInternalsMessage(cmd.OutOrStdout(), toolName)
 			if err != nil {
 				return fmt.Errorf("failed to print tool internals: %s", err)
 			}
-			err = printToolUsage(cmd.OutOrStdout(), toolName)
+			err = printToolUsageMessage(cmd.OutOrStdout(), toolName)
 			if err != nil {
 				return fmt.Errorf("failed to print tool usage: %s", err)
 			}
-			err = printToolUpdate(cmd.OutOrStdout(), toolName)
+			err = printToolUpdateMessage(cmd.OutOrStdout(), toolName)
 			if err != nil {
 				return fmt.Errorf("failed to print tool update: %s", err)
 			}
@@ -114,15 +114,15 @@ func createTemplateVariablesForToolByName(toolName string) (map[string]any, erro
 	return createTemplateVariablesForTool(tool)
 }
 
-func printToolInternals(w io.Writer, toolName string) error {
+func printToolInternalsMessage(w io.Writer, toolName string) error {
 	values, err := createTemplateVariablesForToolByName(toolName)
 	if err != nil {
 		return fmt.Errorf("failed to create template variables: %s", err)
 	}
-	return printToolInternalsWithIndentation(w, toolName, 2, values)
+	return printToolInternalsMessageWithIndentation(w, toolName, 2, values)
 }
 
-func printToolInternalsWithIndentation(w io.Writer, toolName string, indentation int, values map[string]any) error {
+func printToolInternalsMessageWithIndentation(w io.Writer, toolName string, indentation int, values map[string]any) error {
 	tool, err := tools.GetByName(toolName)
 	if err != nil {
 		return fmt.Errorf("failed to get tool: %s", err)
@@ -148,15 +148,15 @@ func printToolInternalsWithIndentation(w io.Writer, toolName string, indentation
 	return nil
 }
 
-func printToolUsage(w io.Writer, toolName string) error {
+func printToolUsageMessage(w io.Writer, toolName string) error {
 	values, err := createTemplateVariablesForToolByName(toolName)
 	if err != nil {
 		return fmt.Errorf("failed to create template variables: %s", err)
 	}
-	return printToolUsageWithIndentation(w, toolName, 2, values)
+	return printToolUsageMessageWithIndentation(w, toolName, 2, values)
 }
 
-func printToolUsageWithIndentation(w io.Writer, toolName string, indentation int, values map[string]any) error {
+func printToolUsageMessageWithIndentation(w io.Writer, toolName string, indentation int, values map[string]any) error {
 	tool, err := tools.GetByName(toolName)
 	if err != nil {
 		return fmt.Errorf("failed to get tool: %s", err)
@@ -182,15 +182,15 @@ func printToolUsageWithIndentation(w io.Writer, toolName string, indentation int
 	return nil
 }
 
-func printToolUpdate(w io.Writer, toolName string) error {
+func printToolUpdateMessage(w io.Writer, toolName string) error {
 	values, err := createTemplateVariablesForToolByName(toolName)
 	if err != nil {
 		return fmt.Errorf("failed to create template variables: %s", err)
 	}
-	return printToolUpdateWithIndentation(w, toolName, 2, values)
+	return printToolUpdateMessageWithIndentation(w, toolName, 2, values)
 }
 
-func printToolUpdateWithIndentation(w io.Writer, toolName string, indentation int, values map[string]any) error {
+func printToolUpdateMessageWithIndentation(w io.Writer, toolName string, indentation int, values map[string]any) error {
 	tool, err := tools.GetByName(toolName)
 	if err != nil {
 		return fmt.Errorf("failed to get tool: %s", err)

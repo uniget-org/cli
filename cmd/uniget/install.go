@@ -297,7 +297,7 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 				logging.Warning.Printfln("Unable to uninstall %s: %s", plannedTool.Name, err)
 				continue
 			}
-			err = printToolUpdate(w, plannedTool.Name)
+			err = printToolUpdateMessage(w, plannedTool.Name)
 			if err != nil {
 				logging.Warning.Printfln("Unable to print tool update: %s", err)
 				continue
@@ -443,7 +443,7 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 		}
 		logging.Success.Printfln("%s %s", plannedTool.Name, plannedTool.Version)
 
-		err = printToolUsage(w, plannedTool.Name)
+		err = printToolUsageMessage(w, plannedTool.Name)
 		if err != nil {
 			logging.Warning.Printfln("Unable to print tool usage: %s", err)
 			continue
