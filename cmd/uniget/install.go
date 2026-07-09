@@ -284,7 +284,15 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 		}
 
 		if plannedTool.IsInstalled() {
-			err := uninstallTool(plannedTool.Name)
+			binaryFilePath := plannedTool.Binary
+			file, err := os.OpenFile(binaryFilePath, os.O_WRONLY, 0644)
+			if err != nil {
+				logging.Warning.Printfln("%s: Binary is in use", plannedTool.Name)
+				continue
+			}
+			file.Close()
+
+			err = uninstallTool(plannedTool.Name)
 			if err != nil {
 				logging.Warning.Printfln("Unable to uninstall %s: %s", plannedTool.Name, err)
 				continue
