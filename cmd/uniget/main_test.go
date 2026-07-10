@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"gitlab.com/uniget-org/cli/internal/config"
 	"gitlab.com/uniget-org/cli/pkg/cache"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 )
@@ -26,6 +27,7 @@ type cobraTestOpts struct {
 func runCobraTest(t *testing.T, opts *cobraTestOpts, args ...string) (string, error) {
 	t.Helper()
 
+	configuration = config.NewDefaultConfig()
 	toolCache = cache.NewNoneCache()
 
 	buf := new(bytes.Buffer)
