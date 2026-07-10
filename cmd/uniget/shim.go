@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"gitlab.com/uniget-org/cli/internal/constants"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 )
 
@@ -27,7 +27,7 @@ var shimCmd = &cobra.Command{
 	Use:     "shim",
 	Aliases: []string{},
 	Short:   "Install shims for profile.d",
-	Long:    header + "\nInstall shims for profile.d",
+	Long:    constants.Header + "\nInstall shims for profile.d",
 	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		err := installProfileDShim()
@@ -40,12 +40,12 @@ var shimCmd = &cobra.Command{
 }
 
 func installProfileDShim() error {
-	profileDShimFile := profileDDirectory + "/uniget-profile.d.sh"
-	profileDScript := strings.ReplaceAll(profileDShim, "${target}", "/"+viper.GetString("target"))
+	profileDShimFile := configuration.GetProfileDDirectory() + "/uniget-profile.d.sh"
+	profileDScript := strings.ReplaceAll(profileDShim, "${target}", "/"+configuration.Target)
 
-	if viper.GetBool("user") {
-		profileDShimFile = viper.GetString("prefix") + "/.config/uniget/profile.d-shim.sh"
-		profileDScript = strings.ReplaceAll(profileDShim, "${target}", viper.GetString("prefix")+"/"+viper.GetString("target"))
+	if configuration.User {
+		profileDShimFile = configuration.GetProfileDDirectory() + "/uniget-profile.d.sh"
+		profileDScript = strings.ReplaceAll(profileDShim, "${target}", configuration.Prefix+"/"+configuration.Target)
 	}
 
 	if fileExists(profileDShimFile) {

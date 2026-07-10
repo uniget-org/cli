@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"gitlab.com/uniget-org/cli/internal/constants"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 	"gitlab.com/uniget-org/cli/pkg/tool"
 	"go.yaml.in/yaml/v3"
@@ -30,10 +30,10 @@ var listCmd = &cobra.Command{
 		"get",
 	},
 	Short: "List tools",
-	Long:  header + "\nList tools",
+	Long:  constants.Header + "\nList tools",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if viper.GetBool("update") {
+		if configuration.AutoUpdate {
 			err := downloadMetadata()
 			if err != nil {
 				return fmt.Errorf("error downloading metadata: %s", err)
@@ -48,7 +48,7 @@ var listCmd = &cobra.Command{
 			var installedTools tool.Tools
 			for index := range tools.Tools {
 
-				err := tools.Tools[index].UpdateStatus(viper.GetString("prefix"), viper.GetString("target"), cacheDirectory, arch, altArch)
+				err := tools.Tools[index].UpdateStatus(configuration.Prefix, configuration.Target, configuration.GetCacheDirectory(), configuration.Arch, configuration.AltArch)
 				if err != nil {
 					return fmt.Errorf("failed to update status for tool %s: %s", tools.Tools[index].Name, err)
 				}
@@ -63,7 +63,7 @@ var listCmd = &cobra.Command{
 			var installedTools tool.Tools
 			for index := range tools.Tools {
 
-				err := tools.Tools[index].UpdateStatus(viper.GetString("prefix"), viper.GetString("target"), cacheDirectory, arch, altArch)
+				err := tools.Tools[index].UpdateStatus(configuration.Prefix, configuration.Target, configuration.GetCacheDirectory(), configuration.Arch, configuration.AltArch)
 				if err != nil {
 					return fmt.Errorf("failed to update status for tool %s: %s", tools.Tools[index].Name, err)
 				}

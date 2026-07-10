@@ -11,8 +11,8 @@ import (
 	"syscall"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 
+	"gitlab.com/uniget-org/cli/internal/constants"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 	"gitlab.com/uniget-org/cli/pkg/tool"
@@ -52,13 +52,13 @@ var installCmd = &cobra.Command{
 		"i",
 	},
 	Short: "Install tools",
-	Long:  header + "\nInstall and update tools",
+	Long:  constants.Header + "\nInstall and update tools",
 	Args:  cobra.OnlyValidArgs,
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if viper.GetBool("autoupdate") {
+		if configuration.AutoUpdate {
 			err := downloadMetadata()
 			if err != nil {
 				return fmt.Errorf("error downloading metadata: %s", err)
@@ -117,7 +117,7 @@ func findInstalledTools(tools tool.Tools) (tool.Tools, error) {
 	for index, tool := range tools.Tools {
 		logging.Debugf("Getting status for requested tool %s", tool.Name)
 
-		err := tools.Tools[index].UpdateStatus(viper.GetString("prefix"), viper.GetString("target"), cacheDirectory, arch, altArch)
+		err := tools.Tools[index].UpdateStatus(configuration.Prefix, configuration.Target, configuration.GetCacheDirectory(), configuration.Arch, configuration.AltArch)
 		if err != nil {
 			return requestedTools, fmt.Errorf("failed to update status for tool %s: %s", tool.Name, err)
 		}
@@ -182,7 +182,7 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 		}
 
 		logging.Debugf("Getting status for requested tool %s", tool.Name)
-		err := plannedTools.Tools[index].UpdateStatus(viper.GetString("prefix"), viper.GetString("target"), cacheDirectory, arch, altArch)
+		err := plannedTools.Tools[index].UpdateStatus(configuration.Prefix, configuration.Target, configuration.GetCacheDirectory(), configuration.Arch, configuration.AltArch)
 		if err != nil {
 			return fmt.Errorf("failed to update status for tool %s: %s", plannedTools.Tools[index].Name, err)
 		}
@@ -318,7 +318,7 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 					logging.Error.Printfln("Unable to get binary status of dependency %s: %s", depName, err)
 					return fmt.Errorf("unable to get binary status of dependency %s: %s", depName, err)
 				}
-				err = dep.GetMarkerFileStatus(viper.GetString("prefix") + "/" + cacheDirectory)
+				err = dep.GetMarkerFileStatus(configuration.Prefix + "/" + configuration.GetCacheDirectory())
 				if err != nil {
 					logging.Error.Printfln("Unable to get marker file status of dependency %s: %s", depName, err)
 					return fmt.Errorf("unable to get marker file status of dependency %s: %s", depName, err)
@@ -337,10 +337,10 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 			}
 		}
 
-		assertDirectory(viper.GetString("prefix") + "/" + viper.GetString("target"))
+		assertDirectory(configuration.Prefix + "/" + configuration.Target)
 		// Change working directory to prefix
 		// so that unpacking can ignore the target directory
-		installDir := viper.GetString("prefix")
+		installDir := configuration.Prefix
 		if len(installDir) == 0 {
 			installDir = "/"
 		}
@@ -363,7 +363,7 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 		var layer io.ReadCloser
 		var installedFiles []string
 		installTool := func(plannedTool tool.Tool, layer io.ReadCloser) error {
-			installedFiles, err = plannedTool.Install(w, layer, pathRewriteRules, createPatchFileCallback(plannedTool))
+			installedFiles, err = plannedTool.Install(w, layer, configuration.PathRewriteRules, createPatchFileCallback(plannedTool))
 			if err != nil {
 				logging.Error.Printfln("Unable to install %s: %s", plannedTool.Name, err)
 				logging.Warning.Printfln("Removing partial installation")
@@ -400,7 +400,7 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 
 		} else {
 			logging.Debugf("Using default behaviour for installation")
-			registries, repositories := plannedTool.GetSourcesWithFallback(registry, imageRepository)
+			registries, repositories := plannedTool.GetSourcesWithFallback(constants.Registry, constants.ImageRepository)
 			ref, err := containers.FindToolRef(registries, repositories, plannedTool.Name, "latest")
 			if err != nil {
 				return fmt.Errorf("error finding tool %s:%s: %s", plannedTool.Name, plannedTool.Version, err)
@@ -437,7 +437,7 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 		if err != nil {
 			logging.Error.Printfln("Unable to marshal tool: %s", err)
 		}
-		manifestFilename := viper.GetString("prefix") + "/" + libDirectory + "/manifests/" + plannedTool.Name + ".json"
+		manifestFilename := configuration.Prefix + "/" + configuration.GetLibDirectory() + "/manifests/" + plannedTool.Name + ".json"
 		err = os.WriteFile(manifestFilename, []byte(plannedToolJson), 0644) // #nosec G306 -- File must be world-readable
 		if err != nil {
 			logging.Error.Printfln("Unable to write manifest file: %s", err)
@@ -450,7 +450,7 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 			continue
 		}
 
-		err = plannedTool.CreateMarkerFile(viper.GetString("prefix") + "/" + cacheDirectory)
+		err = plannedTool.CreateMarkerFile(configuration.Prefix + "/" + configuration.GetCacheDirectory())
 		if err != nil {
 			logging.Warning.Printfln("Unable to create marker file: %s", err)
 			continue
@@ -490,14 +490,14 @@ func createPatchFileCallback(tool tool.Tool) func(path string) string {
 		fullTemplatePath := filepath.Join(curDir, templatePath)
 
 		values := make(map[string]any)
-		values["Target"] = viper.GetString("target")
-		values["RelativeTarget"] = viper.GetString("target")
-		values["Prefix"] = viper.GetString("prefix")
+		values["Target"] = configuration.Target
+		values["RelativeTarget"] = configuration.Target
+		values["Prefix"] = configuration.Prefix
 		values["Name"] = tool.Name
 		values["Version"] = tool.Version
 
-		if viper.GetBool("user") {
-			values["Target"] = viper.GetString("prefix") + "/" + viper.GetString("target")
+		if configuration.User {
+			values["Target"] = configuration.Prefix + "/" + configuration.Target
 		}
 
 		if len(tool.RuntimeDependencies) > 0 {

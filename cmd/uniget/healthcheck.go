@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"gitlab.com/uniget-org/cli/internal/constants"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 )
 
@@ -19,14 +19,14 @@ var healthcheckCmd = &cobra.Command{
 		"health",
 	},
 	Short:  "Check health of installed tool",
-	Long:   header + "\nCheck health of installed tool",
+	Long:   constants.Header + "\nCheck health of installed tool",
 	Hidden: true,
 	Args:   cobra.ExactArgs(1),
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if viper.GetBool("autoupdate") {
+		if configuration.AutoUpdate {
 			err := downloadMetadata()
 			if err != nil {
 				return fmt.Errorf("error downloading metadata: %s", err)
@@ -41,7 +41,7 @@ var healthcheckCmd = &cobra.Command{
 			return fmt.Errorf("error getting tool %s", toolName)
 		}
 
-		err = tool.UpdateStatus(viper.GetString("prefix"), viper.GetString("target"), cacheDirectory, arch, altArch)
+		err = tool.UpdateStatus(configuration.Prefix, configuration.Target, configuration.GetCacheDirectory(), configuration.Arch, configuration.AltArch)
 		if err != nil {
 			return fmt.Errorf("failed to update status for tool %s: %s", tool.Name, err)
 		}
@@ -54,7 +54,7 @@ var healthcheckCmd = &cobra.Command{
 			logging.Warning.Printfln("%s: Marker file is not present", tool.Name)
 		}
 		if tool.Binary == "false" {
-			logging.Warning.Printfln("%s: Tool does not have a binary", tool.Name)
+			tool.ReplaceVariables(configuration.Prefix+configuration.Target, configuration.Arch, configuration.AltArch)
 		} else if tool.Status.BinaryPresent {
 			logging.Success.Printfln("%s: Binary is present (%s)", tool.Name, tool.Binary)
 		} else {
@@ -62,7 +62,7 @@ var healthcheckCmd = &cobra.Command{
 			testFailed = true
 		}
 
-		markerFilePresent := fileExists(viper.GetString("prefix") + "/" + libDirectory + "/manifests/" + tool.Name + ".txt")
+		markerFilePresent := fileExists(configuration.Prefix + "/" + configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".txt")
 		if !tool.Status.MarkerFilePresent && !tool.Status.BinaryPresent && !markerFilePresent {
 			logging.Warning.Printfln("Tool %s is not installed", tool.Name)
 			testFailed = true
@@ -73,7 +73,7 @@ var healthcheckCmd = &cobra.Command{
 			logging.Info.Printfln("%s: Manifest version is %s", tool.Name, tool.Version)
 
 		} else {
-			tool.ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
+			tool.ReplaceVariables(configuration.Prefix+"/"+configuration.Target, configuration.Arch, configuration.AltArch)
 			version, err := tool.RunVersionCheck()
 			if err != nil {
 				logging.Error.Printfln("%s: Error getting version: %s", tool.Name, err)

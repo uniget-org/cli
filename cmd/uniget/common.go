@@ -4,7 +4,6 @@ import (
 	"os"
 
 	"github.com/pterm/pterm"
-	"github.com/spf13/viper"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 	myos "gitlab.com/uniget-org/cli/pkg/os"
 	"gitlab.com/uniget-org/cli/pkg/tui"
@@ -39,7 +38,7 @@ func assertWritableDirectory(directory string) {
 }
 
 func assertWritableTarget() {
-	assertWritableDirectory(viper.GetString("prefix") + "/" + viper.GetString("target"))
+	assertWritableDirectory(configuration.Prefix + "/" + configuration.Target)
 }
 
 func assertDirectory(directory string) {
@@ -52,31 +51,31 @@ func assertDirectory(directory string) {
 }
 
 func assertLibDirectory() {
-	if !directoryExists(viper.GetString("prefix") + "/" + libRoot) {
-		assertDirectory(viper.GetString("prefix") + "/" + libRoot)
+	if !directoryExists(configuration.Prefix + "/" + configuration.LibRoot) {
+		assertDirectory(configuration.Prefix + "/" + configuration.LibRoot)
 	}
-	assertWritableDirectory(viper.GetString("prefix") + "/" + libRoot)
-	assertDirectory(viper.GetString("prefix") + "/" + libDirectory)
+	assertWritableDirectory(configuration.Prefix + "/" + configuration.LibRoot)
+	assertDirectory(configuration.Prefix + "/" + configuration.GetLibDirectory())
 }
 
 func assertCacheDirectory() {
-	if !directoryExists(viper.GetString("prefix") + "/" + cacheRoot) {
-		assertDirectory(viper.GetString("prefix") + "/" + cacheRoot)
+	if !directoryExists(configuration.Prefix + "/" + configuration.CacheRoot) {
+		assertDirectory(configuration.Prefix + "/" + configuration.CacheRoot)
 	}
-	assertWritableDirectory(viper.GetString("prefix") + "/" + cacheRoot)
-	assertDirectory(viper.GetString("prefix") + "/" + cacheDirectory)
+	assertWritableDirectory(configuration.Prefix + "/" + configuration.CacheRoot)
+	assertDirectory(configuration.Prefix + "/" + configuration.GetCacheDirectory())
 }
 
 func assertMetadataFileExists() {
-	_, err := os.Stat(viper.GetString("prefix") + "/" + metadataFile)
+	_, err := os.Stat(configuration.Prefix + "/" + configuration.GetMetadataFile())
 	if err != nil {
-		logging.Error.Printfln("Metadata file %s does not exist: %s", viper.GetString("prefix")+"/"+metadataFile, err)
+		logging.Error.Printfln("Metadata file %s does not exist: %s", configuration.Prefix+"/"+configuration.GetMetadataFile(), err)
 		os.Exit(1)
 	}
 
-	_, err = os.Stat(viper.GetString("prefix") + "/" + metadataFile + ".sigstore.json")
+	_, err = os.Stat(configuration.Prefix + "/" + configuration.GetMetadataFile() + ".sigstore.json")
 	if err != nil {
-		logging.Error.Printfln("Metadata signature %s does not exist: %s", viper.GetString("prefix")+"/"+metadataFile+".sigstore.json", err)
+		logging.Error.Printfln("Metadata signature %s does not exist: %s", configuration.Prefix+"/"+configuration.GetMetadataFile()+".sigstore.json", err)
 		os.Exit(1)
 	}
 }
@@ -91,7 +90,7 @@ func assertMetadataIsLoaded() {
 func createProgressReader(title string) tui.ProgressReader {
 	progressReader := tui.NewProgressReader(nil, nil)
 
-	if myos.IsTty() && !viper.GetBool("debug") && !viper.GetBool("trace") {
+	if myos.IsTty() && !configuration.Debug && !configuration.Trace {
 		progressPrinter, err := pterm.DefaultProgressbar.
 			WithTitle(title).
 			WithTotal(0).

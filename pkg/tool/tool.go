@@ -186,7 +186,7 @@ func (tool *Tool) GetMarkerFileStatus(markerFileDirectory string) error {
 	return nil
 }
 
-func (tool *Tool) UpdateStatus(prefix string, target string, cacheDirectory, arch string, altArch string) error {
+func (tool *Tool) UpdateStatus(prefix string, target string, cacheDirectory string, arch string, altArch string) error {
 	tool.ReplaceVariables(prefix+"/"+target, arch, altArch)
 	err := tool.GetMarkerFileStatus(prefix + "/" + cacheDirectory)
 	if err != nil {

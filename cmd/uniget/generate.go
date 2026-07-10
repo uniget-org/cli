@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"gitlab.com/uniget-org/cli/internal/constants"
 	"gitlab.com/uniget-org/cli/pkg/tool"
 	//"gitlab.com/uniget-org/cli/pkg/tool"
 )
@@ -31,14 +31,14 @@ var generateCmd = &cobra.Command{
 		"gen",
 	},
 	Short:  "Generate Dockerfile",
-	Long:   header + "\nGenerate Dockerfile for a tool",
+	Long:   constants.Header + "\nGenerate Dockerfile for a tool",
 	Hidden: true,
 	Args:   cobra.MinimumNArgs(1),
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if viper.GetBool("autoupdate") {
+		if configuration.AutoUpdate {
 			err := downloadMetadata()
 			if err != nil {
 				return fmt.Errorf("error downloading metadata: %s", err)
@@ -71,12 +71,12 @@ var generateCmd = &cobra.Command{
 			if pinVersions {
 				toolVersion = tool.Version
 			}
-			result = append(result, fmt.Sprintf("FROM %s%s:%s AS %s", registryImagePrefix, tool.Name, toolVersion, tool.Name))
+			result = append(result, fmt.Sprintf("FROM %s%s:%s AS %s", constants.RegistryImagePrefix, tool.Name, toolVersion, tool.Name))
 		}
 		result = append(result, "")
 		result = append(result, fmt.Sprintf("FROM %s", baseImage))
 		for _, tool := range plannedTools.Tools {
-			result = append(result, fmt.Sprintf("COPY --link --from=%s%s:latest / /%s", registryImagePrefix, tool.Name, imageTarget))
+			result = append(result, fmt.Sprintf("COPY --link --from=%s%s:latest / /%s", constants.RegistryImagePrefix, tool.Name, imageTarget))
 		}
 
 		//nolint:errcheck

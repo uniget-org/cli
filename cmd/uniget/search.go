@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"gitlab.com/uniget-org/cli/internal/constants"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 )
 
@@ -49,10 +49,10 @@ var searchCmd = &cobra.Command{
 		"f",
 	},
 	Short: "Search for tools",
-	Long:  header + "\nSearch for tools",
+	Long:  constants.Header + "\nSearch for tools",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if viper.GetBool("autoupdate") {
+		if configuration.AutoUpdate {
 			err := downloadMetadata()
 			if err != nil {
 				return fmt.Errorf("error downloading metadata: %s", err)

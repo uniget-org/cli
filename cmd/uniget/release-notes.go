@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"gitlab.com/uniget-org/cli/internal/constants"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 
 	"github.com/charmbracelet/glamour"
@@ -28,13 +28,13 @@ var releaseNotesCmd = &cobra.Command{
 	Use:     "release-notes",
 	Aliases: []string{},
 	Short:   "Show release notes for a tool",
-	Long:    header + "\nShow release notes for a tool",
+	Long:    constants.Header + "\nShow release notes for a tool",
 	Args:    cobra.ExactArgs(1),
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if viper.GetBool("autoupdate") {
+		if configuration.AutoUpdate {
 			err := downloadMetadata()
 			if err != nil {
 				return fmt.Errorf("error downloading metadata: %s", err)
@@ -129,7 +129,7 @@ func fetchUrl(url string) ([]byte, error) {
 	if err != nil {
 		return []byte{}, fmt.Errorf("failed to create request: %s", err)
 	}
-	req.Header.Set("User-Agent", fmt.Sprintf("%s/%s", projectName, version))
+	req.Header.Set("User-Agent", fmt.Sprintf("%s/%s", constants.ProjectName, version))
 	resp, err := client.Do(req) // #nosec G704 -- Called from internal functions with controlled URLs
 	if err != nil {
 		return []byte{}, fmt.Errorf("failed fetch url: %s", err)

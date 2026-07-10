@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"gitlab.com/uniget-org/cli/internal/constants"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 )
 
@@ -19,13 +19,13 @@ var versionCmd = &cobra.Command{
 		"ver",
 	},
 	Short: "Show version of installed tool",
-	Long:  header + "\nShow version of installed tool",
+	Long:  constants.Header + "\nShow version of installed tool",
 	Args:  cobra.ExactArgs(1),
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if viper.GetBool("autoupdate") {
+		if configuration.AutoUpdate {
 			err := downloadMetadata()
 			if err != nil {
 				return fmt.Errorf("error downloading metadata: %s", err)
@@ -39,12 +39,12 @@ var versionCmd = &cobra.Command{
 			return fmt.Errorf("failed to get tool: %s", err)
 		}
 
-		err = tool.UpdateStatus(viper.GetString("prefix"), viper.GetString("target"), cacheDirectory, arch, altArch)
+		err = tool.UpdateStatus(configuration.Prefix, configuration.Target, configuration.GetCacheDirectory(), configuration.Arch, configuration.AltArch)
 		if err != nil {
 			return fmt.Errorf("failed to update status for tool %s: %s", tool.Name, err)
 		}
 
-		markerFilePresent := fileExists(viper.GetString("prefix") + "/" + libDirectory + "/manifests/" + tool.Name + ".txt")
+		markerFilePresent := fileExists(configuration.Prefix + "/" + configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".txt")
 		if !tool.Status.MarkerFilePresent && !tool.Status.BinaryPresent && !markerFilePresent {
 			logging.Warning.Printfln("Tool %s is not installed", tool.Name)
 			return fmt.Errorf("tool %s is not installed", tool.Name)
@@ -56,7 +56,7 @@ var versionCmd = &cobra.Command{
 			return nil
 		}
 
-		tool.ReplaceVariables(viper.GetString("prefix")+"/"+viper.GetString("target"), arch, altArch)
+		tool.ReplaceVariables(configuration.Prefix+"/"+configuration.Target, configuration.Arch, configuration.AltArch)
 		version, err := tool.RunVersionCheck()
 		if err != nil {
 			return fmt.Errorf("failed to get version: %s", err)

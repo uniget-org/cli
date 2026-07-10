@@ -6,7 +6,7 @@ import (
 	"charm.land/huh/v2"
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"gitlab.com/uniget-org/cli/internal/constants"
 )
 
 func initImportCmd() {
@@ -17,10 +17,10 @@ var importCmd = &cobra.Command{
 	Use:     "import",
 	Aliases: []string{},
 	Short:   "Start managing existing binaries",
-	Long:    header + "\nStart managing existing binaries",
+	Long:    constants.Header + "\nStart managing existing binaries",
 	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if viper.GetBool("autoupdate") {
+		if configuration.AutoUpdate {
 			err := downloadMetadata()
 			if err != nil {
 				return fmt.Errorf("error downloading metadata: %s", err)
@@ -39,7 +39,7 @@ var importCmd = &cobra.Command{
 
 		importableTools := make([]huh.Option[string], 0)
 		for _, tool := range tools.Tools {
-			err = tool.UpdateStatus(viper.GetString("prefix"), viper.GetString("target"), cacheDirectory, arch, altArch)
+			err = tool.UpdateStatus(configuration.Prefix, configuration.Target, configuration.GetCacheDirectory(), configuration.Arch, configuration.AltArch)
 			if err != nil {
 				return fmt.Errorf("failed to update status for tool %s: %s", tool.Name, err)
 			}

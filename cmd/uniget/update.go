@@ -9,8 +9,8 @@ import (
 	"github.com/google/safearchive/tar"
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 
+	"gitlab.com/uniget-org/cli/internal/constants"
 	"gitlab.com/uniget-org/cli/pkg/archive"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
@@ -32,7 +32,7 @@ var updateCmd = &cobra.Command{
 	Use:     "update",
 	Aliases: []string{},
 	Short:   "Update tool manifest",
-	Long:    header + "\nUpdate tool manifest",
+	Long:    constants.Header + "\nUpdate tool manifest",
 	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		assertMetadataFileExists()
@@ -69,7 +69,7 @@ var updateCmd = &cobra.Command{
 					newTools.Tools = append(newTools.Tools, tool)
 
 				} else if tool.Version != oldTool.Version {
-					err := tool.UpdateStatus(viper.GetString("prefix"), viper.GetString("target"), cacheDirectory, arch, altArch)
+					err := tool.UpdateStatus(configuration.Prefix, configuration.Target, configuration.GetCacheDirectory(), configuration.Arch, configuration.AltArch)
 					if err != nil {
 						logging.Warning.Printfln("Error updating status for %s: %s", tool.Name, err)
 					}
@@ -121,7 +121,7 @@ func downloadMetadata() error {
 	}
 
 	assertCacheDirectory()
-	t, err := containers.FindToolRef([]string{registry}, []string{imageRepository}, "metadata", metadataImageTag)
+	t, err := containers.FindToolRef([]string{constants.Registry}, []string{constants.ImageRepository}, "metadata", constants.MetadataImageTag)
 	if err != nil {
 		return fmt.Errorf("error finding metadata: %s", err)
 	}
@@ -133,14 +133,14 @@ func downloadMetadata() error {
 		}
 	}()
 
-	logging.Debugf("Changing directory to %s", viper.GetString("prefix")+"/"+cacheDirectory)
-	err = os.Chdir(viper.GetString("prefix") + "/" + cacheDirectory)
+	logging.Debugf("Changing directory to %s", configuration.Prefix+"/"+configuration.GetCacheDirectory())
+	err = os.Chdir(configuration.Prefix + "/" + configuration.GetCacheDirectory())
 	if err != nil {
-		return fmt.Errorf("error changing directory to %s: %s", viper.GetString("prefix")+"/"+cacheDirectory, err)
+		return fmt.Errorf("error changing directory to %s: %s", configuration.Prefix+"/"+configuration.GetCacheDirectory(), err)
 	}
 
 	progressReader := createProgressReader("Downloading metadata")
-	logging.Debugf("Extracting archive to %s", viper.GetString("prefix")+"/"+cacheDirectory)
+	logging.Debugf("Extracting archive to %s", configuration.Prefix+"/"+configuration.GetCacheDirectory())
 	err = containers.GetFirstLayerFromRegistry(context.Background(), rc, t.GetRef(), progressReader, func(reader io.ReadCloser) error {
 		err := archive.ProcessTarContents(reader, func(reader *tar.Reader, header *tar.Header) error {
 			err := archive.CallbackExtractTarItem(reader, header)
@@ -173,8 +173,8 @@ func loadMetadata() (err error) {
 
 	if len(os.Getenv("UNIGET_IGNORE_METADATA_SIGNATURE")) > 0 {
 		_, err = security.VerifySigstoreBundle(
-			viper.GetString("prefix")+"/"+metadataFile,
-			viper.GetString("prefix")+"/"+metadataFile+".sigstore.json",
+			configuration.Prefix+"/"+configuration.GetMetadataFile(),
+			configuration.Prefix+"/"+configuration.GetMetadataFile()+".sigstore.json",
 			"https://token.actions.githubusercontent.com",
 			"",
 			"",
@@ -185,9 +185,9 @@ func loadMetadata() (err error) {
 		}
 	}
 
-	tools, err = tool.LoadFromFile(viper.GetString("prefix") + "/" + metadataFile)
+	tools, err = tool.LoadFromFile(configuration.Prefix + "/" + configuration.GetMetadataFile())
 	if err != nil {
-		return fmt.Errorf("failed to load metadata from file %s: %s", viper.GetString("prefix")+"/"+metadataFile, err)
+		return fmt.Errorf("failed to load metadata from file %s: %s", configuration.Prefix+"/"+configuration.GetMetadataFile(), err)
 	}
 
 	metadataLoaded = true

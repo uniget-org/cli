@@ -7,7 +7,7 @@ import (
 	mcobra "github.com/muesli/mango-cobra"
 	"github.com/muesli/roff"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"gitlab.com/uniget-org/cli/internal/constants"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 )
 
@@ -26,11 +26,11 @@ var manpagesCmd = &cobra.Command{
 		"manpage",
 	},
 	Short: "Generate manpages",
-	Long:  header + "\nGenerate manpages",
+	Long:  constants.Header + "\nGenerate manpages",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if (manDirectory[0:1] != "/") && (manDirectory[0:1] != ".") {
-			manDirectory = fmt.Sprintf("%s/%s", "/"+viper.GetString("target"), manDirectory)
+			manDirectory = fmt.Sprintf("%s/%s", "/"+configuration.Target, manDirectory)
 		}
 		logging.Debugf("Using base directory for manpages: %s", manDirectory)
 
@@ -72,9 +72,9 @@ func writeManpage(cobraCmd *cobra.Command, name string, manDirectory string) err
 		}
 	}
 	if name == "" {
-		fileName = fmt.Sprintf("%s/%s.1", dirName, projectName)
+		fileName = fmt.Sprintf("%s/%s.1", dirName, constants.ProjectName)
 	} else {
-		fileName = fmt.Sprintf("%s/%s-%s.1", dirName, projectName, name)
+		fileName = fmt.Sprintf("%s/%s-%s.1", dirName, constants.ProjectName, name)
 	}
 
 	file, err := os.Create(fileName) // #nosec G304 -- This is exactly the value proposition of this command

@@ -5,7 +5,7 @@ import (
 	"io"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"gitlab.com/uniget-org/cli/internal/constants"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 
@@ -26,7 +26,7 @@ var inspectCmd = &cobra.Command{
 	Use:     "inspect",
 	Aliases: []string{},
 	Short:   "Inspect tool",
-	Long:    header + "\nInspect tools",
+	Long:    constants.Header + "\nInspect tools",
 	Example: "" +
 		"  Use regctl/jq/xargs/tar to display raw contents:\n" +
 		"    regctl manifest get ghcr.io/uniget-org/tools/TOOL:latest --platform linux/amd64 --format raw-body \\\n" +
@@ -38,7 +38,7 @@ var inspectCmd = &cobra.Command{
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
-		if viper.GetBool("autoupdate") {
+		if configuration.AutoUpdate {
 			err := downloadMetadata()
 			if err != nil {
 				return fmt.Errorf("error downloading metadata: %s", err)
@@ -54,7 +54,7 @@ var inspectCmd = &cobra.Command{
 			if err != nil {
 				return fmt.Errorf("error getting tool %s", args[0])
 			}
-			inspectTool.ReplaceVariables(viper.GetString("prefix")+viper.GetString("target"), arch, altArch)
+			inspectTool.ReplaceVariables(configuration.Prefix+configuration.Target, configuration.Arch, configuration.AltArch)
 
 		} else {
 			inspectTool = &tool.Tool{
@@ -65,12 +65,12 @@ var inspectCmd = &cobra.Command{
 		}
 
 		logging.Info.Printfln("Inspecting %s %s\n", inspectTool.Name, inspectTool.Version)
-		registries, repositories := inspectTool.GetSourcesWithFallback(registry, imageRepository)
+		registries, repositories := inspectTool.GetSourcesWithFallback(constants.Registry, constants.ImageRepository)
 		toolRef, err := containers.FindToolRef(registries, repositories, inspectTool.Name, inspectToolImageTag)
 		if err != nil {
 			return fmt.Errorf("error finding tool %s:%s: %s", inspectTool.Name, inspectTool.Version, err)
 		}
-		effectivePathRewriteRules := pathRewriteRules
+		effectivePathRewriteRules := configuration.PathRewriteRules
 		if rawInspect {
 			effectivePathRewriteRules = []tool.PathRewrite{}
 		}

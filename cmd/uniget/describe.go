@@ -11,7 +11,7 @@ import (
 	"go.yaml.in/yaml/v3"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"gitlab.com/uniget-org/cli/internal/constants"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 	"gitlab.com/uniget-org/cli/pkg/semver"
@@ -36,13 +36,13 @@ var describeCmd = &cobra.Command{
 		"info",
 	},
 	Short: "Show detailed information about tools",
-	Long:  header + "\nShow detailed information about tools",
+	Long:  constants.Header + "\nShow detailed information about tools",
 	Args:  cobra.ExactArgs(1),
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if viper.GetBool("autoupdate") {
+		if configuration.AutoUpdate {
 			err := downloadMetadata()
 			if err != nil {
 				return fmt.Errorf("error downloading metadata: %s", err)
@@ -57,7 +57,7 @@ var describeCmd = &cobra.Command{
 			return fmt.Errorf("error getting tool %s", toolName)
 		}
 
-		err = tool.UpdateStatus(viper.GetString("prefix"), viper.GetString("target"), cacheDirectory, arch, altArch)
+		err = tool.UpdateStatus(configuration.Prefix, configuration.Target, configuration.GetCacheDirectory(), configuration.Arch, configuration.AltArch)
 		if err != nil {
 			return fmt.Errorf("failed to update status for tool %s: %s", tool.Name, err)
 		}
@@ -89,7 +89,7 @@ var describeCmd = &cobra.Command{
 		}
 
 		if versions {
-			registries, repositories := tool.GetSourcesWithFallback(registry, imageRepository)
+			registries, repositories := tool.GetSourcesWithFallback(constants.Registry, constants.ImageRepository)
 			toolRef, err := containers.FindToolRef(registries, repositories, tool.Name, tool.Version)
 			if err != nil {
 				return fmt.Errorf("unable to find tool ref: %s", err)

@@ -10,6 +10,7 @@ import (
 	"github.com/regclient/regclient/types/platform"
 	"github.com/regclient/regclient/types/ref"
 	"github.com/spf13/cobra"
+	"gitlab.com/uniget-org/cli/internal/constants"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 )
 
@@ -54,7 +55,7 @@ var regCmd = &cobra.Command{
 		"r",
 	},
 	Short:  "Display installation paths as environment variables",
-	Long:   header + "\nDisplay installation paths as environment variables",
+	Long:   constants.Header + "\nDisplay installation paths as environment variables",
 	Hidden: true,
 }
 
@@ -83,14 +84,14 @@ func buildReference(tool string) string {
 	if regVersion == "latest" && regResolveLatest {
 		regVersion = resolveLatestToVersion(tool)
 	}
-	return registry + "/" + imageRepository + toolSeparator + tool + ":" + regVersion
+	return constants.Registry + "/" + constants.ImageRepository + constants.ToolSeparator + tool + ":" + regVersion
 }
 
 var regRefCmd = &cobra.Command{
 	Use:     "reference",
 	Aliases: []string{"ref", "r"},
 	Short:   "Display image reference",
-	Long:    header + "\nDisplay image reference",
+	Long:    constants.Header + "\nDisplay image reference",
 	Args:    cobra.ExactArgs(1),
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
@@ -106,7 +107,7 @@ var regIndexCmd = &cobra.Command{
 	Use:     "index",
 	Aliases: []string{"i"},
 	Short:   "Display image index",
-	Long:    header + "\nDisplay image index",
+	Long:    constants.Header + "\nDisplay image index",
 	Args:    cobra.ExactArgs(1),
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
@@ -144,7 +145,7 @@ var regManifestCmd = &cobra.Command{
 	Use:     "manifest",
 	Aliases: []string{"m"},
 	Short:   "Display image manifest",
-	Long:    header + "\nDisplay image manifest",
+	Long:    constants.Header + "\nDisplay image manifest",
 	Args:    cobra.ExactArgs(1),
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
@@ -190,7 +191,7 @@ var regSizeCmd = &cobra.Command{
 	Use:     "size",
 	Aliases: []string{"s"},
 	Short:   "Display size of first layer",
-	Long:    header + "\nDisplay image size",
+	Long:    constants.Header + "\nDisplay image size",
 	Args:    cobra.ExactArgs(1),
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
@@ -251,7 +252,7 @@ var regTagsCmd = &cobra.Command{
 	Use:     "tags",
 	Aliases: []string{"t"},
 	Short:   "Display tags for image",
-	Long:    header + "\nDisplay tags for image",
+	Long:    constants.Header + "\nDisplay tags for image",
 	Args:    cobra.ExactArgs(1),
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp

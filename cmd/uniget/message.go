@@ -7,7 +7,7 @@ import (
 
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"gitlab.com/uniget-org/cli/internal/constants"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 	"gitlab.com/uniget-org/cli/pkg/tool"
 )
@@ -29,13 +29,13 @@ var messageCmd = &cobra.Command{
 		"m",
 	},
 	Short: "Show messages for a tool",
-	Long:  header + "\nShow messages for a tool",
+	Long:  constants.Header + "\nShow messages for a tool",
 	Args:  cobra.OnlyValidArgs,
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if viper.GetBool("autoupdate") {
+		if configuration.AutoUpdate {
 			err := downloadMetadata()
 			if err != nil {
 				return fmt.Errorf("error downloading metadata: %s", err)
@@ -98,7 +98,7 @@ var messageCmd = &cobra.Command{
 
 func createTemplateVariablesForTool(tool *tool.Tool) (map[string]any, error) {
 	values := make(map[string]any)
-	values["Target"] = fmt.Sprintf("%s/%s", viper.GetString("prefix"), viper.GetString("target"))
+	values["Target"] = fmt.Sprintf("%s/%s", configuration.Prefix, configuration.Target)
 	values["Name"] = tool.Name
 	values["Version"] = tool.Version
 

@@ -9,8 +9,8 @@ import (
 
 	"github.com/google/safearchive/tar"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 
+	"gitlab.com/uniget-org/cli/internal/constants"
 	"gitlab.com/uniget-org/cli/pkg/archive"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
@@ -23,11 +23,11 @@ func initSelfUpgradeCmd() {
 var selfUpgradeCmd = &cobra.Command{
 	Use:     "self-upgrade",
 	Aliases: []string{},
-	Short:   "Self upgrade " + projectName,
-	Long:    header + "\nUpgrade " + projectName + " to latest version",
+	Short:   "Self upgrade " + constants.ProjectName,
+	Long:    constants.Header + "\nUpgrade " + constants.ProjectName + " to latest version",
 	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if viper.GetBool("autoupdate") {
+		if configuration.AutoUpdate {
 			err := downloadMetadata()
 			if err != nil {
 				return fmt.Errorf("error downloading metadata: %s", err)
@@ -76,7 +76,7 @@ var selfUpgradeCmd = &cobra.Command{
 			return fmt.Errorf("failed to remove %s: %s", selfExe, err)
 		}
 
-		registries, repositories := unigetTool.GetSourcesWithFallback(registry, imageRepository)
+		registries, repositories := unigetTool.GetSourcesWithFallback(constants.Registry, constants.ImageRepository)
 		ref, err := containers.FindToolRef(registries, repositories, unigetTool.Name, "latest")
 		if err != nil {
 			return fmt.Errorf("error finding tool %s:%s: %s", unigetTool.Name, unigetTool.Version, err)

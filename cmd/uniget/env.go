@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"gitlab.com/uniget-org/cli/internal/constants"
 )
 
 func initEnvCmd() {
@@ -19,7 +20,7 @@ var envCmd = &cobra.Command{
 		"environment",
 	},
 	Short:  "Display installation paths as environment variables",
-	Long:   header + "\nDisplay installation paths as environment variables",
+	Long:   constants.Header + "\nDisplay installation paths as environment variables",
 	Hidden: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		for _, env := range os.Environ() {

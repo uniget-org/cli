@@ -5,6 +5,7 @@ import (
 
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
+	"gitlab.com/uniget-org/cli/internal/constants"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 	"gitlab.com/uniget-org/cli/pkg/parse"
 )
@@ -45,7 +46,7 @@ var bumpCmd = &cobra.Command{
 		"b",
 	},
 	Short: "Bump tool versions",
-	Long:  header + "\nBump tool versions",
+	Long:  constants.Header + "\nBump tool versions",
 	Args:  cobra.NoArgs,
 }
 
@@ -56,7 +57,7 @@ var bumpDockerfileCmd = &cobra.Command{
 		"df",
 	},
 	Short: "Bump image references in a Dockerfile",
-	Long:  header + "\nBump image references in a Dockerfile",
+	Long:  constants.Header + "\nBump image references in a Dockerfile",
 	Args:  cobra.NoArgs,
 	RunE:  processBumpDockerfileCmd,
 }
@@ -69,7 +70,7 @@ var bumpComposeCmd = &cobra.Command{
 		"dc",
 	},
 	Short: "Bump image references in a compose file",
-	Long:  header + "\nBump image references in a compose file",
+	Long:  constants.Header + "\nBump image references in a compose file",
 	Args:  cobra.NoArgs,
 	RunE:  processComposeFileCmd,
 }
@@ -81,7 +82,7 @@ var bumpKubernetesCmd = &cobra.Command{
 		"k8s",
 	},
 	Short: "Bump image references in a Kubernetes manifest",
-	Long:  header + "\nBump image references in a Kubernetes manifest",
+	Long:  constants.Header + "\nBump image references in a Kubernetes manifest",
 	Args:  cobra.NoArgs,
 	RunE:  processKubernetesFileCmd,
 }
@@ -93,7 +94,7 @@ var bumpGitlabCiCmd = &cobra.Command{
 		"gl",
 	},
 	Short: "Bump image references in a GitLab CI file",
-	Long:  header + "\nBump image references in a GitLab CI file",
+	Long:  constants.Header + "\nBump image references in a GitLab CI file",
 	Args:  cobra.NoArgs,
 	RunE:  processGitlabCiFileCmd,
 }

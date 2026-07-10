@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"gitlab.com/uniget-org/cli/internal/constants"
 )
 
 var (
@@ -31,7 +31,7 @@ var cronCmd = &cobra.Command{
 		"s",
 	},
 	Short: "Manage cron jobs",
-	Long:  header + "\nManage cron jobs for updating",
+	Long:  constants.Header + "\nManage cron jobs for updating",
 	Args:  cobra.NoArgs,
 }
 
@@ -41,7 +41,7 @@ var cronCreateCmd = &cobra.Command{
 		"c",
 	},
 	Short: "Create cron job",
-	Long:  header + "\nCreate cron job",
+	Long:  constants.Header + "\nCreate cron job",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return createCron()
@@ -54,7 +54,7 @@ var cronRemoveCmd = &cobra.Command{
 		"r",
 	},
 	Short: "Remove cron job",
-	Long:  header + "\nRemove cron job",
+	Long:  constants.Header + "\nRemove cron job",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return removeCron()
@@ -109,8 +109,8 @@ func createCron() error {
 		return fmt.Errorf("cannot get user crontab: %w", err)
 	}
 	lines = removeUserCronTab(lines)
-	lines = append(lines, fmt.Sprintf("%s uniget --user=%t upgrade --auto-update", createUpgradeCron, viper.GetBool("user")))
-	lines = append(lines, fmt.Sprintf("%s uniget --user=%t self-upgrade", createSelfUpgradeCron, viper.GetBool("user")))
+	lines = append(lines, fmt.Sprintf("%s uniget --user=%t upgrade --auto-update", createUpgradeCron, configuration.User))
+	lines = append(lines, fmt.Sprintf("%s uniget --user=%t self-upgrade", createSelfUpgradeCron, configuration.User))
 
 	err = setUserCrontab(lines)
 	if err != nil {

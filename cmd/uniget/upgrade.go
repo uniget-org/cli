@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"gitlab.com/uniget-org/cli/internal/constants"
 )
 
 func initUpgradeCmd() {
@@ -17,10 +17,10 @@ var upgradeCmd = &cobra.Command{
 	Use:     "upgrade",
 	Aliases: []string{},
 	Short:   "Upgrade all tools",
-	Long:    header + "\nUpgrade all tools to latest version",
+	Long:    constants.Header + "\nUpgrade all tools to latest version",
 	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if viper.GetBool("autoupdate") {
+		if configuration.AutoUpdate {
 			err := downloadMetadata()
 			if err != nil {
 				return fmt.Errorf("error downloading metadata: %s", err)
