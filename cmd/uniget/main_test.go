@@ -7,7 +7,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/spf13/viper"
 	"gitlab.com/uniget-org/cli/pkg/cache"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 )
@@ -27,7 +26,6 @@ type cobraTestOpts struct {
 func runCobraTest(t *testing.T, opts *cobraTestOpts, args ...string) (string, error) {
 	t.Helper()
 
-	viper.SetDefault("cache", "none")
 	toolCache = cache.NewNoneCache()
 
 	buf := new(bytes.Buffer)

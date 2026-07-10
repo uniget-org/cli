@@ -13,7 +13,6 @@ import (
 	"github.com/njayp/ophis"
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 
 	"gitlab.com/uniget-org/cli/internal/constants"
 	"gitlab.com/uniget-org/cli/pkg/cache"
@@ -80,20 +79,18 @@ var (
 					if err != nil {
 						return fmt.Errorf("cannot determine working directory: %w", err)
 					}
-					viper.Set("prefix", wd+"/"+configuration.Prefix)
+					configuration.Prefix = wd + "/" + configuration.Prefix
 					logging.Debugf("Converted prefix to absolute path %s", configuration.Prefix)
 				}
 			}
 
 			if strings.HasPrefix(configuration.Target, "/") {
-				viper.Set("target", strings.TrimLeft(configuration.Target, "/"))
+				configuration.Target = strings.TrimLeft(configuration.Target, "/")
 			}
 
 			if configuration.Debug {
 				logging.Debugf("configuration: %+v", configuration)
-			}
 
-			if configuration.Debug {
 				logging.Debug("Path rewrite rules:")
 				for _, rule := range configuration.PathRewriteRules {
 					logging.Debugf("  %s -> %s (%s)", rule.Source, rule.Target, rule.Operation)
