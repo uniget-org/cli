@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"reflect"
 	"runtime"
 	"strconv"
 
@@ -13,27 +14,27 @@ import (
 type Config struct {
 	Arch                        string
 	AltArch                     string
-	LogLevel                    string
-	Debug                       bool
-	Trace                       bool
-	User                        bool
-	AutoUpdate                  bool
-	Prefix                      string
-	Target                      string
+	LogLevel                    string `env:"UNIGET_LOGLEVEL"`
+	Debug                       bool   `env:"UNIGET_DEBUG"`
+	Trace                       bool   `env:"UNIGET_TRACE"`
+	User                        bool   `env:"UNIGET_USER"`
+	AutoUpdate                  bool   `env:"UNIGET_AUTOUPDATE"`
+	Prefix                      string `env:"UNIGET_PREFIX"`
+	Target                      string `env:"UNIGET_TARGET"`
 	CacheRoot                   string
 	LibRoot                     string
 	ConfigRoot                  string
-	IntegrateProfileD           bool
-	IntegrateEtc                bool
-	IntegrateAll                bool
+	IntegrateProfileD           bool `env:"UNIGET_INTEGRATEPROFILED"`
+	IntegrateEtc                bool `env:"UNIGET_INTEGRATEETC"`
+	IntegrateAll                bool `env:"UNIGET_INTEGRATEALL"`
 	PathRewriteRules            []tool.PathRewrite
 	HooksPreInstallDirectory    string
 	HooksPostInstallDirectory   string
 	HooksPreUninstallDirectory  string
 	HooksPostUninstallDirectory string
-	Cache                       string
-	FileCacheRetention          int
-	FileCacheDirectoryName      string
+	Cache                       string `env:"UNIGET_CACHE"`
+	FileCacheRetention          int    `env:"UNIGET_CACHERETENTION"`
+	FileCacheDirectoryName      string `env:"UNIGET_CACHEDIRECTORY"`
 }
 
 func NewDefaultConfig(opts ...ConfigOption) *Config {
@@ -57,47 +58,31 @@ func NewDefaultConfig(opts ...ConfigOption) *Config {
 		opt(config)
 	}
 
-	if len(os.Getenv("UNIGET_LOGLEVEL")) > 0 {
-		config.LogLevel = os.Getenv("UNIGET_LOGLEVEL")
-	}
-	if len(os.Getenv("UNIGET_DEBUG")) > 0 {
-		config.Debug, _ = strconv.ParseBool(os.Getenv("UNIGET_DEBUG"))
-	}
-	if len(os.Getenv("UNIGET_TRACE")) > 0 {
-		config.Trace, _ = strconv.ParseBool(os.Getenv("UNIGET_TRACE"))
-	}
-	if len(os.Getenv("UNIGET_USER")) > 0 {
-		config.User, _ = strconv.ParseBool(os.Getenv("UNIGET_USER"))
-	}
-	if len(os.Getenv("UNIGET_AUTOUPDATE")) > 0 {
-		config.AutoUpdate, _ = strconv.ParseBool(os.Getenv("UNIGET_AUTOUPDATE"))
-	}
-	if len(os.Getenv("UNIGET_PREFIX")) > 0 {
-		config.Prefix = os.Getenv("UNIGET_PREFIX")
-	}
-	if len(os.Getenv("UNIGET_TARGET")) > 0 {
-		config.Target = os.Getenv("UNIGET_TARGET")
-	}
-	if len(os.Getenv("UNIGET_INTEGRATEPROFILED")) > 0 {
-		config.IntegrateProfileD, _ = strconv.ParseBool(os.Getenv("UNIGET_INTEGRATEPROFILED"))
-	}
-	if len(os.Getenv("UNIGET_INTEGRATEETC")) > 0 {
-		config.IntegrateEtc, _ = strconv.ParseBool(os.Getenv("UNIGET_INTEGRATEETC"))
-	}
-	if len(os.Getenv("UNIGET_INTEGRATEALL")) > 0 {
-		config.IntegrateAll, _ = strconv.ParseBool(os.Getenv("UNIGET_INTEGRATEALL"))
-	}
-	if len(os.Getenv("UNIGET_CACHE")) > 0 {
-		config.Cache = os.Getenv("UNIGET_CACHE")
-	}
-	if len(os.Getenv("UNIGET_CACHERETENTION")) > 0 {
-		retention, err := strconv.Atoi(os.Getenv("UNIGET_CACHERETENTION"))
-		if err == nil {
-			config.FileCacheRetention = retention
+	t := reflect.TypeOf(*config)
+	v := reflect.ValueOf(config).Elem()
+	for i := 0; i < t.NumField(); i++ {
+		fieldDef := t.Field(i)
+
+		envVarName := fieldDef.Tag.Get("env")
+		if len(envVarName) > 0 && len(os.Getenv(envVarName)) > 0 {
+			field := v.FieldByName(fieldDef.Name)
+			switch field.Kind() {
+			case reflect.String:
+				field.SetString(os.Getenv(envVarName))
+			case reflect.Bool:
+				val, err := strconv.ParseBool(os.Getenv(envVarName))
+				if err == nil {
+					field.SetBool(val)
+				}
+			case reflect.Int:
+				val, err := strconv.Atoi(os.Getenv(envVarName))
+				if err == nil {
+					field.SetInt(int64(val))
+				}
+			default:
+				panic("Unsupported type " + field.Kind().String() + " for field: " + fieldDef.Name)
+			}
 		}
-	}
-	if len(os.Getenv("UNIGET_CACHEDIRECTORY")) > 0 {
-		config.FileCacheDirectoryName = os.Getenv("UNIGET_CACHEDIRECTORY")
 	}
 
 	if config.IntegrateAll {
