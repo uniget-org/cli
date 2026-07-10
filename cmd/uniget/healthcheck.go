@@ -41,7 +41,13 @@ var healthcheckCmd = &cobra.Command{
 			return fmt.Errorf("error getting tool %s", toolName)
 		}
 
-		err = tool.UpdateStatus(configuration.Prefix, configuration.Target, configuration.GetCacheDirectory(), configuration.Arch, configuration.AltArch)
+		err = tool.UpdateStatus(
+			configuration.Prefix,
+			configuration.Target,
+			configuration.GetCacheDirectory(),
+			configuration.Arch,
+			configuration.AltArch,
+		)
 		if err != nil {
 			return fmt.Errorf("failed to update status for tool %s: %s", tool.Name, err)
 		}
@@ -54,7 +60,11 @@ var healthcheckCmd = &cobra.Command{
 			logging.Warning.Printfln("%s: Marker file is not present", tool.Name)
 		}
 		if tool.Binary == "false" {
-			tool.ReplaceVariables(configuration.Prefix+configuration.Target, configuration.Arch, configuration.AltArch)
+			tool.ReplaceVariables(
+				configuration.Prefix+configuration.Target,
+				configuration.Arch,
+				configuration.AltArch,
+			)
 		} else if tool.Status.BinaryPresent {
 			logging.Success.Printfln("%s: Binary is present (%s)", tool.Name, tool.Binary)
 		} else {
@@ -73,7 +83,11 @@ var healthcheckCmd = &cobra.Command{
 			logging.Info.Printfln("%s: Manifest version is %s", tool.Name, tool.Version)
 
 		} else {
-			tool.ReplaceVariables(configuration.Prefix+"/"+configuration.Target, configuration.Arch, configuration.AltArch)
+			tool.ReplaceVariables(
+				configuration.Prefix+"/"+configuration.Target,
+				configuration.Arch,
+				configuration.AltArch,
+			)
 			version, err := tool.RunVersionCheck()
 			if err != nil {
 				logging.Error.Printfln("%s: Error getting version: %s", tool.Name, err)

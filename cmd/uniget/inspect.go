@@ -54,7 +54,11 @@ var inspectCmd = &cobra.Command{
 			if err != nil {
 				return fmt.Errorf("error getting tool %s", args[0])
 			}
-			inspectTool.ReplaceVariables(configuration.Prefix+configuration.Target, configuration.Arch, configuration.AltArch)
+			inspectTool.ReplaceVariables(
+				configuration.Prefix+configuration.Target,
+				configuration.Arch,
+				configuration.AltArch,
+			)
 
 		} else {
 			inspectTool = &tool.Tool{

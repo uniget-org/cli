@@ -39,7 +39,13 @@ var importCmd = &cobra.Command{
 
 		importableTools := make([]huh.Option[string], 0)
 		for _, tool := range tools.Tools {
-			err = tool.UpdateStatus(configuration.Prefix, configuration.Target, configuration.GetCacheDirectory(), configuration.Arch, configuration.AltArch)
+			err = tool.UpdateStatus(
+				configuration.Prefix,
+				configuration.Target,
+				configuration.GetCacheDirectory(),
+				configuration.Arch,
+				configuration.AltArch,
+			)
 			if err != nil {
 				return fmt.Errorf("failed to update status for tool %s: %s", tool.Name, err)
 			}

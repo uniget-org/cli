@@ -69,13 +69,17 @@ func assertCacheDirectory() {
 func assertMetadataFileExists() {
 	_, err := os.Stat(configuration.Prefix + "/" + configuration.GetMetadataFile())
 	if err != nil {
-		logging.Error.Printfln("Metadata file %s does not exist: %s", configuration.Prefix+"/"+configuration.GetMetadataFile(), err)
+		logging.Error.Printfln("Metadata file %s does not exist: %s",
+			configuration.Prefix+"/"+configuration.GetMetadataFile(),
+			err)
 		os.Exit(1)
 	}
 
 	_, err = os.Stat(configuration.Prefix + "/" + configuration.GetMetadataFile() + ".sigstore.json")
 	if err != nil {
-		logging.Error.Printfln("Metadata signature %s does not exist: %s", configuration.Prefix+"/"+configuration.GetMetadataFile()+".sigstore.json", err)
+		logging.Error.Printfln("Metadata signature %s does not exist: %s",
+			configuration.Prefix+"/"+configuration.GetMetadataFile()+".sigstore.json",
+			err)
 		os.Exit(1)
 	}
 }

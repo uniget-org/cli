@@ -52,9 +52,10 @@ var cacheInfoCmd = &cobra.Command{
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fmt.Printf("Cache type     : %s\n", configuration.Cache)
-		fmt.Printf("Cache retention: %s\n", configuration.FileCacheRetention)
+		fmt.Printf("Cache retention: %d\n", configuration.FileCacheRetention)
 		if configuration.Cache == "file" {
-			fmt.Printf("Cache directory: %s\n", configuration.Prefix+"/"+configuration.FileCacheDirectoryName)
+			fmt.Printf("Cache directory: %s\n",
+				configuration.Prefix+"/"+configuration.FileCacheDirectoryName)
 		}
 		return nil
 	},
@@ -75,7 +76,8 @@ var cacheStatsCmd = &cobra.Command{
 		switch configuration.Cache {
 		case "file":
 			if configuration.Cache == "file" {
-				fmt.Printf("Cache directory: %s\n", configuration.Prefix+"/"+configuration.FileCacheDirectoryName)
+				fmt.Printf("Cache directory: %s\n",
+					configuration.Prefix+"/"+configuration.FileCacheDirectoryName)
 			}
 			size, err = dirSize(
 				configuration.Prefix + "/" + configuration.FileCacheDirectoryName,
@@ -122,7 +124,8 @@ var cacheListCmd = &cobra.Command{
 		switch configuration.Cache {
 		case "file":
 			if configuration.Cache == "file" {
-				fmt.Printf("Cache directory: %s\n", configuration.Prefix+"/"+configuration.FileCacheDirectoryName)
+				fmt.Printf("Cache directory: %s\n",
+					configuration.Prefix+"/"+configuration.FileCacheDirectoryName)
 			}
 			files, err := dirList(
 				configuration.Prefix + "/" + configuration.FileCacheDirectoryName,
@@ -175,7 +178,8 @@ var cachePruneCmd = &cobra.Command{
 		switch configuration.Cache {
 		case "file":
 			if configuration.Cache == "file" {
-				fmt.Printf("Cache directory: %s\n", configuration.Prefix+"/"+configuration.FileCacheDirectoryName)
+				fmt.Printf("Cache directory: %s\n",
+					configuration.Prefix+"/"+configuration.FileCacheDirectoryName)
 			}
 			count, err = dirPrune(
 				configuration.Prefix + "/" + configuration.FileCacheDirectoryName,

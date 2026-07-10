@@ -39,7 +39,13 @@ var versionCmd = &cobra.Command{
 			return fmt.Errorf("failed to get tool: %s", err)
 		}
 
-		err = tool.UpdateStatus(configuration.Prefix, configuration.Target, configuration.GetCacheDirectory(), configuration.Arch, configuration.AltArch)
+		err = tool.UpdateStatus(
+			configuration.Prefix,
+			configuration.Target,
+			configuration.GetCacheDirectory(),
+			configuration.Arch,
+			configuration.AltArch,
+		)
 		if err != nil {
 			return fmt.Errorf("failed to update status for tool %s: %s", tool.Name, err)
 		}

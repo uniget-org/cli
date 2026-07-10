@@ -71,12 +71,27 @@ var generateCmd = &cobra.Command{
 			if pinVersions {
 				toolVersion = tool.Version
 			}
-			result = append(result, fmt.Sprintf("FROM %s%s:%s AS %s", constants.RegistryImagePrefix, tool.Name, toolVersion, tool.Name))
+			result = append(
+				result,
+				fmt.Sprintf("FROM %s%s:%s AS %s",
+					constants.RegistryImagePrefix,
+					tool.Name,
+					toolVersion,
+					tool.Name,
+				),
+			)
 		}
 		result = append(result, "")
 		result = append(result, fmt.Sprintf("FROM %s", baseImage))
 		for _, tool := range plannedTools.Tools {
-			result = append(result, fmt.Sprintf("COPY --link --from=%s%s:latest / /%s", constants.RegistryImagePrefix, tool.Name, imageTarget))
+			result = append(
+				result,
+				fmt.Sprintf("COPY --link --from=%s%s:latest / /%s",
+					constants.RegistryImagePrefix,
+					tool.Name,
+					imageTarget,
+				),
+			)
 		}
 
 		//nolint:errcheck

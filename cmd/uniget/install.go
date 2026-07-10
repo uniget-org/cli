@@ -117,7 +117,13 @@ func findInstalledTools(tools tool.Tools) (tool.Tools, error) {
 	for index, tool := range tools.Tools {
 		logging.Debugf("Getting status for requested tool %s", tool.Name)
 
-		err := tools.Tools[index].UpdateStatus(configuration.Prefix, configuration.Target, configuration.GetCacheDirectory(), configuration.Arch, configuration.AltArch)
+		err := tools.Tools[index].UpdateStatus(
+			configuration.Prefix,
+			configuration.Target,
+			configuration.GetCacheDirectory(),
+			configuration.Arch,
+			configuration.AltArch,
+		)
 		if err != nil {
 			return requestedTools, fmt.Errorf("failed to update status for tool %s: %s", tool.Name, err)
 		}
@@ -163,12 +169,14 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 	}
 	if len(renamedTools) > 0 {
 		for oldName, newName := range renamedTools {
-			logging.Warning.Printfln("%s was renamed. Please uninstall %s and install %s manually and try again.", oldName, oldName, newName)
+			logging.Warning.Printfln("%s was renamed. Please uninstall %s and install %s manually and try again.",
+				oldName, oldName, newName)
 		}
 	}
 	if len(removedTools) > 0 {
 		for oldName, reason := range removedTools {
-			logging.Warning.Printfln("%s was removed: %s. Please uninstall %s manually and try again.", oldName, reason, oldName)
+			logging.Warning.Printfln("%s was removed: %s. Please uninstall %s manually and try again.",
+				oldName, reason, oldName)
 		}
 	}
 	if len(renamedTools) > 0 || len(removedTools) > 0 {
@@ -182,7 +190,13 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 		}
 
 		logging.Debugf("Getting status for requested tool %s", tool.Name)
-		err := plannedTools.Tools[index].UpdateStatus(configuration.Prefix, configuration.Target, configuration.GetCacheDirectory(), configuration.Arch, configuration.AltArch)
+		err := plannedTools.Tools[index].UpdateStatus(
+			configuration.Prefix,
+			configuration.Target,
+			configuration.GetCacheDirectory(),
+			configuration.Arch,
+			configuration.AltArch,
+		)
 		if err != nil {
 			return fmt.Errorf("failed to update status for tool %s: %s", plannedTools.Tools[index].Name, err)
 		}

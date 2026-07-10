@@ -48,7 +48,13 @@ var listCmd = &cobra.Command{
 			var installedTools tool.Tools
 			for index := range tools.Tools {
 
-				err := tools.Tools[index].UpdateStatus(configuration.Prefix, configuration.Target, configuration.GetCacheDirectory(), configuration.Arch, configuration.AltArch)
+				err := tools.Tools[index].UpdateStatus(
+					configuration.Prefix,
+					configuration.Target,
+					configuration.GetCacheDirectory(),
+					configuration.Arch,
+					configuration.AltArch,
+				)
 				if err != nil {
 					return fmt.Errorf("failed to update status for tool %s: %s", tools.Tools[index].Name, err)
 				}
@@ -63,7 +69,13 @@ var listCmd = &cobra.Command{
 			var installedTools tool.Tools
 			for index := range tools.Tools {
 
-				err := tools.Tools[index].UpdateStatus(configuration.Prefix, configuration.Target, configuration.GetCacheDirectory(), configuration.Arch, configuration.AltArch)
+				err := tools.Tools[index].UpdateStatus(
+					configuration.Prefix,
+					configuration.Target,
+					configuration.GetCacheDirectory(),
+					configuration.Arch,
+					configuration.AltArch,
+				)
 				if err != nil {
 					return fmt.Errorf("failed to update status for tool %s: %s", tools.Tools[index].Name, err)
 				}

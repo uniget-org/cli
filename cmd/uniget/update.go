@@ -69,7 +69,13 @@ var updateCmd = &cobra.Command{
 					newTools.Tools = append(newTools.Tools, tool)
 
 				} else if tool.Version != oldTool.Version {
-					err := tool.UpdateStatus(configuration.Prefix, configuration.Target, configuration.GetCacheDirectory(), configuration.Arch, configuration.AltArch)
+					err := tool.UpdateStatus(
+						configuration.Prefix,
+						configuration.Target,
+						configuration.GetCacheDirectory(),
+						configuration.Arch,
+						configuration.AltArch,
+					)
 					if err != nil {
 						logging.Warning.Printfln("Error updating status for %s: %s", tool.Name, err)
 					}
