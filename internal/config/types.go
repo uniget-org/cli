@@ -23,7 +23,6 @@ type Config struct {
 	CacheRoot                   string
 	LibRoot                     string
 	ConfigRoot                  string
-	profileDDirectory           string
 	IntegrateProfileD           bool
 	IntegrateEtc                bool
 	IntegrateAll                bool

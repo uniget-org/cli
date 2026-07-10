@@ -49,7 +49,7 @@ func installProfileDShim() error {
 	}
 
 	if fileExists(profileDShimFile) {
-		file, err := os.ReadFile(profileDShimFile)
+		file, err := os.ReadFile(profileDShimFile) // #nosec G304 -- Filename constructed from configuration
 		if err != nil {
 			return fmt.Errorf("cannot read profile.d shim: %w", err)
 		}
