@@ -89,7 +89,7 @@ var (
 			}
 
 			if configuration.Debug {
-				logging.Debugf("configuration: %+v", configuration)
+				logging.Debugf("configuration: %s", configuration)
 
 				logging.Debug("Path rewrite rules:")
 				for _, rule := range configuration.PathRewriteRules {

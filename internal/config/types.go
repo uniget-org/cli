@@ -180,3 +180,31 @@ func (c *Config) SetUserConfig(opts ...ConfigOption) {
 		})
 	}
 }
+
+func (c *Config) String() string {
+	return "Config{" + "\n" +
+		"  Arch: " + c.Arch + ", " + "\n" +
+		"  AltArch: " + c.AltArch + ", " + "\n" +
+		"  LogLevel: " + c.LogLevel + ", " + "\n" +
+		"  Debug: " + strconv.FormatBool(c.Debug) + ", " + "\n" +
+		"  Trace: " + strconv.FormatBool(c.Trace) + ", " + "\n" +
+		"  User: " + strconv.FormatBool(c.User) + ", " + "\n" +
+		"  AutoUpdate: " + strconv.FormatBool(c.AutoUpdate) + ", " + "\n" +
+		"  Prefix: " + c.Prefix + ", " + "\n" +
+		"  Target: " + c.Target + ", " + "\n" +
+		"  CacheRoot: " + c.CacheRoot + ", " + "\n" +
+		"  LibRoot: " + c.LibRoot + ", " + "\n" +
+		"  ConfigRoot: " + c.ConfigRoot + ", " + "\n" +
+		"  IntegrateProfileD: " + strconv.FormatBool(c.IntegrateProfileD) + ", " + "\n" +
+		"  IntegrateEtc: " + strconv.FormatBool(c.IntegrateEtc) + ", " + "\n" +
+		"  IntegrateAll: " + strconv.FormatBool(c.IntegrateAll) + ", " + "\n" +
+		"  Cache: " + c.Cache + ", " + "\n" +
+		"  FileCacheRetention: " + strconv.Itoa(c.FileCacheRetention) + ", " + "\n" +
+		"  FileCacheDirectoryName: " + c.FileCacheDirectoryName + "\n" +
+		"  CacheDirectory: " + c.GetCacheDirectory() + ", " + "\n" +
+		"  LibDirectory: " + c.GetLibDirectory() + ", " + "\n" +
+		"  ConfigDirectory: " + c.GetConfigDirectory() + ", " + "\n" +
+		"  ProfileDDirectory: " + c.GetProfileDDirectory() + ", " + "\n" +
+		"  MetadataFile: " + c.GetMetadataFile() + "\n" +
+		"}"
+}

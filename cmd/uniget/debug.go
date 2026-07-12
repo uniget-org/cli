@@ -20,7 +20,7 @@ var debugCmd = &cobra.Command{
 	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		//nolint:errcheck
-		fmt.Fprintf(cmd.OutOrStdout(), "configuration: %+v\n", configuration)
+		fmt.Fprintf(cmd.OutOrStdout(), "configuration: %s\n", configuration)
 
 		return nil
 	},
