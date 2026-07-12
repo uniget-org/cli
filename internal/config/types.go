@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"runtime"
 	"strconv"
+	"strings"
 
 	"github.com/pterm/pterm"
 	"gitlab.com/uniget-org/cli/pkg/logging"
@@ -130,9 +131,9 @@ func (c *Config) SetGlobalConfig(opts ...ConfigOption) {
 func (c *Config) SetUserConfig(opts ...ConfigOption) {
 	c.Prefix = os.Getenv("HOME")
 	c.Target = ".local"
-	c.CacheRoot = os.Getenv("XDG_CACHE_HOME")
-	c.LibRoot = os.Getenv("XDG_STATE_HOME")
-	c.ConfigRoot = os.Getenv("XDG_CONFIG_HOME")
+	c.CacheRoot = strings.TrimPrefix(os.Getenv("XDG_CACHE_HOME"), os.Getenv("HOME")+"/")
+	c.LibRoot = strings.TrimPrefix(os.Getenv("XDG_STATE_HOME"), os.Getenv("HOME")+"/")
+	c.ConfigRoot = strings.TrimPrefix(os.Getenv("XDG_CONFIG_HOME"), os.Getenv("HOME")+"/")
 
 	for _, opt := range opts {
 		opt(c)
