@@ -28,8 +28,8 @@ var tagsCmd = &cobra.Command{
 				return fmt.Errorf("error downloading metadata: %s", err)
 			}
 		}
-		assertMetadataFileExists()
-		assertMetadataIsLoaded()
+		AssertMetadataFileExists()
+		AssertMetadataIsLoaded()
 
 		tags := make(map[string]int)
 		for _, tool := range tools.Tools {

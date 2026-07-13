@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 
+	myos "gitlab.com/uniget-org/cli/pkg/os"
+
 	"github.com/spf13/cobra"
 	"gitlab.com/uniget-org/cli/internal/constants"
 	"gitlab.com/uniget-org/cli/pkg/logging"
@@ -32,8 +34,8 @@ var healthcheckCmd = &cobra.Command{
 				return fmt.Errorf("error downloading metadata: %s", err)
 			}
 		}
-		assertMetadataFileExists()
-		assertMetadataIsLoaded()
+		AssertMetadataFileExists()
+		AssertMetadataIsLoaded()
 
 		toolName := args[0]
 		tool, err := tools.GetByName(toolName)
@@ -72,7 +74,7 @@ var healthcheckCmd = &cobra.Command{
 			testFailed = true
 		}
 
-		markerFilePresent := fileExists(configuration.Prefix + "/" + configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".txt")
+		markerFilePresent := myos.FileExists(configuration.Prefix + "/" + configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".txt")
 		if !tool.Status.MarkerFilePresent && !tool.Status.BinaryPresent && !markerFilePresent {
 			logging.Warning.Printfln("Tool %s is not installed", tool.Name)
 			testFailed = true

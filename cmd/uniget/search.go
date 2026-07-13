@@ -58,8 +58,8 @@ var searchCmd = &cobra.Command{
 				return fmt.Errorf("error downloading metadata: %s", err)
 			}
 		}
-		assertMetadataFileExists()
-		assertMetadataIsLoaded()
+		AssertMetadataFileExists()
+		AssertMetadataIsLoaded()
 
 		if output != "table" && output != "name" && output != "json" {
 			return fmt.Errorf("error: output format %s not supported", output)

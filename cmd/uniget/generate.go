@@ -44,8 +44,8 @@ var generateCmd = &cobra.Command{
 				return fmt.Errorf("error downloading metadata: %s", err)
 			}
 		}
-		assertMetadataFileExists()
-		assertMetadataIsLoaded()
+		AssertMetadataFileExists()
+		AssertMetadataIsLoaded()
 
 		var requestedTools tool.Tools
 		var plannedTools tool.Tools

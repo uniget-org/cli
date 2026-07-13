@@ -88,7 +88,7 @@ var addHooksCmd = &cobra.Command{
 	Long:  constants.Header + "\nAdd hook",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if !fileExists(hookSource) {
+		if !myos.FileExists(hookSource) {
 			return fmt.Errorf("hook source file does not exist: %s", hookSource)
 		}
 
@@ -100,19 +100,19 @@ var addHooksCmd = &cobra.Command{
 		switch hookType {
 		case "pre-install":
 			preInstallHooksDir := hooksDir + "/" + constants.HooksPreInstallDirectory
-			assertDirectory(preInstallHooksDir)
+			myos.AssertDirectory(preInstallHooksDir)
 			hookFile = preInstallHooksDir + "/" + hookFileName
 		case "post-install":
 			postInstallHooksDir := hooksDir + "/" + constants.HooksPostInstallDirectory
-			assertDirectory(postInstallHooksDir)
+			myos.AssertDirectory(postInstallHooksDir)
 			hookFile = postInstallHooksDir + "/" + hookFileName
 		case "pre-uninstall":
 			preUninstallHooksDir := hooksDir + "/" + constants.HooksPreUninstallDirectory
-			assertDirectory(preUninstallHooksDir)
+			myos.AssertDirectory(preUninstallHooksDir)
 			hookFile = preUninstallHooksDir + "/" + hookFileName
 		case "post-uninstall":
 			postUninstallHooksDir := hooksDir + "/" + constants.HooksPostUninstallDirectory
-			assertDirectory(postUninstallHooksDir)
+			myos.AssertDirectory(postUninstallHooksDir)
 			hookFile = postUninstallHooksDir + "/" + hookFileName
 		}
 
@@ -150,18 +150,19 @@ var removeHooksCmd = &cobra.Command{
 		switch hookType {
 		case "pre-install":
 			preInstallHooksDir := hooksDir + "/" + constants.HooksPreInstallDirectory
+			myos.AssertDirectory(preInstallHooksDir)
 			hookFile = preInstallHooksDir + "/" + hookFileName
 		case "post-install":
 			postInstallHooksDir := hooksDir + "/" + constants.HooksPostInstallDirectory
-			assertDirectory(postInstallHooksDir)
+			myos.AssertDirectory(postInstallHooksDir)
 			hookFile = postInstallHooksDir + "/" + hookFileName
 		case "pre-uninstall":
 			preUninstallHooksDir := hooksDir + "/" + constants.HooksPreUninstallDirectory
-			assertDirectory(preUninstallHooksDir)
+			myos.AssertDirectory(preUninstallHooksDir)
 			hookFile = preUninstallHooksDir + "/" + hookFileName
 		case "post-uninstall":
 			postUninstallHooksDir := hooksDir + "/" + constants.HooksPostUninstallDirectory
-			assertDirectory(postUninstallHooksDir)
+			myos.AssertDirectory(postUninstallHooksDir)
 			hookFile = postUninstallHooksDir + "/" + hookFileName
 		}
 
@@ -173,7 +174,7 @@ var removeHooksCmd = &cobra.Command{
 			return fmt.Errorf("hook file %s is outside of hookDir %s", hookFile, hooksDir)
 		}
 
-		if !fileExists(hookFile) {
+		if !myos.FileExists(hookFile) {
 			return fmt.Errorf("hook file does not exist: %s", hookFile)
 		}
 
@@ -230,7 +231,7 @@ var editHooksCmd = &cobra.Command{
 			hookDir = postUninstallHooksDir
 			hookFile = hookDir + "/" + hookFileName
 		}
-		assertDirectory(hookDir)
+		myos.AssertDirectory(hookDir)
 
 		hookFileAbs, err := filepath.Abs(hookFile)
 		if err != nil {
@@ -429,7 +430,7 @@ func runPostUninstallHooks(args ...string) error {
 }
 
 func processHooks(path string, callback func(file string) error) error {
-	if !directoryExists(path) {
+	if !myos.DirectoryExists(path) {
 		return nil
 	}
 
@@ -465,7 +466,7 @@ func processHooks(path string, callback func(file string) error) error {
 }
 
 func runHook(hookFile string, args ...string) (string, error) {
-	if !fileExists(hookFile) {
+	if !myos.FileExists(hookFile) {
 		return "", fmt.Errorf("hook does not exist: %s", hookFile)
 	}
 

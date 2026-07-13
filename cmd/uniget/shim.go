@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"gitlab.com/uniget-org/cli/internal/constants"
 	"gitlab.com/uniget-org/cli/pkg/logging"
+	myos "gitlab.com/uniget-org/cli/pkg/os"
 )
 
 var profileDShim = `
@@ -48,7 +49,7 @@ func installProfileDShim() error {
 		profileDScript = strings.ReplaceAll(profileDShim, "${target}", configuration.Prefix+"/"+configuration.Target)
 	}
 
-	if fileExists(profileDShimFile) {
+	if myos.FileExists(profileDShimFile) {
 		file, err := os.ReadFile(profileDShimFile) // #nosec G304 -- Filename constructed from configuration
 		if err != nil {
 			return fmt.Errorf("cannot read profile.d shim: %w", err)
@@ -74,7 +75,7 @@ func installProfileDShim() error {
 		}
 
 		logging.Info.Printfln("Installing shim for profile.d in %s", profileDShimFile)
-		if directoryIsWritable(profileDShimFile) {
+		if myos.DirectoryIsWritable(profileDShimFile) {
 			err := os.WriteFile(
 				profileDShimFile,
 				[]byte(profileDScript),

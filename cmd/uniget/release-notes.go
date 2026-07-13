@@ -40,8 +40,8 @@ var releaseNotesCmd = &cobra.Command{
 				return fmt.Errorf("error downloading metadata: %s", err)
 			}
 		}
-		assertMetadataFileExists()
-		assertMetadataIsLoaded()
+		AssertMetadataFileExists()
+		AssertMetadataIsLoaded()
 
 		tool, err := tools.GetByName(args[0])
 		if err != nil {

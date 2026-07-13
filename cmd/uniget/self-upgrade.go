@@ -33,8 +33,8 @@ var selfUpgradeCmd = &cobra.Command{
 				return fmt.Errorf("error downloading metadata: %s", err)
 			}
 		}
-		assertMetadataFileExists()
-		assertMetadataIsLoaded()
+		AssertMetadataFileExists()
+		AssertMetadataIsLoaded()
 
 		unigetTool, err := tools.GetByName("uniget")
 		if err != nil {

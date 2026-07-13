@@ -15,6 +15,7 @@ import (
 	"gitlab.com/uniget-org/cli/internal/constants"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
+	myos "gitlab.com/uniget-org/cli/pkg/os"
 	"gitlab.com/uniget-org/cli/pkg/tool"
 )
 
@@ -64,8 +65,8 @@ var installCmd = &cobra.Command{
 				return fmt.Errorf("error downloading metadata: %s", err)
 			}
 		}
-		assertMetadataFileExists()
-		assertMetadataIsLoaded()
+		AssertMetadataFileExists()
+		AssertMetadataIsLoaded()
 
 		var requestedTools tool.Tools
 
@@ -275,8 +276,8 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 	}
 
 	// Install
-	assertWritableTarget()
-	assertLibDirectory()
+	AssertWritableTarget()
+	AssertLibDirectory()
 	err := runPreInstallHooks(plannedTools.GetNames()...)
 	if err != nil {
 		return fmt.Errorf("unable to run pre-install hooks: %s", err)
@@ -351,7 +352,7 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 			}
 		}
 
-		assertDirectory(configuration.Prefix + "/" + configuration.Target)
+		myos.AssertDirectory(configuration.Prefix + "/" + configuration.Target)
 		// Change working directory to prefix
 		// so that unpacking can ignore the target directory
 		installDir := configuration.Prefix

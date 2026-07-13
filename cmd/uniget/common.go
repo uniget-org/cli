@@ -7,66 +7,29 @@ import (
 	"gitlab.com/uniget-org/cli/pkg/logging"
 	myos "gitlab.com/uniget-org/cli/pkg/os"
 	"gitlab.com/uniget-org/cli/pkg/tui"
-	"golang.org/x/sys/unix"
 )
 
-func directoryExists(directory string) bool {
-	logging.Debugf("Checking if directory %s exists", directory)
-	_, err := os.Stat(directory)
-	return err == nil
+func AssertWritableTarget() {
+	myos.AssertWritableDirectory(configuration.Prefix + "/" + configuration.Target)
 }
 
-func fileExists(file string) bool {
-	logging.Debugf("Checking if file %s exists", file)
-	_, err := os.Stat(file)
-	return err == nil
-}
-
-func directoryIsWritable(directory string) bool {
-	logging.Debugf("Checking if directory %s is writable", directory)
-	return unix.Access(directory, unix.W_OK) == nil
-}
-
-func assertWritableDirectory(directory string) {
-	if !directoryExists(directory) {
-		assertDirectory(directory)
+func AssertLibDirectory() {
+	if !myos.DirectoryExists(configuration.Prefix + "/" + configuration.LibRoot) {
+		myos.AssertDirectory(configuration.Prefix + "/" + configuration.LibRoot)
 	}
-	if !directoryIsWritable(directory) {
-		logging.Error.Printfln("Directory %s is not writable", directory)
-		os.Exit(1)
+	myos.AssertWritableDirectory(configuration.Prefix + "/" + configuration.LibRoot)
+	myos.AssertDirectory(configuration.Prefix + "/" + configuration.GetLibDirectory())
+}
+
+func AssertCacheDirectory() {
+	if !myos.DirectoryExists(configuration.Prefix + "/" + configuration.CacheRoot) {
+		myos.AssertDirectory(configuration.Prefix + "/" + configuration.CacheRoot)
 	}
+	myos.AssertWritableDirectory(configuration.Prefix + "/" + configuration.CacheRoot)
+	myos.AssertDirectory(configuration.Prefix + "/" + configuration.GetCacheDirectory())
 }
 
-func assertWritableTarget() {
-	assertWritableDirectory(configuration.Prefix + "/" + configuration.Target)
-}
-
-func assertDirectory(directory string) {
-	logging.Debugf("Creating directory %s", directory)
-	err := os.MkdirAll(directory, 0755) // #nosec G301 -- Directories will contain public information
-	if err != nil {
-		logging.Error.Printfln("Error creating directory %s: %s", directory, err)
-		os.Exit(1)
-	}
-}
-
-func assertLibDirectory() {
-	if !directoryExists(configuration.Prefix + "/" + configuration.LibRoot) {
-		assertDirectory(configuration.Prefix + "/" + configuration.LibRoot)
-	}
-	assertWritableDirectory(configuration.Prefix + "/" + configuration.LibRoot)
-	assertDirectory(configuration.Prefix + "/" + configuration.GetLibDirectory())
-}
-
-func assertCacheDirectory() {
-	if !directoryExists(configuration.Prefix + "/" + configuration.CacheRoot) {
-		assertDirectory(configuration.Prefix + "/" + configuration.CacheRoot)
-	}
-	assertWritableDirectory(configuration.Prefix + "/" + configuration.CacheRoot)
-	assertDirectory(configuration.Prefix + "/" + configuration.GetCacheDirectory())
-}
-
-func assertMetadataFileExists() {
+func AssertMetadataFileExists() {
 	_, err := os.Stat(configuration.Prefix + "/" + configuration.GetMetadataFile())
 	if err != nil {
 		logging.Error.Printfln("Metadata file %s does not exist: %s",
@@ -84,7 +47,7 @@ func assertMetadataFileExists() {
 	}
 }
 
-func assertMetadataIsLoaded() {
+func AssertMetadataIsLoaded() {
 	if len(tools.Tools) == 0 {
 		logging.Error.Printfln("Metadata is not loaded")
 		os.Exit(1)

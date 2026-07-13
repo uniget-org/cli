@@ -48,8 +48,8 @@ var describeCmd = &cobra.Command{
 				return fmt.Errorf("error downloading metadata: %s", err)
 			}
 		}
-		assertMetadataFileExists()
-		assertMetadataIsLoaded()
+		AssertMetadataFileExists()
+		AssertMetadataIsLoaded()
 
 		toolName := args[0]
 		tool, err := tools.GetByName(toolName)

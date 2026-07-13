@@ -44,8 +44,8 @@ var inspectCmd = &cobra.Command{
 				return fmt.Errorf("error downloading metadata: %s", err)
 			}
 		}
-		assertMetadataFileExists()
-		assertMetadataIsLoaded()
+		AssertMetadataIsLoaded()
+		AssertMetadataFileExists()
 
 		var inspectTool *tool.Tool
 		inspectToolImageTag := "latest"
