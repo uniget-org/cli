@@ -30,8 +30,8 @@ var shimCmd = &cobra.Command{
 	Short:   "Install shims for profile.d",
 	Long:    constants.Header + "\nInstall shims for profile.d",
 	Args:    cobra.NoArgs,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		err := installProfileDShim()
+	RunE: func(cmd *cobra.Command, args []string) (err error) {
+		err = installProfileDShim()
 		if err != nil {
 			return fmt.Errorf("unable to install profile.d shim: %s", err)
 		}

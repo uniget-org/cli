@@ -29,13 +29,13 @@ var manpagesCmd = &cobra.Command{
 	Short: "Generate manpages",
 	Long:  constants.Header + "\nGenerate manpages",
 	Args:  cobra.NoArgs,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		if (manDirectory[0:1] != "/") && (manDirectory[0:1] != ".") {
 			manDirectory = fmt.Sprintf("%s/%s", "/"+configuration.Target, manDirectory)
 		}
 		logging.Debugf("Using base directory for manpages: %s", manDirectory)
 
-		err := writeManpage(rootCmd, "", manDirectory)
+		err = writeManpage(rootCmd, "", manDirectory)
 		if err != nil {
 			return fmt.Errorf("failed to create manpage: %w", err)
 		}

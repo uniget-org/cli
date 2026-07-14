@@ -32,11 +32,11 @@ var uninstallCmd = &cobra.Command{
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		configuration.AssertWritableTarget()
 		configuration.AssertLibDirectory()
 
-		err := runPreUninstallHooks(args...)
+		err = runPreUninstallHooks(args...)
 		if err != nil {
 			return fmt.Errorf("unable to run pre-uninstall hooks: %s", err)
 		}

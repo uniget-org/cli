@@ -19,9 +19,7 @@ var importCmd = &cobra.Command{
 	Short:   "Start managing existing binaries",
 	Long:    constants.Header + "\nStart managing existing binaries",
 	Args:    cobra.NoArgs,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		var err error
-
+	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		pbar, _ := pterm.DefaultProgressbar.
 			WithTotal(len(tools.Tools)).
 			WithTitle("Checking").

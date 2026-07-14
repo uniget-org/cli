@@ -99,8 +99,8 @@ var bumpGitlabCiCmd = &cobra.Command{
 	RunE:  processGitlabCiFileCmd,
 }
 
-func processBumpDockerfileCmd(cmd *cobra.Command, args []string) error {
-	err := parse.BumpDockerfile(bumpDockerfileName, &tools, outputCallback)
+func processBumpDockerfileCmd(cmd *cobra.Command, args []string) (err error) {
+	err = parse.BumpDockerfile(bumpDockerfileName, &tools, outputCallback)
 	if err != nil {
 		return fmt.Errorf("failed to bump dockerfile: %w", err)
 	}
@@ -108,8 +108,8 @@ func processBumpDockerfileCmd(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func processComposeFileCmd(cmd *cobra.Command, args []string) error {
-	err := parse.BumpComposeFile(bumpComposeFileName, &tools, outputCallback)
+func processComposeFileCmd(cmd *cobra.Command, args []string) (err error) {
+	err = parse.BumpComposeFile(bumpComposeFileName, &tools, outputCallback)
 	if err != nil {
 		return fmt.Errorf("failed to bump compose file: %w", err)
 	}
@@ -117,8 +117,8 @@ func processComposeFileCmd(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func processKubernetesFileCmd(cmd *cobra.Command, args []string) error {
-	err := parse.BumpKubernetesFile(bumpKubernetesFileName, &tools, outputCallback)
+func processKubernetesFileCmd(cmd *cobra.Command, args []string) (err error) {
+	err = parse.BumpKubernetesFile(bumpKubernetesFileName, &tools, outputCallback)
 	if err != nil {
 		return fmt.Errorf("failed to bump kubernetes file: %w", err)
 	}
@@ -126,8 +126,8 @@ func processKubernetesFileCmd(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func processGitlabCiFileCmd(cmd *cobra.Command, args []string) error {
-	err := parse.BumpGitlabCiFile(bumpGitLabCiFileName, &tools, outputCallback)
+func processGitlabCiFileCmd(cmd *cobra.Command, args []string) (err error) {
+	err = parse.BumpGitlabCiFile(bumpGitLabCiFileName, &tools, outputCallback)
 	if err != nil {
 		return fmt.Errorf("failed to bump GitLab CI file: %w", err)
 	}

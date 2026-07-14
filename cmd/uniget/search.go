@@ -51,7 +51,7 @@ var searchCmd = &cobra.Command{
 	Short: "Search for tools",
 	Long:  constants.Header + "\nSearch for tools",
 	Args:  cobra.MinimumNArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		if output != "table" && output != "name" && output != "json" {
 			return fmt.Errorf("error: output format %s not supported", output)
 		}

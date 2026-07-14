@@ -26,7 +26,7 @@ var selfUpgradeCmd = &cobra.Command{
 	Short:   "Self upgrade " + constants.ProjectName,
 	Long:    constants.Header + "\nUpgrade " + constants.ProjectName + " to latest version",
 	Args:    cobra.NoArgs,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		unigetTool, err := tools.GetByName("uniget")
 		if err != nil {
 			return fmt.Errorf("failed to get uniget tool: %s", err)

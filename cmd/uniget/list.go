@@ -32,7 +32,7 @@ var listCmd = &cobra.Command{
 	Short: "List tools",
 	Long:  constants.Header + "\nList tools",
 	Args:  cobra.NoArgs,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		var listTools tool.Tools
 
 		if installedOnly {

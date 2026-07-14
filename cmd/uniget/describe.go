@@ -41,11 +41,11 @@ var describeCmd = &cobra.Command{
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		toolName := args[0]
 		tool, err := tools.GetByName(toolName)
 		if err != nil {
-			return fmt.Errorf("error getting tool %s", toolName)
+			return fmt.Errorf("error getting tool %s: %s", toolName, err)
 		}
 
 		err = tool.UpdateStatus(

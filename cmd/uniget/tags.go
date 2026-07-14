@@ -20,7 +20,7 @@ var tagsCmd = &cobra.Command{
 	Short: "List tags",
 	Long:  constants.Header + "\nList tags",
 	Args:  cobra.NoArgs,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		tags := make(map[string]int)
 		for _, tool := range tools.Tools {
 			for _, name := range tool.Tags {

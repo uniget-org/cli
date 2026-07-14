@@ -87,7 +87,7 @@ var addHooksCmd = &cobra.Command{
 	Short: "Add hook",
 	Long:  constants.Header + "\nAdd hook",
 	Args:  cobra.NoArgs,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		if !myos.FileExists(hookSource) {
 			return fmt.Errorf("hook source file does not exist: %s", hookSource)
 		}
@@ -116,7 +116,7 @@ var addHooksCmd = &cobra.Command{
 			hookFile = postUninstallHooksDir + "/" + hookFileName
 		}
 
-		err := myos.CopyFile(hookSource, hookFile)
+		err = myos.CopyFile(hookSource, hookFile)
 		if err != nil {
 			return fmt.Errorf("unable to copy hook file from %s to %s: %w", hookSource, hookFile, err)
 		}
@@ -142,8 +142,7 @@ var removeHooksCmd = &cobra.Command{
 	Short: "Remove hook",
 	Long:  constants.Header + "\nRemove hook",
 	Args:  cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		var err error
+	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		hookFileName := args[0]
 		hooksDir := configuration.Prefix + "/" + configuration.GetConfigDirectory()
 		hookFile := ""
@@ -196,9 +195,7 @@ var editHooksCmd = &cobra.Command{
 	Short: "Edit hook",
 	Long:  constants.Header + "\nEdit hook",
 	Args:  cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		var err error
-
+	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		editorFromVariable := os.Getenv("UNIGET_EDITOR")
 		if len(editorFromVariable) == 0 {
 			editorFromVariable = os.Getenv("EDITOR")
@@ -276,9 +273,7 @@ var listHooksCmd = &cobra.Command{
 	Short: "List hooks",
 	Long:  constants.Header + "\nList hooks",
 	Args:  cobra.NoArgs,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		var err error
-
+	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		hooksDir := configuration.Prefix + "/" + configuration.GetConfigDirectory()
 
 		for _, availableHookType := range []string{"pre-install", "post-install", "pre-uninstall", "post-uninstall"} {
@@ -332,8 +327,7 @@ var runHooksCmd = &cobra.Command{
 	Short: "Run hooks",
 	Long:  constants.Header + "\nRun hooks",
 	Args:  cobra.MinimumNArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		var err error
+	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		switch hookType {
 		case "pre-install":
 			err = runHooks(hookType, constants.HooksPreInstallDirectory, args...)
@@ -360,8 +354,7 @@ var testHookCmd = &cobra.Command{
 	Short: "Test single hook",
 	Long:  constants.Header + "\nTest single hook",
 	Args:  cobra.MinimumNArgs(2),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		var err error
+	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		hooksDir := configuration.Prefix + "/" + configuration.GetConfigDirectory()
 		hookName := args[0]
 		hookArgs := args[1:]

@@ -19,7 +19,7 @@ var upgradeCmd = &cobra.Command{
 	Short:   "Upgrade all tools",
 	Long:    constants.Header + "\nUpgrade all tools to latest version",
 	Args:    cobra.NoArgs,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		requestdTools, err := findInstalledTools(tools)
 		if err != nil {
 			return fmt.Errorf("failed to find installed tools: %s", err)

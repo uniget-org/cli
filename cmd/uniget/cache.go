@@ -30,8 +30,8 @@ var cacheCmd = &cobra.Command{
 	Short: "Manage the cache",
 	Long:  constants.Header + "\nManage the cache",
 	Args:  cobra.NoArgs,
-	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		err := rootCmd.PersistentPreRunE(cmd, args)
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) (err error) {
+		err = rootCmd.PersistentPreRunE(cmd, args)
 		if err != nil {
 			return err
 		}
@@ -69,9 +69,8 @@ var cacheStatsCmd = &cobra.Command{
 	Short: "Display cache statistics",
 	Long:  constants.Header + "\nDisplay cache statistics",
 	Args:  cobra.NoArgs,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		var size int64
-		var err error
 
 		switch configuration.Cache {
 		case "file":
@@ -120,7 +119,7 @@ var cacheListCmd = &cobra.Command{
 	Short: "Display cache contents",
 	Long:  constants.Header + "\nDisplay cache contents",
 	Args:  cobra.NoArgs,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		switch configuration.Cache {
 		case "file":
 			if configuration.Cache == "file" {
@@ -171,9 +170,8 @@ var cachePruneCmd = &cobra.Command{
 	Short: "Remove unused cache entries",
 	Long:  constants.Header + "\nRemove unused cache entries",
 	Args:  cobra.NoArgs,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		var count int
-		var err error
 
 		switch configuration.Cache {
 		case "file":
