@@ -7,8 +7,10 @@ import (
 	"gitlab.com/uniget-org/cli/internal/constants"
 )
 
+var upgradeDryRun = false
+
 func initUpgradeCmd() {
-	upgradeCmd.Flags().BoolVar(&dryRun, "dry-run", false, "Show tool(s) planned for installation")
+	upgradeCmd.Flags().BoolVar(&upgradeDryRun, "dry-run", upgradeDryRun, "Show tool(s) planned for upgrade")
 
 	rootCmd.AddCommand(upgradeCmd)
 }
@@ -20,14 +22,14 @@ var upgradeCmd = &cobra.Command{
 	Long:    constants.Header + "\nUpgrade all tools to latest version",
 	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
-		requestdTools, err := findInstalledTools(tools)
+		requestedTools, err := findInstalledTools(tools)
 		if err != nil {
 			return fmt.Errorf("failed to find installed tools: %s", err)
 		}
 
-		err = installTools(cmd.OutOrStdout(), requestdTools, false, dryRun, false, false, false)
+		err = installTools(cmd.OutOrStdout(), requestedTools, false, upgradeDryRun, false, false, false)
 		if err != nil {
-			return fmt.Errorf("failed to install tools: %s", err)
+			return fmt.Errorf("failed to upgrade tools: %s", err)
 		}
 
 		return nil

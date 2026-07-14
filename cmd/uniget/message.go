@@ -12,12 +12,12 @@ import (
 	"gitlab.com/uniget-org/cli/pkg/tool"
 )
 
-var find bool
-var list bool
+var messageFind bool
+var messageList bool
 
 func initMessageCmd() {
-	messageCmd.Flags().BoolVar(&find, "find", false, "Find tools with messages")
-	messageCmd.Flags().BoolVar(&list, "list", false, "List available messages for a tool")
+	messageCmd.Flags().BoolVar(&messageFind, "find", false, "Find tools with messages")
+	messageCmd.Flags().BoolVar(&messageList, "list", false, "List available messages for a tool")
 	messageCmd.MarkFlagsMutuallyExclusive("find", "list")
 
 	rootCmd.AddCommand(messageCmd)
@@ -35,13 +35,13 @@ var messageCmd = &cobra.Command{
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
-		if len(args) == 0 && !find && !list {
+		if len(args) == 0 && !messageFind && !messageList {
 			return nil
 		}
 
 		toolName := args[0]
 
-		if list {
+		if messageList {
 			tool, err := tools.GetByName(toolName)
 			if err != nil {
 				return fmt.Errorf("failed to get tool: %s", err)
@@ -58,7 +58,7 @@ var messageCmd = &cobra.Command{
 				fmt.Println("Update")
 			}
 
-		} else if find {
+		} else if messageFind {
 			for _, tool := range tools.Tools {
 
 				if tool.Messages.Internals != "" || tool.Messages.Usage != "" || tool.Messages.Update != "" {

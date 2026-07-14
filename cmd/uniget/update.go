@@ -18,12 +18,12 @@ import (
 	"gitlab.com/uniget-org/cli/pkg/tool"
 )
 
-var quiet bool
-var showAllTools bool
+var updateQuiet bool
+var updateShowAllTools bool
 
 func initUpdateCmd() {
-	updateCmd.Flags().BoolVarP(&quiet, "quiet", "q", false, "Do not print new tools")
-	updateCmd.Flags().BoolVar(&showAllTools, "all", false, "Show all updates including tools that are not installed")
+	updateCmd.Flags().BoolVarP(&updateQuiet, "quiet", "q", false, "Do not print new tools")
+	updateCmd.Flags().BoolVar(&updateShowAllTools, "all", false, "Show all updates including tools that are not installed")
 
 	rootCmd.AddCommand(updateCmd)
 }
@@ -82,7 +82,7 @@ var updateCmd = &cobra.Command{
 			}
 		}
 
-		if !quiet {
+		if !updateQuiet {
 			prefix := pterm.NewStyle(pterm.FgBlack, pterm.BgGreen)
 			suffix := pterm.NewStyle(pterm.FgWhite)
 			for _, tool := range newTools.Tools {
@@ -91,7 +91,7 @@ var updateCmd = &cobra.Command{
 			}
 
 			toolsToShow := updatedInstalledTools
-			if showAllTools {
+			if updateShowAllTools {
 				toolsToShow = updatedTools
 			}
 			prefix = pterm.NewStyle(pterm.FgBlack, pterm.BgYellow)

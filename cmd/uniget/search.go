@@ -11,29 +11,29 @@ import (
 )
 
 var (
-	onlySearchInName        bool
-	noSearchInName          bool
-	onlySearchInDescription bool
-	noSearchInDescription   bool
-	onlySearchInTags        bool
-	noSearchInTags          bool
-	onlySearchInDeps        bool
-	noSearchInDeps          bool
-	output                  string
+	searchOnlyInName        bool
+	searchNotInName         bool
+	searchOnlyInDescription bool
+	searchNotInDescription  bool
+	searchOnlyInTags        bool
+	searchNotInTags         bool
+	searchOnlyInDeps        bool
+	searchNotInDeps         bool
+	searchOutputFormat      string
 )
 
 func initSearchCmd() {
 	rootCmd.AddCommand(searchCmd)
 
-	searchCmd.Flags().BoolVar(&onlySearchInName, "only-names", false, "Search only in names")
-	searchCmd.Flags().BoolVar(&noSearchInName, "no-names", false, "Do not search in names")
-	searchCmd.Flags().BoolVar(&onlySearchInDescription, "only-description", false, "Search only in description")
-	searchCmd.Flags().BoolVar(&noSearchInDescription, "no-description", false, "Do not search in description")
-	searchCmd.Flags().BoolVar(&onlySearchInTags, "only-tags", false, "Search only on tags")
-	searchCmd.Flags().BoolVar(&noSearchInTags, "no-tags", false, "Do not search in tags")
-	searchCmd.Flags().BoolVar(&onlySearchInDeps, "only-deps", false, "Search only in dependencies")
-	searchCmd.Flags().BoolVar(&noSearchInDeps, "no-deps", false, "Do not search in dependencies")
-	searchCmd.Flags().StringVar(&output, "output", "table", "Output format (table, name, json)")
+	searchCmd.Flags().BoolVar(&searchOnlyInName, "only-names", false, "Search only in names")
+	searchCmd.Flags().BoolVar(&searchNotInName, "no-names", false, "Do not search in names")
+	searchCmd.Flags().BoolVar(&searchOnlyInDescription, "only-description", false, "Search only in description")
+	searchCmd.Flags().BoolVar(&searchNotInDescription, "no-description", false, "Do not search in description")
+	searchCmd.Flags().BoolVar(&searchOnlyInTags, "only-tags", false, "Search only on tags")
+	searchCmd.Flags().BoolVar(&searchNotInTags, "no-tags", false, "Do not search in tags")
+	searchCmd.Flags().BoolVar(&searchOnlyInDeps, "only-deps", false, "Search only in dependencies")
+	searchCmd.Flags().BoolVar(&searchNotInDeps, "no-deps", false, "Do not search in dependencies")
+	searchCmd.Flags().StringVar(&searchOutputFormat, "output", "table", "Output format (table, name, json)")
 
 	searchCmd.MarkFlagsMutuallyExclusive("only-names", "no-names")
 	searchCmd.MarkFlagsMutuallyExclusive("only-description", "no-description")
@@ -52,16 +52,16 @@ var searchCmd = &cobra.Command{
 	Long:  constants.Header + "\nSearch for tools",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
-		if output != "table" && output != "name" && output != "json" {
-			return fmt.Errorf("error: output format %s not supported", output)
+		if searchOutputFormat != "table" && searchOutputFormat != "name" && searchOutputFormat != "json" {
+			return fmt.Errorf("error: output format %s not supported", searchOutputFormat)
 		}
 
-		if (onlySearchInName && onlySearchInTags) ||
-			(onlySearchInName && onlySearchInDeps) ||
-			(onlySearchInName && noSearchInDescription) ||
-			(onlySearchInDescription && onlySearchInTags) ||
-			(onlySearchInDescription && onlySearchInDeps) ||
-			(onlySearchInTags && onlySearchInDeps) {
+		if (searchOnlyInName && searchOnlyInTags) ||
+			(searchOnlyInName && searchOnlyInDeps) ||
+			(searchOnlyInName && searchNotInDescription) ||
+			(searchOnlyInDescription && searchOnlyInTags) ||
+			(searchOnlyInDescription && searchOnlyInDeps) ||
+			(searchOnlyInTags && searchOnlyInDeps) {
 			return fmt.Errorf("error: Can only process one of only-names, only-description, only-tags and only-deps at the same time")
 		}
 
@@ -69,10 +69,10 @@ var searchCmd = &cobra.Command{
 		for _, term := range args {
 			results = results.Find(
 				term,
-				!noSearchInName && !onlySearchInDescription && !onlySearchInTags && !onlySearchInDeps,
-				!noSearchInDescription && !onlySearchInName && !onlySearchInTags && !onlySearchInDeps,
-				!noSearchInTags && !onlySearchInName && !onlySearchInDescription && !onlySearchInDeps,
-				!noSearchInDeps && !onlySearchInName && !onlySearchInDescription && !onlySearchInTags,
+				!searchNotInName && !searchOnlyInDescription && !searchOnlyInTags && !searchOnlyInDeps,
+				!searchNotInDescription && !searchOnlyInName && !searchOnlyInTags && !searchOnlyInDeps,
+				!searchNotInTags && !searchOnlyInName && !searchOnlyInDescription && !searchOnlyInDeps,
+				!searchNotInDeps && !searchOnlyInName && !searchOnlyInDescription && !searchOnlyInTags,
 			)
 		}
 		if len(results.Tools) == 0 {
@@ -80,7 +80,7 @@ var searchCmd = &cobra.Command{
 			return nil
 		}
 
-		switch output {
+		switch searchOutputFormat {
 		case "table":
 			results.List(cmd.OutOrStdout())
 		case "name":

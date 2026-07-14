@@ -19,24 +19,24 @@ import (
 	"gitlab.com/uniget-org/cli/pkg/tool"
 )
 
-var tagsMode bool
-var filename string
-var skipDependencies bool
-var skipConflicts bool
-var check bool
-var dryRun bool
-var reinstall bool
-var pathToTarMappings map[string]string
+var installTagsMode bool
+var installFilename string
+var installSkipDeps bool
+var installSkipConflicts bool
+var installCheck bool
+var installDryRun bool
+var installReinstall bool
+var installPathToTarMappings map[string]string
 
 func initInstallCmd() {
-	installCmd.Flags().BoolVar(&tagsMode, "tags", false, "Install tool(s) matching tag")
-	installCmd.Flags().StringVar(&filename, "file", "", "Read tools from file")
-	installCmd.Flags().BoolVar(&dryRun, "dry-run", false, "Show tool(s) planned for installation")
-	installCmd.Flags().BoolVar(&skipDependencies, "skip-deps", false, "Skip dependencies")
-	installCmd.Flags().BoolVar(&skipConflicts, "skip-conflicts", false, "Skip conflicting tools")
-	installCmd.Flags().BoolVar(&check, "check", false, "Abort after checking versions")
-	installCmd.Flags().BoolVarP(&reinstall, "reinstall", "r", false, "Reinstall tool(s)")
-	installCmd.Flags().StringToStringVar(&pathToTarMappings, "path-to-tar-mappings", nil, "Map paths in tar file to target paths (for debugging purposes)")
+	installCmd.Flags().BoolVar(&installTagsMode, "tags", false, "Install tool(s) matching tag")
+	installCmd.Flags().StringVar(&installFilename, "file", "", "Read tools from file")
+	installCmd.Flags().BoolVar(&installDryRun, "dry-run", false, "Show tool(s) planned for installation")
+	installCmd.Flags().BoolVar(&installSkipDeps, "skip-deps", false, "Skip dependencies")
+	installCmd.Flags().BoolVar(&installSkipConflicts, "skip-conflicts", false, "Skip conflicting tools")
+	installCmd.Flags().BoolVar(&installCheck, "check", false, "Abort after checking versions")
+	installCmd.Flags().BoolVarP(&installReinstall, "reinstall", "r", false, "Reinstall tool(s)")
+	installCmd.Flags().StringToStringVar(&installPathToTarMappings, "path-to-tar-mappings", nil, "Map paths in tar file to target paths (for debugging purposes)")
 	installCmd.MarkFlagsMutuallyExclusive("tags", "file")
 	installCmd.MarkFlagsMutuallyExclusive("check", "dry-run")
 	err := installCmd.Flags().MarkHidden("path-to-tar-mappings")
@@ -62,15 +62,15 @@ var installCmd = &cobra.Command{
 		var requestedTools tool.Tools
 
 		// Collect requested tools based on mode
-		if tagsMode {
+		if installTagsMode {
 			logging.Debugf("Adding tools matching tags to requested tools")
 			requestedTools = tools.GetByTags(args)
 
-		} else if filename != "" {
-			logging.Debugf("Adding tools from file %s to requested tools", filename)
-			data, err := os.ReadFile(filename) // #nosec G304 -- Accept file from arbitrary location
+		} else if installFilename != "" {
+			logging.Debugf("Adding tools from file %s to requested tools", installFilename)
+			data, err := os.ReadFile(installFilename) // #nosec G304 -- Accept file from arbitrary location
 			if err != nil {
-				return fmt.Errorf("unable to read file %s: %s", filename, err)
+				return fmt.Errorf("unable to read file %s: %s", installFilename, err)
 			}
 			for line := range strings.SplitSeq(string(data), "\n") {
 				if len(line) == 0 {
@@ -100,7 +100,7 @@ var installCmd = &cobra.Command{
 		}
 		logging.Debugf("Requested %d tool(s)", len(requestedTools.Tools))
 
-		return installTools(cmd.OutOrStdout(), requestedTools, check, dryRun, reinstall, skipDependencies, skipConflicts)
+		return installTools(cmd.OutOrStdout(), requestedTools, installCheck, installDryRun, installReinstall, installSkipDeps, installSkipConflicts)
 	},
 }
 
@@ -262,8 +262,8 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 	}
 
 	// Flag path-to-tar can only be used when installing a single tool
-	if len(pathToTarMappings) > 0 {
-		logging.Debugf("Using path-to-tar-mappings for installation: %+v", pathToTarMappings)
+	if len(installPathToTarMappings) > 0 {
+		logging.Debugf("Using path-to-tar-mappings for installation: %+v", installPathToTarMappings)
 	}
 
 	// Install
@@ -382,7 +382,7 @@ func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool,
 
 			return nil
 		}
-		pathToTar, ok := pathToTarMappings[plannedTool.Name]
+		pathToTar, ok := installPathToTarMappings[plannedTool.Name]
 		installSuccessful := true
 		if ok {
 			logging.Debugf("Using tar file mappings for installation")

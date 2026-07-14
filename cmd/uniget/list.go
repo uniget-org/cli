@@ -11,13 +11,13 @@ import (
 	"go.yaml.in/yaml/v3"
 )
 
-var installedOnly bool
-var upgradableOnly bool
+var listInstalledOnly bool
+var listUpgradableOnly bool
 var listOutput string
 
 func initListCmd() {
-	listCmd.Flags().BoolVar(&installedOnly, "installed", false, "List only installed tools")
-	listCmd.Flags().BoolVar(&upgradableOnly, "upgradable", false, "List only upgradable tools")
+	listCmd.Flags().BoolVar(&listInstalledOnly, "installed", false, "List only installed tools")
+	listCmd.Flags().BoolVar(&listUpgradableOnly, "upgradable", false, "List only upgradable tools")
 	listCmd.Flags().StringVarP(&listOutput, "output", "o", "pretty", "Output options: pretty, json, yaml")
 
 	rootCmd.AddCommand(listCmd)
@@ -35,7 +35,7 @@ var listCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		var listTools tool.Tools
 
-		if installedOnly {
+		if listInstalledOnly {
 			var installedTools tool.Tools
 			for index := range tools.Tools {
 
@@ -56,7 +56,7 @@ var listCmd = &cobra.Command{
 			}
 			listTools = installedTools
 
-		} else if upgradableOnly {
+		} else if listUpgradableOnly {
 			var installedTools tool.Tools
 			for index := range tools.Tools {
 

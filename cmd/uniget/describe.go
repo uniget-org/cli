@@ -18,12 +18,12 @@ import (
 )
 
 var describeOutput string
-var versions bool
-var upstreamVersions bool
+var describeVersions bool
+var describeUpstreamVersions bool
 
 func initDescribeCmd() {
-	describeCmd.Flags().BoolVar(&versions, "versions", false, "Find available versions")
-	describeCmd.Flags().BoolVar(&upstreamVersions, "upstream-versions", false, "Find upstream versions")
+	describeCmd.Flags().BoolVar(&describeVersions, "versions", false, "Find available versions")
+	describeCmd.Flags().BoolVar(&describeUpstreamVersions, "upstream-versions", false, "Find upstream versions")
 	describeCmd.Flags().StringVarP(&describeOutput, "output", "o", "pretty", "Output options: pretty, json, yaml")
 
 	rootCmd.AddCommand(describeCmd)
@@ -84,7 +84,7 @@ var describeCmd = &cobra.Command{
 			return fmt.Errorf("invalid output format: %s", describeOutput)
 		}
 
-		if versions {
+		if describeVersions {
 			registries, repositories := tool.GetSourcesWithFallback(constants.Registry, constants.ImageRepository)
 			toolRef, err := containers.FindToolRef(registries, repositories, tool.Name, tool.Version)
 			if err != nil {
@@ -104,7 +104,7 @@ var describeCmd = &cobra.Command{
 			}
 		}
 
-		if upstreamVersions {
+		if describeUpstreamVersions {
 			var releaseTags []string
 			switch tool.Renovate.Datasource {
 			case "github-releases":

@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	createUpgradeCron     = "30 0 * * *"
-	createSelfUpgradeCron = "0 0 * * *"
+	cronCreateUpgradeJob     = "30 0 * * *"
+	cronCreateSelfUpgradeJob = "0 0 * * *"
 )
 
 func initCronCmd() {
@@ -20,8 +20,8 @@ func initCronCmd() {
 	cronCmd.AddCommand(cronCreateCmd)
 	cronCmd.AddCommand(cronRemoveCmd)
 
-	cronCreateCmd.Flags().StringVar(&createUpgradeCron, "upgrade-cron", createUpgradeCron, "Cron schedule to run cron jobs for tool upgrade")
-	cronCreateCmd.Flags().StringVar(&createSelfUpgradeCron, "self-upgrade-cron", createSelfUpgradeCron, "Cron schedule to run cron jobs for self-upgrade")
+	cronCreateCmd.Flags().StringVar(&cronCreateUpgradeJob, "upgrade-cron", cronCreateUpgradeJob, "Cron schedule to run cron jobs for tool upgrade")
+	cronCreateCmd.Flags().StringVar(&cronCreateSelfUpgradeJob, "self-upgrade-cron", cronCreateSelfUpgradeJob, "Cron schedule to run cron jobs for self-upgrade")
 }
 
 var cronCmd = &cobra.Command{
@@ -109,8 +109,8 @@ func createCron() error {
 		return fmt.Errorf("cannot get user crontab: %w", err)
 	}
 	lines = removeUserCronTab(lines)
-	lines = append(lines, fmt.Sprintf("%s uniget --user=%t upgrade --auto-update", createUpgradeCron, configuration.User))
-	lines = append(lines, fmt.Sprintf("%s uniget --user=%t self-upgrade", createSelfUpgradeCron, configuration.User))
+	lines = append(lines, fmt.Sprintf("%s uniget --user=%t upgrade --auto-update", cronCreateUpgradeJob, configuration.User))
+	lines = append(lines, fmt.Sprintf("%s uniget --user=%t self-upgrade", cronCreateSelfUpgradeJob, configuration.User))
 
 	err = setUserCrontab(lines)
 	if err != nil {

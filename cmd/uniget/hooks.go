@@ -370,11 +370,11 @@ var testHookCmd = &cobra.Command{
 			hookFile = hooksDir + "/" + constants.HooksPostUninstallDirectory + "/" + hookName
 		}
 
-		output, err = runHook(hookFile, hookArgs...)
+		searchOutputFormat, err = runHook(hookFile, hookArgs...)
 		if err != nil {
 			return fmt.Errorf("unable to execute %s hook %s passing <%v>: %s", hookType, hookName, hookArgs, err)
 		}
-		fmt.Print(output)
+		fmt.Print(searchOutputFormat)
 
 		return nil
 	},
@@ -472,5 +472,5 @@ func runHook(hookFile string, args ...string) (string, error) {
 		return "", fmt.Errorf("unable to execute %s hook (%s): %s", hookType, hookFile, err)
 	}
 
-	return string(output), nil
+	return string(searchOutputFormat), nil
 }

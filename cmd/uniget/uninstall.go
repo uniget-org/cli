@@ -13,10 +13,10 @@ import (
 	"gitlab.com/uniget-org/cli/pkg/tool"
 )
 
-var force bool
+var uninstallForce bool
 
 func initUninstallCmd() {
-	uninstallCmd.Flags().BoolVar(&force, "force", false, "Force uninstallation")
+	uninstallCmd.Flags().BoolVar(&uninstallForce, "force", false, "Force uninstallation")
 
 	rootCmd.AddCommand(uninstallCmd)
 }
@@ -58,17 +58,17 @@ var uninstallCmd = &cobra.Command{
 				return fmt.Errorf("failed to update status for tool %s: %s", tool.Name, err)
 			}
 
-			if !force && !tool.IsInstalled() {
+			if !uninstallForce && !tool.IsInstalled() {
 				logging.Warning.Printfln("Tool %s is not installed", toolName)
 				return nil
 			}
 
 			var uninstallSpinner *pterm.SpinnerPrinter
-			installMessage := fmt.Sprintf("Uninstalling %s", tool.Name)
+			uninstallMessage := fmt.Sprintf("Uninstalling %s", tool.Name)
 			if configuration.LogLevel == "warning" {
-				uninstallSpinner, _ = pterm.DefaultSpinner.Start(installMessage)
+				uninstallSpinner, _ = pterm.DefaultSpinner.Start(uninstallMessage)
 			} else {
-				logging.Info.Println(installMessage)
+				logging.Info.Println(uninstallMessage)
 			}
 
 			err = uninstallTool(toolName)
@@ -119,7 +119,7 @@ func uninstallTool(toolName string) error {
 	if myos.FileExists(configuration.Prefix + "/" + configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".txt") {
 		data, err := os.ReadFile(configuration.Prefix + "/" + configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".txt")
 		if err != nil {
-			return fmt.Errorf("unable to read file %s: %s", filename, err)
+			return fmt.Errorf("unable to read file %s: %s", installFilename, err)
 		}
 		installedFiles := strings.Split(string(data), "\n")
 		err = uninstallFiles(installedFiles)

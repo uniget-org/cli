@@ -11,17 +11,17 @@ import (
 )
 
 var (
-	baseImage   = "ubuntu:24.04"
-	imageTarget = "usr/local"
-	pinVersions = false
+	generateBaseImage   = "ubuntu:26.04"
+	generateImageTarget = "usr/local"
+	generatePinVersions = false
 )
 
 func initGenerateCmd() {
 	rootCmd.AddCommand(generateCmd)
 
-	generateCmd.Flags().StringVar(&baseImage, "base", baseImage, "Base image to use")
-	generateCmd.Flags().StringVar(&imageTarget, "root", imageTarget, "Root directory to install tools")
-	generateCmd.Flags().BoolVar(&pinVersions, "pin-versions", pinVersions, "Pin tool versions (default: false)")
+	generateCmd.Flags().StringVar(&generateBaseImage, "base", generateBaseImage, "Base image to use")
+	generateCmd.Flags().StringVar(&generateImageTarget, "root", generateImageTarget, "Root directory to install tools")
+	generateCmd.Flags().BoolVar(&generatePinVersions, "pin-versions", generatePinVersions, "Pin tool versions (default: false)")
 }
 
 var generateCmd = &cobra.Command{
@@ -59,7 +59,7 @@ var generateCmd = &cobra.Command{
 		result = append(result, "")
 		for _, tool := range plannedTools.Tools {
 			var toolVersion = "latest"
-			if pinVersions {
+			if generatePinVersions {
 				toolVersion = tool.Version
 			}
 			result = append(
@@ -73,14 +73,14 @@ var generateCmd = &cobra.Command{
 			)
 		}
 		result = append(result, "")
-		result = append(result, fmt.Sprintf("FROM %s", baseImage))
+		result = append(result, fmt.Sprintf("FROM %s", generateBaseImage))
 		for _, tool := range plannedTools.Tools {
 			result = append(
 				result,
 				fmt.Sprintf("COPY --link --from=%s%s:latest / /%s",
 					constants.RegistryImagePrefix,
 					tool.Name,
-					imageTarget,
+					generateImageTarget,
 				),
 			)
 		}

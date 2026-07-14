@@ -12,12 +12,12 @@ import (
 	"gitlab.com/uniget-org/cli/pkg/tool"
 )
 
-var toolVersion string
-var rawInspect bool
+var inspectToolVersion = "latest"
+var inspectRawContents bool
 
 func initInspectCmd() {
-	inspectCmd.Flags().StringVar(&toolVersion, "version", "", "Inspect a specific version of the tool")
-	inspectCmd.Flags().BoolVar(&rawInspect, "raw", false, "Show raw contents")
+	inspectCmd.Flags().StringVar(&inspectToolVersion, "version", inspectToolVersion, "Inspect a specific version of the tool")
+	inspectCmd.Flags().BoolVar(&inspectRawContents, "raw", false, "Show raw contents")
 
 	rootCmd.AddCommand(inspectCmd)
 }
@@ -39,8 +39,7 @@ var inspectCmd = &cobra.Command{
 	},
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		var inspectTool *tool.Tool
-		inspectToolImageTag := "latest"
-		if len(toolVersion) == 0 {
+		if inspectToolVersion == "latest" {
 			inspectTool, err = tools.GetByName(args[0])
 			if err != nil {
 				return fmt.Errorf("error getting tool %s", args[0])
@@ -54,19 +53,18 @@ var inspectCmd = &cobra.Command{
 		} else {
 			inspectTool = &tool.Tool{
 				Name:    args[0],
-				Version: toolVersion,
+				Version: inspectToolVersion,
 			}
-			inspectToolImageTag = toolVersion
 		}
 
 		logging.Info.Printfln("Inspecting %s %s\n", inspectTool.Name, inspectTool.Version)
 		registries, repositories := inspectTool.GetSourcesWithFallback(constants.Registry, constants.ImageRepository)
-		toolRef, err := containers.FindToolRef(registries, repositories, inspectTool.Name, inspectToolImageTag)
+		toolRef, err := containers.FindToolRef(registries, repositories, inspectTool.Name, inspectToolVersion)
 		if err != nil {
 			return fmt.Errorf("error finding tool %s:%s: %s", inspectTool.Name, inspectTool.Version, err)
 		}
 		effectivePathRewriteRules := configuration.PathRewriteRules
-		if rawInspect {
+		if inspectRawContents {
 			effectivePathRewriteRules = []tool.PathRewrite{}
 		}
 
