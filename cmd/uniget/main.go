@@ -97,9 +97,9 @@ var (
 				}
 			}
 
-			if !fileExists(configuration.Prefix+"/"+configuration.GetMetadataFile()) ||
+			if !myos.FileExists(configuration.Prefix+"/"+configuration.GetMetadataFile()) ||
 				(len(os.Getenv("UNIGET_IGNORE_METADATA_SIGNATURE")) > 0 &&
-					!fileExists(configuration.Prefix+"/"+configuration.GetMetadataFile()+".sigstore.json")) {
+					!myos.FileExists(configuration.Prefix+"/"+configuration.GetMetadataFile()+".sigstore.json")) {
 
 				logging.Debugf("Metadata does not exist. Downloading...")
 				err := downloadMetadata()
@@ -132,7 +132,7 @@ var (
 			case "file":
 				logging.Debug("Using file cache")
 				fileCacheDir := configuration.Prefix + "/" + configuration.FileCacheDirectoryName
-				assertDirectory(fileCacheDir)
+				myos.AssertDirectory(fileCacheDir)
 				toolCache = cache.NewFileCache(fileCacheDir, configuration.FileCacheRetention)
 
 			case "docker":

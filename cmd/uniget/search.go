@@ -58,7 +58,7 @@ var searchCmd = &cobra.Command{
 				return fmt.Errorf("error downloading metadata: %s", err)
 			}
 		}
-		assertMetadataFileExists()
+		configuration.AssertMetadataFileExists()
 		assertMetadataIsLoaded()
 
 		if output != "table" && output != "name" && output != "json" {

@@ -39,11 +39,11 @@ var uninstallCmd = &cobra.Command{
 				return fmt.Errorf("error downloading metadata: %s", err)
 			}
 		}
-		assertMetadataFileExists()
+		configuration.AssertMetadataFileExists()
 		assertMetadataIsLoaded()
 
-		assertWritableTarget()
-		assertLibDirectory()
+		configuration.AssertWritableTarget()
+		configuration.AssertLibDirectory()
 
 		err := runPreUninstallHooks(args...)
 		if err != nil {
@@ -125,7 +125,7 @@ func uninstallTool(toolName string) error {
 	}
 
 	logging.Tracef("Looking for manifest file for tool %s at %s", tool.Name, configuration.Prefix+"/"+configuration.GetLibDirectory()+"/manifests/"+tool.Name+".txt")
-	if fileExists(configuration.Prefix + "/" + configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".txt") {
+	if myos.FileExists(configuration.Prefix + "/" + configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".txt") {
 		data, err := os.ReadFile(configuration.Prefix + "/" + configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".txt")
 		if err != nil {
 			return fmt.Errorf("unable to read file %s: %s", filename, err)
@@ -140,7 +140,7 @@ func uninstallTool(toolName string) error {
 		logging.Warning.Printfln("Unable to find manifest for %s", tool.Name)
 	}
 
-	if directoryExists(configuration.Prefix + "/" + configuration.GetCacheDirectory() + "/" + tool.Name) {
+	if myos.DirectoryExists(configuration.Prefix + "/" + configuration.GetCacheDirectory() + "/" + tool.Name) {
 		entries, err := os.ReadDir(configuration.Prefix + "/" + configuration.GetCacheDirectory() + "/" + tool.Name)
 		if err != nil {
 			return fmt.Errorf("failed to read cache directory for %s: %s", tool.Name, err)
@@ -166,13 +166,13 @@ func uninstallTool(toolName string) error {
 		}
 	}
 
-	if fileExists(configuration.Prefix + "/" + configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".json") {
+	if myos.FileExists(configuration.Prefix + "/" + configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".json") {
 		err = os.Remove(configuration.Prefix + "/" + configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".json")
 		if err != nil {
 			return fmt.Errorf("unable to remove %s: %s", configuration.Prefix+"/"+configuration.GetLibDirectory()+"/manifests/"+tool.Name+".json", err)
 		}
 	}
-	if fileExists(configuration.Prefix + "/" + configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".txt") {
+	if myos.FileExists(configuration.Prefix + "/" + configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".txt") {
 		err = os.Remove(configuration.Prefix + "/" + configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".txt")
 		if err != nil {
 			return fmt.Errorf("unable to remove %s: %s", configuration.Prefix+"/"+configuration.GetLibDirectory()+"/manifests/"+tool.Name+".txt", err)

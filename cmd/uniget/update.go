@@ -35,7 +35,7 @@ var updateCmd = &cobra.Command{
 	Long:    constants.Header + "\nUpdate tool manifest",
 	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
-		assertMetadataFileExists()
+		configuration.AssertMetadataFileExists()
 		assertMetadataIsLoaded()
 		err = loadMetadata()
 		if err != nil {
@@ -126,7 +126,7 @@ func downloadMetadata() error {
 		return nil
 	}
 
-	assertCacheDirectory()
+	configuration.AssertCacheDirectory()
 	t, err := containers.FindToolRef([]string{constants.Registry}, []string{constants.ImageRepository}, "metadata", constants.MetadataImageTag)
 	if err != nil {
 		return fmt.Errorf("error finding metadata: %s", err)

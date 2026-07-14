@@ -26,7 +26,7 @@ var upgradeCmd = &cobra.Command{
 				return fmt.Errorf("error downloading metadata: %s", err)
 			}
 		}
-		assertMetadataFileExists()
+		configuration.AssertMetadataFileExists()
 		assertMetadataIsLoaded()
 
 		requestdTools, err := findInstalledTools(tools)

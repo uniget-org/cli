@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+	"gitlab.com/uniget-org/cli/pkg/logging"
+	"golang.org/x/sys/unix"
 )
 
 func ConvertFileModeToString(mode int64) (string, error) {
@@ -144,4 +147,28 @@ func DirectoryExists(directory string) bool {
 func FileExists(file string) bool {
 	_, err := os.Stat(file)
 	return err == nil
+}
+
+func DirectoryIsWritable(directory string) bool {
+	logging.Debugf("Checking if directory %s is writable", directory)
+	return unix.Access(directory, unix.W_OK) == nil
+}
+
+func AssertWritableDirectory(directory string) {
+	if !DirectoryExists(directory) {
+		AssertDirectory(directory)
+	}
+	if !DirectoryIsWritable(directory) {
+		logging.Error.Printfln("Directory %s is not writable", directory)
+		os.Exit(1)
+	}
+}
+
+func AssertDirectory(directory string) {
+	logging.Debugf("Creating directory %s", directory)
+	err := os.MkdirAll(directory, 0755) // #nosec G301 -- Directories will contain public information
+	if err != nil {
+		logging.Error.Printfln("Error creating directory %s: %s", directory, err)
+		os.Exit(1)
+	}
 }

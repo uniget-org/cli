@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 	"gitlab.com/uniget-org/cli/internal/constants"
 	"gitlab.com/uniget-org/cli/pkg/logging"
+	myos "gitlab.com/uniget-org/cli/pkg/os"
 )
 
 func initHealthcheckCmd() {
@@ -32,7 +33,7 @@ var healthcheckCmd = &cobra.Command{
 				return fmt.Errorf("error downloading metadata: %s", err)
 			}
 		}
-		assertMetadataFileExists()
+		configuration.AssertMetadataFileExists()
 		assertMetadataIsLoaded()
 
 		toolName := args[0]
@@ -72,7 +73,7 @@ var healthcheckCmd = &cobra.Command{
 			testFailed = true
 		}
 
-		markerFilePresent := fileExists(configuration.Prefix + "/" + configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".txt")
+		markerFilePresent := myos.FileExists(configuration.Prefix + "/" + configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".txt")
 		if !tool.Status.MarkerFilePresent && !tool.Status.BinaryPresent && !markerFilePresent {
 			logging.Warning.Printfln("Tool %s is not installed", tool.Name)
 			testFailed = true
