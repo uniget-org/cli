@@ -100,9 +100,6 @@ var bumpGitlabCiCmd = &cobra.Command{
 }
 
 func processBumpDockerfileCmd(cmd *cobra.Command, args []string) error {
-	configuration.AssertMetadataFileExists()
-	assertMetadataIsLoaded()
-
 	err := parse.BumpDockerfile(bumpDockerfileName, &tools, outputCallback)
 	if err != nil {
 		return fmt.Errorf("failed to bump dockerfile: %w", err)
@@ -112,9 +109,6 @@ func processBumpDockerfileCmd(cmd *cobra.Command, args []string) error {
 }
 
 func processComposeFileCmd(cmd *cobra.Command, args []string) error {
-	configuration.AssertMetadataFileExists()
-	assertMetadataIsLoaded()
-
 	err := parse.BumpComposeFile(bumpComposeFileName, &tools, outputCallback)
 	if err != nil {
 		return fmt.Errorf("failed to bump compose file: %w", err)
@@ -124,9 +118,6 @@ func processComposeFileCmd(cmd *cobra.Command, args []string) error {
 }
 
 func processKubernetesFileCmd(cmd *cobra.Command, args []string) error {
-	configuration.AssertMetadataFileExists()
-	assertMetadataIsLoaded()
-
 	err := parse.BumpKubernetesFile(bumpKubernetesFileName, &tools, outputCallback)
 	if err != nil {
 		return fmt.Errorf("failed to bump kubernetes file: %w", err)
@@ -136,9 +127,6 @@ func processKubernetesFileCmd(cmd *cobra.Command, args []string) error {
 }
 
 func processGitlabCiFileCmd(cmd *cobra.Command, args []string) error {
-	configuration.AssertMetadataFileExists()
-	assertMetadataIsLoaded()
-
 	err := parse.BumpGitlabCiFile(bumpGitLabCiFileName, &tools, outputCallback)
 	if err != nil {
 		return fmt.Errorf("failed to bump GitLab CI file: %w", err)

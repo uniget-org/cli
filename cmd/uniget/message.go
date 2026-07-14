@@ -35,15 +35,6 @@ var messageCmd = &cobra.Command{
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if configuration.AutoUpdate {
-			err := downloadMetadata()
-			if err != nil {
-				return fmt.Errorf("error downloading metadata: %s", err)
-			}
-		}
-		configuration.AssertMetadataFileExists()
-		assertMetadataIsLoaded()
-
 		if len(args) == 0 && !find && !list {
 			return nil
 		}

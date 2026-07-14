@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"sort"
 
 	"github.com/jedib0t/go-pretty/v6/table"
@@ -22,15 +21,6 @@ var tagsCmd = &cobra.Command{
 	Long:  constants.Header + "\nList tags",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if configuration.AutoUpdate {
-			err := downloadMetadata()
-			if err != nil {
-				return fmt.Errorf("error downloading metadata: %s", err)
-			}
-		}
-		configuration.AssertMetadataFileExists()
-		assertMetadataIsLoaded()
-
 		tags := make(map[string]int)
 		for _, tool := range tools.Tools {
 			for _, name := range tool.Tags {

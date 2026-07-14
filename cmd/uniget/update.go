@@ -35,12 +35,6 @@ var updateCmd = &cobra.Command{
 	Long:    constants.Header + "\nUpdate tool manifest",
 	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
-		configuration.AssertMetadataFileExists()
-		assertMetadataIsLoaded()
-		err = loadMetadata()
-		if err != nil {
-			return fmt.Errorf("error loading metadata: %s", err)
-		}
 		oldTools := tools
 
 		err = downloadMetadata()

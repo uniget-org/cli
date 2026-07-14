@@ -34,15 +34,6 @@ var releaseNotesCmd = &cobra.Command{
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if configuration.AutoUpdate {
-			err := downloadMetadata()
-			if err != nil {
-				return fmt.Errorf("error downloading metadata: %s", err)
-			}
-		}
-		configuration.AssertMetadataFileExists()
-		assertMetadataIsLoaded()
-
 		tool, err := tools.GetByName(args[0])
 		if err != nil {
 			return fmt.Errorf("failed to get tool: %s", err)

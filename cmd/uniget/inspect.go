@@ -38,15 +38,6 @@ var inspectCmd = &cobra.Command{
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
-		if configuration.AutoUpdate {
-			err := downloadMetadata()
-			if err != nil {
-				return fmt.Errorf("error downloading metadata: %s", err)
-			}
-		}
-		configuration.AssertMetadataFileExists()
-		assertMetadataIsLoaded()
-
 		var inspectTool *tool.Tool
 		inspectToolImageTag := "latest"
 		if len(toolVersion) == 0 {

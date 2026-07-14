@@ -59,15 +59,6 @@ var installCmd = &cobra.Command{
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if configuration.AutoUpdate {
-			err := downloadMetadata()
-			if err != nil {
-				return fmt.Errorf("error downloading metadata: %s", err)
-			}
-		}
-		configuration.AssertMetadataFileExists()
-		assertMetadataIsLoaded()
-
 		var requestedTools tool.Tools
 
 		// Collect requested tools based on mode

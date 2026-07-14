@@ -98,6 +98,7 @@ var (
 			}
 
 			if !myos.FileExists(configuration.Prefix+"/"+configuration.GetMetadataFile()) ||
+				configuration.AutoUpdate ||
 				(len(os.Getenv("UNIGET_IGNORE_METADATA_SIGNATURE")) > 0 &&
 					!myos.FileExists(configuration.Prefix+"/"+configuration.GetMetadataFile()+".sigstore.json")) {
 

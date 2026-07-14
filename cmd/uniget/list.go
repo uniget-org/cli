@@ -33,15 +33,6 @@ var listCmd = &cobra.Command{
 	Long:  constants.Header + "\nList tools",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if configuration.AutoUpdate {
-			err := downloadMetadata()
-			if err != nil {
-				return fmt.Errorf("error downloading metadata: %s", err)
-			}
-		}
-		configuration.AssertMetadataFileExists()
-		assertMetadataIsLoaded()
-
 		var listTools tool.Tools
 
 		if installedOnly {

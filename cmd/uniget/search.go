@@ -52,15 +52,6 @@ var searchCmd = &cobra.Command{
 	Long:  constants.Header + "\nSearch for tools",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if configuration.AutoUpdate {
-			err := downloadMetadata()
-			if err != nil {
-				return fmt.Errorf("error downloading metadata: %s", err)
-			}
-		}
-		configuration.AssertMetadataFileExists()
-		assertMetadataIsLoaded()
-
 		if output != "table" && output != "name" && output != "json" {
 			return fmt.Errorf("error: output format %s not supported", output)
 		}
