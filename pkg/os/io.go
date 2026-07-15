@@ -139,6 +139,30 @@ func CopyFile(src, dst string) error {
 	return nil
 }
 
+func CloneFile(src, dst string) (err error) {
+	err = CopyFile(src, dst)
+	if err != nil {
+		return fmt.Errorf("failed to copy file: %s", err)
+	}
+
+	srcInfo, err := os.Stat(src)
+	if err != nil {
+		return err
+	}
+
+	err = os.Chtimes(dst, srcInfo.ModTime(), srcInfo.ModTime())
+	if err != nil {
+		return fmt.Errorf("failed to change file times: %s", err)
+	}
+
+	err = os.Chmod(dst, srcInfo.Mode())
+	if err != nil {
+		return fmt.Errorf("failed to change file mode: %s", err)
+	}
+
+	return nil
+}
+
 func DirectoryExists(directory string) bool {
 	_, err := os.Stat(directory)
 	return err == nil

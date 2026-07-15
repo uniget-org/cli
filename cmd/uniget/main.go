@@ -114,7 +114,7 @@ var (
 			} else {
 				logging.Debugf("Metadata file exists")
 			}
-			tools, err = loadMetadata(configuration.Prefix + "/" + configuration.GetMetadataFile())
+			tools, err = loadMetadata(configuration.Prefix+"/"+configuration.GetMetadataFile(), false)
 			if err != nil {
 				return fmt.Errorf("error loading metadata: %s", err)
 			}

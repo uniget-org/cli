@@ -14,6 +14,7 @@ import (
 	"gitlab.com/uniget-org/cli/pkg/archive"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
+	myos "gitlab.com/uniget-org/cli/pkg/os"
 	"gitlab.com/uniget-org/cli/pkg/security"
 	"gitlab.com/uniget-org/cli/pkg/tool"
 )
@@ -36,17 +37,40 @@ var updateCmd = &cobra.Command{
 	GroupID: "metadata",
 	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
-		oldTools := tools
-
-		err = downloadMetadata()
+		newRevisionAvailable, err := hasMetadataUpdate()
 		if err != nil {
-			return fmt.Errorf("error downloading metadata: %s", err)
+			return fmt.Errorf("error checking for metadata update: %s", err)
+		}
+		if newRevisionAvailable {
+			err = backupMetadata()
+			if err != nil {
+				return fmt.Errorf("error backing up metadata: %s", err)
+			}
+
+			err = downloadMetadata()
+			if err != nil {
+				err2 := restoreMetadata()
+				if err2 != nil {
+					logging.Warning.Printfln("Error restoring metadata: %s", err2)
+				}
+				return fmt.Errorf("error downloading metadata: %s", err)
+			}
+
+		} else {
+			logging.Info.Println("Metadata is up to date")
 		}
 
-		tools, err = loadMetadata(configuration.Prefix + "/" + configuration.GetMetadataFile())
+		var oldTools *tool.Tools
+		oldTools, err = loadMetadata(configuration.Prefix+"/"+configuration.GetMetadataFile()+".bak", true)
+		if err != nil {
+			return fmt.Errorf("error loading backup metadata: %s", err)
+		}
+		logging.Debugf("Loaded %d tools from backup", len(oldTools.Tools))
+		tools, err = loadMetadata(configuration.Prefix+"/"+configuration.GetMetadataFile(), true)
 		if err != nil {
 			return fmt.Errorf("error loading metadata: %s", err)
 		}
+		logging.Debugf("Loaded %d tools from metadata", len(tools.Tools))
 
 		var updatedTools tool.Tools
 		var updatedInstalledTools tool.Tools
@@ -105,6 +129,78 @@ var updateCmd = &cobra.Command{
 	},
 }
 
+func backupMetadata() (err error) {
+	metadataFile := configuration.Prefix + "/" + configuration.GetMetadataFile()
+	metadataFileSigstore := metadataFile + ".sigstore.json"
+	backupMetadataFile := metadataFile + ".bak"
+	backupMetadataFileSigstore := backupMetadataFile + ".sigstore.json"
+
+	if myos.FileExists(backupMetadataFile) {
+		err = os.Remove(backupMetadataFile)
+		if err != nil {
+			return fmt.Errorf("error removing old backup metadata file: %s", err)
+		}
+	}
+	if myos.FileExists(backupMetadataFileSigstore) {
+		err = os.Remove(backupMetadataFileSigstore)
+		if err != nil {
+			return fmt.Errorf("error removing old backup metadata sigstore file: %s", err)
+		}
+	}
+
+	err = myos.CloneFile(metadataFile, backupMetadataFile)
+	if err != nil {
+		return fmt.Errorf("error backing up metadata file: %s", err)
+	}
+	err = myos.CloneFile(metadataFileSigstore, backupMetadataFileSigstore)
+	if err != nil {
+		return fmt.Errorf("error backing up metadata sigstore file: %s", err)
+	}
+
+	return nil
+}
+
+func restoreMetadata() (err error) {
+	metadataFile := configuration.Prefix + "/" + configuration.GetMetadataFile()
+	metadataFileSigstore := metadataFile + ".sigstore.json"
+	backupMetadataFile := metadataFile + ".bak"
+	backupMetadataFileSigstore := backupMetadataFile + ".sigstore.json"
+
+	if myos.FileExists(backupMetadataFile) {
+		_ = os.Remove(metadataFile)
+		err = os.Rename(backupMetadataFile, metadataFile)
+		if err != nil {
+			return fmt.Errorf("error restoring backup metadata file: %s", err)
+		}
+	}
+	if myos.FileExists(backupMetadataFileSigstore) {
+		_ = os.Remove(metadataFileSigstore)
+		err = os.Rename(backupMetadataFileSigstore, metadataFileSigstore)
+		if err != nil {
+			return fmt.Errorf("error restoring backup metadata sigstore file: %s", err)
+		}
+	}
+
+	return nil
+}
+
+func hasMetadataUpdate() (bool, error) {
+	t, err := containers.FindToolRef([]string{constants.Registry}, []string{constants.ImageRepository}, "metadata", constants.MetadataImageTag)
+	if err != nil {
+		return false, fmt.Errorf("error finding metadata: %s", err)
+	}
+
+	labels, err := containers.GetImageLabels(t)
+	if err != nil {
+		return false, fmt.Errorf("error getting image labels: %s", err)
+	}
+	if labels["org.opencontainers.image.revision"] == tools.Revision {
+		return false, nil
+	}
+
+	return true, nil
+}
+
 func downloadMetadata() error {
 	if metadataDownloaded {
 		logging.Debugf("Metadata already downloaded, skipping download")
@@ -128,17 +224,6 @@ func downloadMetadata() error {
 	err = os.Chdir(configuration.Prefix + "/" + configuration.GetCacheDirectory())
 	if err != nil {
 		return fmt.Errorf("error changing directory to %s: %s", configuration.Prefix+"/"+configuration.GetCacheDirectory(), err)
-	}
-
-	labels, err := containers.GetImageLabels(t)
-	if err != nil {
-		return fmt.Errorf("error getting image labels: %s", err)
-	}
-	if labels["org.opencontainers.image.revision"] == tools.Revision {
-		logging.Info.Printfln("Metadata is already up to date (revision %s)", tools.Revision)
-		metadataDownloaded = true
-		metadataLoaded = false
-		return nil
 	}
 
 	progressReader := createProgressReader("Downloading metadata")
@@ -167,10 +252,10 @@ func downloadMetadata() error {
 	return nil
 }
 
-func loadMetadata(filename string) (tools *tool.Tools, err error) {
-	if metadataLoaded {
+func loadMetadata(filename string, force bool) (loadedTools *tool.Tools, err error) {
+	if metadataLoaded && !force {
 		logging.Debugf("Metadata already loaded, skipping load")
-		return tools, nil
+		return loadedTools, nil
 	}
 
 	if len(os.Getenv("UNIGET_IGNORE_METADATA_SIGNATURE")) > 0 {
@@ -187,12 +272,12 @@ func loadMetadata(filename string) (tools *tool.Tools, err error) {
 		}
 	}
 
-	tools, err = tool.LoadFromFile(filename)
+	loadedTools, err = tool.LoadFromFile(filename)
 	if err != nil {
-		return tools, fmt.Errorf("failed to load metadata from file %s: %s", filename, err)
+		return loadedTools, fmt.Errorf("failed to load metadata from file %s: %s", filename, err)
 	}
 
 	metadataLoaded = true
 
-	return tools, nil
+	return loadedTools, nil
 }
