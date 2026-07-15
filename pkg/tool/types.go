@@ -50,7 +50,8 @@ type Tool struct {
 }
 
 type Tools struct {
-	Tools []Tool //`json:"tools" yaml:"tools"`
+	Revision string `json:"revision" yaml:"revision"`
+	Tools    []Tool //`json:"tools" yaml:"tools"`
 }
 
 type ToolStatus struct {

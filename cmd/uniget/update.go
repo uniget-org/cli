@@ -130,6 +130,17 @@ func downloadMetadata() error {
 		return fmt.Errorf("error changing directory to %s: %s", configuration.Prefix+"/"+configuration.GetCacheDirectory(), err)
 	}
 
+	labels, err := containers.GetImageLabels(t)
+	if err != nil {
+		return fmt.Errorf("error getting image labels: %s", err)
+	}
+	if labels["org.opencontainers.image.revision"] == tools.Revision {
+		logging.Info.Printfln("Metadata is already up to date (revision %s)", tools.Revision)
+		metadataDownloaded = true
+		metadataLoaded = false
+		return nil
+	}
+
 	progressReader := createProgressReader("Downloading metadata")
 	logging.Debugf("Extracting archive to %s", configuration.Prefix+"/"+configuration.GetCacheDirectory())
 	err = containers.GetFirstLayerFromRegistry(context.Background(), rc, t.GetRef(), progressReader, func(reader io.ReadCloser) error {

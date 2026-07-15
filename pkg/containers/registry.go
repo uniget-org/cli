@@ -63,6 +63,40 @@ func GetImageTags(t *ToolRef) ([]string, error) {
 	return filteredTags, nil
 }
 
+func GetImageLabels(image *ToolRef) (labels map[string]string, err error) {
+	rc := GetRegclient()
+	//nolint:errcheck
+	defer rc.Close(context.Background(), image.GetRef())
+
+	m, err := GetPlatformManifestForLocalPlatform(context.Background(), rc, image.GetRef())
+	if err != nil {
+		return nil, fmt.Errorf("failed to get manifest: %s", err)
+	}
+
+	mi, ok := m.(manifest.Imager)
+	if !ok {
+		return nil, fmt.Errorf("failed to get configer")
+	}
+
+	cd, err := mi.GetConfig()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get config: %s", err)
+	}
+
+	cfg, err := rc.BlobGetOCIConfig(context.Background(), image.GetRef(), cd)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get OCI config: %s", err)
+	}
+
+	// 4) Labels are here
+	labels = make(map[string]string)
+	for k, v := range cfg.GetConfig().Config.Labels {
+		labels[k] = v
+	}
+
+	return labels, nil
+}
+
 func GetFirstLayerShaFromRegistry(image *ToolRef) (string, error) {
 	ctx := context.Background()
 
