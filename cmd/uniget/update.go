@@ -61,12 +61,12 @@ var updateCmd = &cobra.Command{
 		}
 
 		var oldTools *tool.Tools
-		oldTools, err = loadMetadata(configuration.Prefix+"/"+configuration.GetMetadataFile()+".bak", true)
+		oldTools, err = loadMetadata(configuration.Prefix + "/" + configuration.GetMetadataFile() + ".bak")
 		if err != nil {
 			return fmt.Errorf("error loading backup metadata: %s", err)
 		}
 		logging.Debugf("Loaded %d tools from backup", len(oldTools.Tools))
-		tools, err = loadMetadata(configuration.Prefix+"/"+configuration.GetMetadataFile(), true)
+		tools, err = loadMetadata(configuration.Prefix + "/" + configuration.GetMetadataFile())
 		if err != nil {
 			return fmt.Errorf("error loading metadata: %s", err)
 		}
@@ -202,11 +202,6 @@ func hasMetadataUpdate() (bool, error) {
 }
 
 func downloadMetadata() error {
-	if metadataDownloaded {
-		logging.Debugf("Metadata already downloaded, skipping download")
-		return nil
-	}
-
 	configuration.AssertCacheDirectory()
 	t, err := containers.FindToolRef([]string{constants.Registry}, []string{constants.ImageRepository}, "metadata", constants.MetadataImageTag)
 	if err != nil {
@@ -246,18 +241,10 @@ func downloadMetadata() error {
 		return fmt.Errorf("error getting first layer from registry: %s", err)
 	}
 
-	metadataDownloaded = true
-	metadataLoaded = false
-
 	return nil
 }
 
-func loadMetadata(filename string, force bool) (loadedTools *tool.Tools, err error) {
-	if metadataLoaded && !force {
-		logging.Debugf("Metadata already loaded, skipping load")
-		return loadedTools, nil
-	}
-
+func loadMetadata(filename string) (loadedTools *tool.Tools, err error) {
 	if len(os.Getenv("UNIGET_IGNORE_METADATA_SIGNATURE")) > 0 {
 		_, err = security.VerifySigstoreBundle(
 			filename,
@@ -276,8 +263,6 @@ func loadMetadata(filename string, force bool) (loadedTools *tool.Tools, err err
 	if err != nil {
 		return loadedTools, fmt.Errorf("failed to load metadata from file %s: %s", filename, err)
 	}
-
-	metadataLoaded = true
 
 	return loadedTools, nil
 }

@@ -25,10 +25,8 @@ import (
 var (
 	version string = "main"
 
-	metadataDownloaded = false
-	metadataLoaded     = false
-	configuration      *config.Config
-	tools              = &tool.Tools{
+	configuration *config.Config
+	tools         = &tool.Tools{
 		Tools: make([]tool.Tool, 0),
 	}
 	rootCmd = &cobra.Command{
@@ -114,7 +112,7 @@ var (
 			} else {
 				logging.Debugf("Metadata file exists")
 			}
-			tools, err = loadMetadata(configuration.Prefix+"/"+configuration.GetMetadataFile(), false)
+			tools, err = loadMetadata(configuration.Prefix + "/" + configuration.GetMetadataFile())
 			if err != nil {
 				return fmt.Errorf("error loading metadata: %s", err)
 			}
