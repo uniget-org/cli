@@ -79,7 +79,7 @@ var listCmd = &cobra.Command{
 			listTools = installedTools
 
 		} else {
-			listTools = tools
+			listTools = *tools
 		}
 
 		switch listOutput {

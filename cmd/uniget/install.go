@@ -60,12 +60,15 @@ var installCmd = &cobra.Command{
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
-		var requestedTools tool.Tools
+		var requestedTools = &tool.Tools{}
 
 		// Collect requested tools based on mode
 		if installTagsMode {
 			logging.Debugf("Adding tools matching tags to requested tools")
 			requestedTools = tools.GetByTags(args)
+			if err != nil {
+				return fmt.Errorf("failed to get tools by tags: %s", err)
+			}
 
 		} else if installFilename != "" {
 			logging.Debugf("Adding tools from file %s to requested tools", installFilename)
@@ -105,8 +108,8 @@ var installCmd = &cobra.Command{
 	},
 }
 
-func findInstalledTools(tools tool.Tools) (tool.Tools, error) {
-	var requestedTools tool.Tools
+func findInstalledTools(tools *tool.Tools) (*tool.Tools, error) {
+	var requestedTools = &tool.Tools{}
 	for index, tool := range tools.Tools {
 		logging.Debugf("Getting status for requested tool %s", tool.Name)
 
@@ -118,7 +121,7 @@ func findInstalledTools(tools tool.Tools) (tool.Tools, error) {
 			configuration.AltArch,
 		)
 		if err != nil {
-			return requestedTools, fmt.Errorf("failed to update status for tool %s: %s", tool.Name, err)
+			return nil, fmt.Errorf("failed to update status for tool %s: %s", tool.Name, err)
 		}
 
 		if tools.Tools[index].IsInstalled() {
@@ -130,7 +133,7 @@ func findInstalledTools(tools tool.Tools) (tool.Tools, error) {
 	return requestedTools, nil
 }
 
-func installTools(w io.Writer, requestedTools tool.Tools, check bool, plan bool, reinstall bool, skipDependencies bool, skipConflicts bool) error {
+func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool, reinstall bool, skipDependencies bool, skipConflicts bool) error {
 	var plannedTools tool.Tools
 
 	// Add dependencies of requested tools

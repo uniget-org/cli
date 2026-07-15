@@ -43,7 +43,7 @@ var updateCmd = &cobra.Command{
 			return fmt.Errorf("error downloading metadata: %s", err)
 		}
 
-		err = loadMetadata()
+		tools, err = loadMetadata(configuration.Prefix + "/" + configuration.GetMetadataFile())
 		if err != nil {
 			return fmt.Errorf("error loading metadata: %s", err)
 		}
@@ -167,32 +167,32 @@ func downloadMetadata() error {
 	return nil
 }
 
-func loadMetadata() (err error) {
+func loadMetadata(filename string) (tools *tool.Tools, err error) {
 	if metadataLoaded {
 		logging.Debugf("Metadata already loaded, skipping load")
-		return nil
+		return tools, nil
 	}
 
 	if len(os.Getenv("UNIGET_IGNORE_METADATA_SIGNATURE")) > 0 {
 		_, err = security.VerifySigstoreBundle(
-			configuration.Prefix+"/"+configuration.GetMetadataFile(),
-			configuration.Prefix+"/"+configuration.GetMetadataFile()+".sigstore.json",
+			filename,
+			filename+".sigstore.json",
 			"https://token.actions.githubusercontent.com",
 			"",
 			"",
 			"https://github\\.com/uniget-org/tools/\\.github/workflows/[^.]+\\.yml@refs/heads/main",
 		)
 		if err != nil {
-			return fmt.Errorf("error verifying sigstore bundle for metadata: %s", err)
+			return nil, fmt.Errorf("error verifying sigstore bundle for metadata: %s", err)
 		}
 	}
 
-	tools, err = tool.LoadFromFile(configuration.Prefix + "/" + configuration.GetMetadataFile())
+	tools, err = tool.LoadFromFile(filename)
 	if err != nil {
-		return fmt.Errorf("failed to load metadata from file %s: %s", configuration.Prefix+"/"+configuration.GetMetadataFile(), err)
+		return tools, fmt.Errorf("failed to load metadata from file %s: %s", filename, err)
 	}
 
 	metadataLoaded = true
 
-	return nil
+	return tools, nil
 }

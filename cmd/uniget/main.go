@@ -28,7 +28,7 @@ var (
 	metadataDownloaded = false
 	metadataLoaded     = false
 	configuration      *config.Config
-	tools              = tool.Tools{
+	tools              = &tool.Tools{
 		Tools: make([]tool.Tool, 0),
 	}
 	rootCmd = &cobra.Command{
@@ -40,7 +40,7 @@ var (
     Search for tools: uniget search kubectl
     Install tools: uniget install kubectl helm`,
 		SilenceUsage: true,
-		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) (err error) {
 			logging.OutputWriter = cmd.OutOrStdout()
 			logging.ErrorWriter = cmd.ErrOrStderr()
 
@@ -114,7 +114,7 @@ var (
 			} else {
 				logging.Debugf("Metadata file exists")
 			}
-			err := loadMetadata()
+			tools, err = loadMetadata(configuration.Prefix + "/" + configuration.GetMetadataFile())
 			if err != nil {
 				return fmt.Errorf("error loading metadata: %s", err)
 			}

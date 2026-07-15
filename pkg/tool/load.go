@@ -18,26 +18,25 @@ import (
 	"gitlab.com/uniget-org/cli/pkg/tui"
 )
 
-func LoadFromFile(filename string) (Tools, error) {
+func LoadFromFile(filename string) (tools *Tools, err error) {
 	data, err := os.ReadFile(filename) // #nosec G304 -- filename is built when LoadFromFile is called
 	if err != nil {
-		return Tools{}, fmt.Errorf("error loading file contents: %s", err)
+		return nil, fmt.Errorf("error loading file contents: %s", err)
 	}
 
-	tools, err := LoadFromBytes(data)
+	tools, err = LoadFromBytes(data)
 	if err != nil {
-		return Tools{}, fmt.Errorf("error loading data: %s", err)
+		return nil, fmt.Errorf("error loading data: %s", err)
 	}
 
 	return tools, nil
 }
 
-func LoadFromReader(data io.ReadCloser) (Tools, error) {
-	var tools Tools
-
-	err := json.NewDecoder(data).Decode(&tools)
+func LoadFromReader(data io.ReadCloser) (tools *Tools, err error) {
+	tools = &Tools{}
+	err = json.NewDecoder(data).Decode(tools)
 	if err != nil {
-		return Tools{}, err
+		return nil, err
 	}
 
 	for index, tool := range tools.Tools {
@@ -49,7 +48,7 @@ func LoadFromReader(data io.ReadCloser) (Tools, error) {
 	return tools, nil
 }
 
-func LoadFromBytes(data []byte) (Tools, error) {
+func LoadFromBytes(data []byte) (*Tools, error) {
 	return LoadFromReader(io.NopCloser(bytes.NewReader(data)))
 }
 
@@ -86,7 +85,7 @@ func LoadMetadata(registry []string, repository []string, tag string, p tui.Prog
 		return nil, fmt.Errorf("failed to load metadata: %s", err)
 	}
 
-	return &tools, nil
+	return tools, nil
 }
 
 func LoadMetadataFromRegistry(registry string, imageRepository string, metadataImageTag string, p tui.ProgressReader) ([]byte, error) {
