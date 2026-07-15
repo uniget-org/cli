@@ -27,9 +27,10 @@ var cacheCmd = &cobra.Command{
 	Aliases: []string{
 		"c",
 	},
-	Short: "Manage the cache",
-	Long:  constants.Header + "\nManage the cache",
-	Args:  cobra.NoArgs,
+	Short:   "Manage the cache",
+	Long:    constants.Header + "\nManage the cache",
+	GroupID: "config",
+	Args:    cobra.NoArgs,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) (err error) {
 		err = rootCmd.PersistentPreRunE(cmd, args)
 		if err != nil {

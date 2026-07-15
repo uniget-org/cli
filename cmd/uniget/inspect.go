@@ -27,6 +27,7 @@ var inspectCmd = &cobra.Command{
 	Aliases: []string{},
 	Short:   "Inspect tool",
 	Long:    constants.Header + "\nInspect tools",
+	GroupID: "tool",
 	Example: "" +
 		"  Use regctl/jq/xargs/tar to display raw contents:\n" +
 		"    regctl manifest get ghcr.io/uniget-org/tools/TOOL:latest --platform linux/amd64 --format raw-body \\\n" +

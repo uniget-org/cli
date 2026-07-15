@@ -30,9 +30,10 @@ var cronCmd = &cobra.Command{
 		"schedule",
 		"s",
 	},
-	Short: "Manage cron jobs",
-	Long:  constants.Header + "\nManage cron jobs for updating",
-	Args:  cobra.NoArgs,
+	Short:   "Manage cron jobs",
+	Long:    constants.Header + "\nManage cron jobs for updating",
+	GroupID: "config",
+	Args:    cobra.NoArgs,
 }
 
 var cronCreateCmd = &cobra.Command{

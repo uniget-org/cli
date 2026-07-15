@@ -54,9 +54,10 @@ var regCmd = &cobra.Command{
 		"reg",
 		"r",
 	},
-	Short:  "Display installation paths as environment variables",
-	Long:   constants.Header + "\nDisplay installation paths as environment variables",
-	Hidden: true,
+	Short:   "Display installation paths as environment variables",
+	Long:    constants.Header + "\nDisplay installation paths as environment variables",
+	GroupID: "helper",
+	Hidden:  true,
 }
 
 func getFormatString() string {

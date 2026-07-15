@@ -26,9 +26,10 @@ var manpagesCmd = &cobra.Command{
 		"man",
 		"manpage",
 	},
-	Short: "Generate manpages",
-	Long:  constants.Header + "\nGenerate manpages",
-	Args:  cobra.NoArgs,
+	Short:   "Generate manpages",
+	Long:    constants.Header + "\nGenerate manpages",
+	GroupID: "helper",
+	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		if (manDirectory[0:1] != "/") && (manDirectory[0:1] != ".") {
 			manDirectory = fmt.Sprintf("%s/%s", "/"+configuration.Target, manDirectory)

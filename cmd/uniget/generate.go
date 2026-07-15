@@ -30,10 +30,11 @@ var generateCmd = &cobra.Command{
 		"g",
 		"gen",
 	},
-	Short:  "Generate Dockerfile",
-	Long:   constants.Header + "\nGenerate Dockerfile for a tool",
-	Hidden: true,
-	Args:   cobra.MinimumNArgs(1),
+	Short:   "Generate Dockerfile",
+	Long:    constants.Header + "\nGenerate Dockerfile for a tool",
+	Hidden:  true,
+	GroupID: "helper",
+	Args:    cobra.MinimumNArgs(1),
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},

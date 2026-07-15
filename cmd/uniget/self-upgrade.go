@@ -25,6 +25,7 @@ var selfUpgradeCmd = &cobra.Command{
 	Aliases: []string{},
 	Short:   "Self upgrade " + constants.ProjectName,
 	Long:    constants.Header + "\nUpgrade " + constants.ProjectName + " to latest version",
+	GroupID: "config",
 	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		unigetTool, err := tools.GetByName("uniget")

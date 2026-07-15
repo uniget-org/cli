@@ -29,6 +29,7 @@ var shimCmd = &cobra.Command{
 	Aliases: []string{},
 	Short:   "Install shims for profile.d",
 	Long:    constants.Header + "\nInstall shims for profile.d",
+	GroupID: "helper",
 	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		err = installProfileDShim()

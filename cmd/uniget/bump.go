@@ -45,9 +45,10 @@ var bumpCmd = &cobra.Command{
 	Aliases: []string{
 		"b",
 	},
-	Short: "Bump tool versions",
-	Long:  constants.Header + "\nBump tool versions",
-	Args:  cobra.NoArgs,
+	Short:   "Bump tool versions",
+	Long:    constants.Header + "\nBump tool versions",
+	GroupID: "helper",
+	Args:    cobra.NoArgs,
 }
 
 var bumpDockerfileCmd = &cobra.Command{

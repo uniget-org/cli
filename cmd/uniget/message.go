@@ -28,9 +28,10 @@ var messageCmd = &cobra.Command{
 	Aliases: []string{
 		"m",
 	},
-	Short: "Show messages for a tool",
-	Long:  constants.Header + "\nShow messages for a tool",
-	Args:  cobra.OnlyValidArgs,
+	Short:   "Show messages for a tool",
+	Long:    constants.Header + "\nShow messages for a tool",
+	GroupID: "tool",
+	Args:    cobra.OnlyValidArgs,
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},

@@ -74,9 +74,10 @@ var hooksCmd = &cobra.Command{
 		"hook",
 		"h",
 	},
-	Short: "Manage hooks",
-	Long:  constants.Header + "\nManage hooks\n\nPlease refer to the documentation: https://docs.uniget.dev/hooks/",
-	Args:  cobra.NoArgs,
+	Short:   "Manage hooks",
+	Long:    constants.Header + "\nManage hooks\n\nPlease refer to the documentation: https://docs.uniget.dev/hooks/",
+	GroupID: "config",
+	Args:    cobra.NoArgs,
 }
 
 var addHooksCmd = &cobra.Command{

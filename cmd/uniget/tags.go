@@ -17,9 +17,10 @@ var tagsCmd = &cobra.Command{
 	Aliases: []string{
 		"t",
 	},
-	Short: "List tags",
-	Long:  constants.Header + "\nList tags",
-	Args:  cobra.NoArgs,
+	Short:   "List tags",
+	Long:    constants.Header + "\nList tags",
+	GroupID: "tag",
+	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		tags := make(map[string]int)
 		for _, tool := range tools.Tools {

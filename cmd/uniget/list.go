@@ -29,9 +29,10 @@ var listCmd = &cobra.Command{
 		"l",
 		"get",
 	},
-	Short: "List tools",
-	Long:  constants.Header + "\nList tools",
-	Args:  cobra.NoArgs,
+	Short:   "List tools",
+	Long:    constants.Header + "\nList tools",
+	GroupID: "tool",
+	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		var listTools tool.Tools
 

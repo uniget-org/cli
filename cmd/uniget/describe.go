@@ -35,9 +35,10 @@ var describeCmd = &cobra.Command{
 		"d",
 		"info",
 	},
-	Short: "Show detailed information about tools",
-	Long:  constants.Header + "\nShow detailed information about tools",
-	Args:  cobra.ExactArgs(1),
+	Short:   "Show detailed information about tools",
+	Long:    constants.Header + "\nShow detailed information about tools",
+	GroupID: "tool",
+	Args:    cobra.ExactArgs(1),
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},

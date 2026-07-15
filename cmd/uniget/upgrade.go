@@ -18,8 +18,9 @@ func initUpgradeCmd() {
 var upgradeCmd = &cobra.Command{
 	Use:     "upgrade",
 	Aliases: []string{},
-	Short:   "Upgrade all tools",
-	Long:    constants.Header + "\nUpgrade all tools to latest version",
+	Short:   "Upgrade tools",
+	Long:    constants.Header + "\nUpgrade tools to latest version",
+	GroupID: "tool",
 	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		requestedTools, err := findInstalledTools(tools)

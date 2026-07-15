@@ -33,6 +33,7 @@ var updateCmd = &cobra.Command{
 	Aliases: []string{},
 	Short:   "Update tool manifest",
 	Long:    constants.Header + "\nUpdate tool manifest",
+	GroupID: "metadata",
 	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		oldTools := tools

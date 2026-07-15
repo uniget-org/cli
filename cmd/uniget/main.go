@@ -32,9 +32,13 @@ var (
 		Tools: make([]tool.Tool, 0),
 	}
 	rootCmd = &cobra.Command{
-		Use:          constants.ProjectName,
-		Version:      version,
-		Short:        constants.Header + constants.Slogan,
+		Use:     constants.ProjectName,
+		Version: version,
+		Short:   constants.Header + constants.Slogan,
+		Example: `  Quickstart
+    Download metadata: uniget update
+	Search for tools: uniget search kubectl
+	Install tools: uniget install kubectl helm`,
 		SilenceUsage: true,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			logging.OutputWriter = cmd.OutOrStdout()
@@ -171,6 +175,27 @@ var (
 )
 
 func init() {
+	rootCmd.AddGroup(&cobra.Group{
+		ID:    "tool",
+		Title: "Tool-related commands",
+	})
+	rootCmd.AddGroup(&cobra.Group{
+		ID:    "tag",
+		Title: "Tag-related commands",
+	})
+	rootCmd.AddGroup(&cobra.Group{
+		ID:    "config",
+		Title: "Configuration commands",
+	})
+	rootCmd.AddGroup(&cobra.Group{
+		ID:    "metadata",
+		Title: "Metadata commands",
+	})
+	rootCmd.AddGroup(&cobra.Group{
+		ID:    "helper",
+		Title: "Helper commands",
+	})
+
 	initBumpCmd()
 	initCacheCmd()
 	initCronCmd()
@@ -221,6 +246,16 @@ func main() {
 	rootCmd.MarkFlagsMutuallyExclusive("prefix", "user")
 	rootCmd.MarkFlagsMutuallyExclusive("target", "user")
 
+	err = rootCmd.Flags().MarkHidden("log-level")
+	if err != nil {
+		logging.Error.Printfln("Unable to mark log-level as hidden: %s", err)
+		os.Exit(1)
+	}
+	err = rootCmd.Flags().MarkHidden("trace")
+	if err != nil {
+		logging.Error.Printfln("Unable to mark trace as hidden: %s", err)
+		os.Exit(1)
+	}
 	err = rootCmd.Flags().MarkHidden("integrate-profiled")
 	if err != nil {
 		logging.Error.Printfln("Unable to mark integrate-profiled as hidden: %s", err)
@@ -236,8 +271,28 @@ func main() {
 		logging.Error.Printfln("Unable to mark integrate-all as hidden: %s", err)
 		os.Exit(1)
 	}
+	err = rootCmd.Flags().MarkHidden("cache")
+	if err != nil {
+		logging.Error.Printfln("Unable to mark cache as hidden: %s", err)
+		os.Exit(1)
+	}
+	err = rootCmd.Flags().MarkHidden("cache-directory")
+	if err != nil {
+		logging.Error.Printfln("Unable to mark cache-directory as hidden: %s", err)
+		os.Exit(1)
+	}
+	err = rootCmd.Flags().MarkHidden("cache-retention")
+	if err != nil {
+		logging.Error.Printfln("Unable to mark cache-retention as hidden: %s", err)
+		os.Exit(1)
+	}
 
-	rootCmd.AddCommand(ophis.Command(nil))
+	rootCmd.SetHelpCommand(&cobra.Command{GroupID: "helper"})
+	rootCmd.SetCompletionCommandGroupID("config")
+
+	mcp := ophis.Command(nil)
+	mcp.GroupID = "helper"
+	rootCmd.AddCommand(mcp)
 
 	err = rootCmd.Execute()
 	if err != nil {
