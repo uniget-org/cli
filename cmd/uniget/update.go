@@ -83,30 +83,20 @@ var updateCmd = &cobra.Command{
 		}
 
 		if !updateQuiet {
-			prefix := pterm.NewStyle(pterm.FgBlack, pterm.BgGreen)
-			suffix := pterm.NewStyle(pterm.FgWhite)
 			for _, tool := range newTools.Tools {
-				prefix.Print("  NEW   ")
-				suffix.Printfln(" %s (%s)", tool.Name, tool.Description)
+				logging.Customf(pterm.FgBlack, pterm.BgGreen, pterm.FgWhite, pterm.BgDefault, "NEW", " %s (%s)", tool.Name, tool.Description)
 			}
 
 			toolsToShow := updatedInstalledTools
 			if updateShowAllTools {
 				toolsToShow = updatedTools
 			}
-			prefix = pterm.NewStyle(pterm.FgBlack, pterm.BgYellow)
-			suffix = pterm.NewStyle(pterm.FgWhite)
 			for _, tool := range toolsToShow.Tools {
-				prefix.Print(" UPDATE ")
-				suffix.Printfln(" %s %s", tool.Name, tool.Version)
+				logging.Customf(pterm.FgBlack, pterm.BgYellow, pterm.FgWhite, pterm.BgDefault, "UPDATE", " %s %s", tool.Name, tool.Version)
 			}
 
 			if len(newUnigetVersion) > 0 {
-				prefix = pterm.NewStyle(pterm.FgBlack, pterm.BgYellow)
-				suffix = pterm.NewStyle(pterm.FgWhite)
-				prefix.Println()
-				prefix.Print("  NEWS  ")
-				suffix.Printfln(" Update to uniget %s by running 'uniget self-upgrade'", newUnigetVersion)
+				logging.Customf(pterm.FgBlack, pterm.BgYellow, pterm.FgWhite, pterm.BgDefault, "NEWS", " Update to uniget %s by running 'uniget self-upgrade'", newUnigetVersion)
 			}
 		}
 

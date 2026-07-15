@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/pterm/pterm"
 )
@@ -102,4 +103,15 @@ func Tracef(message string, args ...any) {
 	Trace(
 		fmt.Sprintf(message, args...),
 	)
+}
+
+func Customf(prefixFgColor pterm.Color, prefixBgColor pterm.Color, messageFgColor pterm.Color, messageBgColor pterm.Color, prefix string, message string, args ...any) {
+	prefixWidth := 8
+	prefixPaddingLeft := (prefixWidth - len(prefix)) / 2
+	prefixPaddingRight := prefixWidth - len(prefix) - prefixPaddingLeft
+
+	prefixStyle := pterm.NewStyle(prefixFgColor, prefixBgColor)
+	suffixStyle := pterm.NewStyle(messageFgColor, messageBgColor)
+	prefixStyle.Print(strings.Repeat(" ", prefixPaddingLeft) + prefix + strings.Repeat(" ", prefixPaddingRight))
+	suffixStyle.Printfln(" "+message, args...)
 }
