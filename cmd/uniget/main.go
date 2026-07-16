@@ -105,14 +105,14 @@ var (
 					!myos.FileExists(configuration.Prefix+"/"+configuration.GetMetadataFile()+".sigstore.json")) {
 
 				logging.Debugf("Metadata does not exist. Downloading...")
-				err := downloadMetadata()
+				err := configuration.DownloadMetadata()
 				if err != nil {
 					return fmt.Errorf("error downloading metadata: %s", err)
 				}
 			} else {
 				logging.Debugf("Metadata file exists")
 			}
-			tools, err = loadMetadata(configuration.Prefix + "/" + configuration.GetMetadataFile())
+			tools, err = configuration.LoadMetadata(configuration.Prefix + "/" + configuration.GetMetadataFile())
 			if err != nil {
 				return fmt.Errorf("error loading metadata: %s", err)
 			}

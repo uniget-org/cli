@@ -12,6 +12,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"gitlab.com/uniget-org/cli/internal/common"
 	"gitlab.com/uniget-org/cli/internal/constants"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
@@ -364,7 +365,7 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 		}
 		logging.Debugf("Current directory: %s", dir)
 
-		progressReader := createProgressReader(fmt.Sprintf("%s %s", plannedTool.Name, plannedTool.Version))
+		progressReader := common.CreateProgressReader(fmt.Sprintf("%s %s", plannedTool.Name, plannedTool.Version), configuration.Debug || configuration.Trace)
 		if progressReader.IsQuiet() {
 			logging.Info.Printfln("Installing %s %s", plannedTool.Name, plannedTool.Version)
 		}

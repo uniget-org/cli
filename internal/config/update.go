@@ -1,0 +1,157 @@
+package config
+
+import (
+	"context"
+	"fmt"
+	"io"
+	"os"
+
+	"github.com/google/safearchive/tar"
+
+	"gitlab.com/uniget-org/cli/internal/common"
+	"gitlab.com/uniget-org/cli/internal/constants"
+	"gitlab.com/uniget-org/cli/pkg/archive"
+	"gitlab.com/uniget-org/cli/pkg/containers"
+	"gitlab.com/uniget-org/cli/pkg/logging"
+	myos "gitlab.com/uniget-org/cli/pkg/os"
+	"gitlab.com/uniget-org/cli/pkg/security"
+	"gitlab.com/uniget-org/cli/pkg/tool"
+)
+
+func (c *Config) BackupMetadata() (err error) {
+	metadataFile := c.Prefix + "/" + c.GetMetadataFile()
+	metadataFileSigstore := metadataFile + ".sigstore.json"
+	backupMetadataFile := metadataFile + ".bak"
+	backupMetadataFileSigstore := backupMetadataFile + ".sigstore.json"
+
+	if myos.FileExists(backupMetadataFile) {
+		err = os.Remove(backupMetadataFile)
+		if err != nil {
+			return fmt.Errorf("error removing old backup metadata file: %s", err)
+		}
+	}
+	if myos.FileExists(backupMetadataFileSigstore) {
+		err = os.Remove(backupMetadataFileSigstore)
+		if err != nil {
+			return fmt.Errorf("error removing old backup metadata sigstore file: %s", err)
+		}
+	}
+
+	err = myos.CloneFile(metadataFile, backupMetadataFile)
+	if err != nil {
+		return fmt.Errorf("error backing up metadata file: %s", err)
+	}
+	err = myos.CloneFile(metadataFileSigstore, backupMetadataFileSigstore)
+	if err != nil {
+		return fmt.Errorf("error backing up metadata sigstore file: %s", err)
+	}
+
+	return nil
+}
+
+func (c *Config) RestoreMetadata() (err error) {
+	metadataFile := c.Prefix + "/" + c.GetMetadataFile()
+	metadataFileSigstore := metadataFile + ".sigstore.json"
+	backupMetadataFile := metadataFile + ".bak"
+	backupMetadataFileSigstore := backupMetadataFile + ".sigstore.json"
+
+	if myos.FileExists(backupMetadataFile) {
+		_ = os.Remove(metadataFile)
+		err = os.Rename(backupMetadataFile, metadataFile)
+		if err != nil {
+			return fmt.Errorf("error restoring backup metadata file: %s", err)
+		}
+	}
+	if myos.FileExists(backupMetadataFileSigstore) {
+		_ = os.Remove(metadataFileSigstore)
+		err = os.Rename(backupMetadataFileSigstore, metadataFileSigstore)
+		if err != nil {
+			return fmt.Errorf("error restoring backup metadata sigstore file: %s", err)
+		}
+	}
+
+	return nil
+}
+
+func (c *Config) HasMetadataUpdate(revision string) (bool, error) {
+	t, err := containers.FindToolRef([]string{constants.Registry}, []string{constants.ImageRepository}, "metadata", constants.MetadataImageTag)
+	if err != nil {
+		return false, fmt.Errorf("error finding metadata: %s", err)
+	}
+
+	labels, err := containers.GetImageLabels(t)
+	if err != nil {
+		return false, fmt.Errorf("error getting image labels: %s", err)
+	}
+	if labels["org.opencontainers.image.revision"] == revision {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+func (c *Config) DownloadMetadata() error {
+	c.AssertCacheDirectory()
+	t, err := containers.FindToolRef([]string{constants.Registry}, []string{constants.ImageRepository}, "metadata", constants.MetadataImageTag)
+	if err != nil {
+		return fmt.Errorf("error finding metadata: %s", err)
+	}
+	rc := containers.GetRegclient()
+	defer func() {
+		err := rc.Close(context.Background(), t.GetRef())
+		if err != nil {
+			logging.Warning.Printfln("error closing registry client: %s", err)
+		}
+	}()
+
+	logging.Debugf("Changing directory to %s", c.Prefix+"/"+c.GetCacheDirectory())
+	err = os.Chdir(c.Prefix + "/" + c.GetCacheDirectory())
+	if err != nil {
+		return fmt.Errorf("error changing directory to %s: %s", c.Prefix+"/"+c.GetCacheDirectory(), err)
+	}
+
+	progressReader := common.CreateProgressReader("Downloading metadata", c.Debug || c.Trace)
+	logging.Debugf("Extracting archive to %s", c.Prefix+"/"+c.GetCacheDirectory())
+	err = containers.GetFirstLayerFromRegistry(context.Background(), rc, t.GetRef(), progressReader, func(reader io.ReadCloser) error {
+		err := archive.ProcessTarContents(reader, func(reader *tar.Reader, header *tar.Header) error {
+			err := archive.CallbackExtractTarItem(reader, header)
+			if err != nil {
+				return fmt.Errorf("error extracting tar item: %s", err)
+			}
+			return nil
+		})
+		if err != nil {
+			return fmt.Errorf("error processing tar contents: %s", err)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("error getting first layer from registry: %s", err)
+	}
+
+	return nil
+}
+
+func (c *Config) LoadMetadata(filename string) (loadedTools *tool.Tools, err error) {
+	if len(os.Getenv("UNIGET_IGNORE_METADATA_SIGNATURE")) > 0 {
+		_, err = security.VerifySigstoreBundle(
+			filename,
+			filename+".sigstore.json",
+			"https://token.actions.githubusercontent.com",
+			"",
+			"",
+			"https://github\\.com/uniget-org/tools/\\.github/workflows/[^.]+\\.yml@refs/heads/main",
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error verifying sigstore bundle for metadata: %s", err)
+		}
+	}
+
+	loadedTools, err = tool.LoadFromFile(filename)
+	if err != nil {
+		return loadedTools, fmt.Errorf("failed to load metadata from file %s: %s", filename, err)
+	}
+
+	return loadedTools, nil
+}

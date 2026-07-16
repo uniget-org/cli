@@ -5,6 +5,7 @@ import (
 	"io"
 
 	"github.com/spf13/cobra"
+	"gitlab.com/uniget-org/cli/internal/common"
 	"gitlab.com/uniget-org/cli/internal/constants"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
@@ -69,7 +70,7 @@ var inspectCmd = &cobra.Command{
 			effectivePathRewriteRules = []tool.PathRewrite{}
 		}
 
-		progressReader := createProgressReader("Downloading")
+		progressReader := common.CreateProgressReader("Downloading", configuration.Debug || configuration.Trace)
 		err = toolCache.Get(toolRef, progressReader, func(reader io.ReadCloser) error { return nil })
 		if err != nil {
 			return fmt.Errorf("unable to get image: %s", err)
