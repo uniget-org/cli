@@ -61,11 +61,17 @@ var updateCmd = &cobra.Command{
 		}
 
 		var oldTools *tool.Tools
-		oldTools, err = loadMetadata(configuration.Prefix + "/" + configuration.GetMetadataFile() + ".bak")
-		if err != nil {
-			return fmt.Errorf("error loading backup metadata: %s", err)
+		if myos.FileExists(configuration.Prefix + "/" + configuration.GetMetadataFile() + ".bak") {
+			oldTools, err = loadMetadata(configuration.Prefix + "/" + configuration.GetMetadataFile() + ".bak")
+			if err != nil {
+				return fmt.Errorf("error loading backup metadata: %s", err)
+			}
+			logging.Debugf("Loaded %d tools from backup", len(oldTools.Tools))
+
+		} else {
+			oldTools = tools
 		}
-		logging.Debugf("Loaded %d tools from backup", len(oldTools.Tools))
+
 		tools, err = loadMetadata(configuration.Prefix + "/" + configuration.GetMetadataFile())
 		if err != nil {
 			return fmt.Errorf("error loading metadata: %s", err)
