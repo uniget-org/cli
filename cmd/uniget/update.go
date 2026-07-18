@@ -65,49 +65,59 @@ var updateCmd = &cobra.Command{
 			oldTools = tools
 		}
 
-		tools, err = configuration.LoadMetadata(configuration.Prefix + "/" + configuration.GetMetadataFile())
+		var newTools *tool.Tools
+		newTools, err = configuration.LoadMetadata(configuration.Prefix + "/" + configuration.GetMetadataFile())
 		if err != nil {
 			return fmt.Errorf("error loading metadata: %s", err)
 		}
-		logging.Debugf("Loaded %d tools from metadata", len(tools.Tools))
+		logging.Debugf("Loaded %d tools from metadata", len(newTools.Tools))
 
+		var addedTools tool.Tools
 		var updatedTools tool.Tools
 		var updatedInstalledTools tool.Tools
-		var newTools tool.Tools
 		newUnigetVersion := ""
-		if len(oldTools.Tools) > 0 {
-			for _, tool := range tools.Tools {
-				oldTool, _ := oldTools.GetByName(tool.Name)
+		for _, newTool := range newTools.Tools {
+			logging.Debugf("Checking tool %s for updates", newTool.Name)
 
-				if tool.Name == "uniget" && tool.Version > version {
-					newUnigetVersion = tool.Version
-				}
+			oldTool, _ := oldTools.GetByName(newTool.Name)
+			if oldTool == nil {
+				logging.Debugf("Tool %s was added", newTool.Name)
+				addedTools.Tools = append(addedTools.Tools, newTool)
+			}
 
-				if oldTool == nil {
-					newTools.Tools = append(newTools.Tools, tool)
+			if version != "main" && newTool.Name == "uniget" && newTool.Version != version {
+				newUnigetVersion = newTool.Version
+			}
 
-				} else if tool.Version != oldTool.Version {
-					err := tool.UpdateStatus(
-						configuration.Prefix,
-						configuration.Target,
-						configuration.GetCacheDirectory(),
-						configuration.Arch,
-						configuration.AltArch,
-					)
-					if err != nil {
-						logging.Warning.Printfln("Error updating status for %s: %s", tool.Name, err)
-					}
+			tool, err := tools.GetByName(newTool.Name)
+			if err != nil {
+				logging.Warning.Printfln("Error getting tool %s: %s", newTool.Name, err)
+				continue
+			}
+			err = tool.UpdateStatus(
+				configuration.Prefix,
+				configuration.Target,
+				configuration.GetCacheDirectory(),
+				configuration.Arch,
+				configuration.AltArch,
+			)
+			if err != nil {
+				logging.Warning.Printfln("Error updating status for %s: %s", tool.Name, err)
+			}
+			logging.Debugf("  Current version: %s, New version: %s", tool.Status.Version, newTool.Version)
+			if tool.IsUpgradable() {
+				logging.Debugf("  Tool %s was updated from %s to %s", newTool.Name, tool.Status.Version, newTool.Version)
 
-					updatedTools.Tools = append(updatedTools.Tools, tool)
-					if tool.IsInstalled() {
-						updatedInstalledTools.Tools = append(updatedInstalledTools.Tools, tool)
-					}
+				updatedTools.Tools = append(updatedTools.Tools, newTool)
+				if newTool.IsInstalled() {
+					logging.Debugf("  Tool %s is installed", newTool.Name)
+					updatedInstalledTools.Tools = append(updatedInstalledTools.Tools, newTool)
 				}
 			}
 		}
 
 		if !updateQuiet {
-			for _, tool := range newTools.Tools {
+			for _, tool := range addedTools.Tools {
 				logging.Customf(pterm.FgBlack, pterm.BgGreen, pterm.FgWhite, pterm.BgDefault, "NEW", " %s (%s)", tool.Name, tool.Description)
 			}
 
