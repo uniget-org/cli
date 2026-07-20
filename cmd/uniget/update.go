@@ -81,7 +81,7 @@ var updateCmd = &cobra.Command{
 				logging.Debugf("  Tool %s was updated from %s to %s", newTool.Name, tool.Status.Version, newTool.Version)
 
 				updatedTools.Tools = append(updatedTools.Tools, newTool)
-				if newTool.IsInstalled() {
+				if tool.IsInstalled() {
 					logging.Debugf("  Tool %s is installed", newTool.Name)
 					updatedInstalledTools.Tools = append(updatedInstalledTools.Tools, newTool)
 				}
@@ -89,6 +89,8 @@ var updateCmd = &cobra.Command{
 		}
 
 		if !updateQuiet {
+			logging.Debugf("Showing new tools and updates")
+
 			for _, tool := range addedTools.Tools {
 				logging.Customf(pterm.FgBlack, pterm.BgGreen, pterm.FgWhite, pterm.BgDefault, "NEW", " %s (%s)", tool.Name, tool.Description)
 			}
