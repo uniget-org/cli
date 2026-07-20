@@ -8,7 +8,6 @@ import (
 
 	"gitlab.com/uniget-org/cli/internal/constants"
 	"gitlab.com/uniget-org/cli/pkg/logging"
-	myos "gitlab.com/uniget-org/cli/pkg/os"
 	"gitlab.com/uniget-org/cli/pkg/tool"
 )
 
@@ -35,34 +34,13 @@ var updateCmd = &cobra.Command{
 			return fmt.Errorf("error checking for metadata update: %s", err)
 		}
 		if newRevisionAvailable {
-			err = configuration.BackupMetadata()
-			if err != nil {
-				return fmt.Errorf("error backing up metadata: %s", err)
-			}
-
 			err = configuration.DownloadMetadata()
 			if err != nil {
-				err2 := configuration.RestoreMetadata()
-				if err2 != nil {
-					logging.Warning.Printfln("Error restoring metadata: %s", err2)
-				}
 				return fmt.Errorf("error downloading metadata: %s", err)
 			}
 
 		} else {
 			logging.Info.Println("Metadata is up to date")
-		}
-
-		var oldTools *tool.Tools
-		if myos.FileExists(configuration.Prefix + "/" + configuration.GetMetadataFile() + ".bak") {
-			oldTools, err = configuration.LoadMetadata(configuration.Prefix + "/" + configuration.GetMetadataFile() + ".bak")
-			if err != nil {
-				return fmt.Errorf("error loading backup metadata: %s", err)
-			}
-			logging.Debugf("Loaded %d tools from backup", len(oldTools.Tools))
-
-		} else {
-			oldTools = tools
 		}
 
 		var newTools *tool.Tools
@@ -78,12 +56,6 @@ var updateCmd = &cobra.Command{
 		newUnigetVersion := ""
 		for _, newTool := range newTools.Tools {
 			logging.Debugf("Checking tool %s for updates", newTool.Name)
-
-			oldTool, _ := oldTools.GetByName(newTool.Name)
-			if oldTool == nil {
-				logging.Debugf("Tool %s was added", newTool.Name)
-				addedTools.Tools = append(addedTools.Tools, newTool)
-			}
 
 			if version != "main" && newTool.Name == "uniget" && newTool.Version != version {
 				newUnigetVersion = newTool.Version

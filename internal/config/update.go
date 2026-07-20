@@ -13,65 +13,9 @@ import (
 	"gitlab.com/uniget-org/cli/pkg/archive"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
-	myos "gitlab.com/uniget-org/cli/pkg/os"
 	"gitlab.com/uniget-org/cli/pkg/security"
 	"gitlab.com/uniget-org/cli/pkg/tool"
 )
-
-func (c *Config) BackupMetadata() (err error) {
-	metadataFile := c.Prefix + "/" + c.GetMetadataFile()
-	metadataFileSigstore := metadataFile + ".sigstore.json"
-	backupMetadataFile := metadataFile + ".bak"
-	backupMetadataFileSigstore := backupMetadataFile + ".sigstore.json"
-
-	if myos.FileExists(backupMetadataFile) {
-		err = os.Remove(backupMetadataFile)
-		if err != nil {
-			return fmt.Errorf("error removing old backup metadata file: %s", err)
-		}
-	}
-	if myos.FileExists(backupMetadataFileSigstore) {
-		err = os.Remove(backupMetadataFileSigstore)
-		if err != nil {
-			return fmt.Errorf("error removing old backup metadata sigstore file: %s", err)
-		}
-	}
-
-	err = myos.CloneFile(metadataFile, backupMetadataFile)
-	if err != nil {
-		return fmt.Errorf("error backing up metadata file: %s", err)
-	}
-	err = myos.CloneFile(metadataFileSigstore, backupMetadataFileSigstore)
-	if err != nil {
-		return fmt.Errorf("error backing up metadata sigstore file: %s", err)
-	}
-
-	return nil
-}
-
-func (c *Config) RestoreMetadata() (err error) {
-	metadataFile := c.Prefix + "/" + c.GetMetadataFile()
-	metadataFileSigstore := metadataFile + ".sigstore.json"
-	backupMetadataFile := metadataFile + ".bak"
-	backupMetadataFileSigstore := backupMetadataFile + ".sigstore.json"
-
-	if myos.FileExists(backupMetadataFile) {
-		_ = os.Remove(metadataFile)
-		err = os.Rename(backupMetadataFile, metadataFile)
-		if err != nil {
-			return fmt.Errorf("error restoring backup metadata file: %s", err)
-		}
-	}
-	if myos.FileExists(backupMetadataFileSigstore) {
-		_ = os.Remove(metadataFileSigstore)
-		err = os.Rename(backupMetadataFileSigstore, metadataFileSigstore)
-		if err != nil {
-			return fmt.Errorf("error restoring backup metadata sigstore file: %s", err)
-		}
-	}
-
-	return nil
-}
 
 func (c *Config) HasMetadataUpdate(revision string) (bool, error) {
 	t, err := containers.FindToolRef([]string{constants.Registry}, []string{constants.ImageRepository}, "metadata", constants.MetadataImageTag)
