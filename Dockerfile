@@ -2,12 +2,12 @@
 #check=skip=SecretsUsedInArgOrEnv
 
 FROM ghcr.io/uniget-org/tools/goreleaser:2.17.0@sha256:80cb25a868b779d9772653bbe71e5b404953260c05be923b0337921e465ba5b0 AS uniget-goreleaser
-FROM ghcr.io/uniget-org/tools/cosign:3.1.1@sha256:a0bfa9244a2f835b439a43930e9a9c93317b09194b907e4167751620da9d4f4e AS uniget-cosign
-FROM ghcr.io/uniget-org/tools/syft:1.46.0@sha256:13e2e1400c9d7df39c5e9d32405e6a4aa48a21a6924444403795fb58a5bda85c AS uniget-syft
+FROM ghcr.io/uniget-org/tools/cosign:3.1.2@sha256:1bf1c2ef191d1fed71e2425da2b8760c32def179d4ce6bfd5acd11469171e8e8 AS uniget-cosign
+FROM ghcr.io/uniget-org/tools/syft:1.48.0@sha256:48a0cf8025cb0cd5450c3290fbaf6940b2579b29e7bb585e6c00bdb7046f0765 AS uniget-syft
 FROM ghcr.io/uniget-org/tools/gh:2.96.0@sha256:ae1eb30414771c3e997d772d7151e62bb7eef5283c3a89d7ef98c23bca37b04c AS uniget-gh
-FROM ghcr.io/uniget-org/tools/glab:1.107.0@sha256:abe855ef1b12e8c74a2204a0264fff65c28b5ecb5d80bad64afb199a9fec4c03 AS uniget-glab
+FROM ghcr.io/uniget-org/tools/glab:1.108.0@sha256:6fbe20d6653186d12ddc482bafc35a1c5024c657ae0abc62cdee01c79e9299cb AS uniget-glab
 FROM ghcr.io/uniget-org/tools/jq:1.8.2@sha256:346380fefb2967af66774cb15a1df991b7df546ee4d58fd0d73c3d8e985c6b5f AS uniget-jq
-FROM ghcr.io/uniget-org/tools/gosec:2.27.1@sha256:aa159a347e7a2a877c2d33dc9fbc215a9964eeb463bcd1cc8973c814c4c7e929 AS uniget-gosec
+FROM ghcr.io/uniget-org/tools/gosec:2.28.0@sha256:c738c824abcc224d54a7b0490b89252ce299e08ed0bc0f9ea1c991556dcc45b4 AS uniget-gosec
 FROM ghcr.io/uniget-org/tools/golangci-lint:2.12.2@sha256:9f869d3548ef4130942c906edd9d49dcfe3e532092f9089807dd376acc21ea62 AS lint-base
 FROM golang:1.26.5@sha256:63f132d58c1f589f0dcda584933a9bb44bfda1150f1506377f5a902f34d86033 AS latest-golang
 FROM alpine:3.24.1@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b AS latest-alpine
