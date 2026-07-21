@@ -106,7 +106,7 @@ func Tracef(message string, args ...any) {
 }
 
 func Customf(prefixFgColor pterm.Color, prefixBgColor pterm.Color, messageFgColor pterm.Color, messageBgColor pterm.Color, prefix string, message string, args ...any) {
-	prefixWidth := 8
+	prefixWidth := 9
 	prefixPaddingLeft := (prefixWidth - len(prefix)) / 2
 	prefixPaddingRight := prefixWidth - len(prefix) - prefixPaddingLeft
 
