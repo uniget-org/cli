@@ -63,7 +63,7 @@ var updateCmd = &cobra.Command{
 
 			tool, err := tools.GetByName(newTool.Name)
 			if err != nil {
-				logging.Warning.Printfln("Error getting tool %s: %s", newTool.Name, err)
+				addedTools.Tools = append(addedTools.Tools, newTool)
 				continue
 			}
 			err = tool.UpdateStatus(
