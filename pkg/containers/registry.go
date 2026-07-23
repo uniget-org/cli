@@ -260,13 +260,29 @@ func GetLayerFromManifestByIndex(ctx context.Context, rc *regclient.RegClient, m
 	return fmt.Errorf("unsupported layer media type %s", layer.MediaType)
 }
 
-func GetFirstLayerFromRegistry(ctx context.Context, rc *regclient.RegClient, r ref.Ref, p tui.ProgressReader, callback func(reader io.ReadCloser) error) error {
+func GetFirstLayerFromRegistryRaw(ctx context.Context, rc *regclient.RegClient, r ref.Ref, p tui.ProgressReader, callback func(reader io.ReadCloser) error) (err error) {
 	m, err := GetManifest(ctx, rc, r)
 	if err != nil {
 		return fmt.Errorf("failed to get manifest: %s", err)
 	}
 
 	err = GetFirstLayerFromManifest(ctx, rc, m, p, func(reader io.ReadCloser) error {
+		err = callback(reader)
+		if err != nil {
+			return fmt.Errorf("failed to execute callback: %w", err)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("failed to get first layer: %s", err)
+	}
+
+	return nil
+}
+
+func GetFirstLayerFromRegistry(ctx context.Context, rc *regclient.RegClient, r ref.Ref, p tui.ProgressReader, callback func(reader io.ReadCloser) error) (err error) {
+	err = GetFirstLayerFromRegistryRaw(ctx, rc, r, p, func(reader io.ReadCloser) error {
 		imageReader, err := gzip.NewReader(reader)
 		if err != nil {
 			return fmt.Errorf("failed to gunzip layer: %s", err)
