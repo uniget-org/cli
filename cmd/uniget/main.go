@@ -118,14 +118,16 @@ var (
 				return fmt.Errorf("error loading metadata: %s", err)
 			}
 
-			file, err := os.Stat(configuration.Prefix + "/" + configuration.GetMetadataFile())
-			if err != nil {
-				return fmt.Errorf("error stating metadata file: %s", err)
-			}
-			now := time.Now()
-			modifiedtime := file.ModTime()
-			if now.Sub(modifiedtime).Hours() > 24 {
-				logging.Warning.Println("Metadata file is older than 24 hours")
+			if myos.IsTty() {
+				file, err := os.Stat(configuration.Prefix + "/" + configuration.GetMetadataFile())
+				if err != nil {
+					return fmt.Errorf("error stating metadata file: %s", err)
+				}
+				now := time.Now()
+				modifiedtime := file.ModTime()
+				if now.Sub(modifiedtime).Hours() > 24 {
+					logging.Warning.Println("Metadata file is older than 24 hours")
+				}
 			}
 
 			switch configuration.Cache {
@@ -208,6 +210,7 @@ func init() {
 	initInstallCmd()
 	initListCmd()
 	initManpagesCmd()
+	initMetadataCmd()
 	initMessageCmd()
 	initRegCmd()
 	initReleaseNotesCmd()
