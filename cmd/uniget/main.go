@@ -26,7 +26,8 @@ var (
 	version string = "main"
 
 	configuration *config.Config
-	tools         = &tool.Tools{
+	toolCache     cache.Cache = cache.NewNoneCache()
+	tools                     = &tool.Tools{
 		Tools: make([]tool.Tool, 0),
 	}
 	rootCmd = &cobra.Command{
@@ -169,7 +170,6 @@ var (
 			return nil
 		},
 	}
-	toolCache cache.Cache = cache.NewNoneCache()
 )
 
 func init() {
