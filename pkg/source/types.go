@@ -59,6 +59,20 @@ func (b *Backend) InitCache() (err error) {
 	return nil
 }
 
+func NewBackendFromScheme(url *Source, cacheType cache.CacheType, cacheConfiguration CacheConfiguration) (Downloader, error) {
+	if IsFileRef(url) {
+		return NewFileDownloader(cacheType, cacheConfiguration)
+
+	} else if IsWebRef(url) {
+		return NewWebDownloader(cacheType, cacheConfiguration)
+
+	} else if IsOciRef(url) {
+		return NewOciDownloader(cacheType, cacheConfiguration)
+	}
+
+	return nil, fmt.Errorf("unsupported scheme for url: %s", url.Url)
+}
+
 func (b *Backend) HandleCache(source *Source, p tui.ProgressReader, callback func(reader io.ReadCloser) error) error {
 	if !b.Cache.Has(source.Url) {
 		err := b.Cache.Put(source.Url, p, nil)
