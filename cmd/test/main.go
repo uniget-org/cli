@@ -1,15 +1,13 @@
 package main
 
 import (
+	"fmt"
+
 	"gitlab.com/uniget-org/cli/pkg/metadata"
 	"gitlab.com/uniget-org/cli/pkg/source"
 	"gitlab.com/uniget-org/cli/pkg/source/cache"
 	"gitlab.com/uniget-org/cli/pkg/tui"
 )
-
-var pathPrefix = "./"
-var ociRef = "ghcr.io/uniget-org/tools/uniget:latest"
-var webUri = "https://gitlab.com/uniget-org/cli/-/releases/permalink/latest/downloads/uniget_Linux_x86_64.tar.gz"
 
 func main() {
 	unigetMetadataSource, err := metadata.NewMetadataSource(
@@ -32,8 +30,15 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
 	err = unigetMetadataSource.Download(tui.NewProgressReader(nil, nil))
 	if err != nil {
 		panic(err)
 	}
+
+	tools, err := unigetMetadataSource.Load()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("Loaded tools: %d\n", len(tools.Tools))
 }

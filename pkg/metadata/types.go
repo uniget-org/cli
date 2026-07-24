@@ -7,6 +7,7 @@ import (
 
 	"gitlab.com/uniget-org/cli/pkg/source"
 	"gitlab.com/uniget-org/cli/pkg/source/cache"
+	"gitlab.com/uniget-org/cli/pkg/tool"
 	"gitlab.com/uniget-org/cli/pkg/tui"
 )
 
@@ -69,4 +70,13 @@ func (m *MetadataSource) Download(p tui.ProgressReader) error {
 	}
 
 	return nil
+}
+
+func (m *MetadataSource) Load() (*tool.Tools, error) {
+	tools, err := tool.LoadFromFile(m.Files["metadata.json"])
+	if err != nil {
+		return nil, fmt.Errorf("error loading tools from metadata.json: %s", err)
+	}
+
+	return tools, nil
 }

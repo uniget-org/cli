@@ -8,7 +8,7 @@ import (
 	"github.com/google/safearchive/tar"
 )
 
-func Untar(upstreamReader io.ReadCloser, callback func(reader io.Reader, header *tar.Header) error) error {
+func Untar(upstreamReader io.ReadCloser, callback func(reader *tar.Reader, header *tar.Header) error) error {
 	reader := tar.NewReader(upstreamReader)
 	//nolint:errcheck
 	defer upstreamReader.Close()

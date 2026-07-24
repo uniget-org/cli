@@ -1,6 +1,11 @@
 package metadata
 
-import "io"
+import (
+	"io"
+
+	"github.com/google/safearchive/tar"
+	"gitlab.com/uniget-org/cli/pkg/archive"
+)
 
 type Unpacker interface {
 	Unpack(reader io.ReadCloser) error
@@ -15,8 +20,25 @@ func NewTarGzUnpacker() *Unpacker {
 	return &unpacker
 }
 
-func (u TarGzUnpacker) Unpack(reader io.ReadCloser) error {
-	// Implement the logic to unpack a tar.gz file using the provided downloader and directory.
-	// This is a placeholder implementation. You would need to fill in the actual unpacking logic.
+func (u TarGzUnpacker) Unpack(upstreamReader io.ReadCloser) error {
+	err := archive.Gunzip(upstreamReader, func(gunzipReader io.Reader) error {
+		err := archive.Untar(io.NopCloser(gunzipReader), func(tarReader *tar.Reader, header *tar.Header) error {
+			err := archive.CallbackExtractTarItem(tarReader, header)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
