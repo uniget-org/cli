@@ -46,7 +46,7 @@ func main() {
 	nullUnpacker := metadata.NewNullUnpacker()
 	var nullVerifier metadata.MetadataVerifier = metadata.NewNullMetadataVerifier()
 	localMetadataSource, err := metadata.NewMetadataSource(
-		"file://metadata.json",
+		"file:///home/nicholas/private/uniget/tools/metadata.json",
 		".",
 		cache.CacheNone,
 		source.CacheConfiguration{},
