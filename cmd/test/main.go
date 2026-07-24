@@ -10,12 +10,13 @@ import (
 )
 
 func main() {
+	tarGzUnpacker := metadata.NewTarGzUnpacker()
 	unigetMetadataSource, err := metadata.NewMetadataSource(
 		"oci://ghcr.io/uniget-org/tools/metadata:main",
 		".",
 		cache.CacheNone,
 		source.CacheConfiguration{},
-		metadata.NewTarGzUnpacker(),
+		&tarGzUnpacker,
 		map[string]string{
 			"metadata.json":               "metadata.json",
 			"metadata.json.sigstore.json": "metadata.json.sigstore.json",
@@ -41,4 +42,28 @@ func main() {
 		panic(err)
 	}
 	fmt.Printf("Loaded tools: %d\n", len(tools.Tools))
+
+	nullUnpacker := metadata.NewNullUnpacker()
+	var nullVerifier metadata.MetadataVerifier = metadata.NewNullMetadataVerifier()
+	localMetadataSource, err := metadata.NewMetadataSource(
+		"file://metadata.json",
+		".",
+		cache.CacheNone,
+		source.CacheConfiguration{},
+		&nullUnpacker,
+		map[string]string{
+			"metadata.json":               "metadata.json",
+			"metadata.json.sigstore.json": "metadata.json.sigstore.json",
+		},
+		&nullVerifier,
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	localTools, err := localMetadataSource.Load()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("Loaded local tools: %d\n", len(localTools.Tools))
 }

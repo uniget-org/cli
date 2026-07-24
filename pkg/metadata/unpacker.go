@@ -11,13 +11,10 @@ type Unpacker interface {
 	Unpack(reader io.ReadCloser) error
 }
 
-type TarGzUnpacker struct {
-}
+type TarGzUnpacker struct{}
 
-func NewTarGzUnpacker() *Unpacker {
-	var unpacker Unpacker = TarGzUnpacker{}
-
-	return &unpacker
+func NewTarGzUnpacker() Unpacker {
+	return &TarGzUnpacker{}
 }
 
 func (u TarGzUnpacker) Unpack(upstreamReader io.ReadCloser) error {
@@ -40,5 +37,15 @@ func (u TarGzUnpacker) Unpack(upstreamReader io.ReadCloser) error {
 		return err
 	}
 
+	return nil
+}
+
+type NullUnpacker struct{}
+
+func NewNullUnpacker() Unpacker {
+	return &NullUnpacker{}
+}
+
+func (u NullUnpacker) Unpack(upstreamReader io.ReadCloser) error {
 	return nil
 }

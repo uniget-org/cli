@@ -87,6 +87,7 @@ func TestWebBackend_Get(t *testing.T) {
 		if err != nil {
 			t.Fatalf("NewWebDownloader() unexpected error: %v", err)
 		}
+		d.CacheType = cache.CacheFile
 		fc := &fakeCache{name: "fake", has: false}
 		d.Cache = fc
 
@@ -120,6 +121,7 @@ func TestWebBackend_Get(t *testing.T) {
 		if err != nil {
 			t.Fatalf("NewWebDownloader() unexpected error: %v", err)
 		}
+		d.CacheType = cache.CacheFile
 		fc := &fakeCache{name: "fake", has: true}
 		d.Cache = fc
 
@@ -170,6 +172,7 @@ func TestWebBackend_Get(t *testing.T) {
 		if err != nil {
 			t.Fatalf("NewWebDownloader() unexpected error: %v", err)
 		}
+		d.CacheType = cache.CacheFile
 		want := errors.New("get failed")
 		fc := &fakeCache{name: "fake", has: true, getErr: want}
 		d.Cache = fc
@@ -191,6 +194,7 @@ func TestWebBackend_Get(t *testing.T) {
 		if err != nil {
 			t.Fatalf("NewWebDownloader() unexpected error: %v", err)
 		}
+		d.CacheType = cache.CacheFile
 		rc := &recordingCache{}
 		d.Cache = rc
 

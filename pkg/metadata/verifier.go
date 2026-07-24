@@ -49,3 +49,15 @@ func (v SigstoreMetadataVerifier) Verify(metadataSource *MetadataSource) error {
 
 	return nil
 }
+
+type NullMetadataVerifier struct {
+	MetadataVerifierStruct
+}
+
+func NewNullMetadataVerifier() *NullMetadataVerifier {
+	return &NullMetadataVerifier{}
+}
+
+func (v NullMetadataVerifier) Verify(metadataSource *MetadataSource) error {
+	return nil
+}
