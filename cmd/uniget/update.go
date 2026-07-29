@@ -100,11 +100,11 @@ var updateCmd = &cobra.Command{
 				toolsToShow = updatedTools
 			}
 			for _, tool := range toolsToShow.Tools {
-				logging.Customf(pterm.FgBlack, pterm.BgYellow, pterm.FgWhite, pterm.BgDefault, "UPDATE", " %s %s", tool.Name, tool.Version)
+				logging.Customf(pterm.FgBlack, pterm.BgYellow, pterm.FgWhite, pterm.BgDefault, "UPDATE", "%s %s", tool.Name, tool.Version)
 			}
 
 			if len(newUnigetVersion) > 0 {
-				logging.Customf(pterm.FgBlack, pterm.BgYellow, pterm.FgWhite, pterm.BgDefault, "NEWS", " Update to uniget %s by running 'uniget self-upgrade'", newUnigetVersion)
+				logging.Customf(pterm.FgBlack, pterm.BgYellow, pterm.FgWhite, pterm.BgDefault, "NEWS", "Update to uniget %s by running 'uniget self-upgrade'", newUnigetVersion)
 			}
 		}
 
