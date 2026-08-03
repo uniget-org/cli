@@ -149,7 +149,7 @@ func (c *Config) SetUserConfig(opts ...ConfigOption) {
 		c.ConfigRoot = ".config"
 	}
 
-	c.addDefaultPathRewriteRules()
+	c.setDefaultPathRewriteRules()
 	c.PathRewriteRules = append(c.PathRewriteRules, []tool.PathRewrite{
 		{
 			Source:    "libexec/docker/cli-plugins/",

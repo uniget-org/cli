@@ -6,7 +6,7 @@ import (
 	"gitlab.com/uniget-org/cli/pkg/tool"
 )
 
-func (c *Config) addDefaultPathRewriteRules() {
+func (c *Config) setDefaultPathRewriteRules() {
 	rules := []tool.PathRewrite{
 		{
 			Source:    "usr/local/",
