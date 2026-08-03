@@ -113,7 +113,7 @@ func (c *Config) SetGlobalConfig(opts ...ConfigOption) {
 		opt(c)
 	}
 
-	c.addDefaultPathRewriteRules()
+	c.setDefaultPathRewriteRules()
 	c.PathRewriteRules = append(c.PathRewriteRules, tool.PathRewrite{
 		Source:    "etc/systemd/",
 		Target:    "/etc/systemd/",
@@ -160,6 +160,12 @@ func (c *Config) SetUserConfig(opts ...ConfigOption) {
 		{
 			Source:    "etc/systemd/user/",
 			Target:    ".config/systemd/user/",
+			Operation: "REPLACE",
+			Abort:     true,
+		},
+		{
+			Source:    ".local/share/terminfo/",
+			Target:    ".terminfo/",
 			Operation: "REPLACE",
 			Abort:     true,
 		},
