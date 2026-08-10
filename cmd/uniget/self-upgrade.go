@@ -75,7 +75,10 @@ func initSelfUpgradeCmd() {
 		logging.Error.Printfln("Failed to mark source flag as hidden: %s", err)
 	}
 
-	selfUpgradeCmd.RegisterFlagCompletionFunc("source", selfUpgradeSourceCompletion)
+	err = selfUpgradeCmd.RegisterFlagCompletionFunc("source", selfUpgradeSourceCompletion)
+	if err != nil {
+		logging.Error.Printfln("Failed to register flag completion for source: %s", err)
+	}
 
 	rootCmd.AddCommand(selfUpgradeCmd)
 }
