@@ -185,7 +185,7 @@ func uninstallFiles(installedFiles []string) error {
 	logging.Debugf("Working relative to parent directory %s", configuration.Prefix)
 	root, err := os.OpenRoot(configuration.Prefix)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to open root directory %s: %s", configuration.Prefix, err)
 	}
 	//nolint:errcheck
 	defer root.Close()

@@ -46,7 +46,7 @@ func NewDefaultConfig(opts ...ConfigOption) *Config {
 		Trace:                  false,
 		User:                   false,
 		AutoUpdate:             false,
-		Prefix:                 "",
+		Prefix:                 "/",
 		Target:                 "usr/local",
 		IntegrateProfileD:      false,
 		IntegrateEtc:           false,
