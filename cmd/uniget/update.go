@@ -50,6 +50,10 @@ var updateCmd = &cobra.Command{
 		}
 		logging.Debugf("Loaded %d tools from metadata", len(newTools.Tools))
 
+		if updateQuiet {
+			return nil
+		}
+
 		var addedTools tool.Tools
 		var updatedTools tool.Tools
 		var updatedInstalledTools tool.Tools
@@ -88,24 +92,19 @@ var updateCmd = &cobra.Command{
 			}
 		}
 
-		if !updateQuiet {
-			logging.Debugf("Showing new tools and updates")
-
-			for _, tool := range addedTools.Tools {
-				logging.Customf(pterm.FgBlack, pterm.BgGreen, pterm.FgWhite, pterm.BgDefault, "NEW", " %s (%s)", tool.Name, tool.Description)
-			}
-
-			toolsToShow := updatedInstalledTools
-			if updateShowAllTools {
-				toolsToShow = updatedTools
-			}
-			for _, tool := range toolsToShow.Tools {
-				logging.Customf(pterm.FgBlack, pterm.BgYellow, pterm.FgWhite, pterm.BgDefault, "UPDATE", "%s %s", tool.Name, tool.Version)
-			}
-
-			if len(newUnigetVersion) > 0 {
-				logging.Customf(pterm.FgBlack, pterm.BgYellow, pterm.FgWhite, pterm.BgDefault, "NEWS", "Update to uniget %s by running 'uniget self-upgrade'", newUnigetVersion)
-			}
+		logging.Debugf("Showing new tools and updates")
+		for _, tool := range addedTools.Tools {
+			logging.Customf(pterm.FgBlack, pterm.BgGreen, pterm.FgWhite, pterm.BgDefault, "NEW", " %s (%s)", tool.Name, tool.Description)
+		}
+		toolsToShow := updatedInstalledTools
+		if updateShowAllTools {
+			toolsToShow = updatedTools
+		}
+		for _, tool := range toolsToShow.Tools {
+			logging.Customf(pterm.FgBlack, pterm.BgYellow, pterm.FgWhite, pterm.BgDefault, "UPDATE", "%s %s", tool.Name, tool.Version)
+		}
+		if len(newUnigetVersion) > 0 {
+			logging.Customf(pterm.FgBlack, pterm.BgYellow, pterm.FgWhite, pterm.BgDefault, "NEWS", "Update to uniget %s by running 'uniget self-upgrade'", newUnigetVersion)
 		}
 
 		return nil
