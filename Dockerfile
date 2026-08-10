@@ -143,7 +143,7 @@ curl --silent --show-error --location --fail \
 | tar --extract --gzip --directory=/usr/local/bin uniget
 EOF
 
-FROM registry.gitlab.com/uniget-org/images/ubuntu:26.04@sha256:059b11407572b2fd733e7bcd1c528852394d7fe1abef7119a1a97356983cab76 AS noble-uniget
+FROM registry.gitlab.com/uniget-org/images/ubuntu:26.04@sha256:b0b654de801604e256237f2c27a907a4b61b59ebd83423ad0e0e465c0a3ba9cd AS noble-uniget
 ARG version
 COPY --from=uniget-release /usr/local/bin/uniget /usr/local/bin/uniget
 RUN <<EOF
