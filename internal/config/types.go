@@ -213,5 +213,9 @@ func (c *Config) String() string {
 		"  ConfigDirectory: " + c.GetConfigDirectory() + ", " + "\n" +
 		"  ProfileDDirectory: " + c.GetProfileDDirectory() + ", " + "\n" +
 		"  MetadataFile: " + c.GetMetadataFile() + "\n" +
+		"  HooksPreInstallDirectory: " + c.GetHooksPreInstallDirectory() + ", " + "\n" +
+		"  HooksPostInstallDirectory: " + c.GetHooksPostInstallDirectory() + ", " + "\n" +
+		"  HooksPreUninstallDirectory: " + c.GetHooksPreUninstallDirectory() + ", " + "\n" +
+		"  HooksPostUninstallDirectory: " + c.GetHooksPostUninstallDirectory() + ", " + "\n" +
 		"}"
 }

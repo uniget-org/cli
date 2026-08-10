@@ -73,9 +73,7 @@ EOF
 
 FROM base AS cli-test
 COPY --from=build /out/uniget /usr/local/bin/
-RUN --mount=target=. \
-    --mount=type=cache,target=/go/pkg/mod \
-    --mount=type=cache,target=/root/.cache/go-build <<EOF
+RUN --mount=target=. <<EOF
 bash scripts/test.sh
 EOF
 

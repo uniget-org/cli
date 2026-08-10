@@ -16,7 +16,6 @@ import (
 	"gitlab.com/uniget-org/cli/internal/constants"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
-	myos "gitlab.com/uniget-org/cli/pkg/os"
 	"gitlab.com/uniget-org/cli/pkg/tool"
 )
 
@@ -350,7 +349,6 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 			}
 		}
 
-		myos.AssertDirectory(configuration.Target)
 		// Change working directory to prefix
 		// so that unpacking can ignore the target directory
 		installDir := configuration.Prefix

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -o errexit -o pipefail
 
-export UNIGET_USER=false
+unset UNIGET_USER
 
 function check_dir() {
     local dir=$1
@@ -37,7 +37,7 @@ uniget --version
 echo "-----------------------------"
 TEMP_DIR=$(mktemp -d)
 echo "Using temp dir: ${TEMP_DIR}"
-trap "find $TEMP_DIR -type f; rm -rf $TEMP_DIR" EXIT
+trap "find $HOME $TEMP_DIR -type f; rm -rf $TEMP_DIR" EXIT
 
 echo "-----------------------------"
 echo "Testing download of metadata"
@@ -70,47 +70,49 @@ uniget inspect --raw jq | grep "^-rwxr-xr-x bin/jq$" || exit 1
 
 echo "-----------------------------"
 echo "Testing install in user context"
-uniget --user update
-test -f "${HOME}/.cache/uniget/metadata.json"
+uniget --user debug
+uniget --user update --quiet
+check_file "${HOME}/.cache/uniget/metadata.json" "Metadata" || exit 1
 uniget --user install gojq
-test -d "${HOME}/.cache/uniget/gojq"
-test -f "${HOME}/.local/state/uniget/manifests/gojq.json"
-test -f "${HOME}/.local/state/uniget/manifests/gojq.txt"
+check_dir "${HOME}/.cache/uniget/gojq" "Marker file" || exit 1
+check_file "${HOME}/.local/state/uniget/manifests/gojq.json" "Manifest" || exit 1
+check_file "${HOME}/.local/state/uniget/manifests/gojq.txt" "File list" || exit 1
 uniget --user uninstall gojq
 
 echo "-----------------------------"
 echo "Testing hooks"
 mkdir -p \
-    /etc/uniget/hooks/pre-install.d \
-    /etc/uniget/hooks/post-install.d \
-    /etc/uniget/hooks/pre-uninstall.d \
-    /etc/uniget/hooks/post-uninstall.d
-cat >/etc/uniget/hooks/pre-install.d/test.sh <<EOF
+    ${TEMP_DIR}/etc/uniget/hooks/pre-install.d \
+    ${TEMP_DIR}/etc/uniget/hooks/post-install.d \
+    ${TEMP_DIR}/etc/uniget/hooks/pre-uninstall.d \
+    ${TEMP_DIR}/etc/uniget/hooks/post-uninstall.d
+cat >${TEMP_DIR}/etc/uniget/hooks/pre-install.d/test.sh <<EOF
 #!/bin/bash
 
 touch /var/log/uniget-hook-pre-install
 EOF
-cat >/etc/uniget/hooks/post-install.d/test.sh <<EOF
+cat >${TEMP_DIR}/etc/uniget/hooks/post-install.d/test.sh <<EOF
 #!/bin/bash
 
 touch /var/log/uniget-hook-post-install
 EOF
-cat >/etc/uniget/hooks/pre-uninstall.d/test.sh <<EOF
+cat >${TEMP_DIR}/etc/uniget/hooks/pre-uninstall.d/test.sh <<EOF
 #!/bin/bash
 
 touch /var/log/uniget-hook-pre-uninstall
 EOF
-cat >/etc/uniget/hooks/post-uninstall.d/test.sh <<EOF
+cat >${TEMP_DIR}/etc/uniget/hooks/post-uninstall.d/test.sh <<EOF
 #!/bin/bash
 
 touch /var/log/uniget-hook-post-uninstall
 EOF
 chmod +x \
-    /etc/uniget/hooks/pre-install.d/test.sh \
-    /etc/uniget/hooks/post-install.d/test.sh \
-    /etc/uniget/hooks/pre-uninstall.d/test.sh \
-    /etc/uniget/hooks/post-uninstall.d/test.sh
-uniget install jq
+    ${TEMP_DIR}/etc/uniget/hooks/pre-install.d/test.sh \
+    ${TEMP_DIR}/etc/uniget/hooks/post-install.d/test.sh \
+    ${TEMP_DIR}/etc/uniget/hooks/pre-uninstall.d/test.sh \
+    ${TEMP_DIR}/etc/uniget/hooks/post-uninstall.d/test.sh
+uniget --prefix=${TEMP_DIR} debug
+uniget --prefix=${TEMP_DIR} install jq
 check_file "/var/log/uniget-hook-pre-install" || exit 1
 check_file "/var/log/uniget-hook-post-install" || exit 1
 check_file "/var/log/uniget-hook-pre-uninstall" && exit 1
@@ -120,7 +122,7 @@ rm -f \
     "/var/log/uniget-hook-post-install" \
     "/var/log/uniget-hook-pre-uninstall" \
     "/var/log/uniget-hook-post-uninstall"
-uniget uninstall jq
+uniget --prefix=${TEMP_DIR} uninstall jq
 check_file "/var/log/uniget-hook-pre-install" && exit 1
 check_file "/var/log/uniget-hook-post-install" && exit 1
 check_file "/var/log/uniget-hook-pre-uninstall" || exit 1
