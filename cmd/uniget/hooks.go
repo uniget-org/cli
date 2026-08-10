@@ -394,7 +394,10 @@ func runPreInstallHooks(args ...string) error {
 	err := processHooks(configuration.GetHooksPreInstallDirectory(), func(hookFile string) error {
 		fmt.Printf("Executing %s hook %s:\n", hookType, hookFile)
 		_, err := runHook(hookFile, args...)
-		return fmt.Errorf("unable to execute %s hook (%s): %s", hookType, hookFile, err)
+		if err != nil {
+			return fmt.Errorf("unable to execute %s hook (%s): %s", hookType, hookFile, err)
+		}
+		return nil
 	})
 	if err != nil {
 		return fmt.Errorf("unable to run %s hooks: %s", hookType, err)
@@ -412,7 +415,10 @@ func runPostInstallHooks(args ...string) error {
 	err := processHooks(configuration.GetHooksPostInstallDirectory(), func(hookFile string) error {
 		fmt.Printf("Executing %s hook %s:\n", hookType, hookFile)
 		_, err := runHook(hookFile, args...)
-		return fmt.Errorf("unable to execute %s hook (%s): %s", hookType, hookFile, err)
+		if err != nil {
+			return fmt.Errorf("unable to execute %s hook (%s): %s", hookType, hookFile, err)
+		}
+		return nil
 	})
 	if err != nil {
 		return fmt.Errorf("unable to run %s hooks: %s", hookType, err)
@@ -430,7 +436,10 @@ func runPreUninstallHooks(args ...string) error {
 	err := processHooks(configuration.GetHooksPreUninstallDirectory(), func(hookFile string) error {
 		fmt.Printf("Executing %s hook %s:\n", hookType, hookFile)
 		_, err := runHook(hookFile, args...)
-		return fmt.Errorf("unable to execute %s hook (%s): %s", hookType, hookFile, err)
+		if err != nil {
+			return fmt.Errorf("unable to execute %s hook (%s): %s", hookType, hookFile, err)
+		}
+		return nil
 	})
 	if err != nil {
 		return fmt.Errorf("unable to run %s hooks: %s", hookType, err)
@@ -448,7 +457,10 @@ func runPostUninstallHooks(args ...string) error {
 	err := processHooks(configuration.GetHooksPostUninstallDirectory(), func(hookFile string) error {
 		fmt.Printf("Executing %s hook %s:\n", hookType, hookFile)
 		_, err := runHook(hookFile, args...)
-		return fmt.Errorf("unable to execute %s hook (%s): %s", hookType, hookFile, err)
+		if err != nil {
+			return fmt.Errorf("unable to execute %s hook (%s): %s", hookType, hookFile, err)
+		}
+		return nil
 	})
 	if err != nil {
 		return fmt.Errorf("unable to run %s hooks: %s", hookType, err)
@@ -474,6 +486,8 @@ func processHooks(path string, callback func(file string) error) error {
 		if strings.HasPrefix(file.Name(), ".") {
 			continue
 		}
+
+		logging.Debugf("processing hook file %s/%s", path, file.Name())
 
 		hookFile := path + "/" + file.Name()
 		hookFileInfo, err := os.Lstat(hookFile)
@@ -504,6 +518,8 @@ func runHook(hookFile string, args ...string) (string, error) {
 	command.Stderr = os.Stderr
 	err := command.Run()
 	if err != nil {
+		fmt.Printf("stdout:\n%s\n", command.Stdout)
+		fmt.Printf("stderr:\n%s\n", command.Stderr)
 		return "", fmt.Errorf("unable to execute hook (%s): %s", hookFile, err)
 	}
 
