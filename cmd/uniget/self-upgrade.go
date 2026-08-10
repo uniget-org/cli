@@ -136,10 +136,14 @@ var selfUpgradeCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("error changing directory to %s: %s", selfUpgradePath, err)
 		}
-		logging.Tracef("Removing %s", selfUpgradePath)
-		err = os.Remove(selfExe)
-		if err != nil {
-			return fmt.Errorf("failed to remove %s: %s", selfExe, err)
+
+		_, err = os.Stat(selfExe)
+		if err == nil {
+			logging.Tracef("Removing %s", selfUpgradePath)
+			err = os.Remove(selfExe)
+			if err != nil {
+				return fmt.Errorf("failed to remove %s: %s", selfExe, err)
+			}
 		}
 
 		switch selfUpgradeSource {
