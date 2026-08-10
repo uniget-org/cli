@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -21,16 +22,45 @@ import (
 	"gitlab.com/uniget-org/cli/pkg/tool"
 )
 
+type selfUpgradeSourceEnum string
+
+const (
+	selfUpgradeSourceUniget  selfUpgradeSourceEnum = "uniget"
+	selfUpgradeSourceRelease selfUpgradeSourceEnum = "release"
+)
+
+func (e *selfUpgradeSourceEnum) String() string {
+	return string(*e)
+}
+
+func (e *selfUpgradeSourceEnum) Set(v string) error {
+	switch v {
+	case "uniget", "release":
+		*e = selfUpgradeSourceEnum(v)
+		return nil
+	default:
+		return errors.New(`must be one of "uniget" or "release"`)
+	}
+}
+
+func (e *selfUpgradeSourceEnum) Type() string {
+	return "selfUpgradeSourceEnum"
+}
+
+func selfUpgradeSourceCompletion(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	return []string{"uniget", "release"}, cobra.ShellCompDirectiveNoFileComp
+}
+
 var selfUpgradeVersion = ""
 var selfUpgradePath = ""
-var selfUpgradeSource = "uniget"
+var selfUpgradeSource selfUpgradeSourceEnum = selfUpgradeSourceUniget
 
 func initSelfUpgradeCmd() {
 	var err error
 
 	selfUpgradeCmd.Flags().StringVarP(&selfUpgradeVersion, "version", "v", selfUpgradeVersion, "Version to upgrade to")
 	selfUpgradeCmd.Flags().StringVar(&selfUpgradePath, "path", selfUpgradePath, "Binary to upgrade")
-	selfUpgradeCmd.Flags().StringVarP(&selfUpgradeSource, "source", "s", selfUpgradeSource, "Source to upgrade from; can either be uniget or release (default: uniget)")
+	selfUpgradeCmd.Flags().VarP(&selfUpgradeSource, "source", "s", "Source to upgrade from. Allowed uniget, release")
 
 	err = selfUpgradeCmd.Flags().MarkHidden("version")
 	if err != nil {
@@ -40,6 +70,12 @@ func initSelfUpgradeCmd() {
 	if err != nil {
 		logging.Error.Printfln("Failed to mark path flag as hidden: %s", err)
 	}
+	err = selfUpgradeCmd.Flags().MarkHidden("source")
+	if err != nil {
+		logging.Error.Printfln("Failed to mark source flag as hidden: %s", err)
+	}
+
+	selfUpgradeCmd.RegisterFlagCompletionFunc("source", selfUpgradeSourceCompletion)
 
 	rootCmd.AddCommand(selfUpgradeCmd)
 }
