@@ -509,6 +509,8 @@ func createPatchFileCallback(tool tool.Tool) func(path string) string {
 
 		if configuration.User {
 			values["Target"] = configuration.Prefix + "/" + configuration.Target
+		} else {
+			values["Target"] = "/" + configuration.Target
 		}
 
 		if len(tool.RuntimeDependencies) > 0 {
