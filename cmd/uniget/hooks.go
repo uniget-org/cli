@@ -390,6 +390,7 @@ func runPreInstallHooks(args ...string) error {
 		return nil
 	}
 
+	hookType = "pre-install"
 	err := processHooks(configuration.GetHooksPreInstallDirectory(), func(hookFile string) error {
 		fmt.Printf("Executing %s hook %s:\n", hookType, hookFile)
 		_, err := runHook(hookFile, args...)
@@ -407,6 +408,7 @@ func runPostInstallHooks(args ...string) error {
 		return nil
 	}
 
+	hookType = "post-install"
 	err := processHooks(configuration.GetHooksPostInstallDirectory(), func(hookFile string) error {
 		fmt.Printf("Executing %s hook %s:\n", hookType, hookFile)
 		_, err := runHook(hookFile, args...)
@@ -424,6 +426,7 @@ func runPreUninstallHooks(args ...string) error {
 		return nil
 	}
 
+	hookType = "pre-uninstall"
 	err := processHooks(configuration.GetHooksPreUninstallDirectory(), func(hookFile string) error {
 		fmt.Printf("Executing %s hook %s:\n", hookType, hookFile)
 		_, err := runHook(hookFile, args...)
@@ -441,6 +444,7 @@ func runPostUninstallHooks(args ...string) error {
 		return nil
 	}
 
+	hookType = "post-uninstall"
 	err := processHooks(configuration.GetHooksPostUninstallDirectory(), func(hookFile string) error {
 		fmt.Printf("Executing %s hook %s:\n", hookType, hookFile)
 		_, err := runHook(hookFile, args...)
@@ -500,7 +504,7 @@ func runHook(hookFile string, args ...string) (string, error) {
 	command.Stderr = os.Stderr
 	err := command.Run()
 	if err != nil {
-		return "", fmt.Errorf("unable to execute %s hook (%s): %s", hookType, hookFile, err)
+		return "", fmt.Errorf("unable to execute hook (%s): %s", hookFile, err)
 	}
 
 	return string(searchOutputFormat), nil
