@@ -102,7 +102,7 @@ var (
 
 			if !myos.FileExists(configuration.GetMetadataFile()) ||
 				configuration.AutoUpdate ||
-				(len(os.Getenv("UNIGET_IGNORE_METADATA_SIGNATURE")) > 0 &&
+				(len(os.Getenv("UNIGET_IGNORE_METADATA_SIGNATURE")) == 0 &&
 					!myos.FileExists(configuration.GetMetadataFile()+".sigstore.json")) {
 
 				logging.Debugf("Metadata does not exist. Downloading...")
