@@ -36,7 +36,7 @@ func IsFileRef(source *Source) bool {
 func (d *FileBackend) Get(source *Source, p tui.ProgressReader, callback func(reader io.ReadCloser) error) (err error) {
 	f, err := os.Open(strings.TrimPrefix(source.Url, "file://"))
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to open file %s: %s", source.Url, err)
 	}
 	//nolint:errcheck
 	defer f.Close()

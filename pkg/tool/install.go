@@ -108,17 +108,17 @@ func (tool *Tool) Install(w io.Writer, layer io.ReadCloser, rules []PathRewrite,
 
 				absName, err := filepath.Abs(header.Name)
 				if err != nil {
-					return err
+					return fmt.Errorf("unable to get absolute path for %s: %s", header.Name, err)
 				}
 				absLinkname, err := filepath.Abs(header.Linkname)
 				if err != nil {
-					return err
+					return fmt.Errorf("unable to get absolute path for %s: %s", header.Linkname, err)
 				}
 
 				logging.Tracef("Name: %s, Linkname: %s", absName, absLinkname)
 				header.Linkname, err = filepath.Rel(filepath.Dir(absName), absLinkname)
 				if err != nil {
-					return err
+					return fmt.Errorf("unable to get relative linkname for %s: %s", header.Linkname, err)
 				}
 				logging.Tracef("    Relative linkname is %s", header.Linkname)
 			}
@@ -126,7 +126,7 @@ func (tool *Tool) Install(w io.Writer, layer io.ReadCloser, rules []PathRewrite,
 
 			err := archive.CallbackExtractTarItem(reader, header)
 			if err != nil {
-				return err
+				return fmt.Errorf("error extracting tar item %s: %s", header.Name, err)
 			}
 			header.Name = patchFile(header.Name)
 
@@ -135,7 +135,7 @@ func (tool *Tool) Install(w io.Writer, layer io.ReadCloser, rules []PathRewrite,
 		return nil
 	})
 	if err != nil {
-		return installedFiles, err
+		return installedFiles, fmt.Errorf("error processing tar contents: %s", err)
 	}
 
 	return installedFiles, nil

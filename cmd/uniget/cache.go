@@ -34,7 +34,7 @@ var cacheCmd = &cobra.Command{
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) (err error) {
 		err = rootCmd.PersistentPreRunE(cmd, args)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to run cache persistent pre-run: %s", err)
 		}
 		if !cacheIsConfigured() {
 			return fmt.Errorf("cache is not configured")
@@ -229,7 +229,7 @@ func dirSize(path string) (int64, error) {
 	var size int64
 	err := filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
 		if err != nil {
-			return err
+			return fmt.Errorf("error accessing path %q: %v", path, err)
 		}
 		if !info.IsDir() {
 			size += info.Size()
@@ -243,7 +243,7 @@ func dirList(path string) ([]string, error) {
 	var files []string
 	err := filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
 		if err != nil {
-			return err
+			return fmt.Errorf("error accessing path %q: %v", path, err)
 		}
 		if !info.IsDir() {
 			files = append(files, info.Name())
@@ -258,14 +258,14 @@ func dirPrune(path string) (int, error) {
 
 	root, err := os.OpenRoot(path)
 	if err != nil {
-		return deleted, err
+		return deleted, fmt.Errorf("unable to open root directory %s: %s", path, err)
 	}
 	//nolint:errcheck
 	defer root.Close()
 
 	err = filepath.Walk(path, func(p string, info os.FileInfo, err error) error {
 		if err != nil {
-			return err
+			return fmt.Errorf("error accessing path %q: %v", p, err)
 		}
 		if !info.IsDir() {
 			if removeErr := root.Remove(p); removeErr != nil {

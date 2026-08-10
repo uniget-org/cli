@@ -133,7 +133,7 @@ func CopyFile(src, dst string) error {
 
 	_, err = io.Copy(dstFile, srcFile)
 	if err != nil {
-		return fmt.Errorf("failed to copy file: %s", err)
+		return fmt.Errorf("failed to copy file from %s to %s: %s", src, dst, err)
 	}
 
 	return nil
@@ -147,7 +147,7 @@ func CloneFile(src, dst string) (err error) {
 
 	srcInfo, err := os.Stat(src)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to stat source file: %s", err)
 	}
 
 	err = os.Chtimes(dst, srcInfo.ModTime(), srcInfo.ModTime())

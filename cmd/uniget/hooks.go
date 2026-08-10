@@ -342,7 +342,7 @@ var runHooksCmd = &cobra.Command{
 		err = processHooks(hookDir, func(hookFile string) error {
 			fmt.Printf("Executing %s hook %s:\n", hookType, hookFile)
 			_, err := runHook(hookFile, args...)
-			return err
+			return fmt.Errorf("unable to execute %s hook %s passing <%v>: %s", hookType, hookFile, args, err)
 		})
 		if err != nil {
 			return fmt.Errorf("unable to execute %s hooks: %s", hookType, err)
@@ -393,7 +393,7 @@ func runPreInstallHooks(args ...string) error {
 	err := processHooks(configuration.GetHooksPreInstallDirectory(), func(hookFile string) error {
 		fmt.Printf("Executing %s hook %s:\n", hookType, hookFile)
 		_, err := runHook(hookFile, args...)
-		return err
+		return fmt.Errorf("unable to execute %s hook (%s): %s", hookType, hookFile, err)
 	})
 	if err != nil {
 		return fmt.Errorf("unable to run %s hooks: %s", hookType, err)
@@ -410,7 +410,7 @@ func runPostInstallHooks(args ...string) error {
 	err := processHooks(configuration.GetHooksPostInstallDirectory(), func(hookFile string) error {
 		fmt.Printf("Executing %s hook %s:\n", hookType, hookFile)
 		_, err := runHook(hookFile, args...)
-		return err
+		return fmt.Errorf("unable to execute %s hook (%s): %s", hookType, hookFile, err)
 	})
 	if err != nil {
 		return fmt.Errorf("unable to run %s hooks: %s", hookType, err)
@@ -427,7 +427,7 @@ func runPreUninstallHooks(args ...string) error {
 	err := processHooks(configuration.GetHooksPreUninstallDirectory(), func(hookFile string) error {
 		fmt.Printf("Executing %s hook %s:\n", hookType, hookFile)
 		_, err := runHook(hookFile, args...)
-		return err
+		return fmt.Errorf("unable to execute %s hook (%s): %s", hookType, hookFile, err)
 	})
 	if err != nil {
 		return fmt.Errorf("unable to run %s hooks: %s", hookType, err)
@@ -444,7 +444,7 @@ func runPostUninstallHooks(args ...string) error {
 	err := processHooks(configuration.GetHooksPostUninstallDirectory(), func(hookFile string) error {
 		fmt.Printf("Executing %s hook %s:\n", hookType, hookFile)
 		_, err := runHook(hookFile, args...)
-		return err
+		return fmt.Errorf("unable to execute %s hook (%s): %s", hookType, hookFile, err)
 	})
 	if err != nil {
 		return fmt.Errorf("unable to run %s hooks: %s", hookType, err)

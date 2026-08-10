@@ -2,6 +2,7 @@ package cache
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 
 	"gitlab.com/uniget-org/cli/pkg/tui"
@@ -24,7 +25,7 @@ func NewMemoryCache() *MemoryCache {
 func (c *MemoryCache) Put(key string, p tui.ProgressReader, reader io.ReadCloser) error {
 	data, err := io.ReadAll(reader)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to read data for key %s: %w", key, err)
 	}
 	c.data[key] = data
 	return nil

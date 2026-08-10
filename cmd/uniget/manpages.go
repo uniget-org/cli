@@ -91,5 +91,5 @@ func writeManpage(cobraCmd *cobra.Command, name string, manDirectory string) err
 	}()
 
 	_, err = file.WriteString(manPage.Build(roff.NewDocument()))
-	return err
+	return fmt.Errorf("failed to write manpage: %w", err)
 }

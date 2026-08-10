@@ -133,7 +133,7 @@ func (tools *Tools) ResolveDependencies(queue *Tools, toolName string) error {
 	tool, err := tools.GetByName(toolName)
 	if err != nil {
 		logging.Error.Printfln("Error getting tool %s", toolName)
-		return err
+		return fmt.Errorf("unable to get tool %s: %s", toolName, err)
 	}
 	logging.Tracef("Tool %s is requested? %t", toolName, tool.Status.IsRequested)
 
@@ -147,7 +147,7 @@ func (tools *Tools) ResolveDependencies(queue *Tools, toolName string) error {
 
 		err = tools.ResolveDependencies(queue, depName)
 		if err != nil {
-			return err
+			return fmt.Errorf("unable to resolve dependencies for %s: %s", depName, err)
 		}
 
 		queue.AddIfMissing(dep)

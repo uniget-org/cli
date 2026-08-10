@@ -81,7 +81,7 @@ func (d *OciBackend) GetFileCache(source *Source, p tui.ProgressReader, callback
 			return d.Cache.Put(source.Url, p, reader)
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to get from registry and put in cache: %w", err)
 		}
 	}
 

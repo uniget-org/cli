@@ -61,7 +61,7 @@ func (m *MetadataSource) Download(p tui.ProgressReader) error {
 		return (*m.Unpacker).Unpack(reader)
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("error downloading metadata: %s", err)
 	}
 
 	err = (*m.Verifier).Verify(m)

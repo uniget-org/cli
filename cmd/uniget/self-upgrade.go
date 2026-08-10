@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -39,7 +38,7 @@ func (e *selfUpgradeSourceEnum) Set(v string) error {
 		*e = selfUpgradeSourceEnum(v)
 		return nil
 	default:
-		return errors.New(`must be one of "uniget" or "release"`)
+		return fmt.Errorf("invalid source %s; must be either uniget or release", v)
 	}
 }
 
