@@ -30,13 +30,13 @@ build:image:
     - ARCH:
       - "amd64"
       - "arm64"
-      BUILD_EXTRA_ARGS: "--target=noble-uniget"
+      BUILD_EXTRA_ARGS: "--target=ubuntu-uniget"
       TAG_SUFFIX: "-noble"
       CONTEXT: images/noble
     - ARCH:
       - "amd64"
       - "arm64"
-      BUILD_EXTRA_ARGS: "--target=resolute-uniget"
+      BUILD_EXTRA_ARGS: "--target=ubuntu-uniget"
       TAG_SUFFIX: "-resolute"
       CONTEXT: images/resolute
     - ARCH:
