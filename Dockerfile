@@ -142,3 +142,31 @@ curl --silent --show-error --location --fail \
     "https://gitlab.com/uniget-org/cli/-/releases/v${version}/downloads/uniget_Linux_${ARCH}.tar.gz" \
 | tar --extract --gzip --directory=/usr/local/bin uniget
 EOF
+
+FROM registry.gitlab.com/uniget-org/images/ubuntu:26.04@sha256:b0b654de801604e256237f2c27a907a4b61b59ebd83423ad0e0e465c0a3ba9cd AS noble-uniget
+ARG version
+COPY --from=uniget-release /usr/local/bin/uniget /usr/local/bin/uniget
+RUN <<EOF
+useradd --shell=/bin/bash --create-home bob
+echo "export UNIGET_USER=1" >>/home/bob/.bashrc
+echo "export PATH=\${HOME}/.local/bin:${PATH}" >>/home/bob/.bashrc
+EOF
+LABEL \
+    org.opencontainers.image.source="https://gitlab.com/uniget-org/cli" \
+    org.opencontainers.image.title="uniget CLI" \
+    org.opencontainers.image.description="The universal installer and updater for (container) tools" \
+    org.opencontainers.image.version="${version}"
+
+FROM registry.gitlab.com/uniget-org/images/systemd:26.04@sha256:51deec56db41b434f60efc463158112ec93e8023c9661807ab1d02988785d819 AS systemd-uniget
+ARG version
+COPY --from=uniget-release /usr/local/bin/uniget /usr/local/bin/uniget
+RUN <<EOF
+useradd --shell=/bin/bash --create-home bob
+echo "export UNIGET_USER=1" >>/home/bob/.bashrc
+echo "export PATH=\${HOME}/.local/bin:${PATH}" >>/home/bob/.bashrc
+EOF
+LABEL \
+    org.opencontainers.image.source="https://gitlab.com/uniget-org/cli" \
+    org.opencontainers.image.title="uniget CLI" \
+    org.opencontainers.image.description="The universal installer and updater for (container) tools" \
+    org.opencontainers.image.version="${version}"

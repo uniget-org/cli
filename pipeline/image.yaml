@@ -32,23 +32,15 @@ build:image:
       - "arm64"
       BUILD_EXTRA_ARGS: "--target=noble-uniget"
       TAG_SUFFIX: "-noble"
-      CONTEXT: images/noble
-    - ARCH:
-      - "amd64"
-      - "arm64"
-      BUILD_EXTRA_ARGS: "--target=resolute-uniget"
-      TAG_SUFFIX: "-resolute"
-      CONTEXT: images/resolute
     - ARCH:
       - "amd64"
       - "arm64"
       BUILD_EXTRA_ARGS: "--target=systemd-uniget"
-      TAG_SUFFIX: "-resolute-systemd"
-      CONTEXT: images/resolute-systemd
+      TAG_SUFFIX: "-noble-systemd"
   extends:
   - .docker:build
   variables:
-    BUILD_CONTEXT: ${CONTEXT}
+    BUILD_CONTEXT: .
     BUILD_ARGS: version
   tags:
   - saas-linux-medium-${ARCH}
@@ -62,8 +54,6 @@ build:index:
     - TAG_SUFFIX:
       - "-noble"
       - "-noble-systemd"
-      - "-resolute"
-      - "-resolute-systemd"
   extends:
   - .build:multi_arch_index
 
@@ -77,8 +67,6 @@ build:index:
     - TAG_SUFFIX:
       - "noble"
       - "noble-systemd"
-      - "resolute"
-      - "resolute-systemd"
   extends:
   - .regctl
   - .regctl-login
@@ -103,8 +91,6 @@ update:default_tag:
     - TAG_SUFFIX:
       - "noble"
       - "noble-systemd"
-      - "resolute"
-      - "resolute-systemd"
   extends:
   - .regctl
   - .regctl-login
@@ -124,7 +110,7 @@ update:latest_tag:
   script:
   - |
     regctl image copy \
-        "${CI_REGISTRY_IMAGE}:${TAG}-resolute" \
+        "${CI_REGISTRY_IMAGE}:${TAG}-noble" \
         "${CI_REGISTRY_IMAGE}:latest"
 
 update:version_tag:
@@ -137,5 +123,5 @@ update:version_tag:
   script:
   - |
     regctl image copy \
-        "${CI_REGISTRY_IMAGE}:${TAG}-resolute" \
+        "${CI_REGISTRY_IMAGE}:${TAG}-noble" \
         "${CI_REGISTRY_IMAGE}:${TAG}"
