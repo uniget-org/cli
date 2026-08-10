@@ -48,14 +48,14 @@ func (c *Config) DownloadMetadata() error {
 		}
 	}()
 
-	logging.Debugf("Changing directory to %s", c.Prefix+"/"+c.GetCacheDirectory())
-	err = os.Chdir(c.Prefix + "/" + c.GetCacheDirectory())
+	logging.Debugf("Changing directory to %s", c.GetCacheDirectory())
+	err = os.Chdir(c.GetCacheDirectory())
 	if err != nil {
-		return fmt.Errorf("error changing directory to %s: %s", c.Prefix+"/"+c.GetCacheDirectory(), err)
+		return fmt.Errorf("error changing directory to %s: %s", c.GetCacheDirectory(), err)
 	}
 
 	progressReader := common.CreateProgressReader("Downloading metadata", c.Debug || c.Trace)
-	logging.Debugf("Extracting archive to %s", c.Prefix+"/"+c.GetCacheDirectory())
+	logging.Debugf("Extracting archive to %s", c.GetCacheDirectory())
 	err = containers.GetFirstLayerFromRegistry(context.Background(), rc, t.GetRef(), progressReader, func(reader io.ReadCloser) error {
 		err := archive.ProcessTarContents(reader, func(reader *tar.Reader, header *tar.Header) error {
 			err := archive.CallbackExtractTarItem(reader, header)

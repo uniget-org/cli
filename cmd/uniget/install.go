@@ -197,6 +197,8 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 		if err != nil {
 			return fmt.Errorf("failed to update status for tool %s: %s", plannedTools.Tools[index].Name, err)
 		}
+
+		logging.Tracef("Tool %s: %+v", plannedTools.Tools[index].Name, plannedTools.Tools[index])
 	}
 
 	// Check for conflicts
@@ -329,7 +331,7 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 					logging.Error.Printfln("Unable to get binary status of dependency %s: %s", depName, err)
 					return fmt.Errorf("unable to get binary status of dependency %s: %s", depName, err)
 				}
-				err = dep.GetMarkerFileStatus(configuration.Prefix + "/" + configuration.GetCacheDirectory())
+				err = dep.GetMarkerFileStatus(configuration.GetCacheDirectory())
 				if err != nil {
 					logging.Error.Printfln("Unable to get marker file status of dependency %s: %s", depName, err)
 					return fmt.Errorf("unable to get marker file status of dependency %s: %s", depName, err)
@@ -348,7 +350,7 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 			}
 		}
 
-		myos.AssertDirectory(configuration.Prefix + "/" + configuration.Target)
+		myos.AssertDirectory(configuration.Target)
 		// Change working directory to prefix
 		// so that unpacking can ignore the target directory
 		installDir := configuration.Prefix
@@ -448,7 +450,7 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 		if err != nil {
 			logging.Error.Printfln("Unable to marshal tool: %s", err)
 		}
-		manifestFilename := configuration.Prefix + "/" + configuration.GetLibDirectory() + "/manifests/" + plannedTool.Name + ".json"
+		manifestFilename := configuration.GetLibDirectory() + "/manifests/" + plannedTool.Name + ".json"
 		err = os.WriteFile(manifestFilename, []byte(plannedToolJson), 0644) // #nosec G306 -- File must be world-readable
 		if err != nil {
 			logging.Error.Printfln("Unable to write manifest file: %s", err)
@@ -461,7 +463,7 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 			continue
 		}
 
-		err = plannedTool.CreateMarkerFile(configuration.Prefix + "/" + configuration.GetCacheDirectory())
+		err = plannedTool.CreateMarkerFile(configuration.GetCacheDirectory())
 		if err != nil {
 			logging.Warning.Printfln("Unable to create marker file: %s", err)
 			continue

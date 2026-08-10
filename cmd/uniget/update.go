@@ -44,7 +44,7 @@ var updateCmd = &cobra.Command{
 		}
 
 		var newTools *tool.Tools
-		newTools, err = configuration.LoadMetadata(configuration.Prefix + "/" + configuration.GetMetadataFile())
+		newTools, err = configuration.LoadMetadata(configuration.GetMetadataFile())
 		if err != nil {
 			return fmt.Errorf("error loading metadata: %s", err)
 		}

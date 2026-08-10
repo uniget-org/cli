@@ -95,7 +95,7 @@ var uninstallCmd = &cobra.Command{
 }
 
 func writeInstalledFiles(tool *tool.Tool, installedFiles []string) error {
-	fileListDirectory := configuration.Prefix + "/" + configuration.GetLibDirectory() + "/manifests"
+	fileListDirectory := configuration.GetLibDirectory() + "/manifests"
 	fileListFilename := fileListDirectory + "/" + tool.Name + ".txt"
 	err := os.MkdirAll(fileListDirectory, 0755) // #nosec G301 -- Directory must be accessible by all users
 	if err != nil {
@@ -116,9 +116,9 @@ func uninstallTool(toolName string) error {
 		return fmt.Errorf("unable to find tool %s: %s", toolName, err)
 	}
 
-	logging.Tracef("Looking for manifest file for tool %s at %s", tool.Name, configuration.Prefix+"/"+configuration.GetLibDirectory()+"/manifests/"+tool.Name+".txt")
-	if myos.FileExists(configuration.Prefix + "/" + configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".txt") {
-		data, err := os.ReadFile(configuration.Prefix + "/" + configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".txt")
+	logging.Tracef("Looking for manifest file for tool %s at %s", tool.Name, configuration.GetLibDirectory()+"/manifests/"+tool.Name+".txt")
+	if myos.FileExists(configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".txt") {
+		data, err := os.ReadFile(configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".txt")
 		if err != nil {
 			return fmt.Errorf("unable to read file %s: %s", installFilename, err)
 		}
@@ -132,8 +132,8 @@ func uninstallTool(toolName string) error {
 		logging.Warning.Printfln("Unable to find manifest for %s", tool.Name)
 	}
 
-	if myos.DirectoryExists(configuration.Prefix + "/" + configuration.GetCacheDirectory() + "/" + tool.Name) {
-		entries, err := os.ReadDir(configuration.Prefix + "/" + configuration.GetCacheDirectory() + "/" + tool.Name)
+	if myos.DirectoryExists(configuration.GetCacheDirectory() + "/" + tool.Name) {
+		entries, err := os.ReadDir(configuration.GetCacheDirectory() + "/" + tool.Name)
 		if err != nil {
 			return fmt.Errorf("failed to read cache directory for %s: %s", tool.Name, err)
 		}
@@ -143,35 +143,35 @@ func uninstallTool(toolName string) error {
 				return fmt.Errorf("unable to get info for %s: %s", info.Name(), err)
 			}
 
-			err = os.Remove(configuration.Prefix + "/" + configuration.GetCacheDirectory() + "/" + tool.Name + "/" + info.Name())
+			err = os.Remove(configuration.GetCacheDirectory() + "/" + tool.Name + "/" + info.Name())
 			if err != nil {
 				return fmt.Errorf("unable to remove %s: %s", info.Name(), err)
 			}
 
-			if myos.IsDirectoryEmpty(configuration.Prefix + "/" + configuration.GetCacheDirectory() + "/" + tool.Name) {
-				err = os.Remove(configuration.Prefix + "/" + configuration.GetCacheDirectory() + "/" + tool.Name)
+			if myos.IsDirectoryEmpty(configuration.GetCacheDirectory() + "/" + tool.Name) {
+				err = os.Remove(configuration.GetCacheDirectory() + "/" + tool.Name)
 				if err != nil {
-					return fmt.Errorf("unable to remove empty directory %s: %s", configuration.Prefix+"/"+configuration.GetCacheDirectory()+"/"+tool.Name, err)
+					return fmt.Errorf("unable to remove empty directory %s: %s", configuration.GetCacheDirectory()+"/"+tool.Name, err)
 				}
-				logging.Debugf("Removed empty directory %s", configuration.Prefix+"/"+configuration.GetCacheDirectory()+"/"+tool.Name)
+				logging.Debugf("Removed empty directory %s", configuration.GetCacheDirectory()+"/"+tool.Name)
 			}
 		}
 	}
 
-	if myos.FileExists(configuration.Prefix + "/" + configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".json") {
-		err = os.Remove(configuration.Prefix + "/" + configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".json")
+	if myos.FileExists(configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".json") {
+		err = os.Remove(configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".json")
 		if err != nil {
-			return fmt.Errorf("unable to remove %s: %s", configuration.Prefix+"/"+configuration.GetLibDirectory()+"/manifests/"+tool.Name+".json", err)
+			return fmt.Errorf("unable to remove %s: %s", configuration.GetLibDirectory()+"/manifests/"+tool.Name+".json", err)
 		}
 	}
-	if myos.FileExists(configuration.Prefix + "/" + configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".txt") {
-		err = os.Remove(configuration.Prefix + "/" + configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".txt")
+	if myos.FileExists(configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".txt") {
+		err = os.Remove(configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".txt")
 		if err != nil {
-			return fmt.Errorf("unable to remove %s: %s", configuration.Prefix+"/"+configuration.GetLibDirectory()+"/manifests/"+tool.Name+".txt", err)
+			return fmt.Errorf("unable to remove %s: %s", configuration.GetLibDirectory()+"/manifests/"+tool.Name+".txt", err)
 		}
 	}
 
-	err = tool.RemoveMarkerFile(configuration.Prefix + "/" + configuration.GetCacheDirectory())
+	err = tool.RemoveMarkerFile(configuration.GetCacheDirectory())
 	if os.IsNotExist(err) {
 		logging.Debugf("unable to remove marker file because it does not exist")
 	} else if err != nil {
@@ -182,6 +182,14 @@ func uninstallTool(toolName string) error {
 }
 
 func uninstallFiles(installedFiles []string) error {
+	logging.Debugf("Working relative to parent directory %s", configuration.Prefix)
+	root, err := os.OpenRoot(configuration.Prefix)
+	if err != nil {
+		return err
+	}
+	//nolint:errcheck
+	defer root.Close()
+
 	for _, file := range installedFiles {
 		logging.Debugf("processing %s", file)
 
@@ -190,13 +198,6 @@ func uninstallFiles(installedFiles []string) error {
 			continue
 		}
 
-		root, err := os.OpenRoot(configuration.Prefix + "/" + configuration.Target)
-		if err != nil {
-			return err
-		}
-		//nolint:errcheck
-		defer root.Close()
-
 		if strings.HasPrefix(file, "/") {
 			if !strings.HasPrefix(file, configuration.Prefix+"/"+configuration.Target) {
 				logging.Warning.Printfln("Skipping %s because it is not safe to remove", file)
@@ -204,18 +205,15 @@ func uninstallFiles(installedFiles []string) error {
 			}
 		}
 
-		prefixedFile := configuration.Prefix + "/" + file
-		logging.Debugf("prefixed line %s", prefixedFile)
-
-		_, err = root.Lstat(prefixedFile) // #nosec G703 - Path is checked for correct prefix
+		_, err = root.Lstat(file) // #nosec G703 - Path is checked for correct prefix
 		if err != nil {
-			logging.Debugf("Unable to stat %s: %s", prefixedFile, err)
+			logging.Debugf("Unable to stat %s: %s", file, err)
 			continue
 		}
 
-		err = root.Remove(prefixedFile) // #nosec G703 - Path is checked for correct prefix
+		err = root.Remove(file) // #nosec G703 - Path is checked for correct prefix
 		if err != nil {
-			return fmt.Errorf("unable to remove %s: %s", prefixedFile, err)
+			return fmt.Errorf("unable to remove %s: %s", file, err)
 		}
 	}
 

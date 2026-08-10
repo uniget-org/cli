@@ -100,10 +100,10 @@ var (
 				}
 			}
 
-			if !myos.FileExists(configuration.Prefix+"/"+configuration.GetMetadataFile()) ||
+			if !myos.FileExists(configuration.GetMetadataFile()) ||
 				configuration.AutoUpdate ||
 				(len(os.Getenv("UNIGET_IGNORE_METADATA_SIGNATURE")) > 0 &&
-					!myos.FileExists(configuration.Prefix+"/"+configuration.GetMetadataFile()+".sigstore.json")) {
+					!myos.FileExists(configuration.GetMetadataFile()+".sigstore.json")) {
 
 				logging.Debugf("Metadata does not exist. Downloading...")
 				err := configuration.DownloadMetadata()
@@ -113,13 +113,13 @@ var (
 			} else {
 				logging.Debugf("Metadata file exists")
 			}
-			tools, err = configuration.LoadMetadata(configuration.Prefix + "/" + configuration.GetMetadataFile())
+			tools, err = configuration.LoadMetadata(configuration.GetMetadataFile())
 			if err != nil {
 				return fmt.Errorf("error loading metadata: %s", err)
 			}
 
 			if myos.IsTty() {
-				file, err := os.Stat(configuration.Prefix + "/" + configuration.GetMetadataFile())
+				file, err := os.Stat(configuration.GetMetadataFile())
 				if err != nil {
 					return fmt.Errorf("error stating metadata file: %s", err)
 				}
@@ -137,7 +137,7 @@ var (
 
 			case "file":
 				logging.Debug("Using file cache")
-				fileCacheDir := configuration.Prefix + "/" + configuration.FileCacheDirectoryName
+				fileCacheDir := configuration.FileCacheDirectoryName
 				myos.AssertDirectory(fileCacheDir)
 				toolCache = cache.NewFileCache(fileCacheDir, configuration.FileCacheRetention)
 

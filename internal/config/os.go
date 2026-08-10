@@ -16,7 +16,7 @@ func (configuration *Config) AssertLibDirectory() {
 		myos.AssertDirectory(configuration.Prefix + "/" + configuration.LibRoot)
 	}
 	myos.AssertWritableDirectory(configuration.Prefix + "/" + configuration.LibRoot)
-	myos.AssertDirectory(configuration.Prefix + "/" + configuration.GetLibDirectory())
+	myos.AssertDirectory(configuration.GetLibDirectory())
 }
 
 func (configuration *Config) AssertCacheDirectory() {
@@ -24,11 +24,11 @@ func (configuration *Config) AssertCacheDirectory() {
 		myos.AssertDirectory(configuration.Prefix + "/" + configuration.CacheRoot)
 	}
 	myos.AssertWritableDirectory(configuration.Prefix + "/" + configuration.CacheRoot)
-	myos.AssertDirectory(configuration.Prefix + "/" + configuration.GetCacheDirectory())
+	myos.AssertDirectory(configuration.GetCacheDirectory())
 }
 
 func (configuration *Config) AssertMetadataFileExists() {
-	_, err := os.Stat(configuration.Prefix + "/" + configuration.GetMetadataFile())
+	_, err := os.Stat(configuration.GetMetadataFile())
 	if err != nil {
 		logging.Error.Printfln("Metadata file %s does not exist: %s",
 			configuration.Prefix+"/"+configuration.GetMetadataFile(),
@@ -36,7 +36,7 @@ func (configuration *Config) AssertMetadataFileExists() {
 		os.Exit(1)
 	}
 
-	_, err = os.Stat(configuration.Prefix + "/" + configuration.GetMetadataFile() + ".sigstore.json")
+	_, err = os.Stat(configuration.GetMetadataFile() + ".sigstore.json")
 	if err != nil {
 		logging.Error.Printfln("Metadata signature %s does not exist: %s",
 			configuration.Prefix+"/"+configuration.GetMetadataFile()+".sigstore.json",
