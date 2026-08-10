@@ -112,3 +112,16 @@ update:latest_tag:
     regctl image copy \
         "${CI_REGISTRY_IMAGE}:${TAG}-noble" \
         "${CI_REGISTRY_IMAGE}:latest"
+
+update:version_tag:
+  needs:
+  - prepare
+  - build:index
+  extends:
+  - .regctl
+  - .regctl-login
+  script:
+  - |
+    regctl image copy \
+        "${CI_REGISTRY_IMAGE}:${TAG}-noble" \
+        "${CI_REGISTRY_IMAGE}:${TAG}"
