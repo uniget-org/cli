@@ -73,6 +73,23 @@
         "indirect"
       ],
       "enabled": true
+    },
+    {
+      "matchFileNames": [
+        "images/noble/Dockerfile"
+      ],
+      "matchDatasource": [
+        "docker"
+      ],
+      "matchPackageNames": [
+        "registry.gitlab.com/uniget-org/images/ubuntu",
+        "registry.gitlab.com/uniget-org/images/systemd"
+      ],
+      "matchUpdateTypes": [
+        "pin",
+        "pinDigest",
+        "digest"
+      ]
     }
   ],
   "postUpdateOptions": [

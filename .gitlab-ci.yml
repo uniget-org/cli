@@ -82,10 +82,9 @@ images:
       PUSH: "true"
   - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     changes:
-    - Dockerfile
+    - "**/Dockerfile"
     variables:
       PUSH: "false"
-    when: never
   - if: $CI_PIPELINE_SOURCE == "web"
     variables:
       PUSH: "true"
@@ -93,6 +92,9 @@ images:
     variables:
       PUSH: "true"
   - if: $CI_PIPELINE_SOURCE == "web" && $SCHEDULED_JOB == "images"
+  - if: $CI_PIPELINE_SOURCE == "web" && $SCHEDULED_JOB == "test-images"
+    variables:
+      PUSH: "false"
   trigger:
     include: pipeline/image.yaml
     strategy: depend
