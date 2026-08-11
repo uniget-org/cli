@@ -60,11 +60,17 @@ build:index_amd64:
     parallel:
       matrix:
       - ARCH: "amd64"
+        BUILD_EXTRA_ARGS: "--target=ubuntu-uniget"
         TAG_SUFFIX: "-noble"
+        CONTEXT: images/noble
       - ARCH: "amd64"
+        BUILD_EXTRA_ARGS: "--target=ubuntu-uniget"
         TAG_SUFFIX: "-resolute"
+        CONTEXT: images/resolute
       - ARCH: "amd64"
+        BUILD_EXTRA_ARGS: "--target=systemd-uniget"
         TAG_SUFFIX: "-resolute-systemd"
+        CONTEXT: images/resolute-systemd
   parallel:
     matrix:
     - TAG_SUFFIX:
@@ -81,11 +87,17 @@ build:index_arm64:
     parallel:
       matrix:
       - ARCH: "arm64"
+        BUILD_EXTRA_ARGS: "--target=ubuntu-uniget"
         TAG_SUFFIX: "-noble"
+        CONTEXT: images/noble
       - ARCH: "arm64"
+        BUILD_EXTRA_ARGS: "--target=ubuntu-uniget"
         TAG_SUFFIX: "-resolute"
+        CONTEXT: images/resolute
       - ARCH: "arm64"
+        BUILD_EXTRA_ARGS: "--target=systemd-uniget"
         TAG_SUFFIX: "-resolute-systemd"
+        CONTEXT: images/resolute-systemd
   parallel:
     matrix:
     - TAG_SUFFIX:
