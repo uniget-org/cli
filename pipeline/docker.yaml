@@ -84,3 +84,45 @@
   artifacts:
     paths:
     - index-digest-${TAG}${TAG_SUFFIX}.json
+
+.build:multi_arch_index_incremental_create_amd64:
+  extends:
+  - .regctl
+  - .regctl-login
+  script:
+  - |
+    echo "### Creating index for ${CI_REGISTRY_IMAGE}:${TAG} with amd64 only"
+  - |
+    DIGEST_AMD64="$( cat image-digest-${TAG}${TAG_SUFFIX}-amd64.json )"
+    echo "    Digest amd64: ${DIGEST_AMD64}"
+  - |
+    echo "### Creating multi-arch image index for ${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}"
+    regctl index create "${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}" \
+        --format='{{json .Manifest}}' \
+        --ref="${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-amd64@${DIGEST_AMD64}" \
+    | tr -d '\n' \
+    >index-digest-${TAG}${TAG_SUFFIX}-amd64.json
+  artifacts:
+    paths:
+    - index-digest-${TAG}${TAG_SUFFIX}-amd64.json
+
+.build:multi_arch_index_incremental_add_arm64:
+  extends:
+  - .regctl
+  - .regctl-login
+  script:
+  - |
+    echo "### Add arm64 to index for ${CI_REGISTRY_IMAGE}:${TAG}"
+  - |
+    DIGEST_ARM64="$( cat image-digest-${TAG}${TAG_SUFFIX}-arm64.json )"
+    echo "    Digest arm64: ${DIGEST_ARM64}"
+  - |
+    echo "### Creating multi-arch image index for ${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}"
+    regctl index create "${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}" \
+        --format='{{json .Manifest}}' \
+        --ref="${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-arm64@${DIGEST_ARM64}" \
+    | tr -d '\n' \
+    >index-digest-${TAG}${TAG_SUFFIX}-arm64.json
+  artifacts:
+    paths:
+    - index-digest-${TAG}${TAG_SUFFIX}-arm64.json
