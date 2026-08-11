@@ -98,3 +98,4 @@ repush--%: ; $(info $(M) Pushing tag v$*...)
 .PHONY:
 push: ; $(info $(M) Pushing tags...)
 	@$(GIT) push origin --tags
+	@$(GIT) push --mirror github
