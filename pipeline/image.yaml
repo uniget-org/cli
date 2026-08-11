@@ -56,7 +56,15 @@ build:image:
 build:index_amd64:
   needs:
   - prepare
-  - build:image
+  - job: build:image
+    parallel:
+      matrix:
+      - ARCH: "amd64"
+        TAG_SUFFIX: "-noble"
+      - ARCH: "amd64"
+        TAG_SUFFIX: "-resolute"
+      - ARCH: "amd64"
+        TAG_SUFFIX: "-resolute-systemd"
   parallel:
     matrix:
     - TAG_SUFFIX:
@@ -69,7 +77,15 @@ build:index_amd64:
 build:index_arm64:
   needs:
   - prepare
-  - build:image
+  - job: build:image
+    parallel:
+      matrix:
+      - ARCH: "arm64"
+        TAG_SUFFIX: "-noble"
+      - ARCH: "arm64"
+        TAG_SUFFIX: "-resolute"
+      - ARCH: "arm64"
+        TAG_SUFFIX: "-resolute-systemd"
   parallel:
     matrix:
     - TAG_SUFFIX:
