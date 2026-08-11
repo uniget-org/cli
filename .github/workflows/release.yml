@@ -39,7 +39,7 @@ jobs:
           echo "Using tag name: $TAG_NAME"
 
           echo "Fetching GitLab release for tag: $TAG_NAME"
-          if ! curl --silent --verbose --show-error --location --fail --output release.json "https://gitlab.com/api/v4/projects/uniget-org%2fcli/releases/${TAG_NAME}"; then
+          if ! curl --silent --show-error --location --fail --output release.json --retry 10 --retry-delay 180 --retry-max-time 1800 "https://gitlab.com/api/v4/projects/uniget-org%2fcli/releases/${TAG_NAME}"; then
             echo "ERROR: Failed to fetch GitLab release for tag <$TAG_NAME>."
             exit 1
           fi
