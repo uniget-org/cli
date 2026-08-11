@@ -12,10 +12,10 @@ import (
 	myos "gitlab.com/uniget-org/cli/pkg/os"
 )
 
-var manDirectory string
+var manDirectory string = "share/man"
 
 func initManpagesCmd() {
-	manpagesCmd.Flags().StringVar(&manDirectory, "path", "share/man", "Path to store manpages in (relative paths resolves using target directory)")
+	manpagesCmd.Flags().StringVar(&manDirectory, "path", manDirectory, "Path to store manpages in (relative paths resolves using target directory)")
 
 	rootCmd.AddCommand(manpagesCmd)
 }
@@ -32,7 +32,7 @@ var manpagesCmd = &cobra.Command{
 	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		if (manDirectory[0:1] != "/") && (manDirectory[0:1] != ".") {
-			manDirectory = fmt.Sprintf("%s/%s", "/"+configuration.Target, manDirectory)
+			manDirectory = fmt.Sprintf("%s/%s", configuration.Prefix+"/"+configuration.Target, manDirectory)
 		}
 		logging.Debugf("Using base directory for manpages: %s", manDirectory)
 
@@ -91,5 +91,8 @@ func writeManpage(cobraCmd *cobra.Command, name string, manDirectory string) err
 	}()
 
 	_, err = file.WriteString(manPage.Build(roff.NewDocument()))
-	return fmt.Errorf("failed to write manpage: %w", err)
+	if err != nil {
+		return fmt.Errorf("failed to write manpage: %w", err)
+	}
+	return nil
 }
