@@ -102,7 +102,6 @@ build:index_arm64:
     matrix:
     - TAG_SUFFIX:
       - "-noble"
-      - "-noble-systemd"
       - "-resolute"
       - "-resolute-systemd"
   extends:
