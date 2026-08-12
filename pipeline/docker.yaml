@@ -117,12 +117,6 @@
     DIGEST_ARM64="$( cat image-digest-${TAG}${TAG_SUFFIX}-arm64.json )"
     echo "    Digest arm64: ${DIGEST_ARM64}"
   - |
-    echo "### Creating multi-arch image index for ${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}"
-    regctl index create "${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}" \
-        --format='{{json .Manifest}}' \
-        --ref="${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-arm64@${DIGEST_ARM64}" \
-    | tr -d '\n' \
-    >index-digest-${TAG}${TAG_SUFFIX}-arm64.json
-  artifacts:
-    paths:
-    - index-digest-${TAG}${TAG_SUFFIX}-arm64.json
+    echo "### Adding arm64 to multi-arch image index for ${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}"
+    regctl index add "${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}" \
+        --ref="${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-arm64@${DIGEST_ARM64}"
