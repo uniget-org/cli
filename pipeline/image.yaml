@@ -53,7 +53,7 @@ build:image:
   tags:
   - saas-linux-medium-${ARCH}
 
-build:index_amd64:
+build:multi_arch_index:
   needs:
   - prepare
   - job: build:image
@@ -78,48 +78,13 @@ build:index_amd64:
       - "-resolute"
       - "-resolute-systemd"
   extends:
-  - .build:multi_arch_index_incremental_create_amd64
-
-build:index_arm64:
-  needs:
-  - prepare
-  - job: build:image
-    parallel:
-      matrix:
-      - ARCH: "arm64"
-        BUILD_EXTRA_ARGS: "--target=ubuntu-uniget"
-        TAG_SUFFIX: "-noble"
-        CONTEXT: images/noble
-      - ARCH: "arm64"
-        BUILD_EXTRA_ARGS: "--target=ubuntu-uniget"
-        TAG_SUFFIX: "-resolute"
-        CONTEXT: images/resolute
-      - ARCH: "arm64"
-        BUILD_EXTRA_ARGS: "--target=systemd-uniget"
-        TAG_SUFFIX: "-resolute-systemd"
-        CONTEXT: images/resolute-systemd
-  - job: build:index_amd64
-    parallel:
-      matrix:
-      - TAG_SUFFIX:
-        - "-noble"
-        - "-resolute"
-        - "-resolute-systemd"
-  parallel:
-    matrix:
-    - TAG_SUFFIX:
-      - "-noble"
-      - "-resolute"
-      - "-resolute-systemd"
-  extends:
-  - .build:multi_arch_index_incremental_add_arm64
+  - .build:multi_arch_index
 
 .clean:intermediate_tags:
   needs:
   - prepare
   - build:image
-  - build:index_amd64
-  - build:index_arm64
+  - build:multi_arch_index
   parallel:
     matrix:
     - TAG_SUFFIX:
@@ -144,8 +109,7 @@ build:index_arm64:
 update:default_tag:
   needs:
   - prepare
-  - build:index_amd64
-  - build:index_arm64
+  - build:multi_arch_index
   parallel:
     matrix:
     - TAG_SUFFIX:
@@ -164,8 +128,7 @@ update:default_tag:
 update:latest_tag:
   needs:
   - prepare
-  - build:index_amd64
-  - build:index_arm64
+  - build:multi_arch_index
   extends:
   - .regctl
   - .regctl-login
@@ -178,8 +141,7 @@ update:latest_tag:
 update:version_tag:
   needs:
   - prepare
-  - build:index_amd64
-  - build:index_arm64
+  - build:multi_arch_index
   extends:
   - .regctl
   - .regctl-login
