@@ -56,21 +56,7 @@ build:image:
 build:multi_arch_index:
   needs:
   - prepare
-  - job: build:image
-    parallel:
-      matrix:
-      - ARCH: "amd64"
-        BUILD_EXTRA_ARGS: "--target=ubuntu-uniget"
-        TAG_SUFFIX: "-noble"
-        CONTEXT: images/noble
-      - ARCH: "amd64"
-        BUILD_EXTRA_ARGS: "--target=ubuntu-uniget"
-        TAG_SUFFIX: "-resolute"
-        CONTEXT: images/resolute
-      - ARCH: "amd64"
-        BUILD_EXTRA_ARGS: "--target=systemd-uniget"
-        TAG_SUFFIX: "-resolute-systemd"
-        CONTEXT: images/resolute-systemd
+  - build:image
   parallel:
     matrix:
     - TAG_SUFFIX:
