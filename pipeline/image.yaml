@@ -98,6 +98,13 @@ build:index_arm64:
         BUILD_EXTRA_ARGS: "--target=systemd-uniget"
         TAG_SUFFIX: "-resolute-systemd"
         CONTEXT: images/resolute-systemd
+  - job: build:index_amd64
+    parallel:
+      matrix:
+      - TAG_SUFFIX:
+        - "-noble"
+        - "-resolute"
+        - "-resolute-systemd"
   parallel:
     matrix:
     - TAG_SUFFIX:

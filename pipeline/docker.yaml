@@ -91,7 +91,7 @@
   - .regctl-login
   script:
   - |
-    echo "### Creating index for ${CI_REGISTRY_IMAGE}:${TAG} with amd64 only"
+    echo "### Creating index for ${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX} with amd64 only"
   - |
     DIGEST_AMD64="$( cat image-digest-${TAG}${TAG_SUFFIX}-amd64.json )"
     echo "    Digest amd64: ${DIGEST_AMD64}"
@@ -112,7 +112,7 @@
   - .regctl-login
   script:
   - |
-    echo "### Add arm64 to index for ${CI_REGISTRY_IMAGE}:${TAG}"
+    echo "### Add arm64 to index for ${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}"
   - |
     DIGEST_ARM64="$( cat image-digest-${TAG}${TAG_SUFFIX}-arm64.json )"
     echo "    Digest arm64: ${DIGEST_ARM64}"
