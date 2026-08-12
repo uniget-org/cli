@@ -145,6 +145,7 @@ update:default_tag:
   needs:
   - prepare
   - build:index_amd64
+  - build:index_arm64
   parallel:
     matrix:
     - TAG_SUFFIX:
@@ -164,6 +165,7 @@ update:latest_tag:
   needs:
   - prepare
   - build:index_amd64
+  - build:index_arm64
   extends:
   - .regctl
   - .regctl-login
@@ -177,6 +179,7 @@ update:version_tag:
   needs:
   - prepare
   - build:index_amd64
+  - build:index_arm64
   extends:
   - .regctl
   - .regctl-login
