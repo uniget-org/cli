@@ -76,7 +76,10 @@
     },
     {
       "matchFileNames": [
-        "images/noble/Dockerfile"
+        "images/noble/Dockerfile",
+        "images/noble-systemd/Dockerfile",
+        "images/resolute/Dockerfile",
+        "images/resolute-systemd/Dockerfile"
       ],
       "matchDatasource": [
         "docker"
