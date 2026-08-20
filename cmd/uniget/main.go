@@ -229,6 +229,16 @@ func main() {
 
 	configuration = config.NewDefaultConfig()
 
+	if configuration.Os == "android" || configuration.Os == "darwin" {
+		if len(os.Getenv("UNIGET_EXPERIMENTAL")) == 0 {
+			logging.Warning.Println("Warning: " + configuration.Os + " is only an experiment and not ready for public use.")
+			os.Exit(1)
+
+		} else {
+			logging.Warning.Println("Warning: " + configuration.Os + " is only an experiment. Use at your own risk.")
+		}
+	}
+
 	pf := rootCmd.PersistentFlags()
 	pf.StringVar(&configuration.LogLevel, "log-level", configuration.LogLevel, "Log level (trace, debug, info, warning, error)")
 	pf.BoolVarP(&configuration.Debug, "debug", "d", configuration.Debug, "Set log level to debug")

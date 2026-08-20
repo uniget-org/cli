@@ -13,6 +13,7 @@ import (
 )
 
 type Config struct {
+	Os                          string
 	Arch                        string
 	AltArch                     string
 	LogLevel                    string `env:"UNIGET_LOGLEVEL"`
@@ -40,6 +41,7 @@ type Config struct {
 
 func NewDefaultConfig(opts ...ConfigOption) *Config {
 	config := &Config{
+		Os:                     runtime.GOOS,
 		AltArch:                runtime.GOARCH,
 		LogLevel:               pterm.LogLevelInfo.String(),
 		Debug:                  false,
@@ -190,6 +192,7 @@ func (c *Config) SetUserConfig(opts ...ConfigOption) {
 
 func (c *Config) String() string {
 	return "Config{" + "\n" +
+		"  Os: " + c.Os + ", " + "\n" +
 		"  Arch: " + c.Arch + ", " + "\n" +
 		"  AltArch: " + c.AltArch + ", " + "\n" +
 		"  LogLevel: " + c.LogLevel + ", " + "\n" +

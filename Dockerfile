@@ -42,6 +42,33 @@ mkdir -p /out
 find dist -type f -executable -exec cp {} /out/uniget \;
 EOF
 
+FROM base AS build-all
+ARG ANDROID_NDK_VERSION=29
+WORKDIR /tmp
+RUN <<EOF
+apt-get update
+apt-get install -y --no-install-recommends \
+    curl \
+    unzip \
+    file
+curl -sSLfO "https://dl.google.com/android/repository/android-ndk-r${ANDROID_NDK_VERSION}-linux.zip"
+unzip -q "android-ndk-r${ANDROID_NDK_VERSION}-linux.zip"
+EOF
+WORKDIR /go/src/gitlab.com/uniget-org/cli
+RUN --mount=target=.,readwrite \
+    --mount=from=uniget-goreleaser,src=/bin/goreleaser,target=/usr/local/bin/goreleaser \
+    --mount=from=uniget-cosign,src=/bin/cosign,target=/usr/local/bin/cosign \
+    --mount=from=uniget-syft,src=/bin/syft,target=/usr/local/bin/syft \
+    --mount=from=uniget-gh,src=/bin/gh,target=/usr/local/bin/gh \
+    --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build <<EOF
+goreleaser healthcheck
+goreleaser build \
+    --auto-snapshot \
+    --clean
+file dist/*/uniget
+EOF
+
 FROM base AS publish-gitlab
 ARG CI_SERVER_HOST
 ARG CI_JOB_TOKEN

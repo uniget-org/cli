@@ -13,9 +13,30 @@ builds:
   - -s -w -X main.version={{.Version}}
   goos:
   - linux
+  - darwin
+  - android
   goarch:
   - amd64
   - arm64
+  overrides:
+  - goos: android
+    goarch: arm64
+    env:
+    - CGO_ENABLED=1
+    - CC="/tmp/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android29-clang"
+  ignore:
+  # This is not a thing
+  - goos: darwin
+    goarch: amd64
+  # This is not a thing
+  - goos: android
+    goarch: amd64
+  # This is not ready for public use
+  - goos: android
+    goarch: arm64
+  # This is not ready for public use
+  - goos: darwin
+    goarch: arm64
 
 snapshot:
   version_template: "{{ incpatch .Version }}-dev.0"
