@@ -1,7 +1,7 @@
 #syntax=docker/dockerfile:1.26.0
 #check=skip=SecretsUsedInArgOrEnv
 
-FROM registry.gitlab.com/uniget-org/images/ubuntu:24.04 AS ubuntu-uniget
+FROM registry.gitlab.com/uniget-org/images/ubuntu:26.04@sha256:0e9f873df6c03f698322571475f367a694d7eff9077e5019ae764e5106a6da16 AS ubuntu-uniget
 ARG version
 RUN <<EOF
 curl --silent --show-error --location --fail \
