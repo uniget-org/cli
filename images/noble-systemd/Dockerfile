@@ -1,4 +1,4 @@
-#syntax=docker/dockerfile:1.26.0
+#syntax=docker/dockerfile:1.27.0
 #check=skip=SecretsUsedInArgOrEnv
 
 FROM registry.gitlab.com/uniget-org/images/systemd:26.04@sha256:17ad68c83ec653ef8ee88b5ca82d1ceb8b7ff143dc69593c6dc997816928a899 AS systemd-uniget
