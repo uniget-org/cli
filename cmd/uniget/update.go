@@ -94,7 +94,7 @@ var updateCmd = &cobra.Command{
 
 		logging.Debugf("Showing new tools and updates")
 		for _, tool := range addedTools.Tools {
-			logging.Customf(pterm.FgBlack, pterm.BgGreen, pterm.FgWhite, pterm.BgDefault, "NEW", " %s (%s)", tool.Name, tool.Description)
+			logging.Customf(pterm.FgBlack, pterm.BgGreen, pterm.FgWhite, pterm.BgDefault, "NEW", "%s (%s)", tool.Name, tool.Description)
 		}
 		toolsToShow := updatedInstalledTools
 		if updateShowAllTools {
