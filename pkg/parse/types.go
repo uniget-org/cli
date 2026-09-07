@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/regclient/regclient/types/ref"
 	"gitlab.com/uniget-org/cli/pkg/containers"
@@ -31,7 +32,7 @@ func (imageRefs *ImageRefs) Bump(tools *tool.Tools, callback func(toolName strin
 	for index, reference := range imageRefs.Refs {
 		logging.Debugf("Bumping image reference: %s", reference)
 
-		if slices.Contains(supportRegistries, reference.Registry) && reference.Repository[0:17] == "uniget-org/tools/" {
+		if slices.Contains(supportRegistries, reference.Registry) && strings.HasPrefix(reference.Repository, "uniget-org/tools/") {
 			toolName := reference.Repository[17:]
 			oldVersion := reference.Tag
 
