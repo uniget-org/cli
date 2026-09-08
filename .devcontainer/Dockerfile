@@ -1,6 +1,6 @@
 #syntax=docker/dockerfile:1
 
-FROM ghcr.io/uniget-org/tools/uniget:0.28.12@sha256:9bf527cd38dd8b2dd52191876f1eb4f0bad9b5eacdf815867d26bfb731d1b8ca AS uniget
+FROM ghcr.io/uniget-org/tools/uniget:0.28.14@sha256:7462c7cf92de719095631217462e383f286796dd48508774fc6609d76d2e75d1 AS uniget
 FROM ghcr.io/uniget-org/tools/git:2.54.0 AS git
 FROM ghcr.io/uniget-org/tools/go:1.27.1@sha256:7165d7ed4e6a0c73031fdd3684755b2aea3f2c91d3b648c2c9bef54436a78032 AS go
 FROM ghcr.io/uniget-org/tools/make:4.4.1 AS make
