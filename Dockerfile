@@ -11,7 +11,7 @@ FROM ghcr.io/uniget-org/tools/gosec:2.29.0@sha256:b2691e5c4f0521fbe214b6bdf456cd
 FROM ghcr.io/uniget-org/tools/golangci-lint:2.13.2@sha256:1118ad6d9ee37202ede6dfc1ccc4eca5c925e8191f1196f555ccd4941d053e32 AS lint-base
 FROM golang:1.27.1@sha256:512690a5660563b57d37ecc31129e7f136e831db2aed24a1dbeb8ad7380dc0fa AS latest-golang
 FROM alpine:3.24.1@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b AS latest-alpine
-FROM ubuntu:26.04@sha256:2260313b31c8c011cd2eebe728008efac1b3982be73eb71348ea2648d2c0e09b AS latest-ubuntu2604
+FROM ubuntu:26.04@sha256:513c074113a871b51a8d16ab445c88779d6452d937a164fb5cc479f32668a41d AS latest-ubuntu2604
 
 FROM --platform=${BUILDPLATFORM} latest-golang AS base
 SHELL [ "/bin/sh", "-o", "errexit", "-c" ]
