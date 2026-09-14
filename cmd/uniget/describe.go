@@ -12,6 +12,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"gitlab.com/uniget-org/cli/internal/constants"
+	"gitlab.com/uniget-org/cli/internal/flags"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 	"gitlab.com/uniget-org/cli/pkg/semver"
@@ -90,6 +91,12 @@ var describeCmd = &cobra.Command{
 			toolRef, err := containers.FindToolRef(registries, repositories, tool.Name, tool.Version)
 			if err != nil {
 				return fmt.Errorf("unable to find tool ref: %s", err)
+			}
+			if flags.VerifyImageSignature {
+				err = containers.VerifyContainerImageSignature(toolRef, "https://token.actions.githubusercontent.com", "", "", "https://github\\.com/uniget-org/tools/\\.github/workflows/[^.]+\\.yml@.+")
+				if err != nil {
+					return fmt.Errorf("error verifying tool signature: %w", err)
+				}
 			}
 			tags, err := containers.GetImageTags(toolRef)
 			if err != nil {

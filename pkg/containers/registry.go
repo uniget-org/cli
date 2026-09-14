@@ -63,6 +63,19 @@ func GetImageTags(t *ToolRef) ([]string, error) {
 	return filteredTags, nil
 }
 
+func GetImageDigest(image *ToolRef) (string, error) {
+	rc := GetRegclient()
+	//nolint:errcheck
+	defer rc.Close(context.Background(), image.GetRef())
+
+	m, err := rc.ManifestGet(context.Background(), image.GetRef())
+	if err != nil {
+		return "", fmt.Errorf("failed to get manifest: %s", err)
+	}
+
+	return m.GetDescriptor().Digest.String(), nil
+}
+
 func GetImageLabels(image *ToolRef) (labels map[string]string, err error) {
 	rc := GetRegclient()
 	//nolint:errcheck

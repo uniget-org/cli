@@ -35,7 +35,7 @@ func NewSigstoreMetadataVerifier(issuer string, issuerRegex string, san string, 
 }
 
 func (v SigstoreMetadataVerifier) Verify(metadataSource *MetadataSource) error {
-	_, err := security.VerifySigstoreBundle(
+	_, err := security.VerifySigstoreBundleForArtifact(
 		metadataSource.Files["metadata.json"],
 		metadataSource.Files["metadata.json.sigstore.json"],
 		v.issuer,

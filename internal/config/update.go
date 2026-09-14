@@ -79,7 +79,7 @@ func (c *Config) DownloadMetadata() error {
 
 func (c *Config) LoadMetadata(filename string) (loadedTools *tool.Tools, err error) {
 	if len(os.Getenv("UNIGET_IGNORE_METADATA_SIGNATURE")) == 0 {
-		_, err = security.VerifySigstoreBundle(
+		_, err = security.VerifySigstoreBundleForArtifact(
 			filename,
 			filename+".sigstore.json",
 			"https://token.actions.githubusercontent.com",

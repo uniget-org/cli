@@ -68,6 +68,10 @@ func (t *ToolRef) String() string {
 	return fmt.Sprintf("%s/%s%s%s:%s", t.Registry, t.Repository, t.toolSeparator, t.Tool, t.Version)
 }
 
+func (t *ToolRef) RepositoryString() string {
+	return fmt.Sprintf("%s/%s%s%s", t.Registry, t.Repository, t.toolSeparator, t.Tool)
+}
+
 func (t *ToolRef) Key() string {
 	return fmt.Sprintf("%s-%s", t.Tool, t.Version)
 }

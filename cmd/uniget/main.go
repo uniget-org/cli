@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"gitlab.com/uniget-org/cli/internal/config"
+	"gitlab.com/uniget-org/cli/internal/flags"
 
 	"github.com/njayp/ophis"
 	"github.com/pterm/pterm"
@@ -221,6 +222,7 @@ func init() {
 	initUninstallCmd()
 	initUpdateCmd()
 	initUpgradeCmd()
+	initVerifyCmd()
 	initVersionCmd()
 }
 
@@ -243,6 +245,9 @@ func main() {
 	pf.StringVar(&configuration.Cache, "cache", configuration.Cache, "Cache backend to use (none, file, docker, containerd)")
 	pf.StringVar(&configuration.FileCacheDirectoryName, "cache-directory", configuration.FileCacheDirectoryName, "Directory for the file cache")
 	pf.IntVar(&configuration.FileCacheRetention, "cache-retention", configuration.FileCacheRetention, "Retention in seconds for the file cache")
+
+	pf.BoolVar(&flags.VerifyImageSignature, "verify-image-signature", false, "Enable or disable verifyImageSignature")
+	_ = rootCmd.Flags().MarkHidden("verify-image-signature")
 
 	rootCmd.MarkFlagsMutuallyExclusive("prefix", "user")
 	rootCmd.MarkFlagsMutuallyExclusive("target", "user")

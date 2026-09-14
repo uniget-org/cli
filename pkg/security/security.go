@@ -1,15 +1,20 @@
 package security
 
 import (
+	"context"
 	"fmt"
 	"os"
 
+	"github.com/google/go-containerregistry/pkg/name"
+	"github.com/sigstore/cosign/v3/pkg/cosign"
+	ociremote "github.com/sigstore/cosign/v3/pkg/oci/remote"
 	"github.com/sigstore/sigstore-go/pkg/bundle"
 	"github.com/sigstore/sigstore-go/pkg/root"
 	"github.com/sigstore/sigstore-go/pkg/tuf"
 	"github.com/sigstore/sigstore-go/pkg/util"
 	"github.com/sigstore/sigstore-go/pkg/verify"
 	"github.com/theupdateframework/go-tuf/v2/metadata/fetcher"
+
 	"gitlab.com/uniget-org/cli/pkg/logging"
 )
 
@@ -35,7 +40,7 @@ func GetSigstoreTrustedRoot() (*root.TrustedRoot, error) {
 	return trustedRoot, nil
 }
 
-func VerifySigstoreBundle(artifactPath string, bundlePath string, expectedOIDIssuer, expectedOIDIssuerRegex, expectedSAN, expectedSANRegex string) (bool, error) {
+func VerifySigstoreBundleForArtifact(artifactPath string, bundlePath string, expectedOIDIssuer, expectedOIDIssuerRegex, expectedSAN, expectedSANRegex string) (bool, error) {
 	logging.Tracef("Verifying cosign bundle with artifact path %s and bundle path %s", artifactPath, bundlePath)
 
 	b, err := bundle.LoadJSONFromPath(bundlePath)
@@ -76,6 +81,44 @@ func VerifySigstoreBundle(artifactPath string, bundlePath string, expectedOIDIss
 	_, err = sev.Verify(b, verify.NewPolicy(artifactPolicy, identityPolicies...))
 	if err != nil {
 		return false, fmt.Errorf("error verifying bundle: %s", err)
+	}
+
+	return true, nil
+}
+
+func VerifySignstoreBundleForContainerImage(image string, expectedOIDIssuer, expectedOIDIssuerRegex, expectedSAN, expectedSANRegex string) (bool, error) {
+	ref, err := name.ParseReference(image, []name.Option{}...)
+	if err != nil {
+		return false, fmt.Errorf("parsing reference: %w", err)
+	}
+
+	var trustedMaterial = make(root.TrustedMaterialCollection, 0)
+	trustedRoot, err := GetSigstoreTrustedRoot()
+	if err != nil {
+		return false, fmt.Errorf("error getting Sigstore trusted root: %w", err)
+	}
+	trustedMaterial = append(trustedMaterial, trustedRoot)
+
+	co := &cosign.CheckOpts{
+		NewBundleFormat:    true,
+		TrustedMaterial:    trustedMaterial,
+		RegistryClientOpts: []ociremote.Option{},
+		Identities: []cosign.Identity{
+			{
+				Issuer:        expectedOIDIssuer,
+				IssuerRegExp:  expectedOIDIssuerRegex,
+				Subject:       expectedSAN,
+				SubjectRegExp: expectedSANRegex,
+			},
+		},
+	}
+
+	_, verified, err := cosign.VerifyImageAttestations(context.Background(), ref, co, []name.Option{}...)
+	if err != nil {
+		return false, fmt.Errorf("error verifying tool signature: %w", err)
+	}
+	if !verified {
+		return false, fmt.Errorf("tool signature verification failed")
 	}
 
 	return true, nil

@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"gitlab.com/uniget-org/cli/internal/common"
 	"gitlab.com/uniget-org/cli/internal/constants"
+	"gitlab.com/uniget-org/cli/internal/flags"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 
@@ -64,6 +65,12 @@ var inspectCmd = &cobra.Command{
 		toolRef, err := containers.FindToolRef(registries, repositories, inspectTool.Name, inspectToolVersion)
 		if err != nil {
 			return fmt.Errorf("error finding tool %s:%s: %s", inspectTool.Name, inspectTool.Version, err)
+		}
+		if flags.VerifyImageSignature {
+			err = containers.VerifyContainerImageSignature(toolRef, "https://token.actions.githubusercontent.com", "", "", "https://github\\.com/uniget-org/tools/\\.github/workflows/[^.]+\\.yml@.+")
+			if err != nil {
+				return fmt.Errorf("error verifying tool signature: %w", err)
+			}
 		}
 		effectivePathRewriteRules := configuration.PathRewriteRules
 		if inspectRawContents {

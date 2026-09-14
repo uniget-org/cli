@@ -15,6 +15,7 @@ import (
 
 	"gitlab.com/uniget-org/cli/internal/common"
 	"gitlab.com/uniget-org/cli/internal/constants"
+	"gitlab.com/uniget-org/cli/internal/flags"
 	"gitlab.com/uniget-org/cli/pkg/archive"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
@@ -170,6 +171,13 @@ func selfUpdateFromUniget(unigetTool *tool.Tool) (err error) {
 	if err != nil {
 		return fmt.Errorf("error finding tool %s:%s: %s", unigetTool.Name, unigetTool.Version, err)
 	}
+	if flags.VerifyImageSignature {
+		err = containers.VerifyContainerImageSignature(ref, "https://token.actions.githubusercontent.com", "", "", "https://github\\.com/uniget-org/tools/\\.github/workflows/[^.]+\\.yml@.+")
+		if err != nil {
+			return fmt.Errorf("error verifying tool signature: %w", err)
+		}
+	}
+
 	logging.Debugf("Getting image %s", ref)
 	unpackUnigetBinary := func(reader *tar.Reader, header *tar.Header) error {
 		logging.Tracef("Processing tar item: %s", header.Name)
