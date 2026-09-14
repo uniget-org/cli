@@ -113,6 +113,8 @@ var addHooksCmd = &cobra.Command{
 			postUninstallHooksDir := configuration.GetHooksPostUninstallDirectory()
 			myos.AssertDirectory(postUninstallHooksDir)
 			hookFile = postUninstallHooksDir + "/" + hookFileName
+		default:
+			return fmt.Errorf("invalid hook type: %s", hookType)
 		}
 
 		err = myos.CopyFile(hookSource, hookFile)
@@ -143,33 +145,33 @@ var removeHooksCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		hookFileName := args[0]
-		hooksDir := ""
+		hookDir := ""
 		hookFile := ""
 		switch hookType {
 		case "pre-install":
-			preInstallHooksDir := configuration.GetHooksPreInstallDirectory()
-			myos.AssertDirectory(preInstallHooksDir)
-			hookFile = preInstallHooksDir + "/" + hookFileName
+			hookDir = configuration.GetHooksPreInstallDirectory()
+			myos.AssertDirectory(hookDir)
+			hookFile = hookDir + "/" + hookFileName
 		case "post-install":
-			postInstallHooksDir := configuration.GetHooksPostInstallDirectory()
-			myos.AssertDirectory(postInstallHooksDir)
-			hookFile = postInstallHooksDir + "/" + hookFileName
+			hookDir = configuration.GetHooksPostInstallDirectory()
+			myos.AssertDirectory(hookDir)
+			hookFile = hookDir + "/" + hookFileName
 		case "pre-uninstall":
-			preUninstallHooksDir := configuration.GetHooksPreUninstallDirectory()
-			myos.AssertDirectory(preUninstallHooksDir)
-			hookFile = preUninstallHooksDir + "/" + hookFileName
+			hookDir = configuration.GetHooksPreUninstallDirectory()
+			myos.AssertDirectory(hookDir)
+			hookFile = hookDir + "/" + hookFileName
 		case "post-uninstall":
-			postUninstallHooksDir := configuration.GetHooksPostUninstallDirectory()
-			myos.AssertDirectory(postUninstallHooksDir)
-			hookFile = postUninstallHooksDir + "/" + hookFileName
+			hookDir = configuration.GetHooksPostUninstallDirectory()
+			myos.AssertDirectory(hookDir)
+			hookFile = hookDir + "/" + hookFileName
 		}
 
 		hookFileAbs, err := filepath.Abs(hookFile)
 		if err != nil {
 			return fmt.Errorf("unable to get absolute path of hook file %s: %w", hookFile, err)
 		}
-		if !strings.HasPrefix(hookFileAbs, hooksDir) {
-			return fmt.Errorf("hook file %s is outside of hookDir %s", hookFile, hooksDir)
+		if !strings.HasPrefix(hookFileAbs, hookDir) {
+			return fmt.Errorf("hook file %s is outside of hookDir %s", hookFile, hookDir)
 		}
 
 		if !myos.FileExists(hookFile) {
@@ -204,28 +206,24 @@ var editHooksCmd = &cobra.Command{
 		}
 		editor := strings.Split(editorFromVariable, " ")[0]
 
-		hooksDir := ""
-
 		hookFileName := args[0]
 		hookDir := ""
 		hookFile := ""
 		switch hookType {
 		case "pre-install":
-			preInstallHooksDir := configuration.GetHooksPreInstallDirectory()
-			hookDir = preInstallHooksDir
+			hookDir = configuration.GetHooksPreInstallDirectory()
 			hookFile = hookDir + "/" + hookFileName
 		case "post-install":
-			postInstallHooksDir := configuration.GetHooksPostInstallDirectory()
-			hookDir = postInstallHooksDir
+			hookDir = configuration.GetHooksPostInstallDirectory()
 			hookFile = hookDir + "/" + hookFileName
 		case "pre-uninstall":
-			preUninstallHooksDir := configuration.GetHooksPreUninstallDirectory()
-			hookDir = preUninstallHooksDir
+			hookDir = configuration.GetHooksPreUninstallDirectory()
 			hookFile = hookDir + "/" + hookFileName
 		case "post-uninstall":
-			postUninstallHooksDir := configuration.GetHooksPostUninstallDirectory()
-			hookDir = postUninstallHooksDir
+			hookDir = configuration.GetHooksPostUninstallDirectory()
 			hookFile = hookDir + "/" + hookFileName
+		default:
+			return fmt.Errorf("invalid hook type: %s", hookType)
 		}
 		myos.AssertDirectory(hookDir)
 
@@ -233,8 +231,8 @@ var editHooksCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("unable to get absolute path of hook file %s: %w", hookFile, err)
 		}
-		if !strings.HasPrefix(hookFileAbs, hooksDir) {
-			return fmt.Errorf("hook file %s is outside of hookDir %s", hookFile, hooksDir)
+		if !strings.HasPrefix(hookFileAbs, hookDir) {
+			return fmt.Errorf("hook file %s is outside of hookDir %s", hookFile, hookDir)
 		}
 
 		hookFileInfo, err := os.Lstat(hookFile)
@@ -305,6 +303,8 @@ var listHooksCmd = &cobra.Command{
 						fmt.Printf("%s: %s\n", availableHookType, hookFile)
 						return nil
 					})
+				default:
+					return fmt.Errorf("invalid hook type: %s", availableHookType)
 				}
 				if err != nil {
 					return fmt.Errorf("unable to list %s hooks: %s", hookType, err)
@@ -373,6 +373,8 @@ var testHookCmd = &cobra.Command{
 			hookFile = configuration.GetHooksPreUninstallDirectory() + "/" + hookName
 		case "post-uninstall":
 			hookFile = configuration.GetHooksPostUninstallDirectory() + "/" + hookName
+		default:
+			return fmt.Errorf("invalid hook type: %s", hookType)
 		}
 
 		searchOutputFormat, err = runHook(hookFile, hookArgs...)
