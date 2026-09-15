@@ -107,9 +107,9 @@ func NewDefaultConfig(opts ...ConfigOption) *Config {
 }
 
 func (c *Config) SetGlobalConfig(opts ...ConfigOption) {
-	c.CacheRoot = "/var/cache"
-	c.LibRoot = "/var/lib"
-	c.ConfigRoot = "/etc"
+	c.CacheRoot = "var/cache"
+	c.LibRoot = "var/lib"
+	c.ConfigRoot = "etc"
 
 	for _, opt := range opts {
 		opt(c)
