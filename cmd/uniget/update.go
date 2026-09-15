@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	goversion "github.com/hashicorp/go-version"
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 
@@ -61,7 +62,9 @@ var updateCmd = &cobra.Command{
 		for _, newTool := range newTools.Tools {
 			logging.Debugf("Checking tool %s for updates", newTool.Name)
 
-			if version != "main" && newTool.Name == "uniget" && newTool.Version != version {
+			currentVersion, _ := goversion.NewVersion(version)
+			newVersion, _ := goversion.NewVersion(newTool.Version)
+			if version != "main" && newTool.Name == "uniget" && currentVersion.LessThan(newVersion) {
 				newUnigetVersion = newTool.Version
 			}
 
