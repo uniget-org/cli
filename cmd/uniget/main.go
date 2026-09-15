@@ -199,6 +199,7 @@ func init() {
 	initSelfUpgradeCmd()
 	initShimCmd()
 	initTagsCmd()
+	initDepsCmd()
 	initUninstallCmd()
 	initUpdateCmd()
 	initUpgradeCmd()
