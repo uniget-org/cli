@@ -6,35 +6,38 @@ import (
 	"gitlab.com/uniget-org/cli/internal/constants"
 )
 
+func (c *Config) GetTarget() string {
+	prefix, _ := strings.CutSuffix(c.Prefix, "/")
+	return prefix + "/" + c.Target
+}
+
+func (c *Config) GetCacheRoot() string {
+	prefix, _ := strings.CutSuffix(c.Prefix, "/")
+	return prefix + "/" + c.CacheRoot
+}
+
+func (c *Config) GetLibRoot() string {
+	prefix, _ := strings.CutSuffix(c.Prefix, "/")
+	return prefix + "/" + c.LibRoot
+}
+
 func (c *Config) GetCacheDirectory() string {
-	prefix := c.Prefix
-	if strings.HasSuffix(c.Prefix, "/") {
-		prefix = strings.TrimSuffix(c.Prefix, "/")
-	}
+	prefix, _ := strings.CutSuffix(c.Prefix, "/")
 	return prefix + "/" + c.CacheRoot + "/" + constants.ProjectName
 }
 
 func (c *Config) GetLibDirectory() string {
-	prefix := c.Prefix
-	if strings.HasSuffix(c.Prefix, "/") {
-		prefix = strings.TrimSuffix(c.Prefix, "/")
-	}
+	prefix, _ := strings.CutSuffix(c.Prefix, "/")
 	return prefix + "/" + c.LibRoot + "/" + constants.ProjectName
 }
 
 func (c *Config) GetConfigDirectory() string {
-	prefix := c.Prefix
-	if strings.HasSuffix(c.Prefix, "/") {
-		prefix = strings.TrimSuffix(c.Prefix, "/")
-	}
+	prefix, _ := strings.CutSuffix(c.Prefix, "/")
 	return prefix + "/" + c.ConfigRoot + "/" + constants.ProjectName
 }
 
 func (c *Config) GetProfileDDirectory() string {
-	prefix := c.Prefix
-	if strings.HasSuffix(c.Prefix, "/") {
-		prefix = strings.TrimSuffix(c.Prefix, "/")
-	}
+	prefix, _ := strings.CutSuffix(c.Prefix, "/")
 	return prefix + "/" + c.ConfigRoot + "/profile.d"
 }
 

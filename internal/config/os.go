@@ -8,22 +8,22 @@ import (
 )
 
 func (configuration *Config) AssertWritableTarget() {
-	myos.AssertWritableDirectory(configuration.Prefix + "/" + configuration.Target)
+	myos.AssertWritableDirectory(configuration.GetTarget())
 }
 
 func (configuration *Config) AssertLibDirectory() {
-	if !myos.DirectoryExists(configuration.Prefix + "/" + configuration.LibRoot) {
-		myos.AssertDirectory(configuration.Prefix + "/" + configuration.LibRoot)
+	if !myos.DirectoryExists(configuration.GetLibRoot()) {
+		myos.AssertDirectory(configuration.GetLibRoot())
 	}
-	myos.AssertWritableDirectory(configuration.Prefix + "/" + configuration.LibRoot)
+	myos.AssertWritableDirectory(configuration.GetLibRoot())
 	myos.AssertDirectory(configuration.GetLibDirectory())
 }
 
 func (configuration *Config) AssertCacheDirectory() {
-	if !myos.DirectoryExists(configuration.Prefix + "/" + configuration.CacheRoot) {
-		myos.AssertDirectory(configuration.Prefix + "/" + configuration.CacheRoot)
+	if !myos.DirectoryExists(configuration.GetCacheRoot()) {
+		myos.AssertDirectory(configuration.GetCacheRoot())
 	}
-	myos.AssertWritableDirectory(configuration.Prefix + "/" + configuration.CacheRoot)
+	myos.AssertWritableDirectory(configuration.GetCacheRoot())
 	myos.AssertDirectory(configuration.GetCacheDirectory())
 }
 
