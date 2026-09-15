@@ -219,5 +219,6 @@ func (c *Config) String() string {
 		"  HooksPostInstallDirectory: " + c.GetHooksPostInstallDirectory() + ", " + "\n" +
 		"  HooksPreUninstallDirectory: " + c.GetHooksPreUninstallDirectory() + ", " + "\n" +
 		"  HooksPostUninstallDirectory: " + c.GetHooksPostUninstallDirectory() + ", " + "\n" +
+		"  VerifyImageSignature: " + strconv.FormatBool(c.VerifyImageSignature) + ", " + "\n" +
 		"}"
 }
