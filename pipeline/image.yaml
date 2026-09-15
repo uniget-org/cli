@@ -42,6 +42,12 @@ build:image:
     - ARCH:
       - "amd64"
       - "arm64"
+      BUILD_EXTRA_ARGS: "--target=ubuntu-uniget"
+      TAG_SUFFIX: "-rolling"
+      CONTEXT: images/rolling
+    - ARCH:
+      - "amd64"
+      - "arm64"
       BUILD_EXTRA_ARGS: "--target=systemd-uniget"
       TAG_SUFFIX: "-resolute-systemd"
       CONTEXT: images/resolute-systemd
@@ -62,6 +68,7 @@ build:multi_arch_index:
     - TAG_SUFFIX:
       - "-noble"
       - "-resolute"
+      - "-rolling"
       - "-resolute-systemd"
   extends:
   - .build:multi_arch_index
@@ -76,6 +83,7 @@ build:multi_arch_index:
     - TAG_SUFFIX:
       - "noble"
       - "resolute"
+      - "rolling"
       - "resolute-systemd"
   extends:
   - .regctl
@@ -101,6 +109,7 @@ update:default_tag:
     - TAG_SUFFIX:
       - "noble"
       - "resolute"
+      - "rolling"
       - "resolute-systemd"
   extends:
   - .regctl
