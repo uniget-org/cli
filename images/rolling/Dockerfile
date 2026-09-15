@@ -1,7 +1,7 @@
 #syntax=docker/dockerfile:1.27.0
 #check=skip=SecretsUsedInArgOrEnv
 
-FROM registry.gitlab.com/uniget-org/images/ubuntu:rolling AS ubuntu-uniget
+FROM registry.gitlab.com/uniget-org/images/ubuntu:rolling
 ARG version
 RUN <<EOF
 curl --silent --show-error --location --fail \

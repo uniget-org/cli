@@ -30,25 +30,21 @@ build:image:
     - ARCH:
       - "amd64"
       - "arm64"
-      BUILD_EXTRA_ARGS: "--target=ubuntu-uniget"
       TAG_SUFFIX: "-noble"
       CONTEXT: images/noble
     - ARCH:
       - "amd64"
       - "arm64"
-      BUILD_EXTRA_ARGS: "--target=ubuntu-uniget"
       TAG_SUFFIX: "-resolute"
       CONTEXT: images/resolute
     - ARCH:
       - "amd64"
       - "arm64"
-      BUILD_EXTRA_ARGS: "--target=ubuntu-uniget"
       TAG_SUFFIX: "-rolling"
       CONTEXT: images/rolling
     - ARCH:
       - "amd64"
       - "arm64"
-      BUILD_EXTRA_ARGS: "--target=systemd-uniget"
       TAG_SUFFIX: "-resolute-systemd"
       CONTEXT: images/resolute-systemd
   extends:
