@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"sort"
 
 	"github.com/jedib0t/go-pretty/v6/table"
@@ -21,6 +22,14 @@ var tagsCmd = &cobra.Command{
 	Long:    constants.Header + "\nList tags",
 	GroupID: "tag",
 	Args:    cobra.NoArgs,
+	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
+		tools, err = configuration.EnsureMetadata()
+		if err != nil {
+			return fmt.Errorf("error ensuring metadata: %s", err)
+		}
+
+		return nil
+	},
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		tags := make(map[string]int)
 		for _, tool := range tools.Tools {

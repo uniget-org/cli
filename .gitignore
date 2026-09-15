@@ -4,3 +4,4 @@ coverage.*
 dist/
 .task
 release-notes.md
+.codegraph

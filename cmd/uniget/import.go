@@ -20,6 +20,14 @@ var importCmd = &cobra.Command{
 	Long:    constants.Header + "\nStart managing existing binaries",
 	GroupID: "tool",
 	Args:    cobra.NoArgs,
+	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
+		tools, err = configuration.EnsureMetadata()
+		if err != nil {
+			return fmt.Errorf("error ensuring metadata: %s", err)
+		}
+
+		return nil
+	},
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		pbar, _ := pterm.DefaultProgressbar.
 			WithTotal(len(tools.Tools)).

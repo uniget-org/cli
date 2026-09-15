@@ -60,7 +60,22 @@ var bumpDockerfileCmd = &cobra.Command{
 	Short: "Bump image references in a Dockerfile",
 	Long:  constants.Header + "\nBump image references in a Dockerfile",
 	Args:  cobra.NoArgs,
-	RunE:  processBumpDockerfileCmd,
+	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
+		tools, err = configuration.EnsureMetadata()
+		if err != nil {
+			return fmt.Errorf("error ensuring metadata: %s", err)
+		}
+
+		return nil
+	},
+	RunE: func(cmd *cobra.Command, args []string) (err error) {
+		err = parse.BumpDockerfile(bumpDockerfileName, tools, outputCallback)
+		if err != nil {
+			return fmt.Errorf("failed to bump dockerfile: %w", err)
+		}
+
+		return nil
+	},
 }
 
 var bumpComposeCmd = &cobra.Command{
@@ -73,7 +88,22 @@ var bumpComposeCmd = &cobra.Command{
 	Short: "Bump image references in a compose file",
 	Long:  constants.Header + "\nBump image references in a compose file",
 	Args:  cobra.NoArgs,
-	RunE:  processComposeFileCmd,
+	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
+		tools, err = configuration.EnsureMetadata()
+		if err != nil {
+			return fmt.Errorf("error ensuring metadata: %s", err)
+		}
+
+		return nil
+	},
+	RunE: func(cmd *cobra.Command, args []string) (err error) {
+		err = parse.BumpComposeFile(bumpComposeFileName, tools, outputCallback)
+		if err != nil {
+			return fmt.Errorf("failed to bump compose file: %w", err)
+		}
+
+		return nil
+	},
 }
 
 var bumpKubernetesCmd = &cobra.Command{
@@ -85,7 +115,22 @@ var bumpKubernetesCmd = &cobra.Command{
 	Short: "Bump image references in a Kubernetes manifest",
 	Long:  constants.Header + "\nBump image references in a Kubernetes manifest",
 	Args:  cobra.NoArgs,
-	RunE:  processKubernetesFileCmd,
+	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
+		tools, err = configuration.EnsureMetadata()
+		if err != nil {
+			return fmt.Errorf("error ensuring metadata: %s", err)
+		}
+
+		return nil
+	},
+	RunE: func(cmd *cobra.Command, args []string) (err error) {
+		err = parse.BumpKubernetesFile(bumpKubernetesFileName, tools, outputCallback)
+		if err != nil {
+			return fmt.Errorf("failed to bump kubernetes file: %w", err)
+		}
+
+		return nil
+	},
 }
 
 var bumpGitlabCiCmd = &cobra.Command{
@@ -97,41 +142,20 @@ var bumpGitlabCiCmd = &cobra.Command{
 	Short: "Bump image references in a GitLab CI file",
 	Long:  constants.Header + "\nBump image references in a GitLab CI file",
 	Args:  cobra.NoArgs,
-	RunE:  processGitlabCiFileCmd,
-}
+	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
+		tools, err = configuration.EnsureMetadata()
+		if err != nil {
+			return fmt.Errorf("error ensuring metadata: %s", err)
+		}
 
-func processBumpDockerfileCmd(cmd *cobra.Command, args []string) (err error) {
-	err = parse.BumpDockerfile(bumpDockerfileName, tools, outputCallback)
-	if err != nil {
-		return fmt.Errorf("failed to bump dockerfile: %w", err)
-	}
+		return nil
+	},
+	RunE: func(cmd *cobra.Command, args []string) (err error) {
+		err = parse.BumpGitlabCiFile(bumpGitLabCiFileName, tools, outputCallback)
+		if err != nil {
+			return fmt.Errorf("failed to bump GitLab CI file: %w", err)
+		}
 
-	return nil
-}
-
-func processComposeFileCmd(cmd *cobra.Command, args []string) (err error) {
-	err = parse.BumpComposeFile(bumpComposeFileName, tools, outputCallback)
-	if err != nil {
-		return fmt.Errorf("failed to bump compose file: %w", err)
-	}
-
-	return nil
-}
-
-func processKubernetesFileCmd(cmd *cobra.Command, args []string) (err error) {
-	err = parse.BumpKubernetesFile(bumpKubernetesFileName, tools, outputCallback)
-	if err != nil {
-		return fmt.Errorf("failed to bump kubernetes file: %w", err)
-	}
-
-	return nil
-}
-
-func processGitlabCiFileCmd(cmd *cobra.Command, args []string) (err error) {
-	err = parse.BumpGitlabCiFile(bumpGitLabCiFileName, tools, outputCallback)
-	if err != nil {
-		return fmt.Errorf("failed to bump GitLab CI file: %w", err)
-	}
-
-	return nil
+		return nil
+	},
 }

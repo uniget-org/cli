@@ -39,6 +39,14 @@ var inspectCmd = &cobra.Command{
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
 	},
+	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
+		tools, err = configuration.EnsureMetadata()
+		if err != nil {
+			return fmt.Errorf("error ensuring metadata: %s", err)
+		}
+
+		return nil
+	},
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		var inspectTool *tool.Tool
 		if inspectToolVersion == "latest" {

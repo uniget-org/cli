@@ -29,6 +29,14 @@ var updateCmd = &cobra.Command{
 	Long:    constants.Header + "\nUpdate tool manifest",
 	GroupID: "metadata",
 	Args:    cobra.NoArgs,
+	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
+		tools, err = configuration.EnsureMetadata()
+		if err != nil {
+			return fmt.Errorf("error ensuring metadata: %s", err)
+		}
+
+		return nil
+	},
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		newRevisionAvailable, err := configuration.HasMetadataUpdate(tools.Revision)
 		if err != nil {

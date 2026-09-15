@@ -89,6 +89,14 @@ var selfUpgradeCmd = &cobra.Command{
 	Long:    constants.Header + "\nUpgrade " + constants.ProjectName + " to latest version",
 	GroupID: "config",
 	Args:    cobra.NoArgs,
+	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
+		tools, err = configuration.EnsureMetadata()
+		if err != nil {
+			return fmt.Errorf("error ensuring metadata: %s", err)
+		}
+
+		return nil
+	},
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		unigetTool, err := tools.GetByName("uniget")
 		if err != nil {

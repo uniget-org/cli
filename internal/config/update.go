@@ -13,6 +13,7 @@ import (
 	"gitlab.com/uniget-org/cli/pkg/archive"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
+	myos "gitlab.com/uniget-org/cli/pkg/os"
 	"gitlab.com/uniget-org/cli/pkg/security"
 	"gitlab.com/uniget-org/cli/pkg/tool"
 )
@@ -98,4 +99,27 @@ func (c *Config) LoadMetadata(filename string) (loadedTools *tool.Tools, err err
 	}
 
 	return loadedTools, nil
+}
+
+func (c *Config) EnsureMetadata() (tools *tool.Tools, err error) {
+	if !myos.FileExists(c.GetMetadataFile()) ||
+		c.AutoUpdate ||
+		(len(os.Getenv("UNIGET_IGNORE_METADATA_SIGNATURE")) == 0 &&
+			!myos.FileExists(c.GetMetadataFile()+".sigstore.json")) {
+
+		logging.Debugf("Metadata does not exist. Downloading...")
+		err := c.DownloadMetadata()
+		if err != nil {
+			return nil, fmt.Errorf("error downloading metadata: %s", err)
+		}
+	} else {
+		logging.Debugf("Metadata file exists")
+	}
+
+	tools, err = c.LoadMetadata(c.GetMetadataFile())
+	if err != nil {
+		return nil, fmt.Errorf("error loading metadata: %s", err)
+	}
+
+	return tools, nil
 }

@@ -52,6 +52,14 @@ var searchCmd = &cobra.Command{
 	Long:    constants.Header + "\nSearch for tools",
 	GroupID: "tool",
 	Args:    cobra.MinimumNArgs(1),
+	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
+		tools, err = configuration.EnsureMetadata()
+		if err != nil {
+			return fmt.Errorf("error ensuring metadata: %s", err)
+		}
+
+		return nil
+	},
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		if searchOutputFormat != "table" && searchOutputFormat != "name" && searchOutputFormat != "json" {
 			return fmt.Errorf("error: output format %s not supported", searchOutputFormat)

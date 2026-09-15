@@ -33,6 +33,14 @@ var listCmd = &cobra.Command{
 	Long:    constants.Header + "\nList tools",
 	GroupID: "tool",
 	Args:    cobra.NoArgs,
+	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
+		tools, err = configuration.EnsureMetadata()
+		if err != nil {
+			return fmt.Errorf("error ensuring metadata: %s", err)
+		}
+
+		return nil
+	},
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		var listTools tool.Tools
 
