@@ -67,7 +67,7 @@ var inspectCmd = &cobra.Command{
 			return fmt.Errorf("error finding tool %s:%s: %s", inspectTool.Name, inspectTool.Version, err)
 		}
 		if flags.VerifyImageSignature {
-			err = containers.VerifyContainerImageSignature(toolRef, "https://token.actions.githubusercontent.com", "", "", "https://github\\.com/uniget-org/tools/\\.github/workflows/[^.]+\\.yml@.+")
+			err = containers.VerifyContainerImageSignature(toolRef, constants.SigstoreIssuer, "", "", constants.SigstoreSubjectRegexp)
 			if err != nil {
 				return fmt.Errorf("error verifying tool signature: %w", err)
 			}

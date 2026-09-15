@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"gitlab.com/uniget-org/cli/internal/constants"
 	"gitlab.com/uniget-org/cli/pkg/metadata"
 	"gitlab.com/uniget-org/cli/pkg/source"
 	"gitlab.com/uniget-org/cli/pkg/source/cache"
@@ -22,7 +23,7 @@ func main() {
 			"metadata.json.sigstore.json": "metadata.json.sigstore.json",
 		},
 		metadata.NewSigstoreMetadataVerifier(
-			"https://token.actions.githubusercontent.com",
+			constants.SigstoreIssuer,
 			"",
 			"",
 			"https://github\\.com/uniget-org/tools/\\.github/workflows/[^.]+\\.yml@refs/heads/main",

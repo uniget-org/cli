@@ -82,7 +82,7 @@ func (c *Config) LoadMetadata(filename string) (loadedTools *tool.Tools, err err
 		_, err = security.VerifySigstoreBundleForArtifact(
 			filename,
 			filename+".sigstore.json",
-			"https://token.actions.githubusercontent.com",
+			constants.SigstoreIssuer,
 			"",
 			"",
 			"https://github\\.com/uniget-org/tools/\\.github/workflows/[^.]+\\.yml@refs/heads/main",

@@ -418,7 +418,7 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 				return fmt.Errorf("error finding tool %s:%s: %s", plannedTool.Name, plannedTool.Version, err)
 			}
 			if flags.VerifyImageSignature {
-				err = containers.VerifyContainerImageSignature(ref, "https://token.actions.githubusercontent.com", "", "", "https://github\\.com/uniget-org/tools/\\.github/workflows/[^.]+\\.yml@.+")
+				err = containers.VerifyContainerImageSignature(ref, constants.SigstoreIssuer, "", "", constants.SigstoreSubjectRegexp)
 				if err != nil {
 					return fmt.Errorf("error verifying tool signature: %w", err)
 				}

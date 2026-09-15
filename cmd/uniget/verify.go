@@ -42,7 +42,7 @@ var verifyMetadataCmd = &cobra.Command{
 		_, err := security.VerifySigstoreBundleForArtifact(
 			filename,
 			filename+".sigstore.json",
-			"https://token.actions.githubusercontent.com",
+			constants.SigstoreIssuer,
 			"",
 			"",
 			"https://github\\.com/uniget-org/tools/\\.github/workflows/[^.]+\\.yml@refs/heads/main",
@@ -80,11 +80,11 @@ var verifyToolCmd = &cobra.Command{
 		}
 		logging.Debugf("Built reference %s", ref)
 
-		err = containers.VerifyContainerImageSignature(ref, "https://token.actions.githubusercontent.com", "", "", "https://github\\.com/uniget-org/tools/\\.github/workflows/[^.]+\\.yml@.+")
+		err = containers.VerifyContainerImageSignature(ref, constants.SigstoreIssuer, "", "", constants.SigstoreSubjectRegexp)
 		if err != nil {
 			return fmt.Errorf("error verifying tool signature: %w", err)
 		}
-		logging.Info.Printfln("Tool signature verified successfully")
+		logging.Success.Printfln("Signature verified successfully for %s", tool.Name)
 
 		return nil
 	},

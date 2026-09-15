@@ -93,7 +93,7 @@ var describeCmd = &cobra.Command{
 				return fmt.Errorf("unable to find tool ref: %s", err)
 			}
 			if flags.VerifyImageSignature {
-				err = containers.VerifyContainerImageSignature(toolRef, "https://token.actions.githubusercontent.com", "", "", "https://github\\.com/uniget-org/tools/\\.github/workflows/[^.]+\\.yml@.+")
+				err = containers.VerifyContainerImageSignature(toolRef, constants.SigstoreIssuer, "", "", constants.SigstoreSubjectRegexp)
 				if err != nil {
 					return fmt.Errorf("error verifying tool signature: %w", err)
 				}

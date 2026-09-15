@@ -22,4 +22,6 @@ const (
 	ImageRepository             = Organization + "/tools"
 	ToolSeparator               = "/"
 	RegistryImagePrefix         = Registry + "/" + ImageRepository + ToolSeparator
+	SigstoreIssuer              = "https://token.actions.githubusercontent.com"
+	SigstoreSubjectRegexp       = "https://github\\.com/uniget-org/tools/\\.github/workflows/[^.]+\\.yml@.+"
 )
