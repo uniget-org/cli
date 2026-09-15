@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"gitlab.com/uniget-org/cli/internal/config"
-	"gitlab.com/uniget-org/cli/internal/flags"
 
 	"github.com/njayp/ophis"
 	"github.com/pterm/pterm"
@@ -245,9 +244,7 @@ func main() {
 	pf.StringVar(&configuration.Cache, "cache", configuration.Cache, "Cache backend to use (none, file, docker, containerd)")
 	pf.StringVar(&configuration.FileCacheDirectoryName, "cache-directory", configuration.FileCacheDirectoryName, "Directory for the file cache")
 	pf.IntVar(&configuration.FileCacheRetention, "cache-retention", configuration.FileCacheRetention, "Retention in seconds for the file cache")
-
-	pf.BoolVar(&flags.VerifyImageSignature, "verify-image-signature", false, "Enable or disable verifyImageSignature")
-	_ = rootCmd.Flags().MarkHidden("verify-image-signature")
+	pf.BoolVar(&configuration.VerifyImageSignature, "verify-image-signature", configuration.VerifyImageSignature, "Enable or disable verifyImageSignature")
 
 	rootCmd.MarkFlagsMutuallyExclusive("prefix", "user")
 	rootCmd.MarkFlagsMutuallyExclusive("target", "user")
@@ -260,6 +257,7 @@ func main() {
 	_ = rootCmd.Flags().MarkHidden("cache")
 	_ = rootCmd.Flags().MarkHidden("cache-directory")
 	_ = rootCmd.Flags().MarkHidden("cache-retention")
+	_ = rootCmd.Flags().MarkHidden("verify-image-signature")
 
 	rootCmd.SetHelpCommand(&cobra.Command{GroupID: "helper"})
 	rootCmd.SetCompletionCommandGroupID("config")

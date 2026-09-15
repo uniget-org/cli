@@ -7,7 +7,6 @@ import (
 	"github.com/spf13/cobra"
 	"gitlab.com/uniget-org/cli/internal/common"
 	"gitlab.com/uniget-org/cli/internal/constants"
-	"gitlab.com/uniget-org/cli/internal/flags"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 
@@ -66,7 +65,7 @@ var inspectCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("error finding tool %s:%s: %s", inspectTool.Name, inspectTool.Version, err)
 		}
-		if flags.VerifyImageSignature {
+		if configuration.VerifyImageSignature {
 			err = containers.VerifyContainerImageSignature(toolRef, constants.SigstoreIssuer, "", "", constants.SigstoreSubjectRegexp)
 			if err != nil {
 				return fmt.Errorf("error verifying tool signature: %w", err)

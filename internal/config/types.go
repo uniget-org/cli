@@ -36,6 +36,7 @@ type Config struct {
 	Cache                       string `env:"UNIGET_CACHE"`
 	FileCacheRetention          int    `env:"UNIGET_CACHERETENTION"`
 	FileCacheDirectoryName      string `env:"UNIGET_CACHEDIRECTORY"`
+	VerifyImageSignature        bool   `env:"UNIGET_VERIFY_IMAGE_SIGNATURE"`
 }
 
 func NewDefaultConfig(opts ...ConfigOption) *Config {
@@ -54,6 +55,7 @@ func NewDefaultConfig(opts ...ConfigOption) *Config {
 		Cache:                  "none",
 		FileCacheRetention:     24 * 60 * 60,
 		FileCacheDirectoryName: "downloads",
+		VerifyImageSignature:   false,
 	}
 	for _, opt := range opts {
 		opt(config)

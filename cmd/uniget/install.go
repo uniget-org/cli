@@ -14,7 +14,6 @@ import (
 
 	"gitlab.com/uniget-org/cli/internal/common"
 	"gitlab.com/uniget-org/cli/internal/constants"
-	"gitlab.com/uniget-org/cli/internal/flags"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 	"gitlab.com/uniget-org/cli/pkg/tool"
@@ -417,7 +416,7 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 			if err != nil {
 				return fmt.Errorf("error finding tool %s:%s: %s", plannedTool.Name, plannedTool.Version, err)
 			}
-			if flags.VerifyImageSignature {
+			if configuration.VerifyImageSignature {
 				err = containers.VerifyContainerImageSignature(ref, constants.SigstoreIssuer, "", "", constants.SigstoreSubjectRegexp)
 				if err != nil {
 					return fmt.Errorf("error verifying tool signature: %w", err)
