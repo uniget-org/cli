@@ -76,7 +76,7 @@ var updateCmd = &cobra.Command{
 				newUnigetVersion = newTool.Version
 			}
 
-			tool, err := tools.GetByName(newTool.Name)
+			tool, err := newTools.GetByName(newTool.Name)
 			if err != nil {
 				addedTools.Tools = append(addedTools.Tools, newTool)
 				continue

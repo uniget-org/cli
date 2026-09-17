@@ -55,7 +55,7 @@ func NewDefaultConfig(opts ...ConfigOption) *Config {
 		Cache:                  "none",
 		FileCacheRetention:     24 * 60 * 60,
 		FileCacheDirectoryName: "downloads",
-		VerifyImageSignature:   false,
+		VerifyImageSignature:   true,
 	}
 	for _, opt := range opts {
 		opt(config)
