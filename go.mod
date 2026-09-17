@@ -7,7 +7,7 @@ require (
 	github.com/charmbracelet/glamour v1.0.0
 	github.com/charmbracelet/x/term v0.2.2
 	github.com/compose-spec/compose-go/v2 v2.15.0
-	github.com/containerd/containerd/v2 v2.3.5
+	github.com/containerd/containerd/v2 v2.4.0
 	github.com/containerd/platforms v1.0.0-rc.5
 	github.com/distribution/distribution/v3 v3.1.1
 	github.com/google/go-containerregistry v0.22.1
@@ -71,12 +71,13 @@ require (
 	github.com/cloudflare/circl v1.6.5 // indirect
 	github.com/containerd/cgroups/v3 v3.1.3 // indirect
 	github.com/containerd/console v1.0.5 // indirect
-	github.com/containerd/containerd/api v1.11.1 // indirect
+	github.com/containerd/containerd/api v1.12.0 // indirect
 	github.com/containerd/continuity v0.5.0 // indirect
 	github.com/containerd/errdefs v1.0.0 // indirect
 	github.com/containerd/errdefs/pkg v0.3.0 // indirect
 	github.com/containerd/fifo v1.1.0 // indirect
 	github.com/containerd/log v0.2.0 // indirect
+	github.com/containerd/log/otel v0.1.0 // indirect
 	github.com/containerd/plugin v1.1.0 // indirect
 	github.com/containerd/ttrpc v1.2.9 // indirect
 	github.com/containerd/typeurl/v2 v2.3.0 // indirect
@@ -151,7 +152,6 @@ require (
 	github.com/moby/docker-image-spec v1.3.1 // indirect
 	github.com/moby/locker v1.0.1 // indirect
 	github.com/moby/sys/mountinfo v0.7.2 // indirect
-	github.com/moby/sys/sequential v0.7.0 // indirect
 	github.com/moby/sys/signal v0.7.1 // indirect
 	github.com/moby/sys/user v0.4.1 // indirect
 	github.com/moby/sys/userns v0.2.1 // indirect
