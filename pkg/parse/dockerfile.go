@@ -35,16 +35,18 @@ func ExtractImageReferencesFromDockerfile(reader io.Reader) (ImageRefs, error) {
 
 		if strings.ToUpper(child.Value) == "COPY" || strings.ToUpper(child.Value) == "ADD" {
 			for _, flag := range child.Flags {
-				if flag[0:7] == "--from=" {
-					image := flag[7:]
+				if strings.HasPrefix(flag, "--from=") {
+					image, found := strings.CutPrefix(flag, "--from=")
 
-					fromRef, err := ref.New(image)
-					if err != nil {
-						logging.Debugf("Failed to create image reference from %s: %v", image, err)
-						continue
+					if found {
+						fromRef, err := ref.New(image)
+						if err != nil {
+							logging.Debugf("Failed to create image reference from %s: %v", image, err)
+							continue
+						}
+
+						imageRefs.Add(fromRef)
 					}
-
-					imageRefs.Add(fromRef)
 				}
 			}
 		}
