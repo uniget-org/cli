@@ -106,3 +106,30 @@ images:
   trigger:
     include: pipeline/image.yaml
     strategy: depend
+
+deps:
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULED_JOB == "dependency_updates"
+  - when: never
+  image: golang:1.27.1
+  script: |
+    git config user.name "Commit Bot"
+    git config user.email "commit-bot@gitlab.haufedev.systems"
+    git remote set-url origin "https://oauth2:${GITLAB_COMMIT_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+
+    curl -sLf https://gitlab.com/uniget-org/cli/-/releases/permalink/latest/downloads/uniget_Linux_$(uname -m).tar.gz \
+    | tar -xzC /usr/local/bin uniget
+    uniget update
+    uniget bump dockerfile
+    uniget bump gitlab-ci
+
+    go get -u ./...
+    go mod tidy
+
+    if git diff --quiet -- go.mod go.sum Dockerfile .gitlab-ci.yml; then
+      echo "No dependency changes to commit."
+      exit 0
+    fi
+    git add go.mod go.sum Dockerfile .gitlab-ci.yml
+    git commit -m "chore: Update dependencies"
+    git push
