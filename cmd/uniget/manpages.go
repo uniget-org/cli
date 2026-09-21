@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	mcobra "github.com/muesli/mango-cobra"
 	"github.com/muesli/roff"
@@ -31,7 +32,7 @@ var manpagesCmd = &cobra.Command{
 	GroupID: "helper",
 	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
-		if (manDirectory[0:1] != "/") && (manDirectory[0:1] != ".") {
+		if !strings.HasPrefix(manDirectory, "/") && !strings.HasPrefix(manDirectory, ".") {
 			manDirectory = fmt.Sprintf("%s/%s", configuration.Prefix+"/"+configuration.Target, manDirectory)
 		}
 		logging.Debugf("Using base directory for manpages: %s", manDirectory)

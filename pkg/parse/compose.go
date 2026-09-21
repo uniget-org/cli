@@ -3,6 +3,7 @@ package parse
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/compose-spec/compose-go/v2/cli"
 	"github.com/compose-spec/compose-go/v2/types"
@@ -55,7 +56,7 @@ func BumpComposeFile(composeFile string, tools *tool.Tools, callback func(toolNa
 	for _, service := range project.Services {
 		if service.Build != nil {
 			dockerfileName := service.Build.Dockerfile
-			if service.Build.Dockerfile[0:1] != "/" {
+			if !strings.HasPrefix(service.Build.Dockerfile, "/") {
 				dockerfileName = service.Build.Context + "/" + service.Build.Dockerfile
 			}
 			dockerfileNames[dockerfileName] = struct{}{}
