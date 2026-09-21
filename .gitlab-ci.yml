@@ -114,13 +114,14 @@ deps:
   image: golang:1.27.1
   script: |
     git config user.name "Commit Bot"
-    git config user.email "commit-bot@gitlab.haufedev.systems"
+    git config user.email "commit-bot@uniget.dev"
     git remote set-url origin "https://oauth2:${GITLAB_COMMIT_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
 
     curl -sLf https://gitlab.com/uniget-org/cli/-/releases/permalink/latest/downloads/uniget_Linux_$(uname -m).tar.gz \
     | tar -xzC /usr/local/bin uniget
     uniget update
     uniget bump dockerfile
+    #uniget bump dockerfile --file=.devcontainer/Dockerfile
     uniget bump gitlab-ci
 
     go get -u ./...
@@ -133,3 +134,40 @@ deps:
     git add go.mod go.sum Dockerfile .gitlab-ci.yml
     git commit -m "chore: Update dependencies"
     git push origin HEAD:${CI_COMMIT_REF_NAME}
+
+tag:
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULED_JOB == "dependency_updates"
+  - when: never
+  needs:
+  - deps
+  variables:
+    BOT_EMAIL: "commit-bot@uniget.dev"
+    RENOVATE_EMAIL_REGEXP: "^group_91354392_bot_[0-9a-z]{32}@noreply\\.gitlab\\.com$"
+  script: |
+    git config user.name "Commit Bot"
+    git config user.email "commit-bot@gitlab.haufedev.systems"
+    git remote set-url origin "https://oauth2:${GITLAB_COMMIT_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+
+    last_tag="$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || true)"
+    if [ -z "$last_tag" ]; then
+      echo "No previous release tag found, nothing to do."
+      exit 0
+    fi
+    echo "Last release tag: $last_tag"
+
+    commits="$(git log "${last_tag}..HEAD" --format='%H')"
+    if [ -z "$commits" ]; then
+      echo "No commits since $last_tag, nothing to do."
+      exit 0
+    fi
+
+    non_bot_authors="$(git log "${last_tag}..HEAD" --format='%ae' | grep -v -F -e "$BOT_EMAIL" | grep -v -E -e "$RENOVATE_EMAIL_REGEXP" || true)"
+    if [ -n "$non_bot_authors" ]; then
+      echo "Commits since $last_tag include non-bot authors, skipping release."
+      exit 0
+    fi
+
+    echo "Creating new release"
+    #make patch
+    #git push origin HEAD:${CI_COMMIT_REF_NAME} --tags
