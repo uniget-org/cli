@@ -132,4 +132,4 @@ deps:
     fi
     git add go.mod go.sum Dockerfile .gitlab-ci.yml
     git commit -m "chore: Update dependencies"
-    git push
+    git push origin HEAD:${CI_COMMIT_REF_NAME}
