@@ -66,15 +66,6 @@
   ],
   "packageRules": [
     {
-      "matchManagers": [
-        "gomod"
-      ],
-      "matchDepTypes": [
-        "indirect"
-      ],
-      "enabled": true
-    },
-    {
       "matchFileNames": [
         "images/noble/Dockerfile",
         "images/noble-systemd/Dockerfile",
