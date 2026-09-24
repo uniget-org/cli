@@ -9,7 +9,7 @@ require (
 	github.com/compose-spec/compose-go/v2 v2.15.0
 	github.com/containerd/containerd/v2 v2.4.0
 	github.com/containerd/platforms v1.0.0-rc.5
-	github.com/distribution/distribution/v3 v3.1.1
+	github.com/distribution/distribution/v3 v3.1.2
 	github.com/google/go-containerregistry v0.22.1
 	github.com/google/safearchive v0.0.0-20241025131057-f7ce9d7b6f9c
 	github.com/google/safeopen v0.0.0-20260327150837-43626d6f4685
@@ -52,7 +52,6 @@ require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/bshuster-repo/logrus-logstash-hook v1.1.0 // indirect
 	github.com/catppuccin/go v0.3.0 // indirect
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
@@ -62,7 +61,7 @@ require (
 	github.com/charmbracelet/x/ansi v0.11.8 // indirect
 	github.com/charmbracelet/x/cellbuf v0.0.15 // indirect
 	github.com/charmbracelet/x/exp/ordered v0.1.0 // indirect
-	github.com/charmbracelet/x/exp/slice v0.0.0-20260920004010-53e2afe73ae5 // indirect
+	github.com/charmbracelet/x/exp/slice v0.1.0 // indirect
 	github.com/charmbracelet/x/exp/strings v0.1.0 // indirect
 	github.com/charmbracelet/x/termios v0.1.1 // indirect
 	github.com/charmbracelet/x/windows v0.2.2 // indirect
@@ -247,7 +246,6 @@ require (
 	google.golang.org/grpc v1.84.0 // indirect
 	google.golang.org/protobuf v1.36.12 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 	k8s.io/klog/v2 v2.140.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20260911184034-7970a1e230da // indirect
 	k8s.io/utils v0.0.0-20260707023825-cf1189d6abe3 // indirect
