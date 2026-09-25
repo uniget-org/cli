@@ -78,7 +78,7 @@ require (
 	github.com/containerd/log v0.2.0 // indirect
 	github.com/containerd/log/otel v0.1.0 // indirect
 	github.com/containerd/plugin v1.1.0 // indirect
-	github.com/containerd/ttrpc v1.2.9 // indirect
+	github.com/containerd/ttrpc v1.2.10 // indirect
 	github.com/containerd/typeurl/v2 v2.3.0 // indirect
 	github.com/coreos/go-oidc/v3 v3.21.0 // indirect
 	github.com/coreos/go-systemd/v22 v22.7.0 // indirect
