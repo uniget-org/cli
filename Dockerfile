@@ -42,7 +42,7 @@ mkdir -p /out
 find dist -type f -executable -exec cp {} /out/uniget \;
 EOF
 
-FROM base AS publish-gitlab
+FROM base AS publish
 ARG CI_SERVER_HOST
 ARG CI_JOB_TOKEN
 ARG GITLAB_TOKEN

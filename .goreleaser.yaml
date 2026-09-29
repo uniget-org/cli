@@ -63,8 +63,14 @@ signs:
   - --yes
   artifacts: all
 
+gitlab_urls:
+  api: https://gitlab.com/api/v4/
+  download: https://gitlab.com
+  use_job_token: true
+  use_package_registry: true
+
 release:
-  github:
+  gitlab:
     owner: uniget-org
     name: cli
   ids:

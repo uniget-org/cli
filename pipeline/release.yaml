@@ -43,7 +43,7 @@ release:
   - test -n "$SIGSTORE_ID_TOKEN"
   - |
     docker buildx build \
-        --target=publish-gitlab \
+        --target=publish \
         --build-arg=CI_SERVER_HOST \
         --build-arg=CI_JOB_TOKEN \
         --build-arg=GITLAB_TOKEN \
