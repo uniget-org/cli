@@ -30,8 +30,6 @@ curl -sSLf https://gitlab.com/uniget-org/cli/-/releases/${TAG}/downloads/uniget_
 | sudo tar -xzC /usr/local/bin uniget
 \`\`\`
 
-Note that the `dev_*` tarballs contains only the development CLI used in CI/CD.
-
 ## Signature verification
 
 \`\`\`bash
@@ -47,7 +45,7 @@ EOF
 echo
 echo "## Bugfixes (since ${PREVIOUS_TAG})"
 echo
-glab api "projects/uniget-org%2fbacklog/issues?state=closed&updated_after=${TIMESTAMP}&labels=type::bug&not[labels]=resolution::wontfix" \
+glab api "projects/uniget-org%2fbacklog/issues?state=closed&updated_after=${TIMESTAMP}&labels=component::cli,type::bug&not[labels]=resolution::wontfix" \
 | jq -r '.[] | "- \(.title) ([backlog#\(.iid)](\(.web_url)))"' \
 || true
 git log --after=${TIMESTAMP} --pretty=format:'- %s [%h](https://github.com/uniget-org/cli/commit/%H)' \
@@ -58,7 +56,7 @@ git log --after=${TIMESTAMP} --pretty=format:'- %s [%h](https://github.com/unige
 echo
 echo "## Features (since ${PREVIOUS_TAG})"
 echo
-glab api "projects/uniget-org%2fbacklog/issues?state=closed&updated_after=${TIMESTAMP}&labels=type::enhancement&not[labels]=resolution::wontfix" \
+glab api "projects/uniget-org%2fbacklog/issues?state=closed&updated_after=${TIMESTAMP}&labels=component::cli,type::enhancement&not[labels]=resolution::wontfix" \
 | jq -r '.[] | "- \(.title) ([backlog#\(.iid)](\(.web_url)))"' \
 || true
 git log --after=${TIMESTAMP} --pretty=format:'- %s [%h](https://github.com/uniget-org/cli/commit/%H)' \
@@ -68,7 +66,7 @@ git log --after=${TIMESTAMP} --pretty=format:'- %s [%h](https://github.com/unige
 echo
 echo "## Dependency updates (since ${PREVIOUS_TAG})"
 echo
-glab api "projects/uniget-org%2fbacklog/merge_requests?state=merged&updated_after=2025-07-22T00:00:00Z&labels=type::renovate" \
+glab api "projects/uniget-org%2fcli/merge_requests?state=merged&updated_after=${TIMESTAMP}&labels=type::renovate" \
 | jq -r '.[] | "- \(.title) ([backlog#\(.iid)](\(.web_url)))"' \
 || true
 git log --after=${TIMESTAMP} --pretty=format:'- %s [%h](https://github.com/uniget-org/cli/commit/%H) (%an)' \
