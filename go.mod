@@ -6,7 +6,7 @@ require (
 	charm.land/huh/v2 v2.0.3
 	github.com/charmbracelet/glamour v1.0.0
 	github.com/charmbracelet/x/term v0.2.2
-	github.com/compose-spec/compose-go/v2 v2.15.0
+	github.com/compose-spec/compose-go/v2 v2.16.0
 	github.com/containerd/containerd/v2 v2.4.1
 	github.com/containerd/platforms v1.0.0-rc.5
 	github.com/distribution/distribution/v3 v3.1.2
