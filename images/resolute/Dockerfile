@@ -1,4 +1,4 @@
-#syntax=docker/dockerfile:1.27.0
+#syntax=docker/dockerfile:1.27.1
 #check=skip=SecretsUsedInArgOrEnv
 
 FROM registry.gitlab.com/uniget-org/images/ubuntu:26.04
