@@ -80,10 +80,10 @@
         "registry.gitlab.com/uniget-org/images/systemd"
       ],
       "matchUpdateTypes": [
-        "pin",
-        "pinDigest",
-        "digest"
-      ]
+        "major",
+        "minor"
+      ],
+      "enabled": false
     }
   ],
   "postUpdateOptions": [
