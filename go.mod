@@ -87,7 +87,7 @@ require (
 	github.com/digitorus/timestamp v0.0.0-20260914073129-b4b58b92aa51 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
 	github.com/dlclark/regexp2 v1.12.0 // indirect
-	github.com/dlclark/regexp2/v2 v2.8.2 // indirect
+	github.com/dlclark/regexp2/v2 v2.8.3 // indirect
 	github.com/docker/cli v29.8.2+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.9.9 // indirect
 	github.com/docker/go-connections v0.8.1 // indirect
