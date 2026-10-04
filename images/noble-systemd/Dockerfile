@@ -1,7 +1,7 @@
 #syntax=docker/dockerfile:1.27.1
 #check=skip=SecretsUsedInArgOrEnv
 
-FROM registry.gitlab.com/uniget-org/images/systemd:24.04
+FROM registry.gitlab.com/uniget-org/images/systemd:26.04@sha256:338b98d1e8a40568b7ae306998a5c9686a6ac633c5f9c45ac4578e14e960f09d
 ARG version
 RUN <<EOF
 curl --silent --show-error --location --fail \
