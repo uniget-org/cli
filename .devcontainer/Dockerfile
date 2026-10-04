@@ -5,7 +5,7 @@ FROM ghcr.io/uniget-org/tools/git:2.56.0@sha256:8aefdab2251e4b126db5a4e8733c7420
 FROM ghcr.io/uniget-org/tools/go:1.27.1@sha256:7165d7ed4e6a0c73031fdd3684755b2aea3f2c91d3b648c2c9bef54436a78032 AS go
 FROM ghcr.io/uniget-org/tools/make:4.4.1 AS make
 
-FROM ubuntu:26.04@sha256:3595d7fc4286a33fad0fd853a4063e654287a9c3787437d7937c94ca3f7a804e
+FROM ubuntu:26.04@sha256:f144425ff09be612d6d9ad965196e9cdc23dae1f42110a8a11a3e9a8198759f7
 COPY --link --from=uniget / /usr/local
 COPY --link --from=git / /usr/local
 COPY --link --from=go / /usr/local
