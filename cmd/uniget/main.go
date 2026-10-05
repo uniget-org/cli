@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -23,8 +24,6 @@ import (
 )
 
 var (
-	version string = "main"
-
 	configuration *config.Config
 	toolCache     cache.Cache = cache.NewNoneCache()
 	tools                     = &tool.Tools{
@@ -32,7 +31,7 @@ var (
 	}
 	rootCmd = &cobra.Command{
 		Use:     constants.ProjectName,
-		Version: version,
+		Version: buildVersion(),
 		Short:   constants.Header + constants.Slogan,
 		Example: `  Quickstart
     Download metadata: uniget update
@@ -154,6 +153,20 @@ var (
 		},
 	}
 )
+
+func buildVersion() string {
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		return "unknown"
+	}
+
+	version := info.Main.Version
+	if version == "" || version == "(devel)" {
+		version = "main"
+	}
+
+	return version
+}
 
 func init() {
 	rootCmd.AddGroup(&cobra.Group{

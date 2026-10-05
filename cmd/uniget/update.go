@@ -70,9 +70,9 @@ var updateCmd = &cobra.Command{
 		for _, newTool := range newTools.Tools {
 			logging.Debugf("Checking tool %s for updates", newTool.Name)
 
-			currentVersion, _ := goversion.NewVersion(version)
+			currentVersion, _ := goversion.NewVersion(buildVersion())
 			newVersion, _ := goversion.NewVersion(newTool.Version)
-			if version != "main" && newTool.Name == "uniget" && currentVersion.LessThan(newVersion) {
+			if buildVersion() != "main" && newTool.Name == "uniget" && currentVersion.LessThan(newVersion) {
 				newUnigetVersion = newTool.Version
 			}
 

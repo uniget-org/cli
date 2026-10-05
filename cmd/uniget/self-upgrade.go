@@ -110,7 +110,7 @@ var selfUpgradeCmd = &cobra.Command{
 			unigetTool.Version = requestedVersion
 		}
 
-		if requestedVersion == version {
+		if requestedVersion == buildVersion() {
 			logging.Info.Printfln("uniget %s is already installed", requestedVersion)
 			return nil
 		}
@@ -270,7 +270,7 @@ func downloadReleaseAsset(url string) (*http.Response, error) {
 		return nil, fmt.Errorf("failed to create request: %s", err)
 	}
 	req.Header.Set("Accept", "application/octet-stream")
-	req.Header.Set("User-Agent", fmt.Sprintf("%s/%s", constants.ProjectName, version))
+	req.Header.Set("User-Agent", fmt.Sprintf("%s/%s", constants.ProjectName, buildVersion()))
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to download %s: %s", url, err)
