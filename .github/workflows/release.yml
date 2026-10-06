@@ -68,7 +68,7 @@ jobs:
           mkdir -p assets
           echo "Downloading assets for release ${TAG_NAME}"
           cat release.json \
-          | jq --raw-output '.assets[].links.url' \
+          | jq --raw-output '.assets.links[].url' \
           | xargs -I{} \
               curl -sSLf "{}" -o "assets/$(basename "{}")"
 
