@@ -39,7 +39,7 @@ jobs:
           echo "Using tag name: $TAG_NAME"
 
           SECONDS=0
-          curl --silent --show-error --location --output release.json "https://gitlab.com/api/v4/projects/uniget-org%2fcli/releases/${TAG_NAME}"
+          curl --silent --show-error --location --fail --output release.json "https://gitlab.com/api/v4/projects/uniget-org%2fcli/releases/${TAG_NAME}" || true
           while ! test -f release.json; do
             if [ $SECONDS -ge $((30 * 60)) ]; then
               echo "ERROR: Timed out waiting for GitLab release for tag <$TAG_NAME>."
@@ -48,7 +48,7 @@ jobs:
 
             echo "Release not available yet. Waiting..."
             sleep $((10 * 60))
-            curl --silent --show-error --location --output release.json "https://gitlab.com/api/v4/projects/uniget-org%2fcli/releases/${TAG_NAME}"
+            curl --silent --show-error --location --fail --output release.json "https://gitlab.com/api/v4/projects/uniget-org%2fcli/releases/${TAG_NAME}" || true
           done
 
           if ! test -s release.json; then
@@ -72,7 +72,7 @@ jobs:
           | xargs -I{} \
               curl -sSLf "{}" -o "assets/$(basename "{}")"
 
-          echo "Creeating/updating GitHub release for tag ${TAG_NAME}"
+          echo "Creating/updating GitHub release for tag ${TAG_NAME}"
           if gh release view "${TAG_NAME}" >/dev/null 2>&1; then
             echo "Updating existing GitHub release ${TAG_NAME}"
             gh release edit "${TAG_NAME}" --title "${title}" --notes-file "${notes_file}"
