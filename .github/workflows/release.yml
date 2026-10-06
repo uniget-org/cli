@@ -39,7 +39,7 @@ jobs:
           echo "Using tag name: $TAG_NAME"
 
           SECONDS=0
-          curl --silent --show-error --location --fail --output release.json "https://gitlab.com/api/v4/projects/uniget-org%2fcli/releases/${TAG_NAME}"
+          curl --silent --show-error --location --output release.json "https://gitlab.com/api/v4/projects/uniget-org%2fcli/releases/${TAG_NAME}"
           while ! test -f release.json; do
             if [ $SECONDS -ge $((30 * 60)) ]; then
               echo "ERROR: Timed out waiting for GitLab release for tag <$TAG_NAME>."
@@ -48,7 +48,7 @@ jobs:
 
             echo "Release not available yet. Waiting..."
             sleep $((10 * 60))
-            curl --silent --show-error --location --fail --output release.json "https://gitlab.com/api/v4/projects/uniget-org%2fcli/releases/${TAG_NAME}"
+            curl --silent --show-error --location --output release.json "https://gitlab.com/api/v4/projects/uniget-org%2fcli/releases/${TAG_NAME}"
           done
 
           title="$(jq -r '.name // .tag_name' release.json)"
