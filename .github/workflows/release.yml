@@ -55,6 +55,12 @@ jobs:
             jq -r '.description // ""' release.json
           } >"${notes_file}"
 
+          mkdir -p assets
+          cat release.json \
+          | jq --raw-output '.assets[].links.url' \
+          | xargs -I{} \
+              curl -sSLf "{}" -o "assets/$(basename "{}")"
+
           if gh release view "${TAG_NAME}" >/dev/null 2>&1; then
             echo "Updating existing GitHub release ${TAG_NAME}"
             gh release edit "${TAG_NAME}" --title "${title}" --notes-file "${notes_file}"
@@ -62,3 +68,4 @@ jobs:
             echo "Creating GitHub release ${TAG_NAME}"
             gh release create "${TAG_NAME}" --title "${title}" --notes-file "${notes_file}"
           fi
+          gh release upload "${TAG_NAME}" assets/*
