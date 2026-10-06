@@ -25,6 +25,11 @@ var uninstallCmd = &cobra.Command{
 	Use: "uninstall",
 	Aliases: []string{
 		"u",
+		"remove",
+		"rm",
+		"r",
+		"delete",
+		"del",
 	},
 	Short:   "Uninstall tool",
 	Long:    constants.Header + "\nUninstall tools",
