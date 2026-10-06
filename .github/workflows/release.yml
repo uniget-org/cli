@@ -38,14 +38,18 @@ jobs:
           fi
           echo "Using tag name: $TAG_NAME"
 
-          echo "Waiting for release to be available on GitLab..."
-          sleep $((10 * 60))
+          SECONDS=0
+          curl --silent --show-error --location --fail --output release.json "https://gitlab.com/api/v4/projects/uniget-org%2fcli/releases/${TAG_NAME}"
+          while ! test -f release.json; do
+            if [ $SECONDS -ge $((30 * 60)) ]; then
+              echo "ERROR: Timed out waiting for GitLab release for tag <$TAG_NAME>."
+              exit 1
+            fi  
 
-          echo "Fetching GitLab release for tag: $TAG_NAME"
-          if ! curl --silent --show-error --location --fail --output release.json --retry 10 --retry-delay 180 --retry-max-time 1800 "https://gitlab.com/api/v4/projects/uniget-org%2fcli/releases/${TAG_NAME}"; then
-            echo "ERROR: Failed to fetch GitLab release for tag <$TAG_NAME>."
-            exit 1
-          fi
+            echo "Release not available yet. Waiting..."
+            sleep $((10 * 60))
+            curl --silent --show-error --location --fail --output release.json "https://gitlab.com/api/v4/projects/uniget-org%2fcli/releases/${TAG_NAME}"
+          done
 
           title="$(jq -r '.name // .tag_name' release.json)"
           notes_file=release_notes.md
