@@ -69,9 +69,9 @@ jobs:
           echo "Downloading assets for release ${TAG_NAME}"
           pushd assets
           cat ../release.json \
-          | jq --raw-output '.assets.links[].url' \
+          | jq --raw-output '.assets.links[].direct_asset_url' \
           | xargs -I{} \
-              curl --silent --show-error --location --fail "{}" --remote-name
+              curl --silent --show-error --location --fail --remote-name "{}"
           popd
 
           echo "Creating/updating GitHub release for tag ${TAG_NAME}"
