@@ -51,7 +51,13 @@ jobs:
             curl --silent --show-error --location --output release.json "https://gitlab.com/api/v4/projects/uniget-org%2fcli/releases/${TAG_NAME}"
           done
 
+          if ! test -s release.json; then
+              echo "ERROR: GitLab release for tag $TAG_NAME not found."
+              exit 1
+          fi
+
           title="$(jq -r '.name // .tag_name' release.json)"
+          echo "Release title: $title"
           notes_file=release_notes.md
           {
             echo "Mirrored from GitLab: https://gitlab.com/uniget-org/cli/-/releases/${TAG_NAME}"
@@ -60,11 +66,13 @@ jobs:
           } >"${notes_file}"
 
           mkdir -p assets
+          echo "Downloading assets for release ${TAG_NAME}"
           cat release.json \
           | jq --raw-output '.assets[].links.url' \
           | xargs -I{} \
               curl -sSLf "{}" -o "assets/$(basename "{}")"
 
+          echo "Creeating/updating GitHub release for tag ${TAG_NAME}"
           if gh release view "${TAG_NAME}" >/dev/null 2>&1; then
             echo "Updating existing GitHub release ${TAG_NAME}"
             gh release edit "${TAG_NAME}" --title "${title}" --notes-file "${notes_file}"
@@ -72,4 +80,6 @@ jobs:
             echo "Creating GitHub release ${TAG_NAME}"
             gh release create "${TAG_NAME}" --title "${title}" --notes-file "${notes_file}"
           fi
+
+          echo "Uploading assets for release ${TAG_NAME}"
           gh release upload "${TAG_NAME}" assets/*
