@@ -67,10 +67,12 @@ jobs:
 
           mkdir -p assets
           echo "Downloading assets for release ${TAG_NAME}"
+          pushd assets
           cat release.json \
           | jq --raw-output '.assets.links[].url' \
           | xargs -I{} \
-              curl -sSLf "{}" -o "assets/$(basename "{}")"
+              curl --silent --show-error --location --fail "{}" --remote-name
+          popd
 
           echo "Creating/updating GitHub release for tag ${TAG_NAME}"
           if gh release view "${TAG_NAME}" >/dev/null 2>&1; then
