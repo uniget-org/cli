@@ -68,7 +68,7 @@ jobs:
           mkdir -p assets
           echo "Downloading assets for release ${TAG_NAME}"
           pushd assets
-          cat release.json \
+          cat ../release.json \
           | jq --raw-output '.assets.links[].url' \
           | xargs -I{} \
               curl --silent --show-error --location --fail "{}" --remote-name
