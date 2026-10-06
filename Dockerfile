@@ -5,7 +5,7 @@ FROM ghcr.io/uniget-org/tools/goreleaser:2.18.2@sha256:28140d9441ba80032979129f0
 FROM ghcr.io/uniget-org/tools/cosign:3.1.3@sha256:efd829fa1cd8d2dfac7344548a70b80d42a226a7bc9ffc5716911a12043e6a1b AS uniget-cosign
 FROM ghcr.io/uniget-org/tools/syft:1.54.0@sha256:a52bcbadbf065f5120093b01adfc7d646983361b66c59db80cbf95253392a8fb AS uniget-syft
 FROM ghcr.io/uniget-org/tools/gh:2.102.0@sha256:acf8f93d08e447f906617bd4aa5e4c73597d8f2c23dd70df17bdf61d0a30c746 AS uniget-gh
-FROM ghcr.io/uniget-org/tools/glab:1.120.0@sha256:ea768ae9f53d447e10e4914d3faf344b62e9c8065a3eae37a41756a2242dedaf AS uniget-glab
+FROM ghcr.io/uniget-org/tools/glab:1.121.0@sha256:d4e41cf0366478f19b3f4f20948f0bad10bbceb41a4fe96ba12d34bca09c3e97 AS uniget-glab
 FROM ghcr.io/uniget-org/tools/jq:1.8.2@sha256:346380fefb2967af66774cb15a1df991b7df546ee4d58fd0d73c3d8e985c6b5f AS uniget-jq
 FROM ghcr.io/uniget-org/tools/gosec:2.29.0@sha256:b2691e5c4f0521fbe214b6bdf456cdaa2be828b5a47fb0ba93fe66abaee3fb09 AS uniget-gosec
 FROM ghcr.io/uniget-org/tools/golangci-lint:2.14.0@sha256:edff2bb468d2cd32e8d2ee2cf05a0d83ccdf9702c00cb4846612020d86b27cea AS lint-base
