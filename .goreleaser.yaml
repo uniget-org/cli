@@ -79,4 +79,4 @@ release:
   - cosign
   name_template: "{{ .Version }}"
   mode: replace
-  prerelease: auto
+  replace_existing_artifacts: true
