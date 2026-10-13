@@ -112,6 +112,8 @@ deps:
   - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULED_JOB == "dependency_updates"
   - when: never
   image: golang:1.27.1
+  variables:
+    DEPS_BRANCH: "deps/dependency-updates-${CI_PIPELINE_IID}"
   script: |
     git config user.name "Commit Bot"
     git config user.email "commit-bot@uniget.dev"
@@ -133,7 +135,20 @@ deps:
     fi
     git add go.mod go.sum Dockerfile .gitlab-ci.yml
     git commit -m "chore: Update dependencies"
-    git push origin HEAD:${CI_COMMIT_REF_NAME}
+    git push origin HEAD:refs/heads/${DEPS_BRANCH}
+
+    uniget install glab
+    glab auth login --hostname="${CI_SERVER_HOST}" --token="${GITLAB_COMMIT_TOKEN}"
+    glab mr create \
+      --repo "${CI_PROJECT_PATH}" \
+      --source-branch "${DEPS_BRANCH}" \
+      --target-branch "${CI_DEFAULT_BRANCH}" \
+      --title "chore: Update dependencies" \
+      --description "Automated dependency update by Commit Bot (pipeline ${CI_PIPELINE_IID})." \
+      --remove-source-branch \
+      --squash \
+      --auto-merge \
+      --yes
 
 tag:
   rules:
