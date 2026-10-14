@@ -140,6 +140,7 @@ deps:
     uniget install glab
     glab auth login --hostname="${CI_SERVER_HOST}" --token="${GITLAB_COMMIT_TOKEN}"
     glab mr create \
+      --source-branch "${DEPS_BRANCH}" \
       --target-branch "${CI_DEFAULT_BRANCH}" \
       --title "chore: Update dependencies" \
       --description "Automated dependency update by Commit Bot (pipeline ${CI_PIPELINE_IID})." \
