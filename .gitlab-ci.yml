@@ -112,14 +112,18 @@ deps:
   - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULED_JOB == "dependency_updates"
   - when: never
   image: golang:1.27.1
+  before_script: |
+    curl -sLf https://gitlab.com/uniget-org/cli/-/releases/permalink/latest/downloads/uniget_Linux_$(uname -m).tar.gz \
+    | tar -xzC /usr/local/bin uniget
+    uniget update
+
+    uniget install glab
+    glab auth login --hostname="${CI_SERVER_HOST}" --token="${GITLAB_COMMIT_TOKEN}"
   script: |
     git config user.name "Commit Bot"
     git config user.email "commit-bot@uniget.dev"
     git remote set-url origin "https://oauth2:${GITLAB_COMMIT_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
 
-    curl -sLf https://gitlab.com/uniget-org/cli/-/releases/permalink/latest/downloads/uniget_Linux_$(uname -m).tar.gz \
-    | tar -xzC /usr/local/bin uniget
-    uniget update
     uniget bump dockerfile
     #uniget bump dockerfile --file=.devcontainer/Dockerfile
     uniget bump gitlab-ci
@@ -134,8 +138,7 @@ deps:
     git add go.mod go.sum Dockerfile .gitlab-ci.yml
     git commit -m "chore: Update dependencies"
     git push origin HEAD:refs/heads/deps/dependency-updates-${CI_PIPELINE_IID}"
-    uniget install glab
-    glab auth login --hostname="${CI_SERVER_HOST}" --token="${GITLAB_COMMIT_TOKEN}"
+
     glab mr create \
       --source-branch "deps/dependency-updates-${CI_PIPELINE_IID}" \
       --target-branch "${CI_DEFAULT_BRANCH}" \
@@ -151,6 +154,13 @@ wait:
   - when: never
   needs:
   - deps
+  before_script: |
+    curl -sLf https://gitlab.com/uniget-org/cli/-/releases/permalink/latest/downloads/uniget_Linux_$(uname -m).tar.gz \
+    | tar -xzC /usr/local/bin uniget
+    uniget update
+
+    uniget install glab
+    glab auth login --hostname="${CI_SERVER_HOST}" --token="${GITLAB_COMMIT_TOKEN}"
   script: |
     MR_ID="$( glab mr list --source-branch=deps/dependency-updates-"${CI_PIPELINE_IID}" --merged --output=json --jq '.[].iid' )"
     while test "$( glab mr view "$MR_ID" --output json | jq -r '.pipeline.status' )" == "running"; do
