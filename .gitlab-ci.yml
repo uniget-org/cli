@@ -159,7 +159,7 @@ wait:
     | tar -xzC /usr/local/bin uniget
     uniget update
 
-    uniget install glab
+    uniget install glab jq
     glab auth login --hostname="${CI_SERVER_HOST}" --token="${GITLAB_COMMIT_TOKEN}"
   script: |
     MR_ID="$( glab mr list --source-branch=deps/dependency-updates-"${CI_PIPELINE_IID}" --merged --output=json --jq '.[].iid' )"
