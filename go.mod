@@ -22,7 +22,7 @@ require (
 	github.com/muesli/roff v0.1.0
 	github.com/njayp/ophis v1.1.4
 	github.com/opencontainers/go-digest v1.0.0
-	github.com/pterm/pterm v0.12.83
+	github.com/pterm/pterm v0.12.84
 	github.com/regclient/regclient v0.11.6
 	github.com/sigstore/cosign/v3 v3.1.3
 	github.com/sigstore/sigstore-go v1.3.0
@@ -126,7 +126,6 @@ require (
 	github.com/google/certificate-transparency-go v1.3.3 // indirect
 	github.com/google/jsonschema-go v0.4.3 // indirect
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/gookit/color v1.6.0 // indirect
 	github.com/gorilla/css v1.0.1 // indirect
 	github.com/gorilla/handlers v1.5.2 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
