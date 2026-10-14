@@ -147,8 +147,6 @@ deps:
       --remove-source-branch \
       --auto-merge \
       --yes
-  after_script: |
-    git branch -D "${DEPS_BRANCH}" || true
 
 tag:
   rules:
