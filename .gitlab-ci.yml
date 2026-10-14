@@ -112,8 +112,6 @@ deps:
   - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULED_JOB == "dependency_updates"
   - when: never
   image: golang:1.27.1
-  variables:
-    DEPS_BRANCH: "deps/dependency-updates-${CI_PIPELINE_IID}"
   script: |
     git config user.name "Commit Bot"
     git config user.email "commit-bot@uniget.dev"
@@ -135,12 +133,11 @@ deps:
     fi
     git add go.mod go.sum Dockerfile .gitlab-ci.yml
     git commit -m "chore: Update dependencies"
-    git push origin HEAD:refs/heads/${DEPS_BRANCH}
-
+    git push origin HEAD:refs/heads/deps/dependency-updates-${CI_PIPELINE_IID}"
     uniget install glab
     glab auth login --hostname="${CI_SERVER_HOST}" --token="${GITLAB_COMMIT_TOKEN}"
     glab mr create \
-      --source-branch "${DEPS_BRANCH}" \
+      --source-branch "deps/dependency-updates-${CI_PIPELINE_IID}" \
       --target-branch "${CI_DEFAULT_BRANCH}" \
       --title "chore: Update dependencies" \
       --description "Automated dependency update by Commit Bot (pipeline ${CI_PIPELINE_IID})." \
@@ -148,12 +145,34 @@ deps:
       --auto-merge \
       --yes
 
+wait:
+  rules:
+  - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULED_JOB == "dependency_updates"
+  - when: never
+  needs:
+  - deps
+  script: |
+    MR_ID="$( glab mr list --source-branch=deps/dependency-updates-"${CI_PIPELINE_IID}" --merged --output=json --jq '.[].iid' )"
+    while test "$( glab mr view "$MR_ID" --output json | jq -r '.pipeline.status' )" == "running"; do
+        echo "Merge request pipeline is still running..."
+        sleep 10
+    done
+    echo "Merge request pipeline has finished."
+
+    if test "$( glab mr view "$MR_ID" --output=json --jq='.pipeline.status' )" == "success"; then
+        echo "Merge request pipeline succeeded."
+    else
+        echo "Merge request pipeline failed."
+        exit 1
+    fi
+
 tag:
   rules:
   - if: $CI_PIPELINE_SOURCE == "schedule" && $SCHEDULED_JOB == "dependency_updates"
   - when: never
   needs:
   - deps
+  - wait
   variables:
     BOT_EMAIL: "commit-bot@uniget.dev"
     RENOVATE_EMAIL_REGEXP: "^group_91354392_bot_[0-9a-z]{32}@noreply\\.gitlab\\.com$"
