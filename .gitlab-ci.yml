@@ -90,7 +90,7 @@ images:
       PUSH: "true"
   - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     changes:
-    - "**/Dockerfile"
+    - "images/*/Dockerfile"
     variables:
       PUSH: "false"
   - if: $CI_PIPELINE_SOURCE == "web"
