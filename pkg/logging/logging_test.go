@@ -129,7 +129,7 @@ func TestLoggersDebugLevel(t *testing.T) {
 	}
 
 	expectedOut := "" +
-		"DEBUG foo " + "\n"
+		"DEBUG foo" + "\n"
 	strippedOut := StripAnsi(outBuffer.String())
 	if string(strippedOut) != expectedOut {
 		t.Errorf("outBuffer = <%s>; want <%s>", strippedOut, expectedOut)
@@ -150,8 +150,8 @@ func TestLoggersTraceLevel(t *testing.T) {
 	}
 
 	expectedOut := "" +
-		"DEBUG foo " + "\n" +
-		"TRACE bar " + "\n"
+		"DEBUG foo" + "\n" +
+		"TRACE bar" + "\n"
 	strippedOut := StripAnsi(outBuffer.String())
 	if string(strippedOut) != expectedOut {
 		t.Errorf("outBuffer = <%s>; want <%s>", strippedOut, expectedOut)
