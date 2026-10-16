@@ -124,10 +124,13 @@ deps:
     git config user.email "commit-bot@uniget.dev"
     git remote set-url origin "https://oauth2:${GITLAB_COMMIT_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
 
+    echo "### Bump dependencies in Dockerfile"
     uniget bump dockerfile
     #uniget bump dockerfile --file=.devcontainer/Dockerfile
+    echo "### Bump dependencies in GitLab CI configuration"
     uniget bump gitlab-ci
 
+    echo "### Bump dependencies in Go modules"
     go get -u ./...
     go mod tidy
 
@@ -135,10 +138,13 @@ deps:
       echo "No dependency changes to commit."
       exit 0
     fi
+    echo "### Commit dependency updates"
     git add go.mod go.sum Dockerfile .gitlab-ci.yml
     git commit -m "chore: Update dependencies"
+    echo "### Push dependency updates"
     git push origin HEAD:refs/heads/deps/dependency-updates-${CI_PIPELINE_IID}"
 
+    echo "### Create merge request for dependency updates"
     glab mr create \
       --source-branch "deps/dependency-updates-${CI_PIPELINE_IID}" \
       --target-branch "${CI_DEFAULT_BRANCH}" \
