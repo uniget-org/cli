@@ -149,7 +149,7 @@ deps:
       --source-branch "dependency-updates-${CI_PIPELINE_IID}" \
       --target-branch "${CI_DEFAULT_BRANCH}" \
       --title "chore: Update dependencies" \
-      --description "Automated dependency update by Commit Bot (pipeline ${CI_PIPELINE_IID})." \
+      --description "Automated dependency update by Commit Bot from pipeline ${CI_PIPELINE_IID}." \
       --remove-source-branch \
       --auto-merge \
       --yes
