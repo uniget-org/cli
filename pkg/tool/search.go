@@ -71,6 +71,10 @@ func (tools *Tools) Find(term string, searchInName bool, searchInDesc bool, sear
 	var results = Tools{}
 
 	for _, tool := range tools.Tools {
+		if tool.Lifecycle.RemovedWithReason != "" || tool.Lifecycle.RenamedTo != "" {
+			continue
+		}
+
 		matches := false
 
 		if searchInName && tool.MatchesName(term) {

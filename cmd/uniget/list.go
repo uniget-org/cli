@@ -87,7 +87,12 @@ var listCmd = &cobra.Command{
 			listTools = installedTools
 
 		} else {
-			listTools = *tools
+			for index := range tools.Tools {
+				if tools.Tools[index].Lifecycle.RemovedWithReason != "" || tools.Tools[index].Lifecycle.RenamedTo != "" {
+					continue
+				}
+				listTools.Tools = append(listTools.Tools, tools.Tools[index])
+			}
 		}
 
 		switch listOutput {
