@@ -142,7 +142,7 @@ deps:
     git add go.mod go.sum Dockerfile .gitlab-ci.yml
     git commit -m "chore: Update dependencies"
     echo "### Push dependency updates"
-    git push origin HEAD:refs/heads/dependency-updates-${CI_PIPELINE_IID}"
+    git push origin HEAD:refs/heads/dependency-updates-${CI_PIPELINE_IID}
 
     echo "### Create merge request for dependency updates"
     glab mr create \
