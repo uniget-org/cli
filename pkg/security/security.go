@@ -115,7 +115,7 @@ func VerifySignstoreBundleForContainerImage(image string, expectedOIDIssuer, exp
 
 	_, verified, err := cosign.VerifyImageAttestations(context.Background(), ref, co, []name.Option{}...)
 	if err != nil {
-		return false, fmt.Errorf("error verifying tool signature: %w", err)
+		return false, fmt.Errorf("error verifying tool signature for %s: %w", image, err)
 	}
 	if !verified {
 		return false, fmt.Errorf("tool signature verification failed")

@@ -25,7 +25,7 @@ func VerifyContainerImageSignature(ref *ToolRef, expectedOIDIssuer, expectedOIDI
 		expectedSANRegex,
 	)
 	if err != nil {
-		return fmt.Errorf("error verifying tool signature: %w", err)
+		return fmt.Errorf("error verifying tool signature vfor %s: %w", imageWithDigest, err)
 	}
 
 	return nil

@@ -90,7 +90,7 @@ var verifyToolCmd = &cobra.Command{
 
 		err = containers.VerifyContainerImageSignature(ref, constants.SigstoreIssuer, "", "", constants.SigstoreSubjectRegexp)
 		if err != nil {
-			return fmt.Errorf("error verifying tool signature: %w", err)
+			return fmt.Errorf("error verifying tool signature on %s: %w", tool.Name, err)
 		}
 		logging.Success.Printfln("Signature verified successfully for %s", tool.Name)
 

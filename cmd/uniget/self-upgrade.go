@@ -181,7 +181,7 @@ func selfUpdateFromUniget(unigetTool *tool.Tool) (err error) {
 	if configuration.VerifyImageSignature {
 		err = containers.VerifyContainerImageSignature(ref, constants.SigstoreIssuer, "", "", constants.SigstoreSubjectRegexp)
 		if err != nil {
-			return fmt.Errorf("error verifying tool signature: %w", err)
+			return fmt.Errorf("error verifying tool signature for %s: %w", unigetTool.Name, err)
 		}
 	}
 

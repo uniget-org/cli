@@ -427,7 +427,7 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 			if configuration.VerifyImageSignature {
 				err = containers.VerifyContainerImageSignature(ref, constants.SigstoreIssuer, "", "", constants.SigstoreSubjectRegexp)
 				if err != nil {
-					return fmt.Errorf("error verifying tool signature: %w", err)
+					return fmt.Errorf("error verifying tool signature for %s: %w", plannedTool.Name, err)
 				}
 			}
 

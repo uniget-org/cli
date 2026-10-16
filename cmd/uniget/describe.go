@@ -102,7 +102,7 @@ var describeCmd = &cobra.Command{
 			if configuration.VerifyImageSignature {
 				err = containers.VerifyContainerImageSignature(toolRef, constants.SigstoreIssuer, "", "", constants.SigstoreSubjectRegexp)
 				if err != nil {
-					return fmt.Errorf("error verifying tool signature: %w", err)
+					return fmt.Errorf("error verifying tool signature for %s: %w", tool.Name, err)
 				}
 			}
 			tags, err := containers.GetImageTags(toolRef)
