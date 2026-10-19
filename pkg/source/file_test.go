@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"gitlab.com/uniget-org/cli/pkg/source/cache"
 	"gitlab.com/uniget-org/cli/pkg/tui"
 )
 
@@ -34,27 +33,10 @@ func TestIsFileRef(t *testing.T) {
 }
 
 func TestNewFileDownloader(t *testing.T) {
-	t.Run("none cache", func(t *testing.T) {
-		d, err := NewFileDownloader(cache.CacheNone, nil)
-		if err != nil {
-			t.Fatalf("NewFileDownloader() unexpected error: %v", err)
-		}
-		if d.CacheType != cache.CacheNone {
-			t.Errorf("CacheType = %v, want %v", d.CacheType, cache.CacheNone)
-		}
-		if d.Cache == nil || d.Cache.GetName() != "none" {
-			t.Errorf("Cache = %v, want none cache", d.Cache)
-		}
-	})
-
-	t.Run("non-none cache rejected", func(t *testing.T) {
-		for _, ct := range []cache.CacheType{cache.CacheFile, cache.CacheDocker, cache.CacheContainerd, cache.CacheMemory} {
-			_, err := NewFileDownloader(ct, nil)
-			if err == nil {
-				t.Errorf("NewFileDownloader() with cache %v: expected error, got nil", ct)
-			}
-		}
-	})
+	d := NewFileDownloader()
+	if d == nil {
+		t.Fatal("NewFileDownloader() returned nil")
+	}
 }
 
 func TestFileBackend_Get(t *testing.T) {
@@ -66,13 +48,10 @@ func TestFileBackend_Get(t *testing.T) {
 			t.Fatalf("setup: WriteFile: %v", err)
 		}
 
-		d, err := NewFileDownloader(cache.CacheNone, nil)
-		if err != nil {
-			t.Fatalf("NewFileDownloader() unexpected error: %v", err)
-		}
+		d := NewFileDownloader()
 
 		var got []byte
-		err = d.Get(&Source{Url: "file://" + path}, tui.NewQuietProgressReader(), func(reader io.ReadCloser) error {
+		err := d.Get(&Source{Url: "file://" + path}, tui.NewQuietProgressReader(), func(reader io.ReadCloser) error {
 			b, err := io.ReadAll(reader)
 			if err != nil {
 				return err
@@ -92,13 +71,10 @@ func TestFileBackend_Get(t *testing.T) {
 		dir := t.TempDir()
 		missing := filepath.Join(dir, "does-not-exist")
 
-		d, err := NewFileDownloader(cache.CacheNone, nil)
-		if err != nil {
-			t.Fatalf("NewFileDownloader() unexpected error: %v", err)
-		}
+		d := NewFileDownloader()
 
 		called := false
-		err = d.Get(&Source{Url: "file://" + missing}, tui.NewQuietProgressReader(), func(reader io.ReadCloser) error {
+		err := d.Get(&Source{Url: "file://" + missing}, tui.NewQuietProgressReader(), func(reader io.ReadCloser) error {
 			called = true
 			return nil
 		})
@@ -117,13 +93,10 @@ func TestFileBackend_Get(t *testing.T) {
 			t.Fatalf("setup: WriteFile: %v", err)
 		}
 
-		d, err := NewFileDownloader(cache.CacheNone, nil)
-		if err != nil {
-			t.Fatalf("NewFileDownloader() unexpected error: %v", err)
-		}
+		d := NewFileDownloader()
 
 		want := errors.New("callback failed")
-		err = d.Get(&Source{Url: "file://" + path}, tui.NewQuietProgressReader(), func(reader io.ReadCloser) error {
+		err := d.Get(&Source{Url: "file://" + path}, tui.NewQuietProgressReader(), func(reader io.ReadCloser) error {
 			return want
 		})
 		if !errors.Is(err, want) {

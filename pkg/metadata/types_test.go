@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"gitlab.com/uniget-org/cli/pkg/source"
-	"gitlab.com/uniget-org/cli/pkg/source/cache"
 	"gitlab.com/uniget-org/cli/pkg/tui"
 )
 
@@ -69,8 +68,6 @@ func TestNewMetadataSource(t *testing.T) {
 		metadataSource, err := NewMetadataSource(
 			"file:///tmp/metadata.tgz",
 			t.TempDir(),
-			cache.CacheNone,
-			nil,
 			nil,
 			nil,
 			nil,
@@ -96,8 +93,6 @@ func TestNewMetadataSource(t *testing.T) {
 		_, err := NewMetadataSource(
 			"unsupported://metadata.tgz",
 			t.TempDir(),
-			cache.CacheNone,
-			nil,
 			nil,
 			nil,
 			nil,

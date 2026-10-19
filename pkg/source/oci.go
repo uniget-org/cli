@@ -9,23 +9,14 @@ import (
 	rref "github.com/regclient/regclient/types/ref"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
-	"gitlab.com/uniget-org/cli/pkg/source/cache"
 	"gitlab.com/uniget-org/cli/pkg/tui"
 )
 
 type OciBackend struct {
-	Backend
 }
 
-func NewOciDownloader(cacheType cache.CacheType, cacheConfiguration CacheConfiguration) (*OciBackend, error) {
-	backend, err := NewBackend(cacheType, cacheConfiguration)
-	if err != nil {
-		return nil, err
-	}
-
-	return &OciBackend{
-		Backend: *backend,
-	}, nil
+func NewOciDownloader() *OciBackend {
+	return &OciBackend{}
 }
 
 func IsOciRef(source *Source) bool {
@@ -33,18 +24,7 @@ func IsOciRef(source *Source) bool {
 }
 
 func (d *OciBackend) Get(source *Source, p tui.ProgressReader, callback func(reader io.ReadCloser) error) error {
-	switch d.CacheType {
-	case cache.CacheNone:
-		return d.GetFromRegistry(source, p, callback)
-	case cache.CacheFile:
-		return d.GetFileCache(source, p, callback)
-	case cache.CacheDocker:
-		return d.HandleCache(source, p, callback)
-	case cache.CacheContainerd:
-		return d.HandleCache(source, p, callback)
-	default:
-		return fmt.Errorf("unsupported cache type: %v", d.CacheType)
-	}
+	return d.GetFromRegistry(source, p, callback)
 }
 
 func (d *OciBackend) GetFromRegistry(source *Source, p tui.ProgressReader, callback func(reader io.ReadCloser) error) error {
@@ -60,7 +40,7 @@ func (d *OciBackend) GetFromRegistry(source *Source, p tui.ProgressReader, callb
 	//nolint:errcheck
 	defer rc.Close(ctx, r)
 
-	logging.Debugf("NoneCache: Pulling %s", r)
+	logging.Debugf("Pulling %s", r)
 	err = containers.GetFirstLayerFromRegistryRaw(ctx, rc, r, p, func(reader io.ReadCloser) error {
 		err := callback(reader)
 		if err != nil {
@@ -73,17 +53,4 @@ func (d *OciBackend) GetFromRegistry(source *Source, p tui.ProgressReader, callb
 	}
 
 	return nil
-}
-
-func (d *OciBackend) GetFileCache(source *Source, p tui.ProgressReader, callback func(reader io.ReadCloser) error) error {
-	if !d.Cache.Has(source.Url) {
-		err := d.GetFromRegistry(source, p, func(reader io.ReadCloser) error {
-			return d.Cache.Put(source.Url, p, reader)
-		})
-		if err != nil {
-			return fmt.Errorf("failed to get from registry and put in cache: %w", err)
-		}
-	}
-
-	return d.Cache.Get(source.Url, p, callback)
 }

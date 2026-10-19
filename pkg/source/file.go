@@ -6,27 +6,14 @@ import (
 	"os"
 	"strings"
 
-	"gitlab.com/uniget-org/cli/pkg/source/cache"
 	"gitlab.com/uniget-org/cli/pkg/tui"
 )
 
 type FileBackend struct {
-	Backend
 }
 
-func NewFileDownloader(cacheType cache.CacheType, cacheConfiguration CacheConfiguration) (*FileBackend, error) {
-	if cacheType != cache.CacheNone {
-		return nil, fmt.Errorf("file backend does not support caching")
-	}
-
-	backend, err := NewBackend(cacheType, cacheConfiguration)
-	if err != nil {
-		return nil, err
-	}
-
-	return &FileBackend{
-		Backend: *backend,
-	}, nil
+func NewFileDownloader() *FileBackend {
+	return &FileBackend{}
 }
 
 func IsFileRef(source *Source) bool {

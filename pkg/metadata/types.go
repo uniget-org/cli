@@ -6,27 +6,22 @@ import (
 	"os"
 
 	"gitlab.com/uniget-org/cli/pkg/source"
-	"gitlab.com/uniget-org/cli/pkg/source/cache"
 	"gitlab.com/uniget-org/cli/pkg/tool"
 	"gitlab.com/uniget-org/cli/pkg/tui"
 )
 
 type MetadataSource struct {
-	Source             *source.Source
-	Downloader         *source.Downloader
-	CacheType          cache.CacheType
-	CacheConfiguration source.CacheConfiguration
-	Unpacker           *Unpacker
-	Directory          string
-	Files              map[string]string
-	Verifier           *MetadataVerifier
+	Source     *source.Source
+	Downloader *source.Downloader
+	Unpacker   *Unpacker
+	Directory  string
+	Files      map[string]string
+	Verifier   *MetadataVerifier
 }
 
 func NewMetadataSource(
 	url string,
 	directory string,
-	cacheType cache.CacheType,
-	cacheConfiguration source.CacheConfiguration,
 	unpacker *Unpacker,
 	files map[string]string,
 	verifier *MetadataVerifier,
@@ -34,20 +29,18 @@ func NewMetadataSource(
 	metadataSource := &source.Source{
 		Url: url,
 	}
-	downloader, err := source.NewBackendFromScheme(metadataSource, cacheType, cacheConfiguration)
+	downloader, err := source.NewBackendFromScheme(metadataSource)
 	if err != nil {
 		return nil, err
 	}
 
 	return &MetadataSource{
-		Source:             metadataSource,
-		Downloader:         &downloader,
-		CacheType:          cacheType,
-		CacheConfiguration: cacheConfiguration,
-		Directory:          directory,
-		Unpacker:           unpacker,
-		Files:              files,
-		Verifier:           verifier,
+		Source:     metadataSource,
+		Downloader: &downloader,
+		Directory:  directory,
+		Unpacker:   unpacker,
+		Files:      files,
+		Verifier:   verifier,
 	}, nil
 }
 

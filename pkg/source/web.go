@@ -6,27 +6,14 @@ import (
 	"net/http"
 	"strings"
 
-	"gitlab.com/uniget-org/cli/pkg/source/cache"
 	"gitlab.com/uniget-org/cli/pkg/tui"
 )
 
 type WebBackend struct {
-	Backend
 }
 
-func NewWebDownloader(cacheType cache.CacheType, cacheConfiguration CacheConfiguration) (*WebBackend, error) {
-	if cacheType != cache.CacheNone && cacheType != cache.CacheFile {
-		return nil, fmt.Errorf("web backend only supports caching to file")
-	}
-
-	backend, err := NewBackend(cacheType, cacheConfiguration)
-	if err != nil {
-		return nil, err
-	}
-
-	return &WebBackend{
-		Backend: *backend,
-	}, nil
+func NewWebDownloader() *WebBackend {
+	return &WebBackend{}
 }
 
 func IsWebRef(source *Source) bool {
@@ -34,32 +21,12 @@ func IsWebRef(source *Source) bool {
 }
 
 func (d *WebBackend) Get(source *Source, p tui.ProgressReader, callback func(reader io.ReadCloser) error) (err error) {
-	switch d.CacheType {
-	case cache.CacheNone:
-		resp, err := http.Get(source.Url)
-		if err != nil {
-			return fmt.Errorf("failed to get %s: %w", source.Url, err)
-		}
-		//nolint:errcheck
-		defer resp.Body.Close()
-
-		return callback(resp.Body)
-
-	case cache.CacheFile:
-		if !d.Cache.Has(source.Url) {
-			resp, err := http.Get(source.Url)
-			if err != nil {
-				return fmt.Errorf("failed to get %s: %w", source.Url, err)
-			}
-			//nolint:errcheck
-			defer resp.Body.Close()
-
-			err = d.Cache.Put(source.Url, p, resp.Body)
-			if err != nil {
-				return fmt.Errorf("failed to put %s into cache: %w", source.Url, err)
-			}
-		}
+	resp, err := http.Get(source.Url) // #nosec G107 -- Url is configurable by the user
+	if err != nil {
+		return fmt.Errorf("failed to get %s: %w", source.Url, err)
 	}
+	//nolint:errcheck
+	defer resp.Body.Close()
 
-	return d.Cache.Get(source.Url, p, callback)
+	return callback(resp.Body)
 }

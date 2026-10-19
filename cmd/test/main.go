@@ -5,8 +5,6 @@ import (
 
 	"gitlab.com/uniget-org/cli/internal/constants"
 	"gitlab.com/uniget-org/cli/pkg/metadata"
-	"gitlab.com/uniget-org/cli/pkg/source"
-	"gitlab.com/uniget-org/cli/pkg/source/cache"
 	"gitlab.com/uniget-org/cli/pkg/tui"
 )
 
@@ -15,8 +13,6 @@ func main() {
 	unigetMetadataSource, err := metadata.NewMetadataSource(
 		"oci://ghcr.io/uniget-org/tools/metadata:main",
 		".",
-		cache.CacheNone,
-		source.CacheConfiguration{},
 		&tarGzUnpacker,
 		map[string]string{
 			"metadata.json":               "metadata.json",
@@ -49,8 +45,6 @@ func main() {
 	localMetadataSource, err := metadata.NewMetadataSource(
 		"file:///home/nicholas/private/uniget/tools/metadata.json",
 		".",
-		cache.CacheNone,
-		source.CacheConfiguration{},
 		&nullUnpacker,
 		map[string]string{
 			"metadata.json":               "metadata.json",
