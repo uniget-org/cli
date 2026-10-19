@@ -16,8 +16,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"gitlab.com/uniget-org/cli/internal/constants"
-	"gitlab.com/uniget-org/cli/pkg/cache"
-	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 	myos "gitlab.com/uniget-org/cli/pkg/os"
 	"gitlab.com/uniget-org/cli/pkg/tool"
@@ -25,8 +23,7 @@ import (
 
 var (
 	configuration *config.Config
-	toolCache     cache.Cache = cache.NewNoneCache()
-	tools                     = &tool.Tools{
+	tools         = &tool.Tools{
 		Tools: make([]tool.Tool, 0),
 	}
 	rootCmd = &cobra.Command{
@@ -111,39 +108,11 @@ var (
 			}
 
 			switch configuration.Cache {
-			case "none":
-				logging.Debug("Using no cache")
-				toolCache = cache.NewNoneCache()
+			case "", "none":
+				logging.Debug("Pulling images without caching")
 
-			case "file":
-				logging.Debug("Using file cache")
-				fileCacheDir := configuration.GetFileCacheDirectory()
-				myos.AssertDirectory(fileCacheDir)
-				toolCache = cache.NewFileCache(fileCacheDir, configuration.FileCacheRetention)
-
-			case "docker":
-				if containers.DockerIsAvailable() {
-					logging.Debug("Using docker cache")
-					toolCache, err = cache.NewDockerCache()
-					if err != nil {
-						return fmt.Errorf("error creating Docker cache: %s", err)
-					}
-				} else {
-					logging.Warning.Println("Docker is not available. Falling back to no cache")
-					toolCache = cache.NewNoneCache()
-				}
-
-			case "containerd":
-				if containers.ContainerdIsAvailable() {
-					logging.Debug("Using containerd cache")
-					toolCache, err = cache.NewContainerdCache(constants.ProjectName)
-					if err != nil {
-						return fmt.Errorf("error creating Containerd cache: %s", err)
-					}
-				} else {
-					logging.Warning.Println("Containerd is not available. Falling back to no cache")
-					toolCache = cache.NewNoneCache()
-				}
+			case "file", "docker", "containerd":
+				logging.Warning.Printfln("Cache backend %s is no longer supported, pulling images without caching", configuration.Cache)
 
 			default:
 				return fmt.Errorf("unsupported cache backend: %s", configuration.Cache)

@@ -11,7 +11,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"gitlab.com/uniget-org/cli/internal/config"
-	"gitlab.com/uniget-org/cli/pkg/cache"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 )
 
@@ -31,7 +30,6 @@ func runCobraTest(t *testing.T, opts *cobraTestOpts, args ...string) (string, er
 	t.Helper()
 
 	configuration = config.NewDefaultConfig()
-	toolCache = cache.NewNoneCache()
 	resetCommandFlags()
 
 	buf := new(bytes.Buffer)

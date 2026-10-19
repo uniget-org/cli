@@ -85,12 +85,8 @@ var inspectCmd = &cobra.Command{
 		}
 
 		progressReader := common.CreateProgressReader("Downloading", configuration.Debug || configuration.Trace)
-		err = toolCache.Get(toolRef, progressReader, func(reader io.ReadCloser) error { return nil })
-		if err != nil {
-			return fmt.Errorf("unable to get image: %s", err)
-		}
 		var files []string
-		err = toolCache.Get(toolRef, progressReader, func(reader io.ReadCloser) error {
+		err = fetchLayer(toolRef, progressReader, func(reader io.ReadCloser) error {
 			files, err = inspectTool.Inspect(cmd.OutOrStdout(), reader, effectivePathRewriteRules)
 			if err != nil {
 				return fmt.Errorf("unable to inspect %s: %s", inspectTool.Name, err)

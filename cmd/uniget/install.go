@@ -432,11 +432,7 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 			}
 
 			logging.Debugf("Getting image %s", ref)
-			err = toolCache.Get(ref, progressReader, func(reader io.ReadCloser) error { return nil })
-			if err != nil {
-				return fmt.Errorf("unable to get image: %s", err)
-			}
-			err = toolCache.Get(ref, progressReader, func(reader io.ReadCloser) error {
+			err = fetchLayer(ref, progressReader, func(reader io.ReadCloser) error {
 				err := installTool(plannedTool, reader)
 				if err != nil {
 					installSuccessful = false

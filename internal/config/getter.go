@@ -46,10 +46,6 @@ func (c *Config) GetProfileDDirectory() string {
 	return c.joinRoot(c.ConfigRoot) + "/profile.d"
 }
 
-func (c *Config) GetFileCacheDirectory() string {
-	return c.joinRoot(c.FileCacheDirectoryName)
-}
-
 func (c *Config) GetMetadataFile() string {
 	return c.GetCacheDirectory() + "/" + constants.MetadataFileName
 }

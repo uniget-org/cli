@@ -1,4 +1,4 @@
-package cache
+package main
 
 import (
 	"context"
@@ -13,13 +13,9 @@ import (
 	"gitlab.com/uniget-org/cli/pkg/tui"
 )
 
-type NoneCache struct{}
-
-func NewNoneCache() *NoneCache {
-	return &NoneCache{}
-}
-
-func (c *NoneCache) Get(tool *containers.ToolRef, p tui.ProgressReader, callback func(reader io.ReadCloser) error) error {
+// fetchLayer pulls the first layer of the tool image and hands it to the
+// callback. Previously, this was implemented as cache backends in pkg/cache.
+func fetchLayer(tool *containers.ToolRef, p tui.ProgressReader, callback func(reader io.ReadCloser) error) error {
 	ctx := context.Background()
 
 	r, err := rref.New(tool.String())
@@ -38,7 +34,7 @@ func (c *NoneCache) Get(tool *containers.ToolRef, p tui.ProgressReader, callback
 	//nolint:errcheck
 	defer rc.Close(ctx, r)
 
-	logging.Debugf("NoneCache: Pulling %s", r)
+	logging.Debugf("Pulling %s", r)
 
 	err = containers.GetFirstLayerFromRegistry(ctx, rc, r, p, func(reader io.ReadCloser) error {
 		err := callback(reader)

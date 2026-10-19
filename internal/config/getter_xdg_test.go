@@ -28,12 +28,11 @@ func TestPathGettersWithAbsoluteRoots(t *testing.T) {
 	// XDG directories outside of $HOME produce absolute roots. They must
 	// be used as-is instead of being joined under the prefix.
 	config := &Config{
-		Prefix:                 "/home/nicholas",
-		Target:                 ".local",
-		CacheRoot:              "/tmp/other-cache",
-		LibRoot:                "/tmp/other-state",
-		ConfigRoot:             "/tmp/other-config",
-		FileCacheDirectoryName: "downloads",
+		Prefix:     "/home/nicholas",
+		Target:     ".local",
+		CacheRoot:  "/tmp/other-cache",
+		LibRoot:    "/tmp/other-state",
+		ConfigRoot: "/tmp/other-config",
 	}
 	if got := config.GetCacheDirectory(); got != "/tmp/other-cache/"+constants.ProjectName {
 		t.Errorf("expected /tmp/other-cache/%s, got %s", constants.ProjectName, got)
@@ -43,18 +42,5 @@ func TestPathGettersWithAbsoluteRoots(t *testing.T) {
 	}
 	if got := config.GetCacheRoot(); got != "/tmp/other-cache" {
 		t.Errorf("expected /tmp/other-cache, got %s", got)
-	}
-	if got := config.GetFileCacheDirectory(); got != "/home/nicholas/downloads" {
-		t.Errorf("expected /home/nicholas/downloads, got %s", got)
-	}
-}
-
-func TestPathGettersFileCacheDirectory(t *testing.T) {
-	config := &Config{
-		Prefix:                 "/opt/uniget",
-		FileCacheDirectoryName: "downloads",
-	}
-	if got := config.GetFileCacheDirectory(); got != "/opt/uniget/downloads" {
-		t.Errorf("expected /opt/uniget/downloads, got %s", got)
 	}
 }
