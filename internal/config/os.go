@@ -31,7 +31,7 @@ func (configuration *Config) AssertMetadataFileExists() {
 	_, err := os.Stat(configuration.GetMetadataFile())
 	if err != nil {
 		logging.Error.Printfln("Metadata file %s does not exist: %s",
-			configuration.Prefix+"/"+configuration.GetMetadataFile(),
+			configuration.GetMetadataFile(),
 			err)
 		os.Exit(1)
 	}
@@ -39,7 +39,7 @@ func (configuration *Config) AssertMetadataFileExists() {
 	_, err = os.Stat(configuration.GetMetadataFile() + ".sigstore.json")
 	if err != nil {
 		logging.Error.Printfln("Metadata signature %s does not exist: %s",
-			configuration.Prefix+"/"+configuration.GetMetadataFile()+".sigstore.json",
+			configuration.GetMetadataFile()+".sigstore.json",
 			err)
 		os.Exit(1)
 	}

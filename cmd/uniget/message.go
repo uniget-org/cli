@@ -44,19 +44,17 @@ var messageCmd = &cobra.Command{
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
-		if len(args) == 0 && !messageFind && !messageList {
-			return nil
-		}
-
-		toolName := args[0]
-
 		if messageList {
-			tool, err := tools.GetByName(toolName)
+			if len(args) == 0 {
+				return fmt.Errorf("message list requires a tool name")
+			}
+
+			tool, err := tools.GetByName(args[0])
 			if err != nil {
 				return fmt.Errorf("failed to get tool: %s", err)
 			}
 
-			logging.Info.Printfln("Messages for %s:", toolName)
+			logging.Info.Printfln("Messages for %s:", args[0])
 			if tool.Messages.Internals != "" {
 				fmt.Println("Internals")
 			}
@@ -75,7 +73,9 @@ var messageCmd = &cobra.Command{
 				}
 			}
 
-		} else {
+		} else if len(args) > 0 {
+			toolName := args[0]
+
 			err := printToolInternalsMessage(cmd.OutOrStdout(), toolName)
 			if err != nil {
 				return fmt.Errorf("failed to print tool internals: %s", err)

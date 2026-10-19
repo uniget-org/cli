@@ -56,7 +56,7 @@ var cacheInfoCmd = &cobra.Command{
 		fmt.Printf("Cache retention: %d\n", configuration.FileCacheRetention)
 		if configuration.Cache == "file" {
 			fmt.Printf("Cache directory: %s\n",
-				configuration.Prefix+"/"+configuration.FileCacheDirectoryName)
+				configuration.GetFileCacheDirectory())
 		}
 		return nil
 	},
@@ -77,10 +77,10 @@ var cacheStatsCmd = &cobra.Command{
 		case "file":
 			if configuration.Cache == "file" {
 				fmt.Printf("Cache directory: %s\n",
-					configuration.Prefix+"/"+configuration.FileCacheDirectoryName)
+					configuration.GetFileCacheDirectory())
 			}
 			size, err = dirSize(
-				configuration.Prefix + "/" + configuration.FileCacheDirectoryName,
+				configuration.GetFileCacheDirectory(),
 			)
 			if err != nil {
 				return fmt.Errorf("error calculating cache size: %v", err)
@@ -125,10 +125,10 @@ var cacheListCmd = &cobra.Command{
 		case "file":
 			if configuration.Cache == "file" {
 				fmt.Printf("Cache directory: %s\n",
-					configuration.Prefix+"/"+configuration.FileCacheDirectoryName)
+					configuration.GetFileCacheDirectory())
 			}
 			files, err := dirList(
-				configuration.Prefix + "/" + configuration.FileCacheDirectoryName,
+				configuration.GetFileCacheDirectory(),
 			)
 			if err != nil {
 				return fmt.Errorf("error calculating cache size: %v", err)
@@ -178,10 +178,10 @@ var cachePruneCmd = &cobra.Command{
 		case "file":
 			if configuration.Cache == "file" {
 				fmt.Printf("Cache directory: %s\n",
-					configuration.Prefix+"/"+configuration.FileCacheDirectoryName)
+					configuration.GetFileCacheDirectory())
 			}
 			count, err = dirPrune(
-				configuration.Prefix + "/" + configuration.FileCacheDirectoryName,
+				configuration.GetFileCacheDirectory(),
 			)
 			if err != nil {
 				return fmt.Errorf("error pruning cache: %v", err)
@@ -268,7 +268,11 @@ func dirPrune(path string) (int, error) {
 			return fmt.Errorf("error accessing path %q: %v", p, err)
 		}
 		if !info.IsDir() {
-			if removeErr := root.Remove(p); removeErr != nil {
+			relativePath, err := filepath.Rel(path, p)
+			if err != nil {
+				return fmt.Errorf("error resolving relative path for %q: %v", p, err)
+			}
+			if removeErr := root.Remove(relativePath); removeErr != nil {
 				return fmt.Errorf("failed to remove file %s: %w", p, removeErr)
 			}
 			deleted++

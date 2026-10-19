@@ -15,7 +15,20 @@ func (s ByVersion) Swap(i, j int) {
 }
 
 func (s ByVersion) Less(i, j int) bool {
-	v1, _ := goversion.NewVersion(s[i])
-	v2, _ := goversion.NewVersion(s[j])
-	return v1.LessThan(v2)
+	v1, err1 := goversion.NewVersion(s[i])
+	v2, err2 := goversion.NewVersion(s[j])
+
+	switch {
+	case err1 != nil && err2 != nil:
+		// Neither version can be parsed. Fall back to comparing strings.
+		return s[i] < s[j]
+	case err1 != nil:
+		// Unparseable versions sort after parseable versions.
+		return false
+	case err2 != nil:
+		// Unparseable versions sort after parseable versions.
+		return true
+	default:
+		return v1.LessThan(v2)
+	}
 }

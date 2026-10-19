@@ -47,7 +47,7 @@ func installProfileDShim() error {
 
 	if configuration.User {
 		profileDShimFile = configuration.GetProfileDDirectory() + "/uniget-profile.d.sh"
-		profileDScript = strings.ReplaceAll(profileDShim, "${target}", configuration.Prefix+"/"+configuration.Target)
+		profileDScript = strings.ReplaceAll(profileDShim, "${target}", configuration.GetTarget())
 	}
 
 	if myos.FileExists(profileDShimFile) {

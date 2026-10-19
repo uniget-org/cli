@@ -117,7 +117,7 @@ var (
 
 			case "file":
 				logging.Debug("Using file cache")
-				fileCacheDir := configuration.FileCacheDirectoryName
+				fileCacheDir := configuration.GetFileCacheDirectory()
 				myos.AssertDirectory(fileCacheDir)
 				toolCache = cache.NewFileCache(fileCacheDir, configuration.FileCacheRetention)
 

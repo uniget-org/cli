@@ -17,7 +17,7 @@ func LoadKubernetesManifest(file []byte) (runtime.Object, error) {
 	decode := scheme.Codecs.UniversalDeserializer().Decode
 	manifest, _, err := decode(file, nil, nil)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("failed to decode kubernetes manifest: %w", err)
 	}
 
 	return manifest, nil

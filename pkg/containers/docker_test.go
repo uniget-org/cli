@@ -9,6 +9,7 @@ import (
 	"github.com/google/safearchive/tar"
 
 	"gitlab.com/uniget-org/cli/pkg/archive"
+	"gitlab.com/uniget-org/cli/pkg/tui"
 )
 
 func TestDockerClient(t *testing.T) {
@@ -57,7 +58,7 @@ func TestReadFirstLayerFromDockerImage(t *testing.T) {
 	}
 	sha := shaString[7:]
 
-	err = ReadDockerImage(cli, image, func(reader io.ReadCloser) error {
+	err = ReadDockerImage(cli, image, tui.NewProgressReader(nil, nil), func(reader io.ReadCloser) error {
 		err := UnpackLayerFromDockerImage(reader, sha, func(reader io.ReadCloser) error {
 			err = archive.ProcessTarContents(io.NopCloser(reader), func(tar *tar.Reader, header *tar.Header) error { return nil })
 			if err != nil {

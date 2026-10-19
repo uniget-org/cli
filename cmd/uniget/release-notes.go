@@ -200,6 +200,9 @@ func extractGitHubOwnerAndProject(url string) (string, error) {
 		return "", fmt.Errorf("cannot compile regexp: %w", err)
 	}
 	matches := re.FindStringSubmatch(url)
+	if matches == nil {
+		return "", fmt.Errorf("cannot extract owner and project from url %s", url)
+	}
 	owner := matches[re.SubexpIndex("owner")]
 	project := matches[re.SubexpIndex("project")]
 

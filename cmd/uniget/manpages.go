@@ -33,7 +33,7 @@ var manpagesCmd = &cobra.Command{
 	Args:    cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		if !strings.HasPrefix(manDirectory, "/") && !strings.HasPrefix(manDirectory, ".") {
-			manDirectory = fmt.Sprintf("%s/%s", configuration.Prefix+"/"+configuration.Target, manDirectory)
+			manDirectory = fmt.Sprintf("%s/%s", configuration.GetTarget(), manDirectory)
 		}
 		logging.Debugf("Using base directory for manpages: %s", manDirectory)
 

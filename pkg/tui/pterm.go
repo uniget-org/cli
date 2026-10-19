@@ -17,7 +17,9 @@ func NewPtermProgressReader(title string) (PtermProgressReader, error) {
 		progressPrinter: progressPrinter,
 	}
 	ptermProgressReader.onTotalUpdate = func(n int64) {
-		ptermProgressReader.SetTotal(n)
+		// Update the progressbar directly instead of calling SetTotal
+		// which would invoke this callback again and recurse forever.
+		progressPrinter.Total = int(n)
 	}
 	ptermProgressReader.onProgress = func(n int64) {
 		progressPrinter.Add(int(n))

@@ -6,39 +6,48 @@ import (
 	"gitlab.com/uniget-org/cli/internal/constants"
 )
 
-func (c *Config) GetTarget() string {
+// joinRoot joins a root directory with the installation prefix. Absolute
+// roots are used as-is which supports XDG directories pointing outside of
+// $HOME in user mode.
+func (c *Config) joinRoot(root string) string {
+	if strings.HasPrefix(root, "/") {
+		return strings.TrimSuffix(root, "/")
+	}
+
 	prefix, _ := strings.CutSuffix(c.Prefix, "/")
-	return prefix + "/" + c.Target
+	return prefix + "/" + root
+}
+
+func (c *Config) GetTarget() string {
+	return c.joinRoot(c.Target)
 }
 
 func (c *Config) GetCacheRoot() string {
-	prefix, _ := strings.CutSuffix(c.Prefix, "/")
-	return prefix + "/" + c.CacheRoot
+	return c.joinRoot(c.CacheRoot)
 }
 
 func (c *Config) GetLibRoot() string {
-	prefix, _ := strings.CutSuffix(c.Prefix, "/")
-	return prefix + "/" + c.LibRoot
+	return c.joinRoot(c.LibRoot)
 }
 
 func (c *Config) GetCacheDirectory() string {
-	prefix, _ := strings.CutSuffix(c.Prefix, "/")
-	return prefix + "/" + c.CacheRoot + "/" + constants.ProjectName
+	return c.joinRoot(c.CacheRoot) + "/" + constants.ProjectName
 }
 
 func (c *Config) GetLibDirectory() string {
-	prefix, _ := strings.CutSuffix(c.Prefix, "/")
-	return prefix + "/" + c.LibRoot + "/" + constants.ProjectName
+	return c.joinRoot(c.LibRoot) + "/" + constants.ProjectName
 }
 
 func (c *Config) GetConfigDirectory() string {
-	prefix, _ := strings.CutSuffix(c.Prefix, "/")
-	return prefix + "/" + c.ConfigRoot + "/" + constants.ProjectName
+	return c.joinRoot(c.ConfigRoot) + "/" + constants.ProjectName
 }
 
 func (c *Config) GetProfileDDirectory() string {
-	prefix, _ := strings.CutSuffix(c.Prefix, "/")
-	return prefix + "/" + c.ConfigRoot + "/profile.d"
+	return c.joinRoot(c.ConfigRoot) + "/profile.d"
+}
+
+func (c *Config) GetFileCacheDirectory() string {
+	return c.joinRoot(c.FileCacheDirectoryName)
 }
 
 func (c *Config) GetMetadataFile() string {
