@@ -147,6 +147,15 @@ deps:
     echo "### Push dependency updates"
     git push origin HEAD:refs/heads/dependency-updates
 
+    MR_ID="$( glab mr list --source-branch=dependency-updates --output=json --jq '.[].iid' )"
+    if test -n "${MR_ID}"; then
+        echo "### Rebasing merge request ${MR_ID}"
+        glab mr rebase "${MR_ID}"
+
+        exit 0
+    fi
+    echo "### No existing merge request found for dependency updates."
+
     echo "### Create merge request for dependency updates"
     glab mr create \
       --source-branch "dependency-updates" \
@@ -154,5 +163,4 @@ deps:
       --title "chore: Update dependencies" \
       --description "Automated dependency update by Commit Bot from pipeline ${CI_PIPELINE_IID}." \
       --remove-source-branch \
-      --auto-merge \
       --yes
