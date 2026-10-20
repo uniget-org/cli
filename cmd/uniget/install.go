@@ -141,7 +141,7 @@ func findInstalledTools(tools *tool.Tools) (*tool.Tools, error) {
 	return requestedTools, nil
 }
 
-func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool, reinstall bool, skipDependencies bool, skipConflicts bool) error {
+func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool, reinstall bool, skipDependencies bool, skipConflicts bool) (err error) {
 	var plannedTools tool.Tools
 
 	// Add dependencies of requested tools
@@ -283,7 +283,7 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 	// Install
 	configuration.AssertWritableTarget()
 	configuration.AssertLibDirectory()
-	err := runPreInstallHooks(plannedTools.GetNames()...)
+	err = runPreInstallHooks(plannedTools.GetNames()...)
 	if err != nil {
 		return fmt.Errorf("unable to run pre-install hooks: %s", err)
 	}
@@ -303,6 +303,19 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 			continue
 		}
 
+		registries, repositories := plannedTool.GetSourcesWithFallback(constants.Registry, constants.ImageRepository)
+		ref, err := containers.FindToolRef(registries, repositories, plannedTool.Name, "latest")
+		if err != nil {
+			return fmt.Errorf("error finding tool %s:%s: %s", plannedTool.Name, plannedTool.Version, err)
+		}
+		// verify
+		if configuration.VerifyImageSignature {
+			err = containers.VerifyContainerImageSignature(ref, constants.SigstoreIssuer, "", "", constants.SigstoreSubjectRegexp)
+			if err != nil {
+				return fmt.Errorf("error verifying tool signature for %s: %w", plannedTool.Name, err)
+			}
+		}
+
 		if plannedTool.IsInstalled() {
 			binaryFilePath := plannedTool.Binary
 			file, err := os.OpenFile(binaryFilePath, os.O_WRONLY, 0600) // #nosec G304 -- Retrieved from signed metadata
@@ -313,7 +326,6 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 			//nolint:errcheck
 			file.Close() // #nosec G104 -- File is closed immediately after opening
 
-			// premature uninstall
 			err = uninstallTool(plannedTool.Name)
 			if err != nil {
 				logging.Warning.Printfln("Unable to uninstall %s: %s", plannedTool.Name, err)
@@ -364,7 +376,7 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 		if len(installDir) == 0 {
 			installDir = "/"
 		}
-		err := os.Chdir(installDir)
+		err = os.Chdir(installDir)
 		if err != nil {
 			return fmt.Errorf("error changing directory to %s: %s", installDir, err)
 		}
@@ -397,9 +409,9 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 
 			return nil
 		}
-		pathToTar, ok := installPathToTarMappings[plannedTool.Name]
+		pathToTar, hasPathToTar := installPathToTarMappings[plannedTool.Name]
 		installSuccessful := true
-		if ok {
+		if hasPathToTar {
 			logging.Debugf("Using tar file mappings for installation")
 			var fileInfo os.FileInfo
 			if fileInfo, err = os.Stat(pathToTar); os.IsNotExist(err) {
@@ -425,13 +437,6 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 			ref, err := containers.FindToolRef(registries, repositories, plannedTool.Name, "latest")
 			if err != nil {
 				return fmt.Errorf("error finding tool %s:%s: %s", plannedTool.Name, plannedTool.Version, err)
-			}
-			// verify
-			if configuration.VerifyImageSignature {
-				err = containers.VerifyContainerImageSignature(ref, constants.SigstoreIssuer, "", "", constants.SigstoreSubjectRegexp)
-				if err != nil {
-					return fmt.Errorf("error verifying tool signature for %s: %w", plannedTool.Name, err)
-				}
 			}
 
 			logging.Debugf("Getting image %s", ref)
