@@ -87,7 +87,7 @@ require (
 	github.com/digitorus/timestamp v0.0.0-20260914073129-b4b58b92aa51 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
 	github.com/dlclark/regexp2 v1.12.0 // indirect
-	github.com/dlclark/regexp2/v2 v2.9.0 // indirect
+	github.com/dlclark/regexp2/v2 v2.9.1 // indirect
 	github.com/docker/cli v29.9.1+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.9.10 // indirect
 	github.com/docker/go-connections v0.8.2 // indirect
@@ -110,7 +110,7 @@ require (
 	github.com/go-openapi/runtime v0.33.3 // indirect
 	github.com/go-openapi/runtime/server-middleware v0.33.3 // indirect
 	github.com/go-openapi/spec v1.0.1 // indirect
-	github.com/go-openapi/strfmt v0.27.3 // indirect
+	github.com/go-openapi/strfmt v0.27.4 // indirect
 	github.com/go-openapi/swag/conv v0.29.2 // indirect
 	github.com/go-openapi/swag/fileutils v0.29.2 // indirect
 	github.com/go-openapi/swag/jsonutils v0.29.2 // indirect
@@ -123,7 +123,7 @@ require (
 	github.com/go-openapi/validate v1.0.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
 	github.com/golang/snappy v1.0.0 // indirect
-	github.com/google/certificate-transparency-go v1.3.3 // indirect
+	github.com/google/certificate-transparency-go v1.4.0 // indirect
 	github.com/google/jsonschema-go v0.4.3 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/css v1.0.1 // indirect
@@ -189,7 +189,7 @@ require (
 	github.com/sigstore/rekor v1.5.4 // indirect
 	github.com/sigstore/rekor-tiles/v2 v2.3.0 // indirect
 	github.com/sigstore/sigstore v1.11.1 // indirect
-	github.com/sigstore/timestamp-authority/v2 v2.1.4 // indirect
+	github.com/sigstore/timestamp-authority/v2 v2.1.5 // indirect
 	github.com/sirupsen/logrus v1.10.2 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/syndtr/goleveldb v1.0.1-0.20220721030215-126854af5e6d // indirect
@@ -240,8 +240,8 @@ require (
 	golang.org/x/term v0.47.0 // indirect
 	golang.org/x/text v0.43.0 // indirect
 	golang.org/x/time v0.16.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20261012220534-4341edf3f941 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20261012220534-4341edf3f941 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20261019180522-ce908d29299b // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20261019180522-ce908d29299b // indirect
 	google.golang.org/grpc v1.84.0 // indirect
 	google.golang.org/protobuf v1.36.12 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
