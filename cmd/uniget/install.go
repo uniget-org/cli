@@ -308,7 +308,6 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 		if err != nil {
 			return fmt.Errorf("error finding tool %s:%s: %s", plannedTool.Name, plannedTool.Version, err)
 		}
-		// verify
 		if configuration.VerifyImageSignature {
 			err = containers.VerifyContainerImageSignature(ref, constants.SigstoreIssuer, "", "", constants.SigstoreSubjectRegexp)
 			if err != nil {
@@ -395,7 +394,6 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 		var layer io.ReadCloser
 		var installedFiles []string
 		installTool := func(plannedTool tool.Tool, layer io.ReadCloser) error {
-			// install
 			installedFiles, err = plannedTool.Install(w, layer, configuration.PathRewriteRules, createPatchFileCallback(plannedTool))
 			if err != nil {
 				logging.Error.Printfln("Unable to install %s: %s", plannedTool.Name, err)
