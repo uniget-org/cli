@@ -2,10 +2,10 @@
 #check=skip=SecretsUsedInArgOrEnv
 
 FROM ghcr.io/uniget-org/tools/goreleaser:2.18.3@sha256:23a2467847eb839bc04ed50b64e2597c40f96a4933707af090339ca021d2d3d6 AS uniget-goreleaser
-FROM ghcr.io/uniget-org/tools/cosign:3.1.3@sha256:efd829fa1cd8d2dfac7344548a70b80d42a226a7bc9ffc5716911a12043e6a1b AS uniget-cosign
+FROM ghcr.io/uniget-org/tools/cosign:3.1.4@sha256:41ccfe66b2bf4407b1e187cf8f4992e0227c78ade884a9b755a71d1f8d5d303c AS uniget-cosign
 FROM ghcr.io/uniget-org/tools/syft:1.55.0@sha256:4c04960e2a7ef3cfce34aed117d7a8e8177c7ce4f1fe19634cf80ba2b36291a6 AS uniget-syft
-FROM ghcr.io/uniget-org/tools/gh:2.102.0@sha256:acf8f93d08e447f906617bd4aa5e4c73597d8f2c23dd70df17bdf61d0a30c746 AS uniget-gh
-FROM ghcr.io/uniget-org/tools/glab:1.123.0@sha256:7ea280b93837e260f8bf5468b55ef634ada31900977f50f107c973cdc6ee4769 AS uniget-glab
+FROM ghcr.io/uniget-org/tools/gh:2.103.0@sha256:099aff877ce02ed8ba53f2f626661079ee0e61c0a067921865ffdb1471ce3a64 AS uniget-gh
+FROM ghcr.io/uniget-org/tools/glab:1.124.0@sha256:0007de61787c83faf2e42871017814d1616c0a8f25eb834c801cf81cb7beaf50 AS uniget-glab
 FROM ghcr.io/uniget-org/tools/jq:1.8.2@sha256:346380fefb2967af66774cb15a1df991b7df546ee4d58fd0d73c3d8e985c6b5f AS uniget-jq
 FROM ghcr.io/uniget-org/tools/gosec:2.29.0@sha256:b2691e5c4f0521fbe214b6bdf456cdaa2be828b5a47fb0ba93fe66abaee3fb09 AS uniget-gosec
 FROM ghcr.io/uniget-org/tools/golangci-lint:2.15.0@sha256:f18da029d37e65a96d3276f3f837c306b6790466b85366bb9ebfe1765f9431a5 AS lint-base
