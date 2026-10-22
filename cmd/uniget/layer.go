@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/regclient/regclient"
-	"github.com/regclient/regclient/config"
 	rref "github.com/regclient/regclient/types/ref"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
@@ -23,14 +21,7 @@ func fetchLayer(tool *containers.ToolRef, p tui.ProgressReader, callback func(re
 		return fmt.Errorf("failed to create reference for %s: %w", tool, err)
 	}
 
-	rcOpts := []regclient.Opt{}
-	rcOpts = append(rcOpts, regclient.WithUserAgent("uniget"))
-	rcOpts = append(rcOpts, regclient.WithDockerCreds())
-	rcOpts = append(rcOpts, regclient.WithConfigHost(config.Host{
-		Name: "127.0.0.1:5000",
-		TLS:  config.TLSDisabled,
-	}))
-	rc := regclient.New(rcOpts...)
+	rc := containers.GetRegclient()
 	//nolint:errcheck
 	defer rc.Close(ctx, r)
 
