@@ -52,7 +52,7 @@ var inspectCmd = &cobra.Command{
 		if inspectToolVersion == "latest" {
 			inspectTool, err = tools.GetByName(args[0])
 			if err != nil {
-				return fmt.Errorf("error getting tool %s", args[0])
+				return handleError(err, "Tool %s not found", args[0])
 			}
 			inspectTool.ReplaceVariables(
 				configuration.Prefix+configuration.Target,
@@ -71,12 +71,12 @@ var inspectCmd = &cobra.Command{
 		registries, repositories := inspectTool.GetSourcesWithFallback(constants.Registry, constants.ImageRepository)
 		toolRef, err := containers.FindToolRef(registries, repositories, inspectTool.Name, inspectToolVersion)
 		if err != nil {
-			return fmt.Errorf("error finding tool %s:%s: %s", inspectTool.Name, inspectTool.Version, err)
+			return handleError(err, "Failed to find tool %s v%s among sources in metadata", inspectTool.Name, inspectTool.Version)
 		}
 		if configuration.VerifyImageSignature {
 			err = containers.VerifyContainerImageSignature(toolRef, constants.SigstoreIssuer, "", "", constants.SigstoreSubjectRegexp)
 			if err != nil {
-				return fmt.Errorf("error verifying tool signature for %s: %w", inspectTool.Name, err)
+				return handleError(err, "Failed to verify tool signature for %s", inspectTool.Name)
 			}
 		}
 		effectivePathRewriteRules := configuration.PathRewriteRules
@@ -89,12 +89,12 @@ var inspectCmd = &cobra.Command{
 		err = fetchLayer(toolRef, progressReader, func(reader io.ReadCloser) error {
 			files, err = inspectTool.Inspect(cmd.OutOrStdout(), reader, effectivePathRewriteRules)
 			if err != nil {
-				return fmt.Errorf("unable to inspect %s: %s", inspectTool.Name, err)
+				return handleError(err, "Failed to inspect tool %s", inspectTool.Name)
 			}
 			return nil
 		})
 		if err != nil {
-			return fmt.Errorf("unable to inspect image: %s", err)
+			return handleError(err, "Failed to fetch image layer for tool %s", inspectTool.Name)
 		}
 
 		for _, file := range files {

@@ -34,7 +34,8 @@ var (
     Download metadata: uniget update
     Search for tools: uniget search kubectl
     Install tools: uniget install kubectl helm`,
-		SilenceUsage: true,
+		SilenceUsage:  true,
+		SilenceErrors: true,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) (err error) {
 			logging.OutputWriter = cmd.OutOrStdout()
 			logging.ErrorWriter = cmd.ErrOrStderr()
@@ -135,6 +136,15 @@ func buildVersion() string {
 	}
 
 	return version
+}
+
+func handleError(err error, message string, a ...any) error {
+	fullMessage := fmt.Sprintf(message, a...)
+	logging.Error.Println(fullMessage)
+	if configuration.Debug {
+		logging.Debugf("Error details: %v", err)
+	}
+	return err
 }
 
 func init() {
