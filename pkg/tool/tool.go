@@ -113,8 +113,8 @@ func (tool *Tool) ReplaceVariables(target string, arch string, altArch string) {
 
 	// Replace variables for binary
 	tool.Binary = replaceVariables(tool.Binary,
-		[]string{"${name}", "${target}"},
-		[]string{tool.Name, target},
+		[]string{"${name}", "${target}", "${arch}", "${alt_arch}"},
+		[]string{tool.Name, target, arch, altArch},
 	)
 	if tool.Binary[:1] != "/" {
 		tool.Binary = target + "/bin/" + tool.Binary
