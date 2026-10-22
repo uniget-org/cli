@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/charmbracelet/x/term"
 	"github.com/jedib0t/go-pretty/v6/table"
@@ -150,7 +151,8 @@ var listCmd = &cobra.Command{
 					WidthMax: 35,
 				},
 			}
-			requiredWidth := 0
+			separatorWidth := (len(tableColumnConfig) - 1) * 2
+			requiredWidth := separatorWidth
 			for _, col := range tableColumnConfig {
 				requiredWidth += col.WidthMax
 			}
@@ -158,12 +160,15 @@ var listCmd = &cobra.Command{
 
 			terminalWidth, _, err := term.GetSize(os.Stdout.Fd())
 			if err != nil {
-				terminalWidth = requiredWidth
+				if columns, envErr := strconv.Atoi(os.Getenv("COLUMNS")); envErr == nil && columns > 0 {
+					terminalWidth = columns
+				} else {
+					terminalWidth = requiredWidth + 1
+				}
 			}
 			logging.Debugf("Terminal width: %d", terminalWidth)
 
-			separatorWidth := (len(tableColumnConfig) - 1) * 2
-			remainingDescriptionColumnWidth := terminalWidth - (requiredWidth - tableColumnConfig[4].WidthMax + separatorWidth + 1)
+			remainingDescriptionColumnWidth := terminalWidth - (requiredWidth - tableColumnConfig[4].WidthMax + 1)
 			logging.Debugf("Remaining column width description: %d", remainingDescriptionColumnWidth)
 			if remainingDescriptionColumnWidth < tableColumnConfig[4].WidthMax {
 				return fmt.Errorf("terminal width is too small to display the table")
