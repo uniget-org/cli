@@ -52,7 +52,7 @@ func ConvertFileModeToString(mode int64) (string, error) {
 		result += "-"
 	}
 	if suid {
-		result = result[0:len(result)-2] + "s"
+		result = result[0:len(result)-1] + "s"
 	}
 
 	if mode >= 0o40 {
@@ -74,7 +74,7 @@ func ConvertFileModeToString(mode int64) (string, error) {
 		result += "-"
 	}
 	if sgid {
-		result = result[0:len(result)-2] + "s"
+		result = result[0:len(result)-1] + "s"
 	}
 
 	if mode >= 0o4 {
@@ -96,7 +96,7 @@ func ConvertFileModeToString(mode int64) (string, error) {
 		result += "-"
 	}
 	if sticky {
-		result = result[0:len(result)-2] + "s"
+		result = result[0:len(result)-1] + "t"
 	}
 
 	return result, nil
