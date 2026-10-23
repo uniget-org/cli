@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
+	"os"
 	"sort"
 
 	"github.com/regclient/regclient/pkg/template"
@@ -10,6 +12,7 @@ import (
 	"github.com/regclient/regclient/types/platform"
 	"github.com/regclient/regclient/types/ref"
 	"github.com/spf13/cobra"
+	"gitlab.com/uniget-org/cli/internal/common"
 	"gitlab.com/uniget-org/cli/internal/constants"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 )
@@ -20,6 +23,7 @@ var (
 	regFormat           = "pretty"
 	regManifestPlatform = ""
 	regSizeHuman        = false
+	regSavePath         = "./"
 )
 
 func initRegCmd() {
@@ -39,11 +43,14 @@ func initRegCmd() {
 
 	regRefCmd.Flags().StringVarP(&regVersion, "version", "", regVersion, "Specify the version for the reference")
 
+	regSaveCmd.Flags().StringVar(&regSavePath, "path", regSavePath, "Specify the path to save the layer")
+
 	regCmd.AddCommand(regIndexCmd)
 	regCmd.AddCommand(regManifestCmd)
 	regCmd.AddCommand(regSizeCmd)
 	regCmd.AddCommand(regTagsCmd)
 	regCmd.AddCommand(regRefCmd)
+	regCmd.AddCommand(regSaveCmd)
 
 	rootCmd.AddCommand(regCmd)
 }
@@ -320,6 +327,66 @@ var regTagsCmd = &cobra.Command{
 		sort.Strings(sortedTags)
 		for _, tag := range sortedTags {
 			fmt.Println(tag)
+		}
+
+		return nil
+	},
+}
+
+var regSaveCmd = &cobra.Command{
+	Use:     "save",
+	Aliases: []string{},
+	Short:   "Save the first layer to disk",
+	Long:    constants.Header + "\nSave the first layer to disk",
+	Args:    cobra.ExactArgs(1),
+	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return tools.GetNames(), cobra.ShellCompDirectiveNoFileComp
+	},
+	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
+		tools, err = configuration.EnsureMetadata()
+		if err != nil {
+			return handleError(err, "Failed to load metadata")
+		}
+
+		return nil
+	},
+	RunE: func(cmd *cobra.Command, args []string) (err error) {
+		ctx := context.Background()
+
+		toolName := args[0]
+		_, err = tools.GetByName(toolName)
+		if err != nil {
+			return handleError(err, "Failed to get tool %s", toolName)
+		}
+
+		image := buildReference(toolName)
+		r, err := ref.New(image)
+		if err != nil {
+			return handleError(err, "Failed to parse image name <%s>", image)
+		}
+
+		rc := containers.GetRegclient()
+		//nolint:errcheck
+		defer rc.Close(ctx, r)
+
+		progressReader := common.CreateProgressReader("Downloading", configuration.Debug || configuration.Trace)
+		err = containers.GetFirstLayerFromRegistry(ctx, rc, r, progressReader, func(reader io.ReadCloser) error {
+			file, err := os.Create(regSavePath + "/" + toolName + ".tar") // #nosec G304 -- Both vars are directly controlled by the user
+			if err != nil {
+				return fmt.Errorf("failed to create file: %w", err)
+			}
+			//nolint:errcheck
+			defer file.Close()
+
+			_, err = io.Copy(file, reader)
+			if err != nil {
+				return fmt.Errorf("failed to write layer to file: %w", err)
+			}
+
+			return nil
+		})
+		if err != nil {
+			return fmt.Errorf("failed to get layer for ref %s: %w", toolName, err)
 		}
 
 		return nil
