@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"io"
 
 	"github.com/google/safearchive/tar"
@@ -46,13 +45,13 @@ var downloadMetadataCmd = &cobra.Command{
 		configuration.AssertCacheDirectory()
 		t, err := containers.FindToolRef([]string{constants.Registry}, []string{constants.ImageRepository}, "metadata", constants.MetadataImageTag)
 		if err != nil {
-			return fmt.Errorf("error finding metadata: %s", err)
+			return handleError(err, "Error finding metadata: %s", err)
 		}
 		rc := containers.GetRegclient()
 		defer func() {
 			err := rc.Close(context.Background(), t.GetRef())
 			if err != nil {
-				logging.Warning.Printfln("error closing registry client: %s", err)
+				logging.Warning.Printfln("Failed to close registry client: %s", err)
 			}
 		}()
 
@@ -62,7 +61,7 @@ var downloadMetadataCmd = &cobra.Command{
 				if header.Typeflag == tar.TypeReg && header.Name == "metadata.json" {
 					_, err = io.Copy(cmd.OutOrStdout(), io.NopCloser(reader))
 					if err != nil {
-						return fmt.Errorf("error writing metadata to stdout: %s", err)
+						return handleError(err, "Error writing metadata to stdout")
 					}
 				}
 
@@ -71,7 +70,7 @@ var downloadMetadataCmd = &cobra.Command{
 
 		})
 		if err != nil {
-			return fmt.Errorf("error getting first layer from registry: %s", err)
+			return handleError(err, "Error getting first layer from registry")
 		}
 
 		return nil

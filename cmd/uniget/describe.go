@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"regexp"
@@ -45,7 +46,7 @@ var describeCmd = &cobra.Command{
 	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
 		tools, err = configuration.EnsureMetadata()
 		if err != nil {
-			return fmt.Errorf("error ensuring metadata: %s", err)
+			return handleError(err, "Failed to load metadata")
 		}
 
 		return nil
@@ -54,7 +55,7 @@ var describeCmd = &cobra.Command{
 		toolName := args[0]
 		tool, err := tools.GetByName(toolName)
 		if err != nil {
-			return fmt.Errorf("error getting tool %s: %s", toolName, err)
+			return handleError(err, "Failed to find tool %s", toolName)
 		}
 
 		err = tool.UpdateStatus(
@@ -64,7 +65,7 @@ var describeCmd = &cobra.Command{
 			configuration.AltArch,
 		)
 		if err != nil {
-			return fmt.Errorf("failed to update status for tool %s: %s", tool.Name, err)
+			return handleError(err, "Failed to update status for tool %s", tool.Name)
 		}
 
 		switch describeOutput {
@@ -73,7 +74,7 @@ var describeCmd = &cobra.Command{
 		case "json":
 			data, err := json.Marshal(tool)
 			if err != nil {
-				return fmt.Errorf("failed to marshal to json: %s", err)
+				return handleError(err, "Failed to marshal to JSON")
 			}
 			fmt.Println(string(data))
 		case "yaml":
@@ -82,32 +83,32 @@ var describeCmd = &cobra.Command{
 			defer func() {
 				err := yamlEncoder.Close()
 				if err != nil {
-					logging.Warning.Printfln("failed to close yaml encoder: %s", err)
+					logging.Warning.Printfln("Failed to close YAML encoder: %s", err)
 				}
 			}()
 			err := yamlEncoder.Encode(tool)
 			if err != nil {
-				return fmt.Errorf("failed to encode yaml: %s", err)
+				return handleError(err, "Failed to encode YAML")
 			}
 		default:
-			return fmt.Errorf("invalid output format: %s", describeOutput)
+			return handleError(errors.New("unsupported output format"), "Invalid output format: %s", describeOutput)
 		}
 
 		if describeVersions {
 			registries, repositories := tool.GetSourcesWithFallback(constants.Registry, constants.ImageRepository)
 			toolRef, err := containers.FindToolRef(registries, repositories, tool.Name, tool.Version)
 			if err != nil {
-				return fmt.Errorf("unable to find tool ref: %s", err)
+				return handleError(err, "Unable to find tool ref for %s", tool.Name)
 			}
 			if configuration.VerifyImageSignature {
 				err = containers.VerifyContainerImageSignature(toolRef, constants.SigstoreIssuer, "", "", constants.SigstoreSubjectRegexp)
 				if err != nil {
-					return fmt.Errorf("error verifying tool signature for %s: %w", tool.Name, err)
+					return handleError(err, "Error verifying tool signature for %s", tool.Name)
 				}
 			}
 			tags, err := containers.GetImageTags(toolRef)
 			if err != nil {
-				return fmt.Errorf("failed to get image tags: %s", err)
+				return handleError(err, "Failed to get image tags for ref: %s", toolRef)
 			}
 
 			sort.Sort(sort.Reverse(semver.ByVersion(tags)))
@@ -125,47 +126,47 @@ var describeCmd = &cobra.Command{
 			case "github-releases":
 				releaseTags, err = fetchGitHubReleases(tool.Renovate.Package)
 				if err != nil {
-					return fmt.Errorf("failed to fetch GitHub releases: %s", err)
+					return handleError(err, "Failed to fetch GitHub releases")
 				}
 
 			case "gitlab-releases":
 				releaseTags, err = fetchGitLabReleases(tool.Renovate.Package)
 				if err != nil {
-					return fmt.Errorf("failed to fetch GitLab releases: %s", err)
+					return handleError(err, "Failed to fetch GitLab releases")
 				}
 
 			case "gitea-releases":
 				releaseTags, err = fetchGiteaReleases(tool.Renovate.Package)
 				if err != nil {
-					return fmt.Errorf("failed to fetch Gitea releases: %s", err)
+					return handleError(err, "Failed to fetch Gitea releases")
 				}
 
 			case "npm":
 				releaseTags, err = fetchNpmReleases(tool.Renovate.Package)
 				if err != nil {
-					return fmt.Errorf("failed to fetch Gitea releases: %s", err)
+					return handleError(err, "Failed to fetch Npm releases")
 				}
 
 			case "pypi":
 				releaseTags, err = fetchPypiReleases(tool.Renovate.Package)
 				if err != nil {
-					return fmt.Errorf("failed to fetch Gitea releases: %s", err)
+					return handleError(err, "Failed to fetch Pypi releases")
 				}
 
 			default:
-				logging.Warning.Printfln("Upstream versions are not available for datasource %s", tool.Renovate.Datasource)
+				logging.Warning.Printfln("Fetching upstream versions from datasource %s is not implemented", tool.Renovate.Datasource)
 			}
 
 			if len(releaseTags) > 0 {
 				_, err := fmt.Fprintln(cmd.OutOrStdout(), "  Upstream versions (most recent):")
 				if err != nil {
-					return fmt.Errorf("failed to write upstream versions: %s", err)
+					return handleError(err, "Failed to write to standard output")
 				}
 				sort.Sort(sort.Reverse(semver.ByVersion(releaseTags)))
 				for _, releaseTag := range releaseTags {
 					version, err := extractVersionfromTag(releaseTag, tool.Renovate.ExtractVersion)
 					if err != nil {
-						return fmt.Errorf("failed to extract version from tag: %s", err)
+						return handleError(err, "Failed to extract version from git tag: %s", releaseTag)
 					}
 					//nolint:errcheck
 					fmt.Fprintf(cmd.OutOrStdout(), "    %s\n", version)

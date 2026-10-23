@@ -37,7 +37,7 @@ var releaseNotesCmd = &cobra.Command{
 	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
 		tools, err = configuration.EnsureMetadata()
 		if err != nil {
-			return fmt.Errorf("error ensuring metadata: %s", err)
+			return handleError(err, "Failed to load metadata")
 		}
 
 		return nil
@@ -45,7 +45,7 @@ var releaseNotesCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		tool, err := tools.GetByName(args[0])
 		if err != nil {
-			return fmt.Errorf("failed to get tool: %s", err)
+			return handleError(err, "Failed to get tool %s", args[0])
 		}
 
 		var payload []byte
@@ -58,7 +58,7 @@ var releaseNotesCmd = &cobra.Command{
 		if tool.Renovate.ExtractVersion != "" {
 			re, err := regexp.Compile(`\(\?[^)]+\)`)
 			if err != nil {
-				return fmt.Errorf("cannot compile regexp: %w", err)
+				return handleError(err, "Cannot compile regexp")
 			}
 			versionTag = re.ReplaceAllString(tool.Renovate.ExtractVersion, versionTag)
 			versionTag = strings.ReplaceAll(versionTag, "^", "")
@@ -69,51 +69,51 @@ var releaseNotesCmd = &cobra.Command{
 		case "github-releases":
 			payload, err = fetchBodyFromGitHubRelease(tool.Renovate.Package, versionTag)
 			if err != nil {
-				return fmt.Errorf("failed to fetch body of GitHub release for tool %s: %s", tool.Name, err)
+				return handleError(err, "Failed to fetch body of GitHub release for tool %s", tool.Name)
 			}
 			bodyFieldName = "body"
 
 		case "gitlab-releases":
 			payload, err = fetchBodyFromGitLabRelease(tool.Renovate.Package, versionTag)
 			if err != nil {
-				return fmt.Errorf("failed to fetch body of GitLab release for tool %s: %s", tool.Name, err)
+				return handleError(err, "Failed to fetch body of GitLab release for tool %s", tool.Name)
 			}
 			bodyFieldName = "description"
 
 		case "gitea-releases":
 			payload, err = fetchBodyFromGiteaRelease(tool.Renovate.Package, versionTag)
 			if err != nil {
-				return fmt.Errorf("failed to fetch body of Gitea release for tool %s: %s", tool.Name, err)
+				return handleError(err, "Failed to fetch body of Gitea release for tool %s", tool.Name)
 			}
 			bodyFieldName = "body"
 
 		case "npm":
 			payload, err = fetchBodyFromNpm(tool.Renovate.Package, versionTag)
 			if err != nil {
-				return fmt.Errorf("failed to fetch body from npm for tool %s: %s", tool.Name, err)
+				return handleError(err, "Failed to fetch body from npm for tool %s", tool.Name)
 			}
 			bodyFieldName = "body"
 
 		case "pypi":
 			payload, err = fetchBodyFromPypi(tool.Renovate.Package, versionTag)
 			if err != nil {
-				return fmt.Errorf("failed to fetch body from pypi for tool %s: %s", tool.Name, err)
+				return handleError(err, "Failed to fetch body from pypi for tool %s", tool.Name)
 			}
 			bodyFieldName = "body"
 
 		default:
-			return fmt.Errorf("release notes are not available for datasource %s", tool.Renovate.Datasource)
+			return handleError(err, "Release notes are not available for datasource %s", tool.Renovate.Datasource)
 		}
 
 		var result map[string]any
 		err = json.Unmarshal(payload, &result)
 		if err != nil {
-			return fmt.Errorf("failed to parse body of GitHub release for tool %s: %s", tool.Name, err)
+			return handleError(err, "Failed to parse body of release for tool %s", tool.Name)
 		}
 
 		out, err := glamour.Render(result[bodyFieldName].(string), "dark")
 		if err != nil {
-			return fmt.Errorf("failed to render release notes: %s", err)
+			return handleError(err, "Failed to render release notes")
 		}
 		fmt.Print(out)
 

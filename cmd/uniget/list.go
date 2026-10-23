@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -40,7 +41,7 @@ var listCmd = &cobra.Command{
 	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
 		tools, err = configuration.EnsureMetadata()
 		if err != nil {
-			return fmt.Errorf("error ensuring metadata: %s", err)
+			return handleError(err, "Failed to load metadata")
 		}
 
 		return nil
@@ -65,7 +66,7 @@ var listCmd = &cobra.Command{
 					configuration.AltArch,
 				)
 				if err != nil {
-					return fmt.Errorf("failed to update status for tool %s: %s", tools.Tools[index].Name, err)
+					return handleError(err, "Failed to update status for tool %s", tools.Tools[index].Name)
 				}
 
 				if tools.Tools[index].IsInstalled() {
@@ -88,7 +89,7 @@ var listCmd = &cobra.Command{
 					configuration.AltArch,
 				)
 				if err != nil {
-					return fmt.Errorf("failed to update status for tool %s: %s", tools.Tools[index].Name, err)
+					return handleError(err, "Failed to update status for tool %s", tools.Tools[index].Name)
 				}
 
 				if tools.Tools[index].IsUpgradable() {
@@ -115,7 +116,7 @@ var listCmd = &cobra.Command{
 					configuration.AltArch,
 				)
 				if err != nil {
-					return fmt.Errorf("failed to update status for tool %s: %s", tools.Tools[index].Name, err)
+					return handleError(err, "Failed to update status for tool %s", tools.Tools[index].Name)
 				}
 
 				listTools = append(listTools, listTool{
@@ -171,7 +172,11 @@ var listCmd = &cobra.Command{
 			remainingDescriptionColumnWidth := terminalWidth - (requiredWidth - tableColumnConfig[4].WidthMax + 1)
 			logging.Debugf("Remaining column width description: %d", remainingDescriptionColumnWidth)
 			if remainingDescriptionColumnWidth < tableColumnConfig[4].WidthMax {
-				return fmt.Errorf("terminal width is too small to display the table")
+				return handleError(
+					errors.New("terminal width is too small to display the table"),
+					"Terminal width (%d) is too small to display the table",
+					terminalWidth,
+				)
 			}
 			logging.Debugf("Setting description column width to: %d", remainingDescriptionColumnWidth)
 			tableColumnConfig[4].WidthMax = remainingDescriptionColumnWidth
@@ -205,12 +210,14 @@ var listCmd = &cobra.Command{
 
 			listTable.AppendHeader(table.Row{"#", "Name", "Installed", "Version", "Description"})
 
-			for index, tool := range listTools {
-				row := table.Row{index + 1, tool.Name, tool.InstalledVersion, tool.AvailableVersion, tool.Description}
+			for index, listTool := range listTools {
 				listTable.AppendRow(
-					row,
-					table.RowConfig{
-						//
+					table.Row{
+						index + 1,
+						listTool.Name,
+						listTool.InstalledVersion,
+						listTool.AvailableVersion,
+						listTool.Description,
 					},
 				)
 			}
@@ -219,7 +226,7 @@ var listCmd = &cobra.Command{
 		case "json":
 			data, err := json.Marshal(listTools)
 			if err != nil {
-				return fmt.Errorf("failed to marshal to json: %s", err)
+				return handleError(err, "Failed to marshal to JSON")
 			}
 			fmt.Println(string(data))
 		case "yaml":
@@ -233,10 +240,10 @@ var listCmd = &cobra.Command{
 			}()
 			err := yamlEncoder.Encode(listTools)
 			if err != nil {
-				return fmt.Errorf("failed to encode yaml: %s", err)
+				return handleError(err, "Failed to encode YAML")
 			}
 		default:
-			return fmt.Errorf("invalid output format: %s", listOutput)
+			return handleError(errors.New("invalid output format"), "Invalid output format: %s", listOutput)
 		}
 
 		return nil

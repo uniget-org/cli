@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"sort"
 
 	"github.com/jedib0t/go-pretty/v6/table"
@@ -25,7 +24,7 @@ var tagsCmd = &cobra.Command{
 	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
 		tools, err = configuration.EnsureMetadata()
 		if err != nil {
-			return fmt.Errorf("error ensuring metadata: %s", err)
+			return handleError(err, "Failed to load metadata")
 		}
 
 		return nil

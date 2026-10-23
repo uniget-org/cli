@@ -92,7 +92,7 @@ var selfUpgradeCmd = &cobra.Command{
 	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
 		tools, err = configuration.EnsureMetadata()
 		if err != nil {
-			return fmt.Errorf("error ensuring metadata: %s", err)
+			return handleError(err, "Failed to load metadata")
 		}
 
 		return nil
@@ -100,7 +100,7 @@ var selfUpgradeCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		unigetTool, err := tools.GetByName("uniget")
 		if err != nil {
-			return fmt.Errorf("failed to get uniget tool: %s", err)
+			return handleError(err, "Failed to get tool uniget")
 		}
 
 		requestedVersion := selfUpgradeVersion
@@ -117,7 +117,7 @@ var selfUpgradeCmd = &cobra.Command{
 
 		selfExe := filepath.Base(os.Args[0])
 		if selfExe == "." {
-			return fmt.Errorf("failed to get base name for %s", os.Args[0])
+			return handleError(err, "Failed to get base name for %s", os.Args[0])
 		}
 		if selfExe != "uniget" {
 			logging.Warning.Printf("Binary must be called uniget but is %s\n", selfExe)
@@ -128,8 +128,8 @@ var selfUpgradeCmd = &cobra.Command{
 		if selfUpgradePath == "" {
 			path, err := exec.LookPath(selfExe)
 			if err != nil {
-				logging.Error.Printfln("Failed to find %s in PATH", selfUpgradePath)
-				return fmt.Errorf("failed to find %s in PATH: %s", selfUpgradePath, err)
+				logging.Error.Printfln("Failed to find %s in PATH", selfExe)
+				return handleError(err, "Failed to find %s in PATH", selfExe)
 			}
 			logging.Debugf("%s is available at %s\n", selfUpgradePath, path)
 			selfUpgradePath = filepath.Dir(path)
@@ -141,7 +141,7 @@ var selfUpgradeCmd = &cobra.Command{
 		logging.Tracef("Changing directory to %s", selfUpgradePath)
 		err = os.Chdir(selfUpgradePath)
 		if err != nil {
-			return fmt.Errorf("error changing directory to %s: %s", selfUpgradePath, err)
+			return handleError(err, "Failed to change directory to %s", selfUpgradePath)
 		}
 
 		_, err = os.Stat(selfExe)
@@ -149,7 +149,7 @@ var selfUpgradeCmd = &cobra.Command{
 			logging.Tracef("Removing %s", selfUpgradePath)
 			err = os.Remove(selfExe)
 			if err != nil {
-				return fmt.Errorf("failed to remove %s: %s", selfExe, err)
+				return handleError(err, "Failed to remove %s", selfExe)
 			}
 		}
 
@@ -157,15 +157,15 @@ var selfUpgradeCmd = &cobra.Command{
 		case "uniget":
 			err = selfUpdateFromUniget(unigetTool)
 			if err != nil {
-				return fmt.Errorf("failed to upgrade from uniget: %s", err)
+				return handleError(err, "Failed to upgrade from uniget")
 			}
 		case "release":
 			err = selfUpdateFromRelease(unigetTool)
 			if err != nil {
-				return fmt.Errorf("failed to upgrade from release: %s", err)
+				return handleError(err, "Failed to upgrade from release")
 			}
 		default:
-			return fmt.Errorf("invalid source %s; must be either uniget or release", selfUpgradeSource)
+			return handleError(err, "Invalid source %s; must be either uniget or release", selfUpgradeSource)
 		}
 
 		return nil

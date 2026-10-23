@@ -92,11 +92,11 @@ exit 1
 		{"cron", "create"},
 		{"cron", "remove"},
 	} {
-		_, err := runCobraTest(t, nil, args...)
+		out, err := runCobraTest(t, nil, args...)
 		if err == nil {
 			t.Errorf("command %v did not return expected error", args)
-		} else if !strings.Contains(err.Error(), "cannot get user crontab") {
-			t.Errorf("unexpected error for %v, received <%s>", args, err.Error())
+		} else if !strings.Contains(stripANSI(out), "Failed to") {
+			t.Errorf("unexpected output for %v, received <%s>", args, out)
 		}
 	}
 }

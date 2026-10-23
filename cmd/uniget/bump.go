@@ -1,12 +1,9 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 	"gitlab.com/uniget-org/cli/internal/constants"
-	"gitlab.com/uniget-org/cli/pkg/logging"
 	"gitlab.com/uniget-org/cli/pkg/parse"
 )
 
@@ -30,7 +27,7 @@ func initBumpCmd() {
 
 	err := bumpKubernetesCmd.MarkFlagRequired("file")
 	if err != nil {
-		logging.Error.Printfln("Failed to mark flag as required: %v", err)
+		_ = handleError(err, "Failed to mark flag file as required for subcommand bump")
 	}
 
 	bumpCmd.AddCommand(bumpDockerfileCmd)
@@ -63,7 +60,7 @@ var bumpDockerfileCmd = &cobra.Command{
 	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
 		tools, err = configuration.EnsureMetadata()
 		if err != nil {
-			return fmt.Errorf("error ensuring metadata: %s", err)
+			return handleError(err, "Failed to load metadata")
 		}
 
 		return nil
@@ -71,7 +68,7 @@ var bumpDockerfileCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		err = parse.BumpDockerfile(bumpDockerfileName, tools, outputCallback)
 		if err != nil {
-			return fmt.Errorf("failed to bump dockerfile: %w", err)
+			return handleError(err, "Failed to bump dockerfile")
 		}
 
 		return nil
@@ -91,7 +88,7 @@ var bumpComposeCmd = &cobra.Command{
 	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
 		tools, err = configuration.EnsureMetadata()
 		if err != nil {
-			return fmt.Errorf("error ensuring metadata: %s", err)
+			return handleError(err, "Failed to load metadata")
 		}
 
 		return nil
@@ -99,7 +96,7 @@ var bumpComposeCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		err = parse.BumpComposeFile(bumpComposeFileName, tools, outputCallback)
 		if err != nil {
-			return fmt.Errorf("failed to bump compose file: %w", err)
+			return handleError(err, "Failed to bump compose file")
 		}
 
 		return nil
@@ -118,7 +115,7 @@ var bumpKubernetesCmd = &cobra.Command{
 	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
 		tools, err = configuration.EnsureMetadata()
 		if err != nil {
-			return fmt.Errorf("error ensuring metadata: %s", err)
+			return handleError(err, "Failed to load metadata")
 		}
 
 		return nil
@@ -126,7 +123,7 @@ var bumpKubernetesCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		err = parse.BumpKubernetesFile(bumpKubernetesFileName, tools, outputCallback)
 		if err != nil {
-			return fmt.Errorf("failed to bump kubernetes file: %w", err)
+			return handleError(err, "Failed to bump kubernetes file")
 		}
 
 		return nil
@@ -145,7 +142,7 @@ var bumpGitlabCiCmd = &cobra.Command{
 	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
 		tools, err = configuration.EnsureMetadata()
 		if err != nil {
-			return fmt.Errorf("error ensuring metadata: %s", err)
+			return handleError(err, "Failed to load metadata")
 		}
 
 		return nil
@@ -153,7 +150,7 @@ var bumpGitlabCiCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		err = parse.BumpGitlabCiFile(bumpGitLabCiFileName, tools, outputCallback)
 		if err != nil {
-			return fmt.Errorf("failed to bump GitLab CI file: %w", err)
+			return handleError(err, "Failed to bump GitLab CI file")
 		}
 
 		return nil

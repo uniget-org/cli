@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -55,14 +56,14 @@ var searchCmd = &cobra.Command{
 	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
 		tools, err = configuration.EnsureMetadata()
 		if err != nil {
-			return fmt.Errorf("error ensuring metadata: %s", err)
+			return handleError(err, "Failed to load metadata")
 		}
 
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		if searchOutputFormat != "table" && searchOutputFormat != "name" && searchOutputFormat != "json" {
-			return fmt.Errorf("error: output format %s not supported", searchOutputFormat)
+			return handleError(errors.New("unsupported output format"), "Output format %s not supported", searchOutputFormat)
 		}
 
 		if (searchOnlyInName && searchOnlyInTags) ||
@@ -71,7 +72,7 @@ var searchCmd = &cobra.Command{
 			(searchOnlyInDescription && searchOnlyInTags) ||
 			(searchOnlyInDescription && searchOnlyInDeps) ||
 			(searchOnlyInTags && searchOnlyInDeps) {
-			return fmt.Errorf("error: Can only process one of only-names, only-description, only-tags and only-deps at the same time")
+			return handleError(errors.New("mutually exclusive flags"), "Can only process one of only-names, only-description, only-tags and only-deps at the same time")
 		}
 
 		results := tools
@@ -99,7 +100,7 @@ var searchCmd = &cobra.Command{
 		case "json":
 			data, err := json.Marshal(results)
 			if err != nil {
-				return fmt.Errorf("failed to marshal to json: %s", err)
+				return handleError(err, "Failed to marshal to JSON")
 			}
 			fmt.Println(string(data))
 		}

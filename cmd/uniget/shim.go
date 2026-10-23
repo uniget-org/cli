@@ -34,7 +34,7 @@ var shimCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		err = installProfileDShim()
 		if err != nil {
-			return fmt.Errorf("unable to install profile.d shim: %s", err)
+			return handleError(err, "Unable to install profile.d shim")
 		}
 
 		return nil

@@ -100,7 +100,7 @@ var regRefCmd = &cobra.Command{
 	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
 		tools, err = configuration.EnsureMetadata()
 		if err != nil {
-			return fmt.Errorf("error ensuring metadata: %s", err)
+			return handleError(err, "Failed to load metadata")
 		}
 
 		return nil
@@ -124,7 +124,7 @@ var regIndexCmd = &cobra.Command{
 	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
 		tools, err = configuration.EnsureMetadata()
 		if err != nil {
-			return fmt.Errorf("error ensuring metadata: %s", err)
+			return handleError(err, "Failed to load metadata")
 		}
 
 		return nil
@@ -137,7 +137,7 @@ var regIndexCmd = &cobra.Command{
 		image := buildReference(args[0])
 		r, err := ref.New(image)
 		if err != nil {
-			return fmt.Errorf("failed to parse image name <%s>: %s", image, err)
+			return handleError(err, "Failed to parse image name <%s>", image)
 		}
 
 		rc := containers.GetRegclient()
@@ -146,12 +146,12 @@ var regIndexCmd = &cobra.Command{
 
 		m, err := rc.ManifestGet(ctx, r)
 		if err != nil {
-			return fmt.Errorf("failed to get manifest: %s", err)
+			return handleError(err, "Failed to get manifest")
 		}
 
 		err = template.Writer(cmd.OutOrStdout(), format, m)
 		if err != nil {
-			return fmt.Errorf("failed to write template: %s", err)
+			return handleError(err, "Failed to write template")
 		}
 
 		return nil
@@ -170,7 +170,7 @@ var regManifestCmd = &cobra.Command{
 	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
 		tools, err = configuration.EnsureMetadata()
 		if err != nil {
-			return fmt.Errorf("error ensuring metadata: %s", err)
+			return handleError(err, "Failed to load metadata")
 		}
 
 		return nil
@@ -183,7 +183,7 @@ var regManifestCmd = &cobra.Command{
 		image := buildReference(args[0])
 		r, err := ref.New(image)
 		if err != nil {
-			return fmt.Errorf("failed to parse image name <%s>: %s", image, err)
+			return handleError(err, "Failed to parse image name <%s>", image)
 		}
 
 		rc := containers.GetRegclient()
@@ -196,16 +196,16 @@ var regManifestCmd = &cobra.Command{
 
 		p, err := platform.Parse(regManifestPlatform)
 		if err != nil {
-			return fmt.Errorf("failed to parse platform <%s>: %s", regManifestPlatform, err)
+			return handleError(err, "Failed to parse platform <%s>", regManifestPlatform)
 		}
 		m, err := containers.GetPlatformManifest(ctx, rc, r, p)
 		if err != nil {
-			return fmt.Errorf("failed to get platform manifest: %s", err)
+			return handleError(err, "Failed to get platform manifest")
 		}
 
 		err = template.Writer(cmd.OutOrStdout(), format, m)
 		if err != nil {
-			return fmt.Errorf("failed to write template: %s", err)
+			return handleError(err, "Failed to write template")
 		}
 
 		return nil
@@ -224,7 +224,7 @@ var regSizeCmd = &cobra.Command{
 	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
 		tools, err = configuration.EnsureMetadata()
 		if err != nil {
-			return fmt.Errorf("error ensuring metadata: %s", err)
+			return handleError(err, "Failed to load metadata")
 		}
 
 		return nil
@@ -235,7 +235,7 @@ var regSizeCmd = &cobra.Command{
 		image := buildReference(args[0])
 		r, err := ref.New(image)
 		if err != nil {
-			return fmt.Errorf("failed to parse image name <%s>: %s", image, err)
+			return handleError(err, "Failed to parse image name <%s>", image)
 		}
 
 		rc := containers.GetRegclient()
@@ -248,20 +248,20 @@ var regSizeCmd = &cobra.Command{
 
 		p, err := platform.Parse(regManifestPlatform)
 		if err != nil {
-			return fmt.Errorf("failed to parse platform <%s>: %s", regManifestPlatform, err)
+			return handleError(err, "Failed to parse platform <%s>", regManifestPlatform)
 		}
 		m, err := containers.GetPlatformManifest(ctx, rc, r, p)
 		if err != nil {
-			return fmt.Errorf("failed to get platform manifest: %s", err)
+			return handleError(err, "Failed to get platform manifest")
 		}
 
 		mi, ok := m.(manifest.Imager)
 		if !ok {
-			return fmt.Errorf("failed to assert manifest as imager: %s", err)
+			return handleError(err, "Failed to assert manifest as imager")
 		}
 		size, err := mi.GetSize()
 		if err != nil {
-			return fmt.Errorf("failed to get size: %s", err)
+			return handleError(err, "Failed to get size")
 		}
 
 		units := []string{"B", "KB", "MB", "GB", "TB"}
@@ -293,7 +293,7 @@ var regTagsCmd = &cobra.Command{
 	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
 		tools, err = configuration.EnsureMetadata()
 		if err != nil {
-			return fmt.Errorf("error ensuring metadata: %s", err)
+			return handleError(err, "Failed to load metadata")
 		}
 
 		return nil
@@ -304,7 +304,7 @@ var regTagsCmd = &cobra.Command{
 		image := buildReference(args[0])
 		r, err := ref.New(image)
 		if err != nil {
-			return fmt.Errorf("failed to parse image name <%s>: %s", image, err)
+			return handleError(err, "Failed to parse image name <%s>", image)
 		}
 
 		rc := containers.GetRegclient()
@@ -313,7 +313,7 @@ var regTagsCmd = &cobra.Command{
 
 		tags, err := rc.TagList(ctx, r)
 		if err != nil {
-			return fmt.Errorf("failed to list tags: %s", err)
+			return handleError(err, "Failed to list tags")
 		}
 
 		sortedTags := tags.Tags

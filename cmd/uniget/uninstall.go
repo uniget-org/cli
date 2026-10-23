@@ -41,7 +41,7 @@ var uninstallCmd = &cobra.Command{
 	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
 		tools, err = configuration.EnsureMetadata()
 		if err != nil {
-			return fmt.Errorf("error ensuring metadata: %s", err)
+			return handleError(err, "Failed to load metadata")
 		}
 
 		return nil
@@ -52,13 +52,13 @@ var uninstallCmd = &cobra.Command{
 
 		err = runPreUninstallHooks(args...)
 		if err != nil {
-			return fmt.Errorf("unable to run pre-uninstall hooks: %s", err)
+			return handleError(err, "Unable to run pre-uninstall hooks")
 		}
 
 		for _, toolName := range args {
 			tool, err := tools.GetByName(toolName)
 			if err != nil {
-				return fmt.Errorf("unable to find tool %s: %s", toolName, err)
+				return handleError(err, "Unable to find tool %s", toolName)
 			}
 
 			err = tool.UpdateStatus(
@@ -69,7 +69,7 @@ var uninstallCmd = &cobra.Command{
 				configuration.AltArch,
 			)
 			if err != nil {
-				return fmt.Errorf("failed to update status for tool %s: %s", tool.Name, err)
+				return handleError(err, "Failed to update status for tool %s", tool.Name)
 			}
 
 			if !uninstallForce && !tool.IsInstalled() {
@@ -90,7 +90,7 @@ var uninstallCmd = &cobra.Command{
 				if uninstallSpinner != nil {
 					uninstallSpinner.Fail()
 				}
-				return fmt.Errorf("unable to uninstall tool %s: %s", toolName, err)
+				return handleError(err, "Unable to uninstall tool %s", toolName)
 			}
 
 			if uninstallSpinner != nil {
@@ -100,7 +100,7 @@ var uninstallCmd = &cobra.Command{
 
 		err = runPostUninstallHooks(args...)
 		if err != nil {
-			return fmt.Errorf("unable to run post-uninstall hooks: %s", err)
+			return handleError(err, "Unable to run post-uninstall hooks")
 		}
 
 		return nil

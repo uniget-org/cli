@@ -35,7 +35,7 @@ var (
     Search for tools: uniget search kubectl
     Install tools: uniget install kubectl helm`,
 		SilenceUsage:  true,
-		SilenceErrors: true,
+		SilenceErrors: false,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) (err error) {
 			logging.OutputWriter = cmd.OutOrStdout()
 			logging.ErrorWriter = cmd.ErrOrStderr()
@@ -133,7 +133,7 @@ func handleError(err error, message string, a ...any) error {
 	if configuration.Debug {
 		logging.Debugf("Error details: %v", err)
 	}
-	return err
+	return fmt.Errorf("(Increase verbosity for more details)")
 }
 
 func init() {

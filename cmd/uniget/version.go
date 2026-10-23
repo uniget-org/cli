@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -29,7 +30,7 @@ var versionCmd = &cobra.Command{
 	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
 		tools, err = configuration.EnsureMetadata()
 		if err != nil {
-			return fmt.Errorf("error ensuring metadata: %s", err)
+			return handleError(err, "Failed to load metadata")
 		}
 
 		return nil
@@ -37,7 +38,7 @@ var versionCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		tool, err := tools.GetByName(args[0])
 		if err != nil {
-			return fmt.Errorf("failed to get tool: %s", err)
+			return handleError(err, "Unable to find tool %s", args[0])
 		}
 
 		err = tool.UpdateStatus(
@@ -48,13 +49,13 @@ var versionCmd = &cobra.Command{
 			configuration.AltArch,
 		)
 		if err != nil {
-			return fmt.Errorf("failed to update status for tool %s: %s", tool.Name, err)
+			return handleError(err, "Failed to update status for tool %s", tool.Name)
 		}
 
 		markerFilePresent := myos.FileExists(configuration.Prefix + "/" + configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".txt")
 		if !tool.Status.MarkerFilePresent && !tool.Status.BinaryPresent && !markerFilePresent {
 			logging.Warning.Printfln("Tool %s is not installed", tool.Name)
-			return fmt.Errorf("tool %s is not installed", tool.Name)
+			return handleError(errors.New("tool not installed"), "Tool %s is not installed", tool.Name)
 		}
 
 		if tool.Check == "" {
@@ -66,7 +67,7 @@ var versionCmd = &cobra.Command{
 		tool.ReplaceVariables(configuration.Prefix+"/"+configuration.Target, configuration.Arch, configuration.AltArch)
 		version, err := tool.RunVersionCheck()
 		if err != nil {
-			return fmt.Errorf("failed to get version: %s", err)
+			return handleError(err, "Failed to get version for tool %s", tool.Name)
 		}
 		fmt.Println(version)
 

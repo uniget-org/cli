@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 	"gitlab.com/uniget-org/cli/internal/constants"
 )
@@ -25,7 +23,7 @@ var upgradeCmd = &cobra.Command{
 	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
 		tools, err = configuration.EnsureMetadata()
 		if err != nil {
-			return fmt.Errorf("error ensuring metadata: %s", err)
+			return handleError(err, "Failed to load metadata")
 		}
 
 		return nil
@@ -33,14 +31,9 @@ var upgradeCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		requestedTools, err := findInstalledTools(tools)
 		if err != nil {
-			return fmt.Errorf("failed to find installed tools: %s", err)
+			return handleError(err, "Failed to find installed tools")
 		}
 
-		err = installTools(cmd.OutOrStdout(), requestedTools, false, upgradeDryRun, false, false, false)
-		if err != nil {
-			return fmt.Errorf("failed to upgrade tools: %s", err)
-		}
-
-		return nil
+		return installTools(cmd.OutOrStdout(), requestedTools, false, upgradeDryRun, false, false, false)
 	},
 }

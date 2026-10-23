@@ -45,7 +45,12 @@ var cronCreateCmd = &cobra.Command{
 	Long:  constants.Header + "\nCreate cron job",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return createCron()
+		err := createCron()
+		if err != nil {
+			return handleError(err, "Failed to create cron job")
+		}
+
+		return nil
 	},
 }
 
@@ -58,7 +63,12 @@ var cronRemoveCmd = &cobra.Command{
 	Long:  constants.Header + "\nRemove cron job",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return removeCron()
+		err := removeCron()
+		if err != nil {
+			return handleError(err, "Failed to remove cron job")
+		}
+
+		return nil
 	},
 }
 

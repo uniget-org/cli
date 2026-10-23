@@ -41,7 +41,7 @@ var generateCmd = &cobra.Command{
 	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
 		tools, err = configuration.EnsureMetadata()
 		if err != nil {
-			return fmt.Errorf("error ensuring metadata: %s", err)
+			return handleError(err, "Failed to load metadata")
 		}
 
 		return nil
@@ -52,14 +52,14 @@ var generateCmd = &cobra.Command{
 		for _, toolName := range args {
 			tool, err := tools.GetByName(toolName)
 			if err != nil {
-				return fmt.Errorf("unable to find tool %s: %s", toolName, err)
+				return handleError(err, "Unable to find tool %s", toolName)
 			}
 			requestedTools.Tools = append(requestedTools.Tools, *tool)
 		}
 		for _, tool := range requestedTools.Tools {
 			err := tools.ResolveDependencies(&plannedTools, tool.Name)
 			if err != nil {
-				return fmt.Errorf("unable to resolve dependencies for %s: %s", tool.Name, err)
+				return handleError(err, "Unable to resolve dependencies for %s", tool.Name)
 			}
 		}
 

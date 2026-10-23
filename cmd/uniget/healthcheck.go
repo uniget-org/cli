@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"errors"
 
 	"github.com/spf13/cobra"
 	"gitlab.com/uniget-org/cli/internal/constants"
@@ -30,7 +30,7 @@ var healthcheckCmd = &cobra.Command{
 	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
 		tools, err = configuration.EnsureMetadata()
 		if err != nil {
-			return fmt.Errorf("error ensuring metadata: %s", err)
+			return handleError(err, "Failed to load metadata")
 		}
 
 		return nil
@@ -39,7 +39,7 @@ var healthcheckCmd = &cobra.Command{
 		toolName := args[0]
 		tool, err := tools.GetByName(toolName)
 		if err != nil {
-			return fmt.Errorf("error getting tool %s: %s", toolName, err)
+			return handleError(err, "Unable to find tool %s", toolName)
 		}
 
 		err = tool.UpdateStatus(
@@ -50,7 +50,7 @@ var healthcheckCmd = &cobra.Command{
 			configuration.AltArch,
 		)
 		if err != nil {
-			return fmt.Errorf("failed to update status for tool %s: %s", tool.Name, err)
+			return handleError(err, "Failed to update status for tool %s", tool.Name)
 		}
 
 		testFailed := false
@@ -98,8 +98,7 @@ var healthcheckCmd = &cobra.Command{
 		}
 
 		if testFailed {
-			logging.Error.Printfln("%s: Healthcheck failed", tool.Name)
-			return fmt.Errorf("healthcheck failed for %s", tool.Name)
+			return handleError(errors.New("healthcheck failed"), "Healthcheck failed for %s", tool.Name)
 		}
 
 		return nil

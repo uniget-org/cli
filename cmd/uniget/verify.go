@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 	"gitlab.com/uniget-org/cli/internal/constants"
 	"gitlab.com/uniget-org/cli/pkg/containers"
@@ -48,7 +46,7 @@ var verifyMetadataCmd = &cobra.Command{
 			"https://github\\.com/uniget-org/tools/\\.github/workflows/[^.]+\\.yml@refs/heads/main",
 		)
 		if err != nil {
-			return fmt.Errorf("error verifying sigstore bundle for metadata: %w", err)
+			return handleError(err, "Failed to verify metadata signature")
 		}
 
 		logging.Info.Printfln("Metadata signature verified successfully")
@@ -71,7 +69,7 @@ var verifyToolCmd = &cobra.Command{
 	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
 		tools, err = configuration.EnsureMetadata()
 		if err != nil {
-			return fmt.Errorf("error ensuring metadata: %s", err)
+			return handleError(err, "Failed to load metadata")
 		}
 
 		return nil
@@ -79,18 +77,18 @@ var verifyToolCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		tool, err := tools.GetByName(args[0])
 		if err != nil {
-			return fmt.Errorf("error getting tool by name: %w", err)
+			return handleError(err, "Unable to find tool %s", args[0])
 		}
 		registries, repositories := tool.GetSourcesWithFallback(constants.Registry, constants.ImageRepository)
 		ref, err := containers.FindToolRef(registries, repositories, tool.Name, "latest")
 		if err != nil {
-			return fmt.Errorf("error finding tool reference: %w", err)
+			return handleError(err, "Failed to find reference for tool %s", tool.Name)
 		}
 		logging.Debugf("Built reference %s", ref)
 
 		err = containers.VerifyContainerImageSignature(ref, constants.SigstoreIssuer, "", "", constants.SigstoreSubjectRegexp)
 		if err != nil {
-			return fmt.Errorf("error verifying tool signature on %s: %w", tool.Name, err)
+			return handleError(err, "Failed to verify signature for tool %s", tool.Name)
 		}
 		logging.Success.Printfln("Signature verified successfully for %s", tool.Name)
 

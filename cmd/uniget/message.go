@@ -38,7 +38,7 @@ var messageCmd = &cobra.Command{
 	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
 		tools, err = configuration.EnsureMetadata()
 		if err != nil {
-			return fmt.Errorf("error ensuring metadata: %s", err)
+			return handleError(err, "Failed to load metadata")
 		}
 
 		return nil
@@ -51,7 +51,7 @@ var messageCmd = &cobra.Command{
 
 			tool, err := tools.GetByName(args[0])
 			if err != nil {
-				return fmt.Errorf("failed to get tool: %s", err)
+				return handleError(err, "Failed to get tool %s", args[0])
 			}
 
 			logging.Info.Printfln("Messages for %s:", args[0])
@@ -78,15 +78,15 @@ var messageCmd = &cobra.Command{
 
 			err := printToolInternalsMessage(cmd.OutOrStdout(), toolName)
 			if err != nil {
-				return fmt.Errorf("failed to print tool internals: %s", err)
+				return handleError(err, "Failed to print tool internals for %s", toolName)
 			}
 			err = printToolUsageMessage(cmd.OutOrStdout(), toolName)
 			if err != nil {
-				return fmt.Errorf("failed to print tool usage: %s", err)
+				return handleError(err, "Failed to print tool usage for %s", toolName)
 			}
 			err = printToolUpdateMessage(cmd.OutOrStdout(), toolName)
 			if err != nil {
-				return fmt.Errorf("failed to print tool update: %s", err)
+				return handleError(err, "Failed to print tool update for %s", toolName)
 			}
 
 			fmt.Println()

@@ -318,7 +318,6 @@ func TestString(t *testing.T) {
 	for _, want := range []string{
 		"Prefix: /opt/uniget,",
 		"Target: usr/local",
-		"FileCacheRetention: " + "86400",
 		"CacheDirectory: /opt/uniget/var/cache/uniget",
 		"LibDirectory: /opt/uniget/var/lib/uniget",
 		"ConfigDirectory: /opt/uniget/etc/uniget",

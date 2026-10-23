@@ -39,7 +39,7 @@ var depsTreeCmd = &cobra.Command{
 	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
 		tools, err = configuration.EnsureMetadata()
 		if err != nil {
-			return fmt.Errorf("error ensuring metadata: %s", err)
+			return handleError(err, "Failed to load metadata")
 		}
 
 		return nil
@@ -49,7 +49,7 @@ var depsTreeCmd = &cobra.Command{
 			for _, toolName := range args {
 				tool, err := tools.GetByName(toolName)
 				if err != nil {
-					return fmt.Errorf("error getting tool %s: %s", toolName, err)
+					return handleError(err, "Failed to find tool %s", toolName)
 				}
 
 				showDependencyTree(tool, "")
@@ -92,7 +92,7 @@ var depsWhoUsesCmd = &cobra.Command{
 	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
 		tools, err = configuration.EnsureMetadata()
 		if err != nil {
-			return fmt.Errorf("error ensuring metadata: %s", err)
+			return handleError(err, "Failed to load metadata")
 		}
 
 		return nil

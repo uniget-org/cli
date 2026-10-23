@@ -39,7 +39,7 @@ var manpagesCmd = &cobra.Command{
 
 		err = writeManpage(rootCmd, "", manDirectory)
 		if err != nil {
-			return fmt.Errorf("failed to create manpage: %w", err)
+			return handleError(err, "Failed to create manpage")
 		}
 
 		for _, cobraCmd := range rootCmd.Commands() {
@@ -47,7 +47,7 @@ var manpagesCmd = &cobra.Command{
 
 			err := writeManpage(cobraCmd, cobraCmd.Name(), manDirectory)
 			if err != nil {
-				return fmt.Errorf("failed to create manpage: %w", err)
+				return handleError(err, "Failed to create manpage")
 			}
 		}
 

@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	goversion "github.com/hashicorp/go-version"
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
@@ -32,7 +30,7 @@ var updateCmd = &cobra.Command{
 	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
 		tools, err = configuration.EnsureMetadata()
 		if err != nil {
-			return fmt.Errorf("error ensuring metadata: %s", err)
+			return handleError(err, "Failed to load metadata")
 		}
 
 		return nil
@@ -40,12 +38,12 @@ var updateCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		newRevisionAvailable, err := configuration.HasMetadataUpdate(tools.Revision)
 		if err != nil {
-			return fmt.Errorf("error checking for metadata update: %s", err)
+			return handleError(err, "Failed to check for metadata update")
 		}
 		if newRevisionAvailable {
 			err = configuration.DownloadMetadata()
 			if err != nil {
-				return fmt.Errorf("error downloading metadata: %s", err)
+				return handleError(err, "Failed to download metadata")
 			}
 
 		} else {
@@ -55,7 +53,7 @@ var updateCmd = &cobra.Command{
 		var newTools *tool.Tools
 		newTools, err = configuration.LoadMetadata(configuration.GetMetadataFile())
 		if err != nil {
-			return fmt.Errorf("error loading metadata: %s", err)
+			return handleError(err, "Failed to load metadata")
 		}
 		logging.Debugf("Loaded %d tools from metadata", len(newTools.Tools))
 

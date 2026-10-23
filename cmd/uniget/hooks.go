@@ -26,25 +26,25 @@ func initHooksCmd() {
 	addHooksCmd.Flags().StringVar(&hookSource, "source", "", "Path to the hook script")
 	err = addHooksCmd.MarkFlagRequired("type")
 	if err != nil {
-		logging.Error.Printfln("Failed to mark flag as required: %v", err)
+		_ = handleError(err, "Failed to mark flag type as required for subcommand hooks add")
 	}
 	err = addHooksCmd.MarkFlagRequired("source")
 	if err != nil {
-		logging.Error.Printfln("Failed to mark flag as required: %v", err)
+		_ = handleError(err, "Failed to mark flag source as required for subcommand hooks add")
 	}
 	hooksCmd.AddCommand(addHooksCmd)
 
 	removeHooksCmd.Flags().StringVar(&hookType, "type", "", "Type of hook to edit (pre-install, post-install, pre-uninstall or post-uninstall)")
 	err = removeHooksCmd.MarkFlagRequired("type")
 	if err != nil {
-		logging.Error.Printfln("Failed to mark flag as required: %v", err)
+		_ = handleError(err, "Failed to mark flag type as required for subcommand hooks remove")
 	}
 	hooksCmd.AddCommand(removeHooksCmd)
 
 	editHooksCmd.Flags().StringVar(&hookType, "type", "", "Type of hook to edit (pre-install, post-install, pre-uninstall or post-uninstall)")
 	err = editHooksCmd.MarkFlagRequired("type")
 	if err != nil {
-		logging.Error.Printfln("Failed to mark flag as required: %v", err)
+		_ = handleError(err, "Failed to mark flag type as required for subcommand hooks edit")
 	}
 	hooksCmd.AddCommand(editHooksCmd)
 
@@ -54,14 +54,14 @@ func initHooksCmd() {
 	runHooksCmd.Flags().StringVar(&hookType, "type", "", "Type of hook to run (pre-install, post-install, pre-uninstall or post-uninstall)")
 	err = runHooksCmd.MarkFlagRequired("type")
 	if err != nil {
-		logging.Error.Printfln("Failed to mark flag as required: %v", err)
+		_ = handleError(err, "Failed to mark flag type as required for subcommand hooks run")
 	}
 	hooksCmd.AddCommand(runHooksCmd)
 
 	testHookCmd.Flags().StringVar(&hookType, "type", "", "Type of hook to run (pre-install, post-install, pre-uninstall or post-uninstall)")
 	err = testHookCmd.MarkFlagRequired("type")
 	if err != nil {
-		logging.Error.Printfln("Failed to mark flag as required: %v", err)
+		_ = handleError(err, "Failed to mark flag type as required for subcommand hooks test")
 	}
 	hooksCmd.AddCommand(testHookCmd)
 
@@ -90,7 +90,7 @@ var addHooksCmd = &cobra.Command{
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		if !myos.FileExists(hookSource) {
-			return fmt.Errorf("hook source file does not exist: %s", hookSource)
+			return handleError(err, "Hook source file does not exist: %s", hookSource)
 		}
 
 		hookSourceSplit := strings.Split(hookSource, "/")
@@ -119,12 +119,12 @@ var addHooksCmd = &cobra.Command{
 
 		err = myos.CopyFile(hookSource, hookFile)
 		if err != nil {
-			return fmt.Errorf("unable to copy hook file from %s to %s: %w", hookSource, hookFile, err)
+			return handleError(err, "Unable to copy hook file from %s to %s", hookSource, hookFile)
 		}
 
 		err = os.Chmod(hookFile, 0700) // #nosec G302 -- File must be executable for execution
 		if err != nil {
-			return fmt.Errorf("unable to set executable permissions on hook file %s: %w", hookFile, err)
+			return handleError(err, "Unable to set executable permissions on hook file %s", hookFile)
 		}
 
 		return nil
@@ -168,19 +168,19 @@ var removeHooksCmd = &cobra.Command{
 
 		hookFileAbs, err := filepath.Abs(hookFile)
 		if err != nil {
-			return fmt.Errorf("unable to get absolute path of hook file %s: %w", hookFile, err)
+			return handleError(err, "Unable to get absolute path of hook file %s", hookFile)
 		}
 		if !strings.HasPrefix(hookFileAbs, hookDir) {
-			return fmt.Errorf("hook file %s is outside of hookDir %s", hookFile, hookDir)
+			return handleError(err, "Hook file %s is outside of directory %s", hookFile, hookDir)
 		}
 
 		if !myos.FileExists(hookFile) {
-			return fmt.Errorf("hook file does not exist: %s", hookFile)
+			return handleError(err, "Hook file does not exist: %s", hookFile)
 		}
 
 		err = os.Remove(hookFile)
 		if err != nil {
-			return fmt.Errorf("unable to remove %s hook %s: %s", hookType, hookFileName, err)
+			return handleError(err, "Unable to remove %s hook %s", hookType, hookFileName)
 		}
 
 		return nil
@@ -229,18 +229,18 @@ var editHooksCmd = &cobra.Command{
 
 		hookFileAbs, err := filepath.Abs(hookFile)
 		if err != nil {
-			return fmt.Errorf("unable to get absolute path of hook file %s: %w", hookFile, err)
+			return handleError(err, "Unable to get absolute path of hook file %s", hookFile)
 		}
 		if !strings.HasPrefix(hookFileAbs, hookDir) {
-			return fmt.Errorf("hook file %s is outside of hookDir %s", hookFile, hookDir)
+			return handleError(err, "Hook file %s is outside of directory %s", hookFile, hookDir)
 		}
 
 		hookFileInfo, err := os.Lstat(hookFile)
 		if err != nil {
-			return fmt.Errorf("unable to stat hook file %s: %w", hookFile, err)
+			return handleError(err, "Unable to stat hook file %s", hookFile)
 		}
 		if hookFileInfo.Mode()&os.ModeSymlink != 0 {
-			return fmt.Errorf("hook file %s is a symlink, which is not allowed for security reasons", hookFile)
+			return handleError(err, "Hook file %s is a symlink, which is not allowed for security reasons", hookFile)
 		}
 
 		command := exec.Command(editor, hookFile) // #nosec G204 -- THis is always the case when relying on EDITOR
@@ -249,12 +249,12 @@ var editHooksCmd = &cobra.Command{
 		command.Stderr = os.Stderr
 		err = command.Run()
 		if err != nil {
-			return fmt.Errorf("failed to edit %s hook (%s): %s", hookType, hookFile, err)
+			return handleError(err, "Failed to edit %s hook (%s)", hookType, hookFile)
 		}
 
 		err = os.Chmod(hookFile, 0700) // #nosec G302 -- File must be executable for execution
 		if err != nil {
-			return fmt.Errorf("unable to set executable permissions on hook file %s: %w", hookFile, err)
+			return handleError(err, "Unable to set executable permissions on hook file %s", hookFile)
 		}
 
 		return nil
@@ -307,7 +307,7 @@ var listHooksCmd = &cobra.Command{
 					return fmt.Errorf("invalid hook type: %s", availableHookType)
 				}
 				if err != nil {
-					return fmt.Errorf("unable to list %s hooks: %s", hookType, err)
+					return handleError(err, "Unable to list %s hooks", hookType)
 				}
 			}
 		}
@@ -336,16 +336,16 @@ var runHooksCmd = &cobra.Command{
 		case "post-uninstall":
 			hookDir = configuration.GetHooksPostUninstallDirectory()
 		default:
-			return fmt.Errorf("invalid hook type: %s", hookType)
+			return handleError(err, "Invalid hook type: %s", hookType)
 		}
 
 		err = processHooks(hookDir, func(hookFile string) error {
 			fmt.Printf("Executing %s hook %s:\n", hookType, hookFile)
 			_, err := runHook(hookFile, args...)
-			return fmt.Errorf("unable to execute %s hook %s passing <%v>: %s", hookType, hookFile, args, err)
+			return handleError(err, "Unable to execute %s hook %s passing <%v>", hookType, hookFile, args)
 		})
 		if err != nil {
-			return fmt.Errorf("unable to execute %s hooks: %s", hookType, err)
+			return handleError(err, "Unable to execute %s hooks", hookType)
 		}
 
 		return nil
@@ -374,12 +374,12 @@ var testHookCmd = &cobra.Command{
 		case "post-uninstall":
 			hookFile = configuration.GetHooksPostUninstallDirectory() + "/" + hookName
 		default:
-			return fmt.Errorf("invalid hook type: %s", hookType)
+			return handleError(err, "Invalid hook type: %s", hookType)
 		}
 
-		searchOutputFormat, err = runHook(hookFile, hookArgs...)
+		searchOutputFormat, err := runHook(hookFile, hookArgs...)
 		if err != nil {
-			return fmt.Errorf("unable to execute %s hook %s passing <%v>: %s", hookType, hookName, hookArgs, err)
+			return handleError(err, "Unable to execute %s hook %s passing <%v>", hookType, hookName, hookArgs)
 		}
 		fmt.Print(searchOutputFormat)
 

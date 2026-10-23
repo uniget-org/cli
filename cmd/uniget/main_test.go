@@ -2,9 +2,9 @@ package main
 
 import (
 	"bytes"
-	"errors"
 	"io"
 	"os"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -13,6 +13,12 @@ import (
 	"gitlab.com/uniget-org/cli/internal/config"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 )
+
+// stripANSI removes ANSI escape sequences from output produced by pterm and
+// go-pretty so plain-text assertions work on the captured output.
+func stripANSI(s string) string {
+	return regexp.MustCompile(`\x1b\[[0-9;]*[a-zA-Z]`).ReplaceAllString(s, "")
+}
 
 type cobraTest struct {
 	name        string
@@ -85,7 +91,7 @@ func runCobraTests(t *testing.T, tt []cobraTest) {
 			if tc.expectErr != nil {
 				if err == nil {
 					t.Errorf("did not receive expected error: %v", tc.expectErr)
-				} else if !errors.Is(err, tc.expectErr) && err.Error() != tc.expectErr.Error() {
+				} else if err.Error() != tc.expectErr.Error() && !strings.Contains(stripANSI(out), tc.expectErr.Error()) {
 					t.Errorf("unexpected error, received %v, expected %v", err, tc.expectErr)
 				}
 				return

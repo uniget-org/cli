@@ -135,12 +135,12 @@ func TestSearch(t *testing.T) {
 		{
 			name:      "invalid output format",
 			args:      []string{"search", "--output", "bogus", "jq"},
-			expectErr: errors.New("error: output format bogus not supported"),
+			expectErr: errors.New("Output format bogus not supported"),
 		},
 		{
 			name:      "conflicting only flags",
 			args:      []string{"search", "--only-names", "--only-tags", "jq"},
-			expectErr: errors.New("error: Can only process one of only-names, only-description, only-tags and only-deps at the same time"),
+			expectErr: errors.New("Can only process one of only-names, only-description, only-tags and only-deps at the same time"),
 		},
 	}
 	runCobraTests(t, tt)
@@ -183,7 +183,7 @@ func TestList(t *testing.T) {
 		{
 			name:      "invalid output format",
 			args:      []string{"list", "--output", "bogus"},
-			expectErr: errors.New("invalid output format: bogus"),
+			expectErr: errors.New("Invalid output format: bogus"),
 		},
 	}
 	runCobraTests(t, tt)
@@ -243,12 +243,12 @@ func TestDescribe(t *testing.T) {
 		{
 			name:      "invalid output format",
 			args:      []string{"describe", "--output", "bogus", "jq"},
-			expectErr: errors.New("invalid output format: bogus"),
+			expectErr: errors.New("Invalid output format: bogus"),
 		},
 		{
 			name:      "unknown tool",
 			args:      []string{"describe", "doesnotexist"},
-			expectErr: errors.New("error getting tool doesnotexist: Tool named doesnotexist not found"),
+			expectErr: errors.New("Failed to find tool doesnotexist"),
 		},
 	}
 	runCobraTests(t, tt)
@@ -325,31 +325,34 @@ func TestMessage(t *testing.T) {
 		t.Errorf("expected empty stdout, received <%s>", stdout)
 	}
 
-	_, err = runCobraTest(t, nil, "message", "doesnotexist")
+	// Unknown tool. The detailed message is logged by the command, the
+	// returned error is generic when running without --debug.
+	out, err = runCobraTest(t, nil, "message", "doesnotexist")
 	if err == nil {
 		t.Error("expected error for unknown tool")
-	} else if !strings.Contains(err.Error(), "failed to get tool") {
-		t.Errorf("unexpected error, received <%s>", err.Error())
+	} else if !strings.Contains(stripANSI(out), "Failed to print tool internals for doesnotexist") {
+		t.Errorf("unexpected output, received <%s>", out)
 	}
 }
 
 func TestVersion(t *testing.T) {
 	prefix := seedMetadata(t)
 
-	// Unknown tool
-	_, err := runCobraTest(t, nil, "version", "doesnotexist")
+	// Unknown tool. The detailed message is logged by the command, the
+	// returned error is generic when running without --debug.
+	out, err := runCobraTest(t, nil, "version", "doesnotexist")
 	if err == nil {
 		t.Error("expected error for unknown tool")
-	} else if !strings.Contains(err.Error(), "failed to get tool") {
-		t.Errorf("unexpected error, received <%s>", err.Error())
+	} else if !strings.Contains(stripANSI(out), "Unable to find tool doesnotexist") {
+		t.Errorf("unexpected output, received <%s>", out)
 	}
 
 	// Not installed
-	_, err = runCobraTest(t, nil, "version", "baselayout")
+	out, err = runCobraTest(t, nil, "version", "baselayout")
 	if err == nil {
 		t.Error("expected error for uninstalled tool")
-	} else if !strings.Contains(err.Error(), "tool baselayout is not installed") {
-		t.Errorf("unexpected error, received <%s>", err.Error())
+	} else if !strings.Contains(stripANSI(out), "Tool baselayout is not installed") {
+		t.Errorf("unexpected output, received <%s>", out)
 	}
 
 	// Installed but without version check. The version is printed to stdout.
@@ -366,20 +369,21 @@ func TestVersion(t *testing.T) {
 func TestHealthcheck(t *testing.T) {
 	prefix := seedMetadata(t)
 
-	// Unknown tool
-	_, err := runCobraTest(t, nil, "healthcheck", "doesnotexist")
+	// Unknown tool. The detailed message is logged by the command, the
+	// returned error is generic when running without --debug.
+	out, err := runCobraTest(t, nil, "healthcheck", "doesnotexist")
 	if err == nil {
 		t.Error("expected error for unknown tool")
-	} else if !strings.Contains(err.Error(), "error getting tool doesnotexist") {
-		t.Errorf("unexpected error, received <%s>", err.Error())
+	} else if !strings.Contains(stripANSI(out), "Unable to find tool doesnotexist") {
+		t.Errorf("unexpected output, received <%s>", out)
 	}
 
 	// Tool without binary and marker file
-	_, err = runCobraTest(t, nil, "healthcheck", "baselayout")
+	out, err = runCobraTest(t, nil, "healthcheck", "baselayout")
 	if err == nil {
 		t.Error("expected error for uninstalled tool")
-	} else if !strings.Contains(err.Error(), "healthcheck failed for baselayout") {
-		t.Errorf("unexpected error, received <%s>", err.Error())
+	} else if !strings.Contains(stripANSI(out), "Healthcheck failed for baselayout") {
+		t.Errorf("unexpected output, received <%s>", out)
 	}
 
 	// Installed tool with binary and marker file
@@ -430,11 +434,11 @@ func TestDeps(t *testing.T) {
 		t.Errorf("expected empty stdout, received <%s>", stdout)
 	}
 
-	_, err = runCobraTest(t, nil, "deps", "tree", "doesnotexist")
+	out, err := runCobraTest(t, nil, "deps", "tree", "doesnotexist")
 	if err == nil {
 		t.Error("expected error for unknown tool")
-	} else if !strings.Contains(err.Error(), "error getting tool doesnotexist") {
-		t.Errorf("unexpected error, received <%s>", err.Error())
+	} else if !strings.Contains(stripANSI(out), "Failed to find tool doesnotexist") {
+		t.Errorf("unexpected output, received <%s>", out)
 	}
 }
 

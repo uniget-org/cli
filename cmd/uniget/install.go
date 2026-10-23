@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"io"
@@ -62,7 +63,7 @@ var installCmd = &cobra.Command{
 	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
 		tools, err = configuration.EnsureMetadata()
 		if err != nil {
-			return fmt.Errorf("error ensuring metadata: %s", err)
+			return handleError(err, "Failed to load metadata")
 		}
 
 		return nil
@@ -75,14 +76,14 @@ var installCmd = &cobra.Command{
 			logging.Debugf("Adding tools matching tags to requested tools")
 			requestedTools = tools.GetByTags(args)
 			if err != nil {
-				return fmt.Errorf("failed to get tools by tags: %s", err)
+				return handleError(err, "Failed to get tools by tags")
 			}
 
 		} else if installFilename != "" {
 			logging.Debugf("Adding tools from file %s to requested tools", installFilename)
 			data, err := os.ReadFile(installFilename) // #nosec G304 -- Accept file from arbitrary location
 			if err != nil {
-				return fmt.Errorf("unable to read file %s: %s", installFilename, err)
+				return handleError(err, "Unable to read file %s", installFilename)
 			}
 			for line := range strings.SplitSeq(string(data), "\n") {
 				if len(line) == 0 {
@@ -105,7 +106,7 @@ var installCmd = &cobra.Command{
 			for _, toolName := range args {
 				tool, err := tools.GetByName(toolName)
 				if err != nil {
-					return fmt.Errorf("unable to find tool %s: %s", toolName, err)
+					return handleError(err, "Unable to find tool %s", toolName)
 				}
 				requestedTools.Tools = append(requestedTools.Tools, *tool)
 			}
@@ -149,13 +150,13 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 	for _, tool := range requestedTools.Tools {
 		err := tools.ResolveDependencies(&plannedTools, tool.Name)
 		if err != nil {
-			return fmt.Errorf("unable to resolve dependencies for %s: %s", tool.Name, err)
+			return handleError(err, "Unable to resolve dependencies for tool %s", tool.Name)
 		}
 	}
 	for _, requestedTool := range requestedTools.Tools {
 		tool, err := plannedTools.GetByName(requestedTool.Name)
 		if err != nil {
-			return fmt.Errorf("unable to find %s in planned tools", requestedTool.Name)
+			return handleError(err, "Unable to find tool %s in planned tools", requestedTool.Name)
 		}
 		tool.Status.IsRequested = true
 	}
@@ -184,7 +185,7 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 		}
 	}
 	if len(renamedTools) > 0 || len(removedTools) > 0 {
-		return fmt.Errorf("renamed or removed tools require your attention")
+		return handleError(errors.New("renamed or removed tools require your attention"), "Renamed or removed tools require your attention")
 	}
 
 	// Populate status of planned tools
@@ -202,7 +203,7 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 			configuration.AltArch,
 		)
 		if err != nil {
-			return fmt.Errorf("failed to update status for tool %s: %s", plannedTools.Tools[index].Name, err)
+			return handleError(err, "Failed to update status for tool %s", plannedTools.Tools[index].Name)
 		}
 
 		logging.Tracef("Tool %s: %+v", plannedTools.Tools[index].Name, plannedTools.Tools[index])
@@ -252,7 +253,7 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 		conflictsDetected = true
 	}
 	if conflictsDetected && !skipConflicts {
-		return fmt.Errorf("conflicts detected")
+		return handleError(errors.New("conflicts detected"), "Conflicts detected")
 	}
 
 	// Terminate if checking or planning
@@ -267,7 +268,7 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 	if check {
 		for _, tool := range plannedTools.Tools {
 			if !tool.Status.BinaryPresent || !tool.Status.VersionMatches {
-				return fmt.Errorf("found missing or outdated tool")
+				return handleError(errors.New("found missing or outdated tool"), "Found missing or outdated tool")
 			}
 		}
 	}
@@ -285,7 +286,7 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 	configuration.AssertLibDirectory()
 	err = runPreInstallHooks(plannedTools.GetNames()...)
 	if err != nil {
-		return fmt.Errorf("unable to run pre-install hooks: %s", err)
+		return handleError(err, "Unable to run pre-install hooks")
 	}
 	var postHookTools tool.Tools
 	for _, plannedTool := range plannedTools.Tools {
@@ -316,12 +317,12 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 			registries, repositories := plannedTool.GetSourcesWithFallback(constants.Registry, constants.ImageRepository)
 			ref, err := containers.FindToolRef(registries, repositories, plannedTool.Name, "latest")
 			if err != nil {
-				return fmt.Errorf("error finding tool %s:%s: %s", plannedTool.Name, plannedTool.Version, err)
+				return handleError(err, "Error finding tool %s:%s", plannedTool.Name, plannedTool.Version)
 			}
 			if configuration.VerifyImageSignature {
 				err = containers.VerifyContainerImageSignature(ref, constants.SigstoreIssuer, "", "", constants.SigstoreSubjectRegexp)
 				if err != nil {
-					return fmt.Errorf("error verifying tool signature for %s: %w", plannedTool.Name, err)
+					return handleError(err, "Error verifying tool signature for %s", plannedTool.Name)
 				}
 			}
 
@@ -342,30 +343,30 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 				dep, err := plannedTools.GetByName(depName)
 				if err != nil {
 					logging.Error.Printfln("Unable to find dependency %s", depName)
-					return fmt.Errorf("unable to find dependency %s", depName)
+					return handleError(err, "Unable to find dependency %s", depName)
 				}
 
 				err = dep.GetBinaryStatus()
 				if err != nil {
 					logging.Error.Printfln("Unable to get binary status of dependency %s: %s", depName, err)
-					return fmt.Errorf("unable to get binary status of dependency %s: %s", depName, err)
+					return handleError(err, "Unable to get binary status of dependency %s", depName)
 				}
 				err = dep.GetMarkerFileStatus(configuration.GetCacheDirectory())
 				if err != nil {
 					logging.Error.Printfln("Unable to get marker file status of dependency %s: %s", depName, err)
-					return fmt.Errorf("unable to get marker file status of dependency %s: %s", depName, err)
+					return handleError(err, "Unable to get marker file status of dependency %s", depName)
 				}
 				err = dep.GetVersionStatus()
 				if err != nil {
 					logging.Error.Printfln("Unable to get version status of dependency %s: %s", depName, err)
-					return fmt.Errorf("unable to get version status of dependency %s: %s", depName, err)
+					return handleError(err, "Unable to get version status of dependency %s", depName)
 				}
 
 				if dep.Status.BinaryPresent || dep.Status.MarkerFilePresent {
 					continue
 				}
 				logging.Error.Printfln("Dependency %s is missing", depName)
-				return fmt.Errorf("dependency %s is missing", depName)
+				return handleError(errors.New("dependency is missing"), "Dependency %s is missing", depName)
 			}
 		}
 
@@ -377,11 +378,11 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 		}
 		err = os.Chdir(installDir)
 		if err != nil {
-			return fmt.Errorf("error changing directory to %s: %s", installDir, err)
+			return handleError(err, "Error changing directory to %s", installDir)
 		}
 		dir, err := os.Getwd()
 		if err != nil {
-			return fmt.Errorf("error getting working directory")
+			return handleError(err, "Error getting working directory")
 		}
 		logging.Debugf("Current directory: %s", dir)
 
@@ -413,11 +414,11 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 			logging.Debugf("Using tar file mappings for installation")
 			var fileInfo os.FileInfo
 			if fileInfo, err = os.Stat(pathToTar); os.IsNotExist(err) {
-				return fmt.Errorf("tar file %s does not exist", pathToTar)
+				return handleError(errors.New("tar file does not exist"), "Tar file %s does not exist", pathToTar)
 			}
 			layer, err = os.Open(pathToTar) // #nosec G304 -- Location supplied by user
 			if err != nil {
-				return fmt.Errorf("unable to read tar file %s: %s", pathToTar, err)
+				return handleError(err, "Unable to read tar file %s", pathToTar)
 			}
 			//nolint:errcheck
 			defer layer.Close()
@@ -434,7 +435,7 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 			registries, repositories := plannedTool.GetSourcesWithFallback(constants.Registry, constants.ImageRepository)
 			ref, err := containers.FindToolRef(registries, repositories, plannedTool.Name, "latest")
 			if err != nil {
-				return fmt.Errorf("error finding tool %s:%s: %s", plannedTool.Name, plannedTool.Version, err)
+				return handleError(err, "Error finding tool %s:%s", plannedTool.Name, plannedTool.Version)
 			}
 
 			logging.Debugf("Getting image %s", ref)
@@ -447,7 +448,7 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 				return nil
 			})
 			if err != nil {
-				return fmt.Errorf("unable to install from image: %s", err)
+				return handleError(err, "Unable to install from image")
 			}
 		}
 		if !installSuccessful {
@@ -488,13 +489,13 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 
 	err = installProfileDShim()
 	if err != nil {
-		return fmt.Errorf("unable to install profile.d shim: %s", err)
+		return handleError(err, "Unable to install profile.d shim")
 	}
 
 	if len(postHookTools.Tools) > 0 {
 		err = runPostInstallHooks(postHookTools.GetNames()...)
 		if err != nil {
-			return fmt.Errorf("unable to run post-install hooks: %s", err)
+			return handleError(err, "Unable to run post-install hooks")
 		}
 	}
 
