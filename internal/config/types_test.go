@@ -82,15 +82,6 @@ func TestNewDefaultConfig(t *testing.T) {
 	if config.IntegrateAll != false {
 		t.Errorf("expected IntegrateAll to be false")
 	}
-	if config.Cache != "none" {
-		t.Errorf("expected Cache to be none, got %s", config.Cache)
-	}
-	if config.FileCacheRetention != 24*60*60 {
-		t.Errorf("expected FileCacheRetention to be %d, got %d", 24*60*60, config.FileCacheRetention)
-	}
-	if config.FileCacheDirectoryName != "downloads" {
-		t.Errorf("expected FileCacheDirectoryName to be downloads, got %s", config.FileCacheDirectoryName)
-	}
 	if config.VerifyImageSignature != true {
 		t.Errorf("expected VerifyImageSignature to be true")
 	}
@@ -133,15 +124,6 @@ func TestNewDefaultConfigWithEnv(t *testing.T) {
 	if config.Target != "usr/bin" {
 		t.Errorf("expected Target to be usr/bin, got %s", config.Target)
 	}
-	if config.Cache != "file" {
-		t.Errorf("expected Cache to be file, got %s", config.Cache)
-	}
-	if config.FileCacheRetention != 3600 {
-		t.Errorf("expected FileCacheRetention to be 3600, got %d", config.FileCacheRetention)
-	}
-	if config.FileCacheDirectoryName != "cache" {
-		t.Errorf("expected FileCacheDirectoryName to be cache, got %s", config.FileCacheDirectoryName)
-	}
 	if config.VerifyImageSignature != false {
 		t.Errorf("expected VerifyImageSignature to be false")
 	}
@@ -157,9 +139,6 @@ func TestNewDefaultConfigIgnoresInvalidEnv(t *testing.T) {
 
 	if config.Debug != false {
 		t.Errorf("expected Debug to remain false")
-	}
-	if config.FileCacheRetention != 24*60*60 {
-		t.Errorf("expected FileCacheRetention to remain %d, got %d", 24*60*60, config.FileCacheRetention)
 	}
 	if config.Prefix != "/" {
 		t.Errorf("expected Prefix to remain /, got %s", config.Prefix)

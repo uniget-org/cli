@@ -108,17 +108,6 @@ var (
 				}
 			}
 
-			switch configuration.Cache {
-			case "", "none":
-				logging.Debug("Pulling images without caching")
-
-			case "file", "docker", "containerd":
-				logging.Warning.Printfln("Cache backend %s is no longer supported, pulling images without caching", configuration.Cache)
-
-			default:
-				return fmt.Errorf("unsupported cache backend: %s", configuration.Cache)
-			}
-
 			return nil
 		},
 	}
@@ -170,7 +159,6 @@ func init() {
 	})
 
 	initBumpCmd()
-	initCacheCmd()
 	initCronCmd()
 	initDebugCmd()
 	initDescribeCmd()
@@ -215,9 +203,6 @@ func main() {
 	pf.BoolVar(&configuration.IntegrateProfileD, "integrate-profiled", configuration.IntegrateProfileD, "Integrate profile.d scripts")
 	pf.BoolVar(&configuration.IntegrateEtc, "integrate-etc", configuration.IntegrateEtc, "Integrate configuration files from /etc")
 	pf.BoolVar(&configuration.IntegrateAll, "integrate-all", configuration.IntegrateAll, "Integrate all available integrations")
-	pf.StringVar(&configuration.Cache, "cache", configuration.Cache, "Cache backend to use (none, file, docker, containerd)")
-	pf.StringVar(&configuration.FileCacheDirectoryName, "cache-directory", configuration.FileCacheDirectoryName, "Directory for the file cache")
-	pf.IntVar(&configuration.FileCacheRetention, "cache-retention", configuration.FileCacheRetention, "Retention in seconds for the file cache")
 	pf.BoolVar(&configuration.VerifyImageSignature, "verify-image-signature", configuration.VerifyImageSignature, "Enable or disable verifyImageSignature")
 
 	rootCmd.MarkFlagsMutuallyExclusive("prefix", "user")

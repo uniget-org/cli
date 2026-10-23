@@ -33,29 +33,23 @@ type Config struct {
 	HooksPostInstallDirectory   string
 	HooksPreUninstallDirectory  string
 	HooksPostUninstallDirectory string
-	Cache                       string `env:"UNIGET_CACHE"`
-	FileCacheRetention          int    `env:"UNIGET_CACHERETENTION"`
-	FileCacheDirectoryName      string `env:"UNIGET_CACHEDIRECTORY"`
-	VerifyImageSignature        bool   `env:"UNIGET_VERIFY_IMAGE_SIGNATURE"`
+	VerifyImageSignature        bool `env:"UNIGET_VERIFY_IMAGE_SIGNATURE"`
 }
 
 func NewDefaultConfig(opts ...ConfigOption) *Config {
 	config := &Config{
-		AltArch:                runtime.GOARCH,
-		LogLevel:               pterm.LogLevelInfo.String(),
-		Debug:                  false,
-		Trace:                  false,
-		User:                   false,
-		AutoUpdate:             false,
-		Prefix:                 "/",
-		Target:                 "usr/local",
-		IntegrateProfileD:      false,
-		IntegrateEtc:           false,
-		IntegrateAll:           false,
-		Cache:                  "none",
-		FileCacheRetention:     24 * 60 * 60,
-		FileCacheDirectoryName: "downloads",
-		VerifyImageSignature:   true,
+		AltArch:              runtime.GOARCH,
+		LogLevel:             pterm.LogLevelInfo.String(),
+		Debug:                false,
+		Trace:                false,
+		User:                 false,
+		AutoUpdate:           false,
+		Prefix:               "/",
+		Target:               "usr/local",
+		IntegrateProfileD:    false,
+		IntegrateEtc:         false,
+		IntegrateAll:         false,
+		VerifyImageSignature: true,
 	}
 	for _, opt := range opts {
 		opt(config)
@@ -207,9 +201,6 @@ func (c *Config) String() string {
 		"  IntegrateProfileD: " + strconv.FormatBool(c.IntegrateProfileD) + ", " + "\n" +
 		"  IntegrateEtc: " + strconv.FormatBool(c.IntegrateEtc) + ", " + "\n" +
 		"  IntegrateAll: " + strconv.FormatBool(c.IntegrateAll) + ", " + "\n" +
-		"  Cache: " + c.Cache + ", " + "\n" +
-		"  FileCacheRetention: " + strconv.Itoa(c.FileCacheRetention) + ", " + "\n" +
-		"  FileCacheDirectoryName: " + c.FileCacheDirectoryName + "\n" +
 		"  CacheDirectory: " + c.GetCacheDirectory() + ", " + "\n" +
 		"  LibDirectory: " + c.GetLibDirectory() + ", " + "\n" +
 		"  ConfigDirectory: " + c.GetConfigDirectory() + ", " + "\n" +
