@@ -3,6 +3,7 @@ package logging
 import (
 	"bytes"
 	"io"
+	"strings"
 	"testing"
 
 	"github.com/pterm/pterm"
@@ -155,5 +156,45 @@ func TestLoggersTraceLevel(t *testing.T) {
 	strippedOut := StripAnsi(outBuffer.String())
 	if string(strippedOut) != expectedOut {
 		t.Errorf("outBuffer = <%s>; want <%s>", strippedOut, expectedOut)
+	}
+}
+
+func TestDebugfAndTracef(t *testing.T) {
+	var outBuffer bytes.Buffer
+	OutputWriter = &outBuffer
+
+	Level = pterm.LogLevelDebug
+	Init()
+	Debugf("debug %s %d", "message", 42)
+
+	Level = pterm.LogLevelTrace
+	Init()
+	Tracef("trace %s %d", "message", 42)
+
+	strippedOut := StripAnsi(outBuffer.String())
+	if !strings.Contains(strippedOut, "DEBUG debug message 42") {
+		t.Errorf("expected debug message in output, got <%s>", strippedOut)
+	}
+	if !strings.Contains(strippedOut, "TRACE trace message 42") {
+		t.Errorf("expected trace message in output, got <%s>", strippedOut)
+	}
+}
+
+func TestCustomf(t *testing.T) {
+	var outBuffer bytes.Buffer
+	originalOutput := pterm.GetDefaultOutput()
+	pterm.SetDefaultOutput(&outBuffer)
+	t.Cleanup(func() {
+		pterm.SetDefaultOutput(originalOutput)
+	})
+
+	Customf(pterm.FgWhite, pterm.BgGreen, pterm.FgWhite, pterm.BgBlack, "short", "custom %s", "message")
+
+	strippedOut := StripAnsi(outBuffer.String())
+	if !strings.Contains(strippedOut, "short") {
+		t.Errorf("expected short prefix in output, got <%s>", strippedOut)
+	}
+	if !strings.Contains(strippedOut, "custom message") {
+		t.Errorf("expected formatted custom message in output, got <%s>", strippedOut)
 	}
 }

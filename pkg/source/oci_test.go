@@ -56,3 +56,21 @@ func TestOciBackend_GetFromRegistry_InvalidRef(t *testing.T) {
 		t.Fatal("GetFromRegistry() expected error for invalid ref, got nil")
 	}
 }
+
+func TestOciBackend_GetFromRegistry_Success(t *testing.T) {
+	d := NewOciDownloader()
+
+	err := d.Get(&Source{Url: "oci://ghcr.io/uniget-org/tools/metadata:main"}, tui.NewQuietProgressReader(), func(reader io.ReadCloser) error {
+		size, err := io.Copy(io.Discard, reader)
+		if err != nil {
+			t.Fatalf("failed to read layer: %s", err)
+		}
+		if size == 0 {
+			t.Errorf("expected layer to be non-empty")
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+}
