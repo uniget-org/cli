@@ -1,13 +1,13 @@
 #syntax=docker/dockerfile:1.27.1
 #check=skip=SecretsUsedInArgOrEnv
 
-FROM ghcr.io/uniget-org/tools/goreleaser:2.18.3@sha256:23a2467847eb839bc04ed50b64e2597c40f96a4933707af090339ca021d2d3d6 AS uniget-goreleaser
+FROM ghcr.io/uniget-org/tools/goreleaser:2.19.0@sha256:74404af9f131fc0f43fbab410142e7557339c4113c02f4836705042381af64f7 AS uniget-goreleaser
 FROM ghcr.io/uniget-org/tools/cosign:3.1.4@sha256:41ccfe66b2bf4407b1e187cf8f4992e0227c78ade884a9b755a71d1f8d5d303c AS uniget-cosign
-FROM ghcr.io/uniget-org/tools/syft:1.55.0@sha256:4c04960e2a7ef3cfce34aed117d7a8e8177c7ce4f1fe19634cf80ba2b36291a6 AS uniget-syft
-FROM ghcr.io/uniget-org/tools/gh:2.103.0@sha256:099aff877ce02ed8ba53f2f626661079ee0e61c0a067921865ffdb1471ce3a64 AS uniget-gh
-FROM ghcr.io/uniget-org/tools/glab:1.124.0@sha256:0007de61787c83faf2e42871017814d1616c0a8f25eb834c801cf81cb7beaf50 AS uniget-glab
+FROM ghcr.io/uniget-org/tools/syft:1.56.0@sha256:d5284e0f13a6a80af481dfed3ec9d71d68cc0910b3a32e6aeaa734f7fc2b2ca1 AS uniget-syft
+FROM ghcr.io/uniget-org/tools/gh:2.103.3@sha256:ee468049fd5d2624c72eeab7e17b9d62d219cd9ae6cc6a5586c7a7529be38620 AS uniget-gh
+FROM ghcr.io/uniget-org/tools/glab:1.128.0@sha256:e45f834a8801d5aae77950cfd1e3733dbd90049f3f62056338c8e4cfdabfde5a AS uniget-glab
 FROM ghcr.io/uniget-org/tools/jq:1.8.2@sha256:346380fefb2967af66774cb15a1df991b7df546ee4d58fd0d73c3d8e985c6b5f AS uniget-jq
-FROM ghcr.io/uniget-org/tools/gosec:2.29.0@sha256:b2691e5c4f0521fbe214b6bdf456cdaa2be828b5a47fb0ba93fe66abaee3fb09 AS uniget-gosec
+FROM ghcr.io/uniget-org/tools/gosec:2.30.0@sha256:01e3d6135280936caa2a8231971d35b9fa1b7b6da63cd09ad00e15af629af682 AS uniget-gosec
 FROM ghcr.io/uniget-org/tools/golangci-lint:2.15.0@sha256:f18da029d37e65a96d3276f3f837c306b6790466b85366bb9ebfe1765f9431a5 AS lint-base
 FROM golang:1.27.1@sha256:e0174e51e81218523251d85d248a90d24c3d5e81543b4f07a5d66229397db190 AS latest-golang
 FROM alpine:3.24.2@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6 AS latest-alpine
