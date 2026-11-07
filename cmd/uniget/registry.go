@@ -239,7 +239,21 @@ var regSizeCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		ctx := context.Background()
 
-		image := buildReference(args[0])
+		toolName := args[0]
+		sizeTool, err := tools.GetByName(toolName)
+		if err != nil {
+			return handleError(err, "Failed to get tool by name <%s>", toolName)
+		}
+		registries, repositories := sizeTool.GetSourcesWithFallback(constants.Registry, constants.ImageRepository)
+		toolRef, err := containers.FindToolRef(registries, repositories, sizeTool.Name, sizeTool.Version)
+		if configuration.VerifyImageSignature {
+			err = containers.VerifyContainerImageSignature(toolRef, constants.SigstoreIssuer, "", "", constants.SigstoreSubjectRegexp)
+			if err != nil {
+				return handleError(err, "Failed to verify tool signature for %s", toolName)
+			}
+		}
+
+		image := buildReference(toolName)
 		r, err := ref.New(image)
 		if err != nil {
 			return handleError(err, "Failed to parse image name <%s>", image)
@@ -354,9 +368,17 @@ var regSaveCmd = &cobra.Command{
 		ctx := context.Background()
 
 		toolName := args[0]
-		_, err = tools.GetByName(toolName)
+		saveTool, err := tools.GetByName(toolName)
 		if err != nil {
 			return handleError(err, "Failed to get tool %s", toolName)
+		}
+		registries, repositories := saveTool.GetSourcesWithFallback(constants.Registry, constants.ImageRepository)
+		toolRef, err := containers.FindToolRef(registries, repositories, saveTool.Name, saveTool.Version)
+		if configuration.VerifyImageSignature {
+			err = containers.VerifyContainerImageSignature(toolRef, constants.SigstoreIssuer, "", "", constants.SigstoreSubjectRegexp)
+			if err != nil {
+				return handleError(err, "Failed to verify tool signature for %s", toolName)
+			}
 		}
 
 		image := buildReference(toolName)
