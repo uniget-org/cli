@@ -246,6 +246,9 @@ var regSizeCmd = &cobra.Command{
 		}
 		registries, repositories := sizeTool.GetSourcesWithFallback(constants.Registry, constants.ImageRepository)
 		toolRef, err := containers.FindToolRef(registries, repositories, sizeTool.Name, sizeTool.Version)
+		if err != nil {
+			return handleError(err, "Failed to find tool reference for <%s>", toolName)
+		}
 		if configuration.VerifyImageSignature {
 			err = containers.VerifyContainerImageSignature(toolRef, constants.SigstoreIssuer, "", "", constants.SigstoreSubjectRegexp)
 			if err != nil {
@@ -374,6 +377,9 @@ var regSaveCmd = &cobra.Command{
 		}
 		registries, repositories := saveTool.GetSourcesWithFallback(constants.Registry, constants.ImageRepository)
 		toolRef, err := containers.FindToolRef(registries, repositories, saveTool.Name, saveTool.Version)
+		if err != nil {
+			return handleError(err, "Failed to find tool reference for <%s>", toolName)
+		}
 		if configuration.VerifyImageSignature {
 			err = containers.VerifyContainerImageSignature(toolRef, constants.SigstoreIssuer, "", "", constants.SigstoreSubjectRegexp)
 			if err != nil {
