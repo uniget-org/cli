@@ -50,6 +50,10 @@ func (c *Config) GetMetadataFile() string {
 	return c.GetCacheDirectory() + "/" + constants.MetadataFileName
 }
 
+func (c *Config) GetHooksRootDirectory() string {
+	return c.GetConfigDirectory() + "/" + constants.HooksRootDirectory
+}
+
 func (c *Config) GetHooksPreInstallDirectory() string {
 	return c.GetConfigDirectory() + "/" + constants.HooksPreInstallDirectory
 }

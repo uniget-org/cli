@@ -510,6 +510,18 @@ func processHooks(path string, callback func(file string) error) error {
 }
 
 func runHook(hookFile string, args ...string) (string, error) {
+	absHookFile, err := filepath.Abs(hookFile)
+	if err != nil {
+		return "", fmt.Errorf("unable to get absolute path of hook file %s: %w", hookFile, err)
+	}
+	absHooksDir, err := filepath.Abs(configuration.GetHooksRootDirectory())
+	if err != nil {
+		return "", fmt.Errorf("unable to get absolute path of hooks directory: %w", err)
+	}
+	if !strings.HasPrefix(absHookFile, absHooksDir) {
+		return "", fmt.Errorf("hook file %s is not inside the allowed hooks directory %s", hookFile, absHooksDir)
+	}
+
 	if !myos.FileExists(hookFile) {
 		return "", fmt.Errorf("hook does not exist: %s", hookFile)
 	}
@@ -518,7 +530,7 @@ func runHook(hookFile string, args ...string) (string, error) {
 	command := exec.Command(hookFile, args...) // #nosec G204 -- Tool images are a trusted source
 	command.Stdout = os.Stdout
 	command.Stderr = os.Stderr
-	err := command.Run()
+	err = command.Run()
 	if err != nil {
 		fmt.Printf("stdout:\n%s\n", command.Stdout)
 		fmt.Printf("stderr:\n%s\n", command.Stderr)
