@@ -304,6 +304,18 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 			continue
 		}
 
+		registries, repositories := plannedTool.GetSourcesWithFallback(constants.Registry, constants.ImageRepository)
+		ref, err := containers.FindToolRef(registries, repositories, plannedTool.Name, "latest")
+		if err != nil {
+			return handleError(err, "Error finding tool %s:%s", plannedTool.Name, plannedTool.Version)
+		}
+		if configuration.VerifyImageSignature {
+			err = containers.VerifyContainerImageSignature(ref, constants.SigstoreIssuer, "", "", constants.SigstoreSubjectRegexp)
+			if err != nil {
+				return handleError(err, "Error verifying tool signature for %s", plannedTool.Name)
+			}
+		}
+
 		if plannedTool.IsInstalled() {
 			binaryFilePath := plannedTool.Binary
 			file, err := os.OpenFile(binaryFilePath, os.O_WRONLY, 0600) // #nosec G304 -- Retrieved from signed metadata
@@ -313,18 +325,6 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 			}
 			//nolint:errcheck
 			file.Close() // #nosec G104 -- File is closed immediately after opening
-
-			registries, repositories := plannedTool.GetSourcesWithFallback(constants.Registry, constants.ImageRepository)
-			ref, err := containers.FindToolRef(registries, repositories, plannedTool.Name, "latest")
-			if err != nil {
-				return handleError(err, "Error finding tool %s:%s", plannedTool.Name, plannedTool.Version)
-			}
-			if configuration.VerifyImageSignature {
-				err = containers.VerifyContainerImageSignature(ref, constants.SigstoreIssuer, "", "", constants.SigstoreSubjectRegexp)
-				if err != nil {
-					return handleError(err, "Error verifying tool signature for %s", plannedTool.Name)
-				}
-			}
 
 			err = uninstallTool(plannedTool.Name)
 			if err != nil {
