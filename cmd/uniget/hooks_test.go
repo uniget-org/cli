@@ -4,20 +4,45 @@ import (
 	"fmt"
 	"os"
 	"testing"
+
+	"gitlab.com/uniget-org/cli/internal/config"
 )
 
-func TestRunHook(t *testing.T) {
-	dir := t.TempDir()
-	hookFile := dir + "/test.sh"
-	lockFile := dir + "/test.lck"
+// setupHooksDirectory initializes the global configuration so that hooks must
+// be placed inside GetHooksRootDirectory() as required by runHook. The
+// returned directory is configuration.GetHooksRootDirectory().
+func setupHooksDirectory(t *testing.T) string {
+	t.Helper()
 
-	content := fmt.Sprintf("#!/bin/bash\ntouch %s", lockFile)
-	err := os.WriteFile(hookFile, []byte(content), 0755) // #nosec G306 -- Only test
-	if err != nil {
-		t.Fatalf("Failed to create hook file: %v", err)
+	dir := t.TempDir()
+	configuration = config.NewDefaultConfig(config.WithPrefix(dir))
+	configuration.ConfigRoot = "etc"
+
+	hooksDirectory := configuration.GetHooksRootDirectory()
+	if err := os.MkdirAll(hooksDirectory, 0750); err != nil {
+		t.Fatalf("Failed to create hooks directory %s: %v", hooksDirectory, err)
 	}
 
-	_, err = runHook(hookFile)
+	return hooksDirectory
+}
+
+func writeHookFile(t *testing.T, path string) {
+	t.Helper()
+
+	content := fmt.Sprintf("#!/bin/bash\ntouch %s", path+".lck")
+	if err := os.WriteFile(path, []byte(content), 0755); err != nil { // #nosec G306 -- Only test
+		t.Fatalf("Failed to create hook file: %v", err)
+	}
+}
+
+func TestRunHook(t *testing.T) {
+	hooksDirectory := setupHooksDirectory(t)
+	hookFile := hooksDirectory + "/test.sh"
+	lockFile := hookFile + ".lck"
+
+	writeHookFile(t, hookFile)
+
+	_, err := runHook(hookFile)
 	if err != nil {
 		t.Fatalf("Failed to run hook: %s", err)
 	}
@@ -28,17 +53,13 @@ func TestRunHook(t *testing.T) {
 }
 
 func TestProcessHooks(t *testing.T) {
-	dir := t.TempDir()
-	hookFile := dir + "/test.sh"
-	lockFile := dir + "/test.lck"
+	hooksDirectory := setupHooksDirectory(t)
+	hookFile := hooksDirectory + "/test.sh"
+	lockFile := hookFile + ".lck"
 
-	content := fmt.Sprintf("#!/bin/bash\ntouch %s", lockFile)
-	err := os.WriteFile(hookFile, []byte(content), 0755) // #nosec G306 -- Only test
-	if err != nil {
-		t.Fatalf("Failed to create hook file: %v", err)
-	}
+	writeHookFile(t, hookFile)
 
-	err = processHooks(dir, func(file string) error {
+	err := processHooks(hooksDirectory, func(file string) error {
 		_, err := runHook(file)
 		return err
 	})

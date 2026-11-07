@@ -3,6 +3,7 @@ package containers
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -62,7 +63,7 @@ func StartBackgroundRegistry(registryAddress string, doShutdown *bool) {
 	}()
 
 	err = registry.ListenAndServe()
-	if err != nil {
+	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		fmt.Printf("failed to start registry: %s", err)
 		return
 	}
@@ -102,7 +103,7 @@ func StartRegistryWithCallback(registryAddress string, callback func()) {
 	}()
 
 	err = registry.ListenAndServe()
-	if err != nil {
+	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		fmt.Printf("failed to start registry: %s", err)
 		return
 	}

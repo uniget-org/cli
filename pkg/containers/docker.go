@@ -2,8 +2,10 @@ package containers
 
 import (
 	"archive/tar"
+	"bytes"
 	"compress/gzip"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"strings"
@@ -48,8 +50,13 @@ func GetFirstLayerFromDockerImage(cli *client.Client, ref *ToolRef, p tui.Progre
 	sha := shaString[7:]
 
 	err = ReadDockerImage(cli, ref.String(), p, func(reader io.ReadCloser) error {
-		err := UnpackLayerFromDockerImage(reader, sha, func(reader io.ReadCloser) error {
-			err = callback(reader)
+		err := UnpackLayerFromDockerImage(reader, sha, func(blob io.ReadCloser) error {
+			layerReader, err := NewLayerReader(blob)
+			if err != nil {
+				return fmt.Errorf("failed to create layer reader: %s", err)
+			}
+
+			err = callback(layerReader)
 			if err != nil {
 				return fmt.Errorf("failed to execute callback: %w", err)
 			}
@@ -122,8 +129,30 @@ func ReadDockerImage(cli *client.Client, ref string, p tui.ProgressReader, callb
 	return nil
 }
 
+// dockerSaveManifestEntry mirrors the entries of the manifest.json file
+// contained in docker save archives.
+type dockerSaveManifestEntry struct {
+	Config string   `json:"Config"`
+	Layers []string `json:"Layers"`
+}
+
+// UnpackLayerFromDockerImage extracts the layer blob with digest sha256 from
+// a docker save or containerd export archive and hands its content to the
+// callback.
+//
+// Older engines store the layer exactly as referenced by the registry manifest
+// (typically gzip). Docker Engine >= v29 stores layers uncompressed and
+// recomputes the digest, so if the digest cannot be found, the layer path for
+// the archive is resolved from the archive's manifest.json instead.
 func UnpackLayerFromDockerImage(buffer io.ReadCloser, sha256 string, callback func(reader io.ReadCloser) error) error {
-	tarReader := tar.NewReader(buffer)
+	data, err := io.ReadAll(buffer)
+	if err != nil {
+		return fmt.Errorf("UnpackLayerFromDockerImage(): failed to read buffer: %s", err)
+	}
+	//nolint:errcheck
+	defer buffer.Close()
+
+	tarReader := tar.NewReader(bytes.NewReader(data))
 
 	for {
 		header, err := tarReader.Next()
@@ -153,10 +182,100 @@ func UnpackLayerFromDockerImage(buffer io.ReadCloser, sha256 string, callback fu
 				return nil
 			}
 		}
+	}
 
+	// The requested digest is not present in the archive. Resolve the layer
+	// path from manifest.json as stored by Docker Engine >= v29.
+	layerPath, ok := getLayerPathFromManifest(data)
+	if !ok {
+		return fmt.Errorf("failed to extract layer %s", sha256)
+	}
+
+	tarReader = tar.NewReader(bytes.NewReader(data))
+	for {
+		header, err := tarReader.Next()
+		if err == io.EOF {
+			break
+
+		} else if err != nil {
+			return fmt.Errorf("UnpackLayerFromDockerImage(): failed to find next item in tar: %s", err)
+		}
+
+		if header.Name == layerPath {
+			switch header.Typeflag {
+			case tar.TypeReg:
+				err = callback(io.NopCloser(io.LimitReader(tarReader, header.Size)))
+				if err != nil {
+					return fmt.Errorf("UnpackLayerFromDockerImage(): failed to execute callback: %w", err)
+				}
+				return nil
+			}
+		}
 	}
 
 	return fmt.Errorf("failed to extract layer %s", sha256)
+}
+
+// getLayerPathFromManifest reads the manifest.json file from a docker save
+// archive and returns the path of the first layer entry.
+func getLayerPathFromManifest(data []byte) (string, bool) {
+	tarReader := tar.NewReader(bytes.NewReader(data))
+
+	for {
+		header, err := tarReader.Next()
+		if err == io.EOF {
+			break
+
+		} else if err != nil {
+			return "", false
+		}
+
+		if header.Name == "manifest.json" && header.Typeflag == tar.TypeReg {
+			content, err := io.ReadAll(io.LimitReader(tarReader, header.Size))
+			if err != nil {
+				return "", false
+			}
+
+			entries := []dockerSaveManifestEntry{}
+			err = json.Unmarshal(content, &entries)
+			if err != nil {
+				return "", false
+			}
+
+			for _, entry := range entries {
+				if len(entry.Layers) > 0 && entry.Layers[0] != "" {
+					return entry.Layers[0], true
+				}
+			}
+
+			return "", false
+		}
+	}
+
+	return "", false
+}
+
+// NewLayerReader wraps the content of a layer blob. Blobs stored by older
+// engines and containerd exports are gzip compressed, while blobs saved by
+// Docker Engine >= v29 are uncompressed tar archives. In both cases the
+// returned reader yields the uncompressed layer content.
+func NewLayerReader(blob io.Reader) (io.ReadCloser, error) {
+	first := make([]byte, 2)
+	_, err := io.ReadFull(blob, first)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read layer prefix: %w", err)
+	}
+
+	if first[0] == 0x1f && first[1] == 0x8b {
+		gzipReader, err := gzip.NewReader(io.MultiReader(bytes.NewReader(first), blob))
+		if err != nil {
+			return nil, fmt.Errorf("failed to create gzip reader: %w", err)
+		}
+
+		return io.NopCloser(gzipReader), nil
+	}
+
+	return io.NopCloser(io.MultiReader(bytes.NewReader(first), blob)), nil
 }
 
 func ListDockerImagesByPrefix(cli *client.Client, prefix string) ([]image.Summary, error) {

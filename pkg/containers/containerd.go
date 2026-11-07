@@ -3,7 +3,6 @@ package containers
 import (
 	"bufio"
 	"bytes"
-	"compress/gzip"
 	"context"
 	"fmt"
 	"io"
@@ -46,13 +45,13 @@ func GetFirstLayerFromContainerdImage(client *containerd.Client, ref *ToolRef, p
 	sha := shaString[7:]
 
 	err = ReadContainerdImage(client, ref.String(), p, func(reader io.ReadCloser) error {
-		err = UnpackLayerFromDockerImage(reader, sha, func(reader io.ReadCloser) error {
-			reader, err := gzip.NewReader(reader)
+		err = UnpackLayerFromDockerImage(reader, sha, func(blob io.ReadCloser) error {
+			layerReader, err := NewLayerReader(blob)
 			if err != nil {
-				return fmt.Errorf("failed to create gzip reader: %s", err)
+				return fmt.Errorf("failed to create layer reader: %s", err)
 			}
 
-			err = callback(reader)
+			err = callback(layerReader)
 			if err != nil {
 				return fmt.Errorf("failed to execute callback: %w", err)
 			}
