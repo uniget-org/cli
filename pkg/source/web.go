@@ -17,13 +17,13 @@ func NewWebDownloader() *WebBackend {
 }
 
 func IsWebRef(source *Source) bool {
-	return strings.HasPrefix(source.Url, "http://") || strings.HasPrefix(source.Url, "https://")
+	return strings.HasPrefix(source.URL, "http://") || strings.HasPrefix(source.URL, "https://")
 }
 
 func (d *WebBackend) Get(source *Source, p tui.ProgressReader, callback func(reader io.ReadCloser) error) (err error) {
-	resp, err := http.Get(source.Url) // #nosec G107 -- Url is configurable by the user
+	resp, err := http.Get(source.URL) // #nosec G107 -- URL is configurable by the user
 	if err != nil {
-		return fmt.Errorf("failed to get %s: %w", source.Url, err)
+		return fmt.Errorf("failed to get %s: %w", source.URL, err)
 	}
 	//nolint:errcheck
 	defer resp.Body.Close()

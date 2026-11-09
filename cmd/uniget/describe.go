@@ -204,7 +204,7 @@ func fetchGitHubReleases(project string) ([]string, error) {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/releases", project)
 	logging.Debugf("Fetching releases from %s", url)
 
-	bodyBytes, err := fetchUrl(url)
+	bodyBytes, err := fetchURL(url)
 	if err != nil {
 		return []string{}, fmt.Errorf("failed to fetch body of GitHub release: %s", err)
 	}
@@ -225,11 +225,11 @@ func fetchGitHubReleases(project string) ([]string, error) {
 }
 
 func fetchGitLabReleases(project string) ([]string, error) {
-	projectUrlEncoded := strings.ReplaceAll(project, "/", "%2f")
-	url := fmt.Sprintf("https://gitlab.com/api/v4/projects/%s/releases", projectUrlEncoded)
+	projectURLEncoded := strings.ReplaceAll(project, "/", "%2f")
+	url := fmt.Sprintf("https://gitlab.com/api/v4/projects/%s/releases", projectURLEncoded)
 	logging.Debugf("Fetching releases from %s", url)
 
-	bodyBytes, err := fetchUrl(url)
+	bodyBytes, err := fetchURL(url)
 	if err != nil {
 		return []string{}, fmt.Errorf("failed to fetch body of GitLab release: %s", err)
 	}
@@ -253,7 +253,7 @@ func fetchGiteaReleases(project string) ([]string, error) {
 	url := fmt.Sprintf("https://gitea.com/api/v1/repos/%s/releases", project)
 	logging.Debugf("Fetching releases from %s", url)
 
-	bodyBytes, err := fetchUrl(url)
+	bodyBytes, err := fetchURL(url)
 	if err != nil {
 		return []string{}, fmt.Errorf("failed to fetch body of Gitea release: %s", err)
 	}
@@ -277,7 +277,7 @@ func fetchNpmReleases(project string) ([]string, error) {
 	url := fmt.Sprintf("https://registry.npmjs.com/%s", project)
 	logging.Debugf("Fetching releases from %s", url)
 
-	bodyBytes, err := fetchUrl(url)
+	bodyBytes, err := fetchURL(url)
 	if err != nil {
 		return []string{}, fmt.Errorf("failed to fetch body of npm release: %s", err)
 	}
@@ -301,7 +301,7 @@ func fetchPypiReleases(project string) ([]string, error) {
 	url := fmt.Sprintf("https://pypi.org/pypi/%s/json", project)
 	logging.Debugf("Fetching releases from %s", url)
 
-	bodyBytes, err := fetchUrl(url)
+	bodyBytes, err := fetchURL(url)
 	if err != nil {
 		return []string{}, fmt.Errorf("failed to fetch body of pypi release: %s", err)
 	}

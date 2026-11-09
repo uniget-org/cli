@@ -17,13 +17,13 @@ func NewFileDownloader() *FileBackend {
 }
 
 func IsFileRef(source *Source) bool {
-	return strings.HasPrefix(source.Url, "file://")
+	return strings.HasPrefix(source.URL, "file://")
 }
 
 func (d *FileBackend) Get(source *Source, p tui.ProgressReader, callback func(reader io.ReadCloser) error) (err error) {
-	f, err := os.Open(strings.TrimPrefix(source.Url, "file://"))
+	f, err := os.Open(strings.TrimPrefix(source.URL, "file://"))
 	if err != nil {
-		return fmt.Errorf("failed to open file %s: %s", source.Url, err)
+		return fmt.Errorf("failed to open file %s: %s", source.URL, err)
 	}
 	//nolint:errcheck
 	defer f.Close()

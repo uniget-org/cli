@@ -121,7 +121,7 @@ var releaseNotesCmd = &cobra.Command{
 	},
 }
 
-func fetchUrl(url string) ([]byte, error) {
+func fetchURL(url string) ([]byte, error) {
 	logging.Debugf("Fetching %s", url)
 
 	client := &http.Client{}
@@ -161,7 +161,7 @@ func fetchBodyFromGitHubRelease(project string, versionTag string) ([]byte, erro
 	url := fmt.Sprintf("https://api.github.com/repos/%s/releases/tags/%s", project, versionTag)
 	logging.Debugf("Fetching release notes from %s", url)
 
-	bodyBytes, err := fetchUrl(url)
+	bodyBytes, err := fetchURL(url)
 	if err != nil {
 		return []byte{}, fmt.Errorf("failed to fetch body of GitHub release: %s", err)
 	}
@@ -170,11 +170,11 @@ func fetchBodyFromGitHubRelease(project string, versionTag string) ([]byte, erro
 }
 
 func fetchBodyFromGitLabRelease(project string, versionTag string) ([]byte, error) {
-	projectUrlEncoded := strings.ReplaceAll(project, "/", "%2f")
-	url := fmt.Sprintf("https://gitlab.com/api/v4/projects/%s/releases/%s", projectUrlEncoded, versionTag)
+	projectURLEncoded := strings.ReplaceAll(project, "/", "%2f")
+	url := fmt.Sprintf("https://gitlab.com/api/v4/projects/%s/releases/%s", projectURLEncoded, versionTag)
 	logging.Debugf("Fetching release notes from %s", url)
 
-	bodyBytes, err := fetchUrl(url)
+	bodyBytes, err := fetchURL(url)
 	if err != nil {
 		return []byte{}, fmt.Errorf("failed to fetch body of GitLab release: %s", err)
 	}
@@ -186,7 +186,7 @@ func fetchBodyFromGiteaRelease(project string, versionTag string) ([]byte, error
 	url := fmt.Sprintf("https://gitea.com/api/v1/repos/%s/releases/tags/%s", project, versionTag)
 	logging.Debugf("Fetching release notes from %s", url)
 
-	bodyBytes, err := fetchUrl(url)
+	bodyBytes, err := fetchURL(url)
 	if err != nil {
 		return []byte{}, fmt.Errorf("failed to fetch body of Gitea release: %s", err)
 	}
@@ -213,7 +213,7 @@ func fetchBodyFromNpm(project string, versionTag string) ([]byte, error) {
 	url := fmt.Sprintf("https://registry.npmjs.com/%s/%s", project, versionTag)
 	logging.Debugf("Fetching release notes from %s", url)
 
-	bodyBytes, err := fetchUrl(url)
+	bodyBytes, err := fetchURL(url)
 	if err != nil {
 		return []byte{}, fmt.Errorf("failed to fetch body from npm: %s", err)
 	}
@@ -237,17 +237,16 @@ func fetchBodyFromNpm(project string, versionTag string) ([]byte, error) {
 		}
 
 		return GhBody, nil
-
-	} else {
-		return []byte{}, fmt.Errorf("unsupported repository type <%s> for npm package %s", repo["type"], project)
 	}
+
+	return []byte{}, fmt.Errorf("unsupported repository type <%s> for npm package %s", repo["type"], project)
 }
 
 func fetchBodyFromPypi(project string, versionTag string) ([]byte, error) {
 	url := fmt.Sprintf("https://pypi.org/pypi/%s/%s/json", project, versionTag)
 	logging.Debugf("Fetching release notes from %s", url)
 
-	bodyBytes, err := fetchUrl(url)
+	bodyBytes, err := fetchURL(url)
 	if err != nil {
 		return []byte{}, fmt.Errorf("failed to fetch body from pypi: %s", err)
 	}
@@ -273,7 +272,7 @@ func fetchBodyFromPypi(project string, versionTag string) ([]byte, error) {
 
 		return GhBody, nil
 
-	} else {
-		return []byte{}, fmt.Errorf("no homepage found for pypi package %s", project)
 	}
+
+	return []byte{}, fmt.Errorf("no homepage found for pypi package %s", project)
 }

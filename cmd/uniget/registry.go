@@ -293,7 +293,7 @@ var regSizeCmd = &cobra.Command{
 		if regSizeHuman {
 			for size > 1024 {
 				size /= 1024
-				index += 1
+				index++
 			}
 			fmt.Printf("%v%s\n", size, units[index])
 

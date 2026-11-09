@@ -27,7 +27,7 @@ func NewMetadataSource(
 	verifier *MetadataVerifier,
 ) (*MetadataSource, error) {
 	metadataSource := &source.Source{
-		Url: url,
+		URL: url,
 	}
 	downloader, err := source.NewBackendFromScheme(metadataSource)
 	if err != nil {

@@ -24,7 +24,7 @@ func TestIsWebRef(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := IsWebRef(&Source{Url: tt.url}); got != tt.want {
+			if got := IsWebRef(&Source{URL: tt.url}); got != tt.want {
 				t.Errorf("IsWebRef(%q) = %v, want %v", tt.url, got, tt.want)
 			}
 		})
@@ -50,7 +50,7 @@ func TestWebBackend_Get(t *testing.T) {
 		d := NewWebDownloader()
 
 		var got []byte
-		err := d.Get(&Source{Url: srv.URL}, tui.NewQuietProgressReader(), func(reader io.ReadCloser) error {
+		err := d.Get(&Source{URL: srv.URL}, tui.NewQuietProgressReader(), func(reader io.ReadCloser) error {
 			b, err := io.ReadAll(reader)
 			if err != nil {
 				return err
@@ -78,7 +78,7 @@ func TestWebBackend_Get(t *testing.T) {
 		d := NewWebDownloader()
 
 		called := false
-		err := d.Get(&Source{Url: badURL}, tui.NewQuietProgressReader(), func(reader io.ReadCloser) error {
+		err := d.Get(&Source{URL: badURL}, tui.NewQuietProgressReader(), func(reader io.ReadCloser) error {
 			called = true
 			return nil
 		})
@@ -99,7 +99,7 @@ func TestWebBackend_Get(t *testing.T) {
 		d := NewWebDownloader()
 
 		want := errors.New("callback failed")
-		err := d.Get(&Source{Url: srv.URL}, tui.NewQuietProgressReader(), func(reader io.ReadCloser) error {
+		err := d.Get(&Source{URL: srv.URL}, tui.NewQuietProgressReader(), func(reader io.ReadCloser) error {
 			return want
 		})
 		if !errors.Is(err, want) {

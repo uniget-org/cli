@@ -7,7 +7,9 @@ import (
 	"io"
 	"time"
 
+	// register functions for sha256
 	_ "crypto/sha256"
+	// register functions for sha512
 	_ "crypto/sha512"
 
 	"github.com/opencontainers/go-digest"

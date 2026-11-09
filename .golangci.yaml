@@ -1,11 +1,14 @@
 version: "2"
+
 run:
   concurrency: 4
   timeout: 5m
+
 output:
   formats:
     text:
       colors: true
+
 linters:
   enable:
   - errcheck
@@ -14,3 +17,16 @@ linters:
   - staticcheck
   - unused
   - gosec
+  - revive
+
+  settings:
+    revive:
+      severity: warning
+      enable-default-rules: true
+      rules:
+      - name: exported
+        disabled: true
+      - name: unused-parameter
+        disabled: true
+      - name: package-comments
+        disabled: true

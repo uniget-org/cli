@@ -23,7 +23,7 @@ func TestNewBackendFromScheme(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d, err := NewBackendFromScheme(&Source{Url: tt.url})
+			d, err := NewBackendFromScheme(&Source{URL: tt.url})
 			if tt.wantErr {
 				if err == nil {
 					t.Fatal("NewBackendFromScheme() expected error, got nil")

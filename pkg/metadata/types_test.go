@@ -81,8 +81,8 @@ func TestNewMetadataSource(t *testing.T) {
 		if metadataSource.Source == nil {
 			t.Fatal("Source is nil")
 		}
-		if got, want := metadataSource.Source.Url, "file:///tmp/metadata.tgz"; got != want {
-			t.Errorf("Source.Url = %q, want %q", got, want)
+		if got, want := metadataSource.Source.URL, "file:///tmp/metadata.tgz"; got != want {
+			t.Errorf("Source.URL = %q, want %q", got, want)
 		}
 		if metadataSource.Downloader == nil {
 			t.Fatal("Downloader is nil")
@@ -124,7 +124,7 @@ func TestMetadataSourceDownload(t *testing.T) {
 
 		directory := t.TempDir()
 		metadataSource := &MetadataSource{
-			Source:     &source.Source{Url: "file:///tmp/metadata.tgz"},
+			Source:     &source.Source{URL: "file:///tmp/metadata.tgz"},
 			Downloader: &downloader,
 			Directory:  directory,
 			Unpacker:   &unpacker,
@@ -169,7 +169,7 @@ func TestMetadataSourceDownload(t *testing.T) {
 		var verifier MetadataVerifier = verifierImpl
 
 		metadataSource := &MetadataSource{
-			Source:     &source.Source{Url: "file:///tmp/metadata.tgz"},
+			Source:     &source.Source{URL: "file:///tmp/metadata.tgz"},
 			Downloader: &downloader,
 			Directory:  filepath.Join(t.TempDir(), "does", "not", "exist"),
 			Unpacker:   &unpacker,
@@ -207,7 +207,7 @@ func TestMetadataSourceDownload(t *testing.T) {
 		var verifier MetadataVerifier = verifierImpl
 
 		metadataSource := &MetadataSource{
-			Source:     &source.Source{Url: "file:///tmp/metadata.tgz"},
+			Source:     &source.Source{URL: "file:///tmp/metadata.tgz"},
 			Downloader: &downloader,
 			Directory:  t.TempDir(),
 			Unpacker:   &unpacker,
@@ -248,7 +248,7 @@ func TestMetadataSourceDownload(t *testing.T) {
 		var verifier MetadataVerifier = verifierImpl
 
 		metadataSource := &MetadataSource{
-			Source:     &source.Source{Url: "file:///tmp/metadata.tgz"},
+			Source:     &source.Source{URL: "file:///tmp/metadata.tgz"},
 			Downloader: &downloader,
 			Directory:  t.TempDir(),
 			Unpacker:   &unpacker,

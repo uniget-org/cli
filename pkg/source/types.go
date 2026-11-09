@@ -8,7 +8,7 @@ import (
 )
 
 type Source struct {
-	Url string
+	URL string
 }
 
 func NewBackendFromScheme(url *Source) (Downloader, error) {
@@ -22,7 +22,7 @@ func NewBackendFromScheme(url *Source) (Downloader, error) {
 		return NewOciDownloader(), nil
 	}
 
-	return nil, fmt.Errorf("unsupported scheme for url: %s", url.Url)
+	return nil, fmt.Errorf("unsupported scheme for url: %s", url.URL)
 }
 
 type Downloader interface {

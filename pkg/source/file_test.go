@@ -25,7 +25,7 @@ func TestIsFileRef(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := IsFileRef(&Source{Url: tt.url}); got != tt.want {
+			if got := IsFileRef(&Source{URL: tt.url}); got != tt.want {
 				t.Errorf("IsFileRef(%q) = %v, want %v", tt.url, got, tt.want)
 			}
 		})
@@ -51,7 +51,7 @@ func TestFileBackend_Get(t *testing.T) {
 		d := NewFileDownloader()
 
 		var got []byte
-		err := d.Get(&Source{Url: "file://" + path}, tui.NewQuietProgressReader(), func(reader io.ReadCloser) error {
+		err := d.Get(&Source{URL: "file://" + path}, tui.NewQuietProgressReader(), func(reader io.ReadCloser) error {
 			b, err := io.ReadAll(reader)
 			if err != nil {
 				return err
@@ -74,7 +74,7 @@ func TestFileBackend_Get(t *testing.T) {
 		d := NewFileDownloader()
 
 		called := false
-		err := d.Get(&Source{Url: "file://" + missing}, tui.NewQuietProgressReader(), func(reader io.ReadCloser) error {
+		err := d.Get(&Source{URL: "file://" + missing}, tui.NewQuietProgressReader(), func(reader io.ReadCloser) error {
 			called = true
 			return nil
 		})
@@ -96,7 +96,7 @@ func TestFileBackend_Get(t *testing.T) {
 		d := NewFileDownloader()
 
 		want := errors.New("callback failed")
-		err := d.Get(&Source{Url: "file://" + path}, tui.NewQuietProgressReader(), func(reader io.ReadCloser) error {
+		err := d.Get(&Source{URL: "file://" + path}, tui.NewQuietProgressReader(), func(reader io.ReadCloser) error {
 			return want
 		})
 		if !errors.Is(err, want) {

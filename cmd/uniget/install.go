@@ -461,12 +461,12 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 		if err != nil {
 			logging.Error.Printfln("Unable to write installed files: %s", err)
 		}
-		plannedToolJson, err := json.MarshalIndent(plannedTool, "", "  ")
+		plannedToolJSON, err := json.MarshalIndent(plannedTool, "", "  ")
 		if err != nil {
 			logging.Error.Printfln("Unable to marshal tool: %s", err)
 		}
 		manifestFilename := configuration.GetLibDirectory() + "/manifests/" + plannedTool.Name + ".json"
-		err = os.WriteFile(manifestFilename, []byte(plannedToolJson), 0644) // #nosec G306 -- File must be world-readable
+		err = os.WriteFile(manifestFilename, []byte(plannedToolJSON), 0644) // #nosec G306 -- File must be world-readable
 		if err != nil {
 			logging.Error.Printfln("Unable to write manifest file: %s", err)
 		}
@@ -504,8 +504,7 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 
 func createPatchFileCallback(tool tool.Tool) func(path string) string {
 	var patchFile = func(templatePath string) string {
-		if strings.HasSuffix(templatePath, ".go-template") {
-		} else {
+		if !strings.HasSuffix(templatePath, ".go-template") {
 			logging.Debugf("Skipping file %s. Will not patch.", templatePath)
 			return templatePath
 		}

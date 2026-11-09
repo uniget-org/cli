@@ -20,7 +20,7 @@ func NewOciDownloader() *OciBackend {
 }
 
 func IsOciRef(source *Source) bool {
-	return strings.HasPrefix(source.Url, "oci://")
+	return strings.HasPrefix(source.URL, "oci://")
 }
 
 func (d *OciBackend) Get(source *Source, p tui.ProgressReader, callback func(reader io.ReadCloser) error) error {
@@ -30,7 +30,7 @@ func (d *OciBackend) Get(source *Source, p tui.ProgressReader, callback func(rea
 func (d *OciBackend) GetFromRegistry(source *Source, p tui.ProgressReader, callback func(reader io.ReadCloser) error) error {
 	ctx := context.Background()
 
-	ref := strings.TrimPrefix(source.Url, "oci://")
+	ref := strings.TrimPrefix(source.URL, "oci://")
 	r, err := rref.New(ref)
 	if err != nil {
 		return fmt.Errorf("failed to create reference for %s: %w", ref, err)

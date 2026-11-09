@@ -21,7 +21,7 @@ func TestIsOciRef(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := IsOciRef(&Source{Url: tt.url}); got != tt.want {
+			if got := IsOciRef(&Source{URL: tt.url}); got != tt.want {
 				t.Errorf("IsOciRef(%q) = %v, want %v", tt.url, got, tt.want)
 			}
 		})
@@ -41,7 +41,7 @@ func TestOciBackend_Get(t *testing.T) {
 	d := NewOciDownloader()
 
 	// An uppercase letter in the repository segment is rejected by regclient.
-	err := d.Get(&Source{Url: "oci://example.com/BAD:tag"}, tui.NewQuietProgressReader(), func(reader io.ReadCloser) error { return nil })
+	err := d.Get(&Source{URL: "oci://example.com/BAD:tag"}, tui.NewQuietProgressReader(), func(reader io.ReadCloser) error { return nil })
 	if err == nil {
 		t.Fatal("Get() expected error for invalid ref, got nil")
 	}
@@ -51,7 +51,7 @@ func TestOciBackend_GetFromRegistry_InvalidRef(t *testing.T) {
 	d := NewOciDownloader()
 
 	// An uppercase letter in the repository segment is rejected by regclient.
-	err := d.GetFromRegistry(&Source{Url: "oci://example.com/BAD:tag"}, tui.NewQuietProgressReader(), func(reader io.ReadCloser) error { return nil })
+	err := d.GetFromRegistry(&Source{URL: "oci://example.com/BAD:tag"}, tui.NewQuietProgressReader(), func(reader io.ReadCloser) error { return nil })
 	if err == nil {
 		t.Fatal("GetFromRegistry() expected error for invalid ref, got nil")
 	}
@@ -60,7 +60,7 @@ func TestOciBackend_GetFromRegistry_InvalidRef(t *testing.T) {
 func TestOciBackend_GetFromRegistry_Success(t *testing.T) {
 	d := NewOciDownloader()
 
-	err := d.Get(&Source{Url: "oci://ghcr.io/uniget-org/tools/metadata:main"}, tui.NewQuietProgressReader(), func(reader io.ReadCloser) error {
+	err := d.Get(&Source{URL: "oci://ghcr.io/uniget-org/tools/metadata:main"}, tui.NewQuietProgressReader(), func(reader io.ReadCloser) error {
 		size, err := io.Copy(io.Discard, reader)
 		if err != nil {
 			t.Fatalf("failed to read layer: %s", err)

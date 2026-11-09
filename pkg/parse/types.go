@@ -21,15 +21,15 @@ func (r *ImageRefs) Add(ref ref.Ref) {
 	r.Refs = append(r.Refs, ref)
 }
 
-func (imageRefs *ImageRefs) Bump(tools *tool.Tools, callback func(toolName string, oldVersion string, newVersion string)) error {
-	imageRefs.BumpedRefs = make([]ref.Ref, len(imageRefs.Refs))
+func (r *ImageRefs) Bump(tools *tool.Tools, callback func(toolName string, oldVersion string, newVersion string)) error {
+	r.BumpedRefs = make([]ref.Ref, len(r.Refs))
 
 	supportRegistries := []string{
 		"ghcr.io",
 		"registry.gitlab.com",
 	}
 
-	for index, reference := range imageRefs.Refs {
+	for index, reference := range r.Refs {
 		logging.Debugf("Bumping image reference: %s", reference)
 
 		if slices.Contains(supportRegistries, reference.Registry) && strings.HasPrefix(reference.Repository, "uniget-org/tools/") {
@@ -55,22 +55,22 @@ func (imageRefs *ImageRefs) Bump(tools *tool.Tools, callback func(toolName strin
 
 			refReplacement := fmt.Sprintf("%s/%s:%s@%s", reference.Registry, reference.Repository, reference.Tag, reference.Digest)
 
-			imageRefs.BumpedRefs[index], err = ref.New(refReplacement)
+			r.BumpedRefs[index], err = ref.New(refReplacement)
 			if err != nil {
 				return fmt.Errorf("failed to create ref from %q: %v", refReplacement, err)
 			}
 
 		} else {
-			imageRefs.BumpedRefs[index] = reference
+			r.BumpedRefs[index] = reference
 		}
 	}
 
 	return nil
 }
 
-func (imageRefs *ImageRefs) Replace(file []byte) ([]byte, error) {
-	for i, ref := range imageRefs.Refs {
-		file = bytes.ReplaceAll(file, []byte(ref.Reference), []byte(imageRefs.BumpedRefs[i].Reference))
+func (r *ImageRefs) Replace(file []byte) ([]byte, error) {
+	for i, reference := range r.Refs {
+		file = bytes.ReplaceAll(file, []byte(reference.Reference), []byte(r.BumpedRefs[i].Reference))
 	}
 
 	return file, nil
