@@ -52,7 +52,7 @@ func selfUpgradeSourceCompletion(cmd *cobra.Command, args []string, toComplete s
 
 var selfUpgradeVersion = ""
 var selfUpgradePath = ""
-var selfUpgradeSource selfUpgradeSourceEnum = selfUpgradeSourceUniget
+var selfUpgradeSource = selfUpgradeSourceUniget
 
 func initSelfUpgradeCmd() {
 	var err error

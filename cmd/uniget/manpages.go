@@ -13,7 +13,7 @@ import (
 	myos "gitlab.com/uniget-org/cli/pkg/os"
 )
 
-var manDirectory string = "share/man"
+var manDirectory = "share/man"
 
 func initManpagesCmd() {
 	manpagesCmd.Flags().StringVar(&manDirectory, "path", manDirectory, "Path to store manpages in (relative paths resolves using target directory)")
