@@ -196,10 +196,8 @@ func main() {
 		if len(os.Getenv("UNIGET_EXPERIMENTAL")) == 0 {
 			logging.Warning.Println("Warning: " + configuration.Os + " is only an experiment and not ready for public use.")
 			os.Exit(1)
-
-		} else {
-			logging.Warning.Println("Warning: " + configuration.Os + " is only an experiment. Use at your own risk.")
 		}
+		logging.Warning.Println("Warning: " + configuration.Os + " is only an experiment. Use at your own risk.")
 	}
 
 	pf := rootCmd.PersistentFlags()
