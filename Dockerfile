@@ -1,11 +1,11 @@
 #syntax=docker/dockerfile:1.27.1
 #check=skip=SecretsUsedInArgOrEnv
 
-FROM ghcr.io/uniget-org/tools/goreleaser:2.20.0@sha256:bba577199466291df97ae755fc6c004fb86e907dda98c14db3bacaa77de7be99 AS uniget-goreleaser
+FROM ghcr.io/uniget-org/tools/goreleaser:2.20.2@sha256:1cf0ca0d4a8c9eba4f5f08ceb5584750ad25bb2730d658ed769a4b775eddd678 AS uniget-goreleaser
 FROM ghcr.io/uniget-org/tools/cosign:3.1.4@sha256:41ccfe66b2bf4407b1e187cf8f4992e0227c78ade884a9b755a71d1f8d5d303c AS uniget-cosign
-FROM ghcr.io/uniget-org/tools/syft:1.57.0@sha256:83f18a6ebfdaf0817b206b066e21a23517aa4dc9f41656cda6772ecdeaff01ed AS uniget-syft
+FROM ghcr.io/uniget-org/tools/syft:1.57.1@sha256:a31c3f71a094d85fac8690902d7e5f022ff177f9435656bbe65ac662406cfd9f AS uniget-syft
 FROM ghcr.io/uniget-org/tools/gh:2.103.3@sha256:ee468049fd5d2624c72eeab7e17b9d62d219cd9ae6cc6a5586c7a7529be38620 AS uniget-gh
-FROM ghcr.io/uniget-org/tools/glab:1.128.0@sha256:e45f834a8801d5aae77950cfd1e3733dbd90049f3f62056338c8e4cfdabfde5a AS uniget-glab
+FROM ghcr.io/uniget-org/tools/glab:1.130.0@sha256:abb4f9a93f7566bf96ccc371ae433b05b4495d0754b1e917275e49173b5a0ee7 AS uniget-glab
 FROM ghcr.io/uniget-org/tools/jq:1.8.2@sha256:346380fefb2967af66774cb15a1df991b7df546ee4d58fd0d73c3d8e985c6b5f AS uniget-jq
 FROM ghcr.io/uniget-org/tools/gosec:2.30.0@sha256:01e3d6135280936caa2a8231971d35b9fa1b7b6da63cd09ad00e15af629af682 AS uniget-gosec
 FROM ghcr.io/uniget-org/tools/golangci-lint:2.15.0@sha256:f18da029d37e65a96d3276f3f837c306b6790466b85366bb9ebfe1765f9431a5 AS lint-base
