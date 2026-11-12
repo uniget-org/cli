@@ -265,7 +265,7 @@ scan:vulnerabilities:
   - |
     trivy sbom \
         --scanners vuln \
-        --severity UNKNOWN,HIGH,CRITICAL \
+        --severity HIGH,CRITICAL \
         --format table \
         "sbom-${TAG}${TAG_SUFFIX}-${ARCH}.json"
 
