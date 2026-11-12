@@ -98,6 +98,81 @@ sign:image:
         --registry-password "${CI_REGISTRY_PASSWORD}" \
         "${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}"
 
+attest:image:
+  rules:
+  - if: $PUSH == "true"
+  needs:
+  - prepare
+  - build:multi_arch_index
+  parallel:
+    matrix:
+    - TAG_SUFFIX:
+      - "-noble"
+      - "-resolute"
+      - "-rolling"
+      - "-resolute-systemd"
+  image: registry.gitlab.com/uniget-org/cli:noble
+  id_tokens:
+    SIGSTORE_ID_TOKEN:
+      aud: sigstore
+  before_script:
+  - |
+    uniget install cosign
+    uniget install jq
+  script:
+  - |
+    echo "### Creating SLSA provenance predicate for ${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}"
+  - |
+    cat >provenance-predicate-${TAG}${TAG_SUFFIX}.json <<EOF
+    {
+      "buildDefinition": {
+        "buildType": "https://gitlab.com/${CI_PROJECT_PATH}/-/blob/${CI_COMMIT_REF_NAME}/.gitlab-ci.yml",
+        "externalParameters": {
+          "pipelineSource": "${CI_PIPELINE_SOURCE}",
+          "commitSha": "${CI_COMMIT_SHA}",
+          "commitRef": "${CI_COMMIT_REF_NAME}",
+          "commitTag": "${CI_COMMIT_TAG}"
+        },
+        "internalParameters": {
+          "jobName": "${CI_JOB_NAME}",
+          "runnerDescription": "${RUNNER_DESCRIPTION}",
+          "architectures": ["amd64", "arm64"]
+        },
+        "resolvedDependencies": [
+          {
+            "uri": "git+https://${CI_SERVER_HOST}/${CI_PROJECT_PATH}",
+            "digest": {
+              "gitCommit": "${CI_COMMIT_SHA}"
+            },
+            "name": "source"
+          }
+        ]
+      },
+      "runDetails": {
+        "builder": {
+          "id": "${CI_JOB_URL}"
+        },
+        "metadata": {
+          "invocationId": "${CI_JOB_URL}",
+          "startedOn": "$( date --utc +%Y-%m-%dT%H:%M:%SZ )"
+        }
+      }
+    }
+    EOF
+    jq . provenance-predicate-${TAG}${TAG_SUFFIX}.json
+  - |
+    echo "### Attesting image ${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}"
+  - |
+    cosign attest --yes \
+        --predicate "provenance-predicate-${TAG}${TAG_SUFFIX}.json" \
+        --type slsaprovenance1 \
+        --registry-username "${CI_REGISTRY_USER}" \
+        --registry-password "${CI_REGISTRY_PASSWORD}" \
+        "${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}"
+  artifacts:
+    paths:
+    - provenance-predicate-${TAG}${TAG_SUFFIX}.json
+
 .clean:intermediate_tags:
   needs:
   - prepare
@@ -131,6 +206,8 @@ update:default_tag:
   - build:multi_arch_index
   - job: sign:image
     optional: true
+  - job: attest:image
+    optional: true
   parallel:
     matrix:
     - TAG_SUFFIX:
@@ -153,6 +230,8 @@ update:latest_tag:
   - build:multi_arch_index
   - job: sign:image
     optional: true
+  - job: attest:image
+    optional: true
   extends:
   - .regctl
   - .regctl-login
@@ -167,6 +246,8 @@ update:version_tag:
   - prepare
   - build:multi_arch_index
   - job: sign:image
+    optional: true
+  - job: attest:image
     optional: true
   extends:
   - .regctl
