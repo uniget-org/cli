@@ -98,7 +98,7 @@ sign:image:
         --registry-password "${CI_REGISTRY_PASSWORD}" \
         "${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}"
 
-attest:image:
+attest:provenance:
   rules:
   - if: $PUSH == "true"
   needs:
@@ -173,6 +173,102 @@ attest:image:
     paths:
     - provenance-predicate-${TAG}${TAG_SUFFIX}.json
 
+attest:sbom:
+  rules:
+  - if: $PUSH == "true"
+  needs:
+  - prepare
+  - build:multi_arch_index
+  parallel:
+    matrix:
+    - TAG_SUFFIX: "-noble"
+      ARCH:
+      - amd64
+      - arm64
+    - TAG_SUFFIX: "-resolute"
+      ARCH:
+      - amd64
+      - arm64
+    - TAG_SUFFIX: "-rolling"
+      ARCH:
+      - amd64
+      - arm64
+    - TAG_SUFFIX: "-resolute-systemd"
+      ARCH:
+      - amd64
+      - arm64
+  image: registry.gitlab.com/uniget-org/cli:noble
+  id_tokens:
+    SIGSTORE_ID_TOKEN:
+      aud: sigstore
+  before_script:
+  - |
+    uniget install cosign
+    uniget install trivy
+  script:
+  - |
+    echo "### Generating SBOM for ${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-${ARCH}"
+  - |
+    export TRIVY_USERNAME="${CI_REGISTRY_USER}"
+    export TRIVY_PASSWORD="${CI_REGISTRY_PASSWORD}"
+    trivy image \
+        --format cyclonedx \
+        --output "sbom-${TAG}${TAG_SUFFIX}-${ARCH}.json" \
+        --skip-db-update \
+        --skip-java-db-update \
+        "${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-${ARCH}"
+  - |
+    echo "### Attesting SBOM for ${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-${ARCH}"
+  - |
+    cosign attest --yes \
+        --predicate "sbom-${TAG}${TAG_SUFFIX}-${ARCH}.json" \
+        --type cyclonedx \
+        --registry-username "${CI_REGISTRY_USER}" \
+        --registry-password "${CI_REGISTRY_PASSWORD}" \
+        "${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}-${ARCH}"
+  artifacts:
+    paths:
+    - sbom-${TAG}${TAG_SUFFIX}-${ARCH}.json
+
+scan:vulnerabilities:
+  rules:
+  - if: $PUSH == "true"
+  needs:
+  - prepare
+  - job: attest:sbom
+    optional: true
+  parallel:
+    matrix:
+    - TAG_SUFFIX: "-noble"
+      ARCH:
+      - amd64
+      - arm64
+    - TAG_SUFFIX: "-resolute"
+      ARCH:
+      - amd64
+      - arm64
+    - TAG_SUFFIX: "-rolling"
+      ARCH:
+      - amd64
+      - arm64
+    - TAG_SUFFIX: "-resolute-systemd"
+      ARCH:
+      - amd64
+      - arm64
+  image: registry.gitlab.com/uniget-org/cli:noble
+  before_script:
+  - |
+    uniget install trivy
+  script:
+  - |
+    echo "### Scanning SBOM sbom-${TAG}${TAG_SUFFIX}-${ARCH}.json for vulnerabilities"
+  - |
+    trivy sbom \
+        --scanners vuln \
+        --severity UNKNOWN,HIGH,CRITICAL \
+        --format table \
+        "sbom-${TAG}${TAG_SUFFIX}-${ARCH}.json"
+
 .clean:intermediate_tags:
   needs:
   - prepare
@@ -206,7 +302,9 @@ update:default_tag:
   - build:multi_arch_index
   - job: sign:image
     optional: true
-  - job: attest:image
+  - job: attest:provenance
+    optional: true
+  - job: attest:sbom
     optional: true
   parallel:
     matrix:
@@ -230,7 +328,9 @@ update:latest_tag:
   - build:multi_arch_index
   - job: sign:image
     optional: true
-  - job: attest:image
+  - job: attest:provenance
+    optional: true
+  - job: attest:sbom
     optional: true
   extends:
   - .regctl
@@ -247,7 +347,9 @@ update:version_tag:
   - build:multi_arch_index
   - job: sign:image
     optional: true
-  - job: attest:image
+  - job: attest:provenance
+    optional: true
+  - job: attest:sbom
     optional: true
   extends:
   - .regctl
