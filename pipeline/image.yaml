@@ -69,6 +69,35 @@ build:multi_arch_index:
   extends:
   - .build:multi_arch_index
 
+sign:image:
+  rules:
+  - if: $PUSH == "true"
+  needs:
+  - prepare
+  - build:multi_arch_index
+  parallel:
+    matrix:
+    - TAG_SUFFIX:
+      - "-noble"
+      - "-resolute"
+      - "-rolling"
+      - "-resolute-systemd"
+  image: registry.gitlab.com/uniget-org/cli:noble
+  id_tokens:
+    SIGSTORE_ID_TOKEN:
+      aud: sigstore
+  before_script:
+  - |
+    uniget install cosign
+  script:
+  - |
+    echo "### Signing image ${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}"
+  - |
+    cosign sign --yes \
+        --registry-username "${CI_REGISTRY_USER}" \
+        --registry-password "${CI_REGISTRY_PASSWORD}" \
+        "${CI_REGISTRY_IMAGE}:${TAG}${TAG_SUFFIX}"
+
 .clean:intermediate_tags:
   needs:
   - prepare
@@ -100,6 +129,8 @@ update:default_tag:
   needs:
   - prepare
   - build:multi_arch_index
+  - job: sign:image
+    optional: true
   parallel:
     matrix:
     - TAG_SUFFIX:
@@ -120,6 +151,8 @@ update:latest_tag:
   needs:
   - prepare
   - build:multi_arch_index
+  - job: sign:image
+    optional: true
   extends:
   - .regctl
   - .regctl-login
@@ -133,6 +166,8 @@ update:version_tag:
   needs:
   - prepare
   - build:multi_arch_index
+  - job: sign:image
+    optional: true
   extends:
   - .regctl
   - .regctl-login
