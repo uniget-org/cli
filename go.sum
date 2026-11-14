@@ -410,8 +410,8 @@ github.com/in-toto/in-toto-golang v0.11.0 h1:nfidMYBFx+E0lnmX5KUnN2Pdm8zdNKal1ay
 github.com/in-toto/in-toto-golang v0.11.0/go.mod h1:u3PjTnwFKjp5a1YCcw8SJg0G+tMeKfVoWsWeFMDCMtw=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
-github.com/jedib0t/go-pretty/v6 v6.8.3 h1:yVSk5aemoYHCvcrtqyXklwqcgHQIQzmy/oUzFlmffSQ=
-github.com/jedib0t/go-pretty/v6 v6.8.3/go.mod h1:YwC5CE4fJ1HFUDeivSV1r//AmANFHyqczZk+U6BDALU=
+github.com/jedib0t/go-pretty/v6 v6.9.2 h1:aS5VZAJR1zSFNS45+pBywhe4CZYKU27Owl1SF/432Rs=
+github.com/jedib0t/go-pretty/v6 v6.9.2/go.mod h1:rDsMESQ3QyK0VMr1aeq/BErQLPk0tJ+ORkcjMMpnjeg=
 github.com/jedisct1/go-minisign v0.0.0-20260527172527-a09352b57a22 h1:C68TAi+k12EKJCAmsdaERzQ22ZxVE6n+CuB3kOkhQ7c=
 github.com/jedisct1/go-minisign v0.0.0-20260527172527-a09352b57a22/go.mod h1:vYVVh81Lqe/TP0sPLjiNYcX9Hxy/YSfkUx96lYJeyKo=
 github.com/jellydator/ttlcache/v3 v3.4.1 h1:bOdXmXiycyK6E6Qjyuj5vl+/vU3SCOoDs8a86NbHjAQ=
@@ -453,10 +453,10 @@ github.com/moby/docker-image-spec v1.3.1 h1:jMKff3w6PgbfSa69GfNg+zN/XLhfXJGnEx3N
 github.com/moby/docker-image-spec v1.3.1/go.mod h1:eKmb5VW8vQEh/BAr2yvVNvuiJuY6UIocYsFu/DxxRpo=
 github.com/moby/locker v1.0.1 h1:fOXqR41zeveg4fFODix+1Ch4mj/gT0NE1XJbp/epuBg=
 github.com/moby/locker v1.0.1/go.mod h1:S7SDdo5zpBK84bzzVlKr2V0hz+7x9hWbYC/kq7oQppc=
-github.com/moby/moby/api v1.56.1 h1:PpWkvVPB7Fr/No8w+TfyJ/I6rWZ2YPZhT3JorIg+06c=
-github.com/moby/moby/api v1.56.1/go.mod h1:sZ+THbVWkjOmBPPfbnzdD/G1LuIexWhqlSHHPTDQ1Uk=
-github.com/moby/moby/client v0.6.2 h1:ekSPlMccrZGcw6Scb8T9D39qE0mB+XupU/yS0zNw9N4=
-github.com/moby/moby/client v0.6.2/go.mod h1:DGcnO7qmPJrqobx/ggQgQ/AUk+2wgVdQv7uxB0/mEsc=
+github.com/moby/moby/api v1.57.0 h1:K2ykv5UZjwFCtmtL486T+SUEVrQ46w3v7isf214RCcw=
+github.com/moby/moby/api v1.57.0/go.mod h1:pRZ1QRtx6AVhdckeFYo4DUX4ASNF0SCllhyY6aj2mgg=
+github.com/moby/moby/client v0.6.3 h1:XJn2T8YdXBdMgQl7JrOx09NEBuzIpVXcsN2KDHufAKY=
+github.com/moby/moby/client v0.6.3/go.mod h1:7CXNAnAhcwwqjwjXqLembJczRorLfM+5mu0d5363lCc=
 github.com/moby/sys/mountinfo v0.7.3 h1:e0lin8d05kLgtUES/4cS/F70KlbZX/G3aZjLsV7WAgA=
 github.com/moby/sys/mountinfo v0.7.3/go.mod h1:dEJRr+H+hx0lNG0BE+Smz95u/FDzjJv4/RjA2I456Iw=
 github.com/moby/sys/signal v0.7.1 h1:PrQxdvxcGijdo6UXXo/lU/TvHUWyPhj7UOpSo8tuvk0=
@@ -867,8 +867,6 @@ k8s.io/kube-openapi v0.0.0-20261104182252-5bee61fc5225 h1:HOQQvGlqZPbN+4aXdqQhLd
 k8s.io/kube-openapi v0.0.0-20261104182252-5bee61fc5225/go.mod h1:ijAJHxCK/9OftZdcKwI5BHyIeRUeoKe1ldIyM4JHMts=
 k8s.io/utils v0.0.0-20261023123148-ca04ba58ecab h1:pjQrNLaF//ytZtWwCAHtW+pqwSKjtWDqzA8+TCX37RI=
 k8s.io/utils v0.0.0-20261023123148-ca04ba58ecab/go.mod h1:DdQ0BJxlQtuMlKDqdg7X5IMMQCXIk2b3d1/4M9OhUYo=
-pgregory.net/rapid v1.2.0 h1:keKAYRcjm+e1F0oAuU5F5+YPAWcyxNNRK2wud503Gnk=
-pgregory.net/rapid v1.2.0/go.mod h1:PY5XlDGj0+V1FCq0o192FdRhpKHGTRIWBgqjDBTrq04=
 sigs.k8s.io/json v0.0.0-20260909141634-11ed52e25bc5 h1:k9jo7ED/fsfOcz3L1P20P5tjTNtsdQNwMOG2aKzHrl8=
 sigs.k8s.io/json v0.0.0-20260909141634-11ed52e25bc5/go.mod h1:mdzfpAEoE6DHQEN0uh9ZbOCuHbLK5wOm7dK4ctXE9Tg=
 sigs.k8s.io/randfill v1.0.0 h1:JfjMILfT8A6RbawdsK2JXGBR5AQVfd+9TbzrlneTyrU=
