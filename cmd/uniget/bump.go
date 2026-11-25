@@ -15,7 +15,7 @@ var (
 )
 
 var outputCallback = func(toolName string, oldVersion string, newVersion string) {
-	pterm.NewStyle(pterm.FgBlack, pterm.BgYellow).Print("  BUMP  ")
+	pterm.NewStyle(pterm.FgBlack, pterm.BgYellow).Print("  BUMP   ")
 	pterm.NewStyle(pterm.FgWhite).Printfln(" %s %s", toolName, newVersion)
 }
 
