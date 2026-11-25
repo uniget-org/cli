@@ -15,12 +15,20 @@ test:
     - "**/*.go"
     - go.mod
     - go.sum
+    - Dockerfile
+    - .gitlab-ci.yml
+    - docker-bake.hcl
+    - scripts/release-notes.sh
   - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
   - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     changes:
     - "**/*.go"
     - go.mod
     - go.sum
+    - Dockerfile
+    - .gitlab-ci.yml
+    - docker-bake.hcl
+    - scripts/release-notes.sh
   - if: $CI_PIPELINE_SOURCE == "web" && $SCHEDULED_JOB == "test"
   trigger:
     include: pipeline/test.yaml
