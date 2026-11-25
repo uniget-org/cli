@@ -73,7 +73,7 @@ var healthcheckCmd = &cobra.Command{
 			testFailed = true
 		}
 
-		markerFilePresent := myos.FileExists(configuration.Prefix + "/" + configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".txt")
+		markerFilePresent := myos.FileExists(configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".txt")
 		if !tool.Status.MarkerFilePresent && !tool.Status.BinaryPresent && !markerFilePresent {
 			logging.Warning.Printfln("Tool %s is not installed", tool.Name)
 			testFailed = true

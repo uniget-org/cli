@@ -1,14 +1,17 @@
 package tool
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"slices"
 	"strings"
 
+	"gitlab.com/uniget-org/cli/internal/constants"
 	"gitlab.com/uniget-org/cli/pkg/logging"
 )
 
@@ -153,14 +156,19 @@ func (tool *Tool) GetBinaryStatus() error {
 func (tool *Tool) GetMarkerFileStatus(markerFileDirectory string) error {
 	logging.Tracef("Finding latest marker file for %s in %s", tool.Name, markerFileDirectory)
 
-	_, err := os.Stat(fmt.Sprintf("%s/%s", markerFileDirectory, tool.Name))
+	if !isSafePathComponent(tool.Name) {
+		return fmt.Errorf("tool name %q is not a safe path component", tool.Name)
+	}
+
+	markerDirectory := filepath.Join(markerFileDirectory, tool.Name)
+	_, err := os.Stat(markerDirectory)
 	if err != nil {
-		logging.Tracef("Marker file directory %s/%s does not exist", markerFileDirectory, tool.Name)
+		logging.Tracef("Marker file directory %s does not exist", markerDirectory)
 		return nil
 	}
 
 	version := ""
-	entries, err := os.ReadDir(fmt.Sprintf("%s/%s", markerFileDirectory, tool.Name))
+	entries, err := os.ReadDir(markerDirectory)
 	if err != nil {
 		return fmt.Errorf("failed to read marker file directory: %s", err)
 	}
@@ -219,14 +227,40 @@ func (tool *Tool) IsImportable() bool {
 func (tool *Tool) CreateMarkerFile(markerFileDirectory string) error {
 	logging.Tracef("Creating marker file for %s", tool.Name)
 
-	err := os.MkdirAll(fmt.Sprintf("%s/%s", markerFileDirectory, tool.Name), 0755) // #nosec G301 -- Public information
+	if !isSafePathComponent(tool.Name) {
+		return fmt.Errorf("tool name %q is not a safe path component", tool.Name)
+	}
+	if !isSafePathComponent(tool.Version) {
+		return fmt.Errorf("version %q of tool %q is not a safe path component", tool.Version, tool.Name)
+	}
+
+	err := os.MkdirAll(markerFileDirectory, 0755) // #nosec G301 -- Public information
 	if err != nil {
 		return fmt.Errorf("unable to create marker file directory for %s: %s", tool.Name, err)
 	}
 
-	_, err = os.Create(fmt.Sprintf("%s/%s/%s", markerFileDirectory, tool.Name, tool.Version))
+	// Use os.Root so neither the tool name nor the version can escape the
+	// marker directory or be redirected through a symbolic link.
+	root, err := os.OpenRoot(markerFileDirectory)
+	if err != nil {
+		return fmt.Errorf("unable to open marker file directory for %s: %s", tool.Name, err)
+	}
+	//nolint:errcheck
+	defer root.Close()
+
+	err = root.MkdirAll(tool.Name, 0755) // #nosec G301 -- Public information
+	if err != nil {
+		return fmt.Errorf("unable to create marker file directory for %s: %s", tool.Name, err)
+	}
+
+	file, err := root.Create(filepath.Join(tool.Name, tool.Version))
 	if err != nil {
 		return fmt.Errorf("unable to create marker file for %s: %s", tool.Name, err)
+	}
+
+	err = file.Close()
+	if err != nil {
+		return fmt.Errorf("unable to close marker file for %s: %s", tool.Name, err)
 	}
 
 	return nil
@@ -235,7 +269,24 @@ func (tool *Tool) CreateMarkerFile(markerFileDirectory string) error {
 func (tool *Tool) RemoveMarkerFile(markerFileDirectory string) error {
 	logging.Tracef("Removing marker file for %s", tool.Name)
 
-	err := os.Remove(fmt.Sprintf("%s/%s/%s", markerFileDirectory, tool.Name, tool.Version))
+	if !isSafePathComponent(tool.Name) {
+		return fmt.Errorf("tool name %q is not a safe path component", tool.Name)
+	}
+	if !isSafePathComponent(tool.Version) {
+		return fmt.Errorf("version %q of tool %q is not a safe path component", tool.Version, tool.Name)
+	}
+
+	root, err := os.OpenRoot(markerFileDirectory)
+	if os.IsNotExist(err) {
+		logging.Tracef("Marker file for %s does not exist", tool.Name)
+		return nil
+	} else if err != nil {
+		return fmt.Errorf("unable to open marker file directory for %s: %s", tool.Name, err)
+	}
+	//nolint:errcheck
+	defer root.Close()
+
+	err = root.Remove(filepath.Join(tool.Name, tool.Version))
 	if os.IsNotExist(err) {
 		logging.Tracef("Marker file for %s does not exist", tool.Name)
 	} else if err != nil {
@@ -247,13 +298,18 @@ func (tool *Tool) RemoveMarkerFile(markerFileDirectory string) error {
 
 func (tool *Tool) RunVersionCheck() (string, error) {
 	logging.Tracef("Running version check for %s: %s", tool.Name, tool.Check)
-	cmd := exec.Command("/bin/bash", "-c", tool.Check+" | tr -d '\n'") // #nosec G204 -- Tool images are a trusted source
+	if err := validateToolCheck(tool.Check); err != nil {
+		return "", fmt.Errorf("unable to execute version check for %s: %s", tool.Name, err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), constants.VersionCheckTimeout)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, "/bin/bash", "-c", tool.Check) // #nosec G204 -- Tool metadata is verified on download
 	version, err := cmd.Output()
 	if err != nil {
 		return "", fmt.Errorf("unable to execute version check (%s): %s", tool.Check, err)
 	}
 
-	return string(version), nil
+	return strings.TrimSpace(string(version)), nil
 }
 
 func (tool *Tool) GetVersionStatus() error {

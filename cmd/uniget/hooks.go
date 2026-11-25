@@ -89,32 +89,33 @@ var addHooksCmd = &cobra.Command{
 	Long:  constants.Header + "\nAdd hook",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
-		if !myos.FileExists(hookSource) {
+		sourceInfo, err := os.Stat(hookSource)
+		if err != nil {
 			return handleError(err, "Hook source file does not exist: %s", hookSource)
 		}
+		if !sourceInfo.Mode().IsRegular() {
+			return handleError(fmt.Errorf("hook source %s is not a regular file", hookSource), "Hook source %s is not a regular file", hookSource)
+		}
 
-		hookSourceSplit := strings.Split(hookSource, "/")
-		hookFileName := hookSourceSplit[len(hookSourceSplit)-1]
-		hookFile := ""
+		hookFileName := filepath.Base(hookSource)
+		hookDir := ""
 		switch hookType {
 		case "pre-install":
-			preInstallHooksDir := configuration.GetHooksPreInstallDirectory()
-			myos.AssertDirectory(preInstallHooksDir)
-			hookFile = preInstallHooksDir + "/" + hookFileName
+			hookDir = configuration.GetHooksPreInstallDirectory()
 		case "post-install":
-			postInstallHooksDir := configuration.GetHooksPostInstallDirectory()
-			myos.AssertDirectory(postInstallHooksDir)
-			hookFile = postInstallHooksDir + "/" + hookFileName
+			hookDir = configuration.GetHooksPostInstallDirectory()
 		case "pre-uninstall":
-			preUninstallHooksDir := configuration.GetHooksPreUninstallDirectory()
-			myos.AssertDirectory(preUninstallHooksDir)
-			hookFile = preUninstallHooksDir + "/" + hookFileName
+			hookDir = configuration.GetHooksPreUninstallDirectory()
 		case "post-uninstall":
-			postUninstallHooksDir := configuration.GetHooksPostUninstallDirectory()
-			myos.AssertDirectory(postUninstallHooksDir)
-			hookFile = postUninstallHooksDir + "/" + hookFileName
+			hookDir = configuration.GetHooksPostUninstallDirectory()
 		default:
 			return fmt.Errorf("invalid hook type: %s", hookType)
+		}
+		myos.AssertDirectory(hookDir)
+
+		hookFile, err := resolveHookFile(hookDir, hookFileName)
+		if err != nil {
+			return handleError(err, "Unable to resolve hook file %s in %s", hookFileName, hookDir)
 		}
 
 		err = myos.CopyFile(hookSource, hookFile)
@@ -146,32 +147,23 @@ var removeHooksCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		hookFileName := args[0]
 		hookDir := ""
-		hookFile := ""
 		switch hookType {
 		case "pre-install":
 			hookDir = configuration.GetHooksPreInstallDirectory()
-			myos.AssertDirectory(hookDir)
-			hookFile = hookDir + "/" + hookFileName
 		case "post-install":
 			hookDir = configuration.GetHooksPostInstallDirectory()
-			myos.AssertDirectory(hookDir)
-			hookFile = hookDir + "/" + hookFileName
 		case "pre-uninstall":
 			hookDir = configuration.GetHooksPreUninstallDirectory()
-			myos.AssertDirectory(hookDir)
-			hookFile = hookDir + "/" + hookFileName
 		case "post-uninstall":
 			hookDir = configuration.GetHooksPostUninstallDirectory()
-			myos.AssertDirectory(hookDir)
-			hookFile = hookDir + "/" + hookFileName
+		default:
+			return fmt.Errorf("invalid hook type: %s", hookType)
 		}
+		myos.AssertDirectory(hookDir)
 
-		hookFileAbs, err := filepath.Abs(hookFile)
+		hookFile, err := resolveHookFile(hookDir, hookFileName)
 		if err != nil {
-			return handleError(err, "Unable to get absolute path of hook file %s", hookFile)
-		}
-		if !strings.HasPrefix(hookFileAbs, hookDir) {
-			return handleError(err, "Hook file %s is outside of directory %s", hookFile, hookDir)
+			return handleError(err, "Hook file %s is outside of directory %s", hookFileName, hookDir)
 		}
 
 		if !myos.FileExists(hookFile) {
@@ -208,31 +200,23 @@ var editHooksCmd = &cobra.Command{
 
 		hookFileName := args[0]
 		hookDir := ""
-		hookFile := ""
 		switch hookType {
 		case "pre-install":
 			hookDir = configuration.GetHooksPreInstallDirectory()
-			hookFile = hookDir + "/" + hookFileName
 		case "post-install":
 			hookDir = configuration.GetHooksPostInstallDirectory()
-			hookFile = hookDir + "/" + hookFileName
 		case "pre-uninstall":
 			hookDir = configuration.GetHooksPreUninstallDirectory()
-			hookFile = hookDir + "/" + hookFileName
 		case "post-uninstall":
 			hookDir = configuration.GetHooksPostUninstallDirectory()
-			hookFile = hookDir + "/" + hookFileName
 		default:
 			return fmt.Errorf("invalid hook type: %s", hookType)
 		}
 		myos.AssertDirectory(hookDir)
 
-		hookFileAbs, err := filepath.Abs(hookFile)
+		hookFile, err := resolveHookFile(hookDir, hookFileName)
 		if err != nil {
-			return handleError(err, "Unable to get absolute path of hook file %s", hookFile)
-		}
-		if !strings.HasPrefix(hookFileAbs, hookDir) {
-			return handleError(err, "Hook file %s is outside of directory %s", hookFile, hookDir)
+			return handleError(err, "Hook file %s is outside of directory %s", hookFileName, hookDir)
 		}
 
 		hookFileInfo, err := os.Lstat(hookFile)
@@ -363,18 +347,23 @@ var testHookCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		hookName := args[0]
 		hookArgs := args[1:]
-		var hookFile string
+		var hookDir string
 		switch hookType {
 		case "pre-install":
-			hookFile = configuration.GetHooksPreInstallDirectory() + "/" + hookName
+			hookDir = configuration.GetHooksPreInstallDirectory()
 		case "post-install":
-			hookFile = configuration.GetHooksPostInstallDirectory() + "/" + hookName
+			hookDir = configuration.GetHooksPostInstallDirectory()
 		case "pre-uninstall":
-			hookFile = configuration.GetHooksPreUninstallDirectory() + "/" + hookName
+			hookDir = configuration.GetHooksPreUninstallDirectory()
 		case "post-uninstall":
-			hookFile = configuration.GetHooksPostUninstallDirectory() + "/" + hookName
+			hookDir = configuration.GetHooksPostUninstallDirectory()
 		default:
 			return handleError(err, "Invalid hook type: %s", hookType)
+		}
+
+		hookFile, err := resolveHookFile(hookDir, hookName)
+		if err != nil {
+			return handleError(err, "Hook file %s is outside of directory %s", hookName, hookDir)
 		}
 
 		searchOutputFormat, err := runHook(hookFile, hookArgs...)
@@ -518,7 +507,7 @@ func runHook(hookFile string, args ...string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("unable to get absolute path of hooks directory: %w", err)
 	}
-	if !strings.HasPrefix(absHookFile, absHooksDir) {
+	if !myos.PathIsWithin(absHooksDir, absHookFile) {
 		return "", fmt.Errorf("hook file %s is not inside the allowed hooks directory %s", hookFile, absHooksDir)
 	}
 
@@ -538,4 +527,34 @@ func runHook(hookFile string, args ...string) (string, error) {
 	}
 
 	return string(searchOutputFormat), nil
+}
+
+// resolveHookFile resolves name relative to directory and verifies that the
+// result does not escape directory.
+func resolveHookFile(directory, name string) (string, error) {
+	if len(name) == 0 {
+		return "", fmt.Errorf("hook file name must not be empty")
+	}
+	if name == "." || !filepath.IsLocal(name) {
+		return "", fmt.Errorf("hook file name %s is not a safe path component", name)
+	}
+	if filepath.IsAbs(name) {
+		return "", fmt.Errorf("hook file name %s must be relative", name)
+	}
+
+	absDirectory, err := filepath.Abs(directory)
+	if err != nil {
+		return "", fmt.Errorf("unable to get absolute path of directory %s: %w", directory, err)
+	}
+
+	absFile, err := filepath.Abs(filepath.Join(absDirectory, name))
+	if err != nil {
+		return "", fmt.Errorf("unable to get absolute path of hook file %s: %w", name, err)
+	}
+
+	if !myos.PathIsWithin(absDirectory, absFile) {
+		return "", fmt.Errorf("hook file %s is outside of directory %s", name, directory)
+	}
+
+	return absFile, nil
 }

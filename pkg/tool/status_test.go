@@ -201,6 +201,76 @@ func TestMarkerFilesCreateAndRemove(t *testing.T) {
 	}
 }
 
+func TestMarkerFilesRejectTraversal(t *testing.T) {
+	base := t.TempDir()
+	markerFileDirectory := filepath.Join(base, "markers")
+	if err := os.MkdirAll(markerFileDirectory, 0o750); err != nil {
+		t.Fatalf("failed to create marker directory: %s", err)
+	}
+	outside := filepath.Join(base, "outside")
+
+	tests := []struct {
+		name     string
+		toolName string
+		version  string
+	}{
+		{name: "traversal tool name", toolName: "../../outside", version: "1.0.0"},
+		{name: "absolute tool name", toolName: outside, version: "1.0.0"},
+		{name: "empty tool name", toolName: "", version: "1.0.0"},
+		{name: "traversal version", toolName: "tool", version: "../../outside"},
+		{name: "absolute version", toolName: "tool", version: outside},
+		{name: "empty version", toolName: "tool", version: ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tool := newStatusTool(tt.toolName, tt.version, "", "")
+
+			if err := tool.CreateMarkerFile(markerFileDirectory); err == nil {
+				t.Errorf("expected CreateMarkerFile to reject unsafe path components")
+			}
+			if err := tool.RemoveMarkerFile(markerFileDirectory); err == nil {
+				t.Errorf("expected RemoveMarkerFile to reject unsafe path components")
+			}
+
+			// GetMarkerFileStatus only consumes the tool name.
+			err := tool.GetMarkerFileStatus(markerFileDirectory)
+			if tt.toolName == "tool" {
+				if err != nil {
+					t.Errorf("expected GetMarkerFileStatus to accept safe tool name, got %s", err)
+				}
+			} else if err == nil {
+				t.Errorf("expected GetMarkerFileStatus to reject unsafe tool name")
+			}
+		})
+	}
+
+	if _, err := os.Stat(outside); !os.IsNotExist(err) {
+		t.Errorf("expected no file or directory outside of marker directory, got %v", err)
+	}
+}
+
+func TestRemoveMarkerFileDoesNotRemoveDirectory(t *testing.T) {
+	base := t.TempDir()
+	markerFileDirectory := filepath.Join(base, "markers")
+	toolDirectory := filepath.Join(markerFileDirectory, "tool")
+	if err := os.MkdirAll(toolDirectory, 0o750); err != nil {
+		t.Fatalf("failed to create tool directory: %s", err)
+	}
+	if err := os.WriteFile(filepath.Join(toolDirectory, "1.0.0"), nil, 0o600); err != nil {
+		t.Fatalf("failed to create marker file: %s", err)
+	}
+
+	tool := newStatusTool("tool", "", "", "")
+	if err := tool.RemoveMarkerFile(markerFileDirectory); err == nil {
+		t.Errorf("expected error for empty version, got nil")
+	}
+
+	if _, err := os.Stat(toolDirectory); err != nil {
+		t.Errorf("expected tool marker directory to still exist: %v", err)
+	}
+}
+
 func TestRunVersionCheck(t *testing.T) {
 	tests := []struct {
 		name          string
@@ -216,6 +286,16 @@ func TestRunVersionCheck(t *testing.T) {
 		{
 			name:        "failing version check",
 			check:       "((  ",
+			expectError: true,
+		},
+		{
+			name:          "output is trimmed",
+			check:         `echo "  1.2.3  "`,
+			expectVersion: "1.2.3",
+		},
+		{
+			name:        "check with control characters is rejected",
+			check:       "echo 1.2.3\nrm -rf /",
 			expectError: true,
 		},
 	}

@@ -52,7 +52,7 @@ var versionCmd = &cobra.Command{
 			return handleError(err, "Failed to update status for tool %s", tool.Name)
 		}
 
-		markerFilePresent := myos.FileExists(configuration.Prefix + "/" + configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".txt")
+		markerFilePresent := myos.FileExists(configuration.GetLibDirectory() + "/manifests/" + tool.Name + ".txt")
 		if !tool.Status.MarkerFilePresent && !tool.Status.BinaryPresent && !markerFilePresent {
 			logging.Warning.Printfln("Tool %s is not installed", tool.Name)
 			return handleError(errors.New("tool not installed"), "Tool %s is not installed", tool.Name)

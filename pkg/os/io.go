@@ -115,7 +115,10 @@ func SlurpFile(filePath string) ([]byte, error) {
 }
 
 func CopyFile(src, dst string) error {
-	srcFile, err := os.Open(src) // #nosec G304 - Low-level copy expects sanitation
+	// Callers must validate both paths. The only production caller
+	// (hooks add) resolves the destination with resolveHookFile and
+	// requires a regular source file.
+	srcFile, err := os.Open(src) // #nosec G304 - Low-level copy expects sanitation by callers
 	if err != nil {
 		return fmt.Errorf("failed to open source file: %s", err)
 	}
@@ -123,7 +126,7 @@ func CopyFile(src, dst string) error {
 		_ = srcFile.Close()
 	}()
 
-	dstFile, err := os.Create(dst) // #nosec G304 - Low-level copy expects sanitation
+	dstFile, err := os.Create(dst) // #nosec G304 - Low-level copy expects sanitation by callers
 	if err != nil {
 		return fmt.Errorf("failed to create destination file: %s", err)
 	}

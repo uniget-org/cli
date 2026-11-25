@@ -1,6 +1,9 @@
 package constants
 
-import _ "embed"
+import (
+	_ "embed"
+	"time"
+)
 
 var (
 	//go:embed logo.txt
@@ -25,4 +28,5 @@ const (
 	RegistryImagePrefix         = Registry + "/" + ImageRepository + ToolSeparator
 	SigstoreIssuer              = "https://token.actions.githubusercontent.com"
 	SigstoreSubjectRegexp       = "https://github\\.com/uniget-org/tools/\\.github/workflows/[^.]+\\.yml@.+"
+	VersionCheckTimeout         = 60 * time.Second
 )

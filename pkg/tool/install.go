@@ -3,7 +3,6 @@ package tool
 import (
 	"fmt"
 	"io"
-	"path/filepath"
 	"strings"
 
 	"github.com/google/safearchive/tar"
@@ -103,26 +102,12 @@ func (tool *Tool) Install(w io.Writer, layer io.ReadCloser, rules []PathRewrite,
 
 	err := archive.ProcessTarContents(layer, func(reader *tar.Reader, header *tar.Header) error {
 		if header.Typeflag != tar.TypeDir {
-			if header.Typeflag == tar.TypeLink && len(header.Linkname) > 0 {
-				var err error
-
-				absName, err := filepath.Abs(header.Name)
-				if err != nil {
-					return fmt.Errorf("unable to get absolute path for %s: %s", header.Name, err)
-				}
-				absLinkname, err := filepath.Abs(header.Linkname)
-				if err != nil {
-					return fmt.Errorf("unable to get absolute path for %s: %s", header.Linkname, err)
-				}
-
-				logging.Tracef("Name: %s, Linkname: %s", absName, absLinkname)
-				header.Linkname, err = filepath.Rel(filepath.Dir(absName), absLinkname)
-				if err != nil {
-					return fmt.Errorf("unable to get relative linkname for %s: %s", header.Linkname, err)
-				}
-				logging.Tracef("    Relative linkname is %s", header.Linkname)
-			}
 			header.Name = applyPathRewrites(header.Name, rules)
+			// Hard link targets are stored relative to the archive root, so
+			// they need to be rewritten alongside the link itself.
+			if header.Typeflag == tar.TypeLink {
+				header.Linkname = applyPathRewrites(header.Linkname, rules)
+			}
 
 			err := archive.CallbackExtractTarItem(reader, header)
 			if err != nil {

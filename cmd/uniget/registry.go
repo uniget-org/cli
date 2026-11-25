@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"sort"
 
 	"github.com/regclient/regclient/pkg/template"
@@ -371,6 +372,9 @@ var regSaveCmd = &cobra.Command{
 		ctx := context.Background()
 
 		toolName := args[0]
+		if !filepath.IsLocal(toolName) {
+			return handleError(err, "Tool name %s is not a safe file name", toolName)
+		}
 		saveTool, err := tools.GetByName(toolName)
 		if err != nil {
 			return handleError(err, "Failed to get tool %s", toolName)

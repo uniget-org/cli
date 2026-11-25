@@ -17,6 +17,7 @@ import (
 	"gitlab.com/uniget-org/cli/internal/constants"
 	"gitlab.com/uniget-org/cli/pkg/containers"
 	"gitlab.com/uniget-org/cli/pkg/logging"
+	myos "gitlab.com/uniget-org/cli/pkg/os"
 	"gitlab.com/uniget-org/cli/pkg/tool"
 )
 
@@ -318,13 +319,10 @@ func installTools(w io.Writer, requestedTools *tool.Tools, check bool, plan bool
 
 		if plannedTool.IsInstalled() {
 			binaryFilePath := plannedTool.Binary
-			file, err := os.OpenFile(binaryFilePath, os.O_WRONLY, 0600) // #nosec G304 -- Retrieved from signed metadata
-			if err != nil {
+			if myos.BinaryFileIsInUse(configuration.GetTarget(), binaryFilePath) {
 				logging.Warning.Printfln("%s: Binary is in use", plannedTool.Name)
 				continue
 			}
-			//nolint:errcheck
-			file.Close() // #nosec G104 -- File is closed immediately after opening
 
 			err = uninstallTool(plannedTool.Name)
 			if err != nil {
@@ -512,6 +510,10 @@ func createPatchFileCallback(tool tool.Tool) func(path string) string {
 		curDir, err := os.Getwd()
 		if err != nil {
 			logging.Error.Printfln("Unable to get current directory: %s", err)
+			return templatePath
+		}
+		if !filepath.IsLocal(filepath.Clean(templatePath)) {
+			logging.Error.Printfln("Refusing to patch file %s outside of the installation directory", templatePath)
 			return templatePath
 		}
 		fullTemplatePath := filepath.Join(curDir, templatePath)

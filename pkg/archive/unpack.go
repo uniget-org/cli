@@ -1,6 +1,7 @@
 package archive
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -70,48 +71,67 @@ func CallbackExtractTarItem(reader *tar.Reader, header *tar.Header) error {
 	}
 	logging.Debugf("Current directory: %s", workDir)
 
+	name := filepath.Clean(header.Name)
+	if !filepath.IsLocal(name) {
+		return fmt.Errorf("refusing to extract %q outside of %q", header.Name, workDir)
+	}
+
+	root, err := os.OpenRoot(workDir)
+	if err != nil {
+		return fmt.Errorf("unable to open working directory %s: %s", workDir, err)
+	}
+	//nolint:errcheck
+	defer root.Close()
+
 	switch header.Typeflag {
 
 	case tar.TypeReg:
 		logging.Debugf("File: %s", header.Name)
 
-		path := filepath.Clean(header.Name)
-
-		dir := filepath.Dir(path)
-		err := os.MkdirAll(dir, 0755) // #nosec G301 -- Tools must be world readable
+		err = ExtractFileFromTar(workDir, name, reader, header)
 		if err != nil {
-			return fmt.Errorf("ExtractTarGz: MkdirAll() failed for %s: %s", dir, err.Error())
-		}
-
-		err = ExtractFileFromTar(workDir, path, reader, header)
-		if err != nil {
-			return fmt.Errorf("ExtractTarGz: ExtractFileFromTar() failed for %s: %s", path, err.Error())
+			return fmt.Errorf("ExtractTarGz: ExtractFileFromTar() failed for %s: %s", name, err.Error())
 		}
 
 	case tar.TypeSymlink, tar.TypeLink:
 		logging.Tracef("Untarring (sym)link %s -> %s", header.Name, header.Linkname)
 
+		err = myos.ValidateLinkTarget(workDir, name, header)
+		if err != nil {
+			return err
+		}
+
 		// Check if (sym)link already exists
-		_, err := os.Lstat(header.Name)
+		_, err := root.Lstat(name)
 		if err == nil {
 			logging.Debugf("Symlink %s already exists", header.Name)
+			return nil
 		}
-		// Continue if (sym)link does not exist
-		if os.IsNotExist(err) {
-			logging.Debugf("Symlink %s does not exist", header.Name)
+		if !errors.Is(err, os.ErrNotExist) {
+			return fmt.Errorf("unable to check (sym)link %s: %s", header.Name, err)
+		}
 
-			// Create directories for (sym)link
-			dir := filepath.Dir(header.Name)
-			logging.Tracef("Creating directory %s", dir)
-			err := os.MkdirAll(dir, 0755) // #nosec G301 -- Tools must be world readable
+		// Create directories for (sym)link
+		dir := filepath.Dir(name)
+		logging.Tracef("Creating directory %s", dir)
+		if dir != "." {
+			err = root.MkdirAll(dir, 0755) // #nosec G301 -- Tools must be world readable
 			if err != nil {
 				return fmt.Errorf("ExtractTarGz: MkdirAll() failed for %s: %s", dir, err.Error())
 			}
+		}
 
-			// Create (sym)link
-			err = os.Symlink(header.Linkname, header.Name)
+		// Create (sym)link
+		if header.Typeflag == tar.TypeLink {
+			linkName := filepath.Clean(header.Linkname)
+			err = root.Link(linkName, name)
 			if err != nil {
-				return fmt.Errorf("ExtractTarGz: Symlink() failed for %s -> %s: %s", header.Linkname, header.Name, err.Error())
+				return fmt.Errorf("ExtractTarGz: Link() failed for %s -> %s: %s", linkName, name, err.Error())
+			}
+		} else {
+			err = root.Symlink(header.Linkname, name)
+			if err != nil {
+				return fmt.Errorf("ExtractTarGz: Symlink() failed for %s -> %s: %s", header.Linkname, name, err.Error())
 			}
 		}
 
@@ -122,11 +142,28 @@ func CallbackExtractTarItem(reader *tar.Reader, header *tar.Header) error {
 }
 
 func ExtractFileFromTar(workDir string, path string, reader *tar.Reader, header *tar.Header) error {
-	err := myos.CreateSubdirectoriesForPath(workDir, path)
+	cleanPath := filepath.Clean(path)
+	if !filepath.IsLocal(cleanPath) {
+		return fmt.Errorf("refusing to extract %q outside of %q", path, workDir)
+	}
+
+	// Only permission bits are applied. Special bits from the archive
+	// (setuid, setgid, sticky) are deliberately dropped so extraction
+	// cannot install setuid/setgid binaries. Validating the mode before
+	// creating the file rejects manipulated archives early.
+	if header.Mode < 0 {
+		return fmt.Errorf("ExtractTarGz: invalid mode %d for %s", header.Mode, path)
+	}
+	if header.Mode&^int64(os.ModePerm) != 0 {
+		logging.Warning.Printfln("Ignoring non-permission mode bits for %s", path)
+	}
+	mode := os.FileMode(header.Mode & int64(os.ModePerm))
+
+	err := myos.CreateSubdirectoriesForPath(workDir, cleanPath)
 	if err != nil {
 		return fmt.Errorf("ExtractTarGz: CreateSubdirectoriesForPath() failed for %s in %s: %s", path, workDir, err.Error())
 	}
-	outFile, err := safeopen.CreateBeneath(workDir, path)
+	outFile, err := safeopen.CreateBeneath(workDir, cleanPath)
 	if err != nil {
 		return fmt.Errorf("ExtractTarGz: Create() failed for %s in %s: %s", path, workDir, err.Error())
 	}
@@ -140,11 +177,6 @@ func ExtractFileFromTar(workDir string, path string, reader *tar.Reader, header 
 		return fmt.Errorf("ExtractTarGz: Copy() failed for %s: %s", path, err.Error())
 	}
 
-	mode := os.FileMode(header.Mode) // #nosec G115 -- Must be addressed upstream
-	Setuid := mode &^ 0777
-	if (mode & Setuid) != 0 {
-		logging.Warning.Printfln("Setuid bit cannot be set for %s", path)
-	}
 	err = outFile.Chmod(mode)
 	if err != nil {
 		return fmt.Errorf("ExtractTarGz: Chmod() failed for %s: %s", path, err.Error())

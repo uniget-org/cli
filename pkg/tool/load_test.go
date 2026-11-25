@@ -1,6 +1,7 @@
 package tool
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -59,6 +60,90 @@ func TestLoadFromBytes(t *testing.T) {
 	}
 	if foo.RuntimeDependencies[0] != "bar" {
 		t.Errorf("Expected bar, got %s", foo.RuntimeDependencies[0])
+	}
+}
+
+func TestLoadFromBytesRejectsUnsafePathComponents(t *testing.T) {
+	tests := []struct {
+		name    string
+		tool    string
+		version string
+	}{
+		{name: "parent traversal name", tool: "../escape", version: "1.0.0"},
+		{name: "absolute name", tool: "/escape", version: "1.0.0"},
+		{name: "nested name", tool: "sub/dir", version: "1.0.0"},
+		{name: "dot name", tool: ".", version: "1.0.0"},
+		{name: "empty name", tool: "", version: "1.0.0"},
+		{name: "parent traversal version", tool: "jq", version: "../../escape"},
+		{name: "absolute version", tool: "jq", version: "/escape"},
+		{name: "nested version", tool: "jq", version: "sub/dir"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			data := fmt.Sprintf(`{"tools":[{"name":%q,"version":%q}]}`, tt.tool, tt.version)
+			if _, err := LoadFromBytes([]byte(data)); err == nil {
+				t.Fatalf("expected error for tool %q version %q, got nil", tt.tool, tt.version)
+			}
+		})
+	}
+}
+
+func TestLoadFromBytesAcceptsSafePathComponents(t *testing.T) {
+	data := `{"tools":[{"name":"my-tool_1.2","version":"1.2.3-rc1+build.5"}]}`
+	tools, err := LoadFromBytes([]byte(data))
+	if err != nil {
+		t.Fatalf("expected no error, got %s", err)
+	}
+	if len(tools.Tools) != 1 {
+		t.Fatalf("expected 1 tool, got %d", len(tools.Tools))
+	}
+}
+
+func TestLoadFromBytesRejectsControlCharacterCheck(t *testing.T) {
+	data := `{
+		"tools": [
+			{
+				"name": "evil",
+				"version": "1.0.0",
+				"check": "echo 1.2.3\nrm -rf /"
+			}
+		]
+	}`
+
+	_, err := LoadFromBytes([]byte(data))
+	if err == nil {
+		t.Fatalf("expected error for check with control characters, got nil")
+	}
+	if !strings.Contains(err.Error(), "control characters") {
+		t.Errorf("expected error to mention control characters, got %s", err)
+	}
+}
+
+func TestValidateToolCheck(t *testing.T) {
+	tests := []struct {
+		name    string
+		check   string
+		wantErr bool
+	}{
+		{name: "empty check", check: ""},
+		{name: "simple command", check: "jq --version | cut -d- -f2"},
+		{name: "variable substitution", check: "${binary} --version 2>/dev/null | cut -d+ -f1"},
+		{name: "newline", check: "echo 1.2.3\nrm -rf /", wantErr: true},
+		{name: "carriage return", check: "echo 1.2.3\r", wantErr: true},
+		{name: "nul byte", check: "echo \x00 1.2.3", wantErr: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateToolCheck(tt.check)
+			if tt.wantErr && err == nil {
+				t.Fatalf("expected error, got nil")
+			}
+			if !tt.wantErr && err != nil {
+				t.Fatalf("expected no error, got %s", err)
+			}
+		})
 	}
 }
 

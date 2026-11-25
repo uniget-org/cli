@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"go.yaml.in/yaml/v3"
 
@@ -17,6 +19,53 @@ import (
 	"gitlab.com/uniget-org/cli/pkg/logging"
 	"gitlab.com/uniget-org/cli/pkg/tui"
 )
+
+// isSafePathComponent reports whether value can be used as a single path
+// component without escaping the surrounding directory.
+func isSafePathComponent(value string) bool {
+	if value == "." || !filepath.IsLocal(value) {
+		return false
+	}
+	if value != filepath.Base(value) {
+		return false
+	}
+
+	return !strings.ContainsAny(value, `/\`)
+}
+
+// validateToolPathFields rejects tool names and versions that could escape a
+// directory when used as path components, e.g. for marker files, manifests or
+// cache directories.
+func validateToolPathFields(t *Tool) error {
+	if len(t.Name) == 0 {
+		return fmt.Errorf("tool name must not be empty")
+	}
+	if !isSafePathComponent(t.Name) {
+		return fmt.Errorf("tool name %q is not a safe path component", t.Name)
+	}
+	if len(t.Version) > 0 && !isSafePathComponent(t.Version) {
+		return fmt.Errorf("version %q of tool %q is not a safe path component", t.Version, t.Name)
+	}
+	if err := validateToolCheck(t.Check); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateToolCheck rejects version check commands containing control
+// characters. Checks are executed through a shell, so multi-line content
+// would be equivalent to injecting a script.
+func validateToolCheck(check string) error {
+	if len(check) == 0 {
+		return nil
+	}
+	if strings.ContainsAny(check, "\x00\n\r") {
+		return fmt.Errorf("check %q contains control characters", check)
+	}
+
+	return nil
+}
 
 func LoadFromFile(filename string) (tools *Tools, err error) {
 	data, err := os.ReadFile(filename) // #nosec G304 -- filename is built when LoadFromFile is called
@@ -40,6 +89,10 @@ func LoadFromReader(data io.ReadCloser) (tools *Tools, err error) {
 	}
 
 	for index, tool := range tools.Tools {
+		if err := validateToolPathFields(&tool); err != nil {
+			return nil, fmt.Errorf("invalid tool metadata: %s", err)
+		}
+
 		if tool.Binary == "" {
 			tools.Tools[index].Binary = fmt.Sprintf("${target}/bin/%s", tool.Name)
 		}
@@ -128,6 +181,12 @@ func LoadMetadataFromRegistry(registry string, imageRepository string, metadataI
 		return nil, fmt.Errorf("error getting first layer from registry: %s", err)
 	}
 
+	for index := range metadata.Tools {
+		if err := validateToolPathFields(&metadata.Tools[index]); err != nil {
+			return nil, fmt.Errorf("invalid tool metadata: %s", err)
+		}
+	}
+
 	return json.Marshal(metadata)
 }
 
@@ -151,6 +210,10 @@ func LoadManifestFromBytes(data []byte) (Tool, error) {
 	err := yaml.Unmarshal(data, &tool)
 	if err != nil {
 		return Tool{}, fmt.Errorf("unable to load YAML from byte array: %s", err)
+	}
+
+	if err := validateToolPathFields(&tool); err != nil {
+		return Tool{}, fmt.Errorf("invalid tool manifest: %s", err)
 	}
 
 	return tool, nil

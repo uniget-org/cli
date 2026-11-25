@@ -5,6 +5,7 @@ import (
 
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -188,6 +189,39 @@ func TestToolInstall(t *testing.T) {
 		if _, err := os.Lstat(file); err != nil {
 			t.Errorf("expected %s to be extracted, got %v", file, err)
 		}
+	}
+}
+
+func TestToolInstallRejectsLinkEscape(t *testing.T) {
+	tempDir := t.TempDir()
+	t.Chdir(tempDir)
+
+	buffer := &bytes.Buffer{}
+	tarWriter := tar.NewWriter(buffer)
+	entries := []*tar.Header{
+		{Name: "bin/escape", Typeflag: tar.TypeSymlink, Linkname: "../../outside", Mode: 0o777},
+		{Name: "bin/hard-escape", Typeflag: tar.TypeLink, Linkname: "../../outside", Mode: 0o777},
+	}
+	for _, header := range entries {
+		if err := tarWriter.WriteHeader(header); err != nil {
+			t.Fatalf("failed to write header: %v", err)
+		}
+	}
+	if err := tarWriter.Close(); err != nil {
+		t.Fatalf("failed to close tar writer: %v", err)
+	}
+
+	layer := io.NopCloser(bytes.NewReader(buffer.Bytes()))
+	_, err := toolFixture().Install(io.Discard, layer, nil, func(path string) string { return path })
+	if err == nil {
+		t.Fatalf("expected error for escaping link, got nil")
+	}
+
+	if _, statErr := os.Lstat(filepath.Join(tempDir, "bin", "escape")); statErr == nil {
+		t.Errorf("expected escaping symlink to not be created")
+	}
+	if _, statErr := os.Lstat(filepath.Join(tempDir, "bin", "hard-escape")); statErr == nil {
+		t.Errorf("expected escaping hard link to not be created")
 	}
 }
 

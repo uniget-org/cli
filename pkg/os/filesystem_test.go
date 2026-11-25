@@ -102,12 +102,21 @@ func TestCreateSubdirectoriesForPath(t *testing.T) {
 	}
 }
 
-func TestCreateSubdirectoriesForPathCleansTraversal(t *testing.T) {
-	tmpDir := t.TempDir()
+func TestCreateSubdirectoriesForPathRejectsTraversal(t *testing.T) {
+	base := t.TempDir()
+	workDir := filepath.Join(base, "prefix", "root")
+	if err := os.MkdirAll(workDir, 0o750); err != nil {
+		t.Fatalf("failed to create workDir: %s", err)
+	}
 
-	// filepath.Clean resolves "../..", so the dir must stay inside tmpDir
-	err := CreateSubdirectoriesForPath(tmpDir, "foo/../../evil.txt")
-	if err != nil {
-		t.Fatalf("expected no error, got %s", err)
+	// filepath.Clean does not remove leading "../" elements, so this must be
+	// rejected instead of creating directories outside of workDir.
+	err := CreateSubdirectoriesForPath(workDir, "../../evil/file.txt")
+	if err == nil {
+		t.Fatalf("expected error for escaping path, got nil")
+	}
+
+	if _, statErr := os.Stat(filepath.Join(base, "evil")); statErr == nil {
+		t.Errorf("expected no directory outside of workDir")
 	}
 }

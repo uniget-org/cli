@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/pterm/pterm"
@@ -211,11 +212,9 @@ func uninstallFiles(installedFiles []string) error {
 			continue
 		}
 
-		if strings.HasPrefix(file, "/") {
-			if !strings.HasPrefix(file, configuration.Prefix+"/"+configuration.Target) {
-				logging.Warning.Printfln("Skipping %s because it is not safe to remove", file)
-				continue
-			}
+		if !filepath.IsLocal(filepath.Clean(file)) {
+			logging.Warning.Printfln("Skipping %s because it is not safe to remove", file)
+			continue
 		}
 
 		_, err = root.Lstat(file) // #nosec G703 - Path is checked for correct prefix
